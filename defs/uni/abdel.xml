@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+
+<char team="rebel" name="abdel">
+ <file path="medias/units/rebels/abdel/pics/abdel.png"/>
+ <icon path="medias/units/rebels/abdel/pics/abdel-icon.png"/>
+ <face path="medias/units/rebels/abdel/pics/abdel-face.png"/>
+ <spe path="medias/units/rebels/abdel/pics/abdel-spe.png"/>
+ <pixel_size w="60" h="65"/>
+ <decal_value x="0" y="0"/>
+ <case_size w="1" h="1"/>
+ <life value="5"/>
+ <speed value="5"/>
+ <view dist="3"/>
+ <attack1 power="6"/>
+ <attack2 power="0" dist="0"/>
+
+ <states>
+
+   <state name="idle">
+    <frames>
+     <frame n="0"/>
+     <frame n="0"/>
+    </frames>  
+    <refresh value="8"/>
+   </state>
+  
+   <state name="move">
+    <frames>
+     <frame n="0"/>
+     <frame n="1"/>
+     <frame n="3"/>
+     <frame n="4"/>
+    </frames>
+    <refresh value="2"/>
+   </state>
+  
+  <state name="attack">
+    <frames>
+     <frame n="5"/>
+     <frame n="6"/>
+     <frame n="7"/>
+    </frames>
+    <refresh value="4"/>
+  </state>
+
+  <state name="die">
+    <frames>
+     <frame n="8"/>
+     <frame n="9"/>
+     <frame n="10"/>
+    </frames>
+    <refresh value="4"/>
+  </state>
+
+ </states>
+
+</char>

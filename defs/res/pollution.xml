@@ -1,0 +1,96 @@
+<resources name="pollution">
+ <resource>
+  <file path="medias/resources/pollution1.png"/>
+  <pixel_size w="32" h="32"/>
+  <case_size w="1" h="1" />
+  <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution2.png"/>
+  <pixel_size w="64" h="64"/>
+  <case_size w="2" h="2" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution3.png"/>
+  <pixel_size w="32" h="32"/>
+  <case_size w="1" h="1" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution4.png"/>
+  <pixel_size w="32" h="32"/>
+  <case_size w="1" h="1" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution5.png"/>
+  <pixel_size w="32" h="64"/>
+  <case_size w="1" h="2" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution6.png"/>
+  <pixel_size w="64" h="96"/>
+  <case_size w="2" h="3" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution7.png"/>
+  <pixel_size w="64" h="67"/>
+  <case_size w="2" h="2" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/resources/pollution8.png"/>
+  <pixel_size w="64" h="128"/>
+  <case_size w="2" h="3" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<!--
+<resource>
+  <file path="medias/resources/pollution9.png"/>
+  <pixel_size w="140" h="140"/>
+  <case_size w="1" h="1" /> <frames>
+   <frame n="0"/>
+   <frame n="1"/>
+   <frame n="0"/>
+   <frame n="1"/>
+   <frame n="0"/>
+   <frame n="1"/>
+   <frame n="2"/>
+   <frame n="3"/>
+   <frame n="2"/>
+   <frame n="5"/>
+   <frame n="6"/>
+   <frame n="7"/>
+   <frame n="0"/>
+  </frames>
+  <refresh value="6"/>
+ </resource>
+-->
+</resources>

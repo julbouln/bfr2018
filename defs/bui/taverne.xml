@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+
+<building  team="rebel" name="taverne">
+
+ <file path="medias/buildings/rebels/taverne/pics/taverne.png"/>
+ <icon path="medias/buildings/rebels/taverne/pics/taverne-icon.png"/>
+ <build_time value="100"/>
+ <pixel_size w="213" h="148"/>
+ <decal_value x="0" y="1"/>
+ <case_size w="6" h="4"/>
+ <life value="5"/>
+ <view dist="5"/>
+
+ <states>
+  <state name="idle">
+   <frames>
+    <frame n="0"/>
+   </frames>
+   <refresh value="8"/>
+  </state>
+ </states>
+
+ <destruct_frames>
+  <frame n="0"/> 
+  <frame n="1"/> 
+  <frame n="2"/> 
+  <frame n="3"/> 
+ </destruct_frames>
+
+</building>
+

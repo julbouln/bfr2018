@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<building  team="neonaz" name="mirador">
+
+ <file path="medias/buildings/neonazs/mirador/pics/mirador.png"/>
+ <icon path="medias/buildings/neonazs/mirador/pics/mirador-icon.png"/>
+ <build_time value="6"/>
+ <pixel_size w="144" h="399"/>
+ <decal_value x="0" y="10"/>
+ <case_size w="4" h="2"/>
+ <life value="6"/>
+ <view dist="4"/>
+ <attack2 power="6" dist="3"/>
+
+ <states>
+  <state name="idle">
+   <frames>
+    <frame n="0"/>
+   </frames>
+   <refresh value="8"/>
+  </state>
+
+
+ <state name="attack">
+   <frames>
+    <frame n="0"/>
+    <frame n="1"/>
+    <frame n="2"/>
+   </frames>
+   <refresh value="4"/>
+  </state>
+ </states>
+
+ <destruct_frames>
+  <frame n="0"/> 
+  <frame n="1"/> 
+  <frame n="2"/> 
+  <frame n="3"/> 
+ </destruct_frames>
+
+</building>

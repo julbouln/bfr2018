@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<building  team="neonaz" name="usine_vehicule">
+
+ <file path="medias/buildings/neonazs/usine_vehicule/pics/usine_vehicule.png"/>
+ <icon path="medias/buildings/neonazs/usine_vehicule/pics/usine_vehicule-icon.png"/>
+ <build_time value="4"/>
+ <pixel_size w="224" h="181"/>
+ <decal_value x="0" y="2"/>
+ <case_size w="6" h="4"/>
+ <life value="4"/>
+ <view dist="2"/>
+
+ <states>
+  <state name="idle">
+   <frames>
+    <frame n="0"/>
+   </frames>
+   <refresh value="8"/>
+  </state>
+ </states>
+
+ <destruct_frames>
+  <frame n="0"/> 
+  <frame n="1"/> 
+  <frame n="2"/> 
+  <frame n="3"/> 
+ </destruct_frames>
+
+</building>
+

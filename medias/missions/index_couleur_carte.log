@@ -1,0 +1,257 @@
+This is pdfTeX, Version 3.14159-1.10b (Web2C 7.4.5) (format=pdftex 2003.3.5)  8 MAR 2003 22:21
+**index_couleur_carte.tex
+(./index_couleur_carte.tex{/usr/share/texmf/pdftex/config/pdftex.cfg}
+! Undefined control sequence.
+l.1 \documentclass
+                  [11pt,french]{article}
+? 
+! Undefined control sequence.
+l.5 \usepackage
+               [latin1]{inputenc}
+? 
+! Undefined control sequence.
+l.9 \newcommand
+               {\yo}[1]{\textit{\Large #1}}
+? 
+! Undefined control sequence.
+l.9 \newcommand{\yo
+                   }[1]{\textit{\Large #1}}
+? 
+! Undefined control sequence.
+l.9 \newcommand{\yo}[1]{\textit
+                               {\Large #1}}
+? 
+! Undefined control sequence.
+l.9 \newcommand{\yo}[1]{\textit{\Large
+                                       #1}}
+? 
+! You can't use `macro parameter character #' in horizontal mode.
+l.9 \newcommand{\yo}[1]{\textit{\Large #
+                                        1}}
+? 
+! Undefined control sequence.
+l.10 \usepackage
+                {babel}
+? 
+! Undefined control sequence.
+l.11 \usepackage
+                {graphicx}
+? 
+! Undefined control sequence.
+l.15 \newpage
+             
+? 
+! Undefined control sequence.
+l.16 \begin
+           {document}
+? 
+! Undefined control sequence.
+l.17 \begin
+           {tabular}{|l|c|c}
+? 
+! Undefined control sequence.
+l.18  \hline
+            
+? 
+! Undefined control sequence.
+l.19 ^^I\yo
+           {Quoi} & \yo{valeur_hexa} & \yo{position} \\
+? 
+! Misplaced alignment tab character &.
+l.19 ^^I\yo{Quoi} &
+                    \yo{valeur_hexa} & \yo{position} \\
+? 
+! Undefined control sequence.
+l.19 ^^I\yo{Quoi} & \yo
+                       {valeur_hexa} & \yo{position} \\
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   _
+l.19 ^^I\yo{Quoi} & \yo{valeur_
+                               hexa} & \yo{position} \\
+? 
+! Extra }, or forgotten $.
+l.19 ^^I\yo{Quoi} & \yo{valeur_hexa}
+                                     & \yo{position} \\
+? 
+! Misplaced alignment tab character &.
+l.19 ^^I\yo{Quoi} & \yo{valeur_hexa} &
+                                       \yo{position} \\
+? 
+! Undefined control sequence.
+l.19 ^^I\yo{Quoi} & \yo{valeur_hexa} & \yo
+                                          {position} \\
+? 
+Runaway argument?
+ \hline 
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.21 
+     
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   \par 
+l.21 
+     
+? 
+! Misplaced alignment tab character &.
+l.22 ^^Iterre^^I&
+                  663300 & 72\\
+? 
+! Misplaced alignment tab character &.
+l.22 ^^Iterre^^I& 663300 &
+                           72\\
+? 
+Runaway argument?
+ herbe & 006600 & 128\\ sabler & cc9999 & 89\\ 
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.25 
+     
+? 
+! Misplaced alignment tab character &.
+l.26 ^^Inature1 &
+                  00ff00 & 64\\
+? 
+! Misplaced alignment tab character &.
+l.26 ^^Inature1 & 00ff00 &
+                           64\\
+? 
+Runaway argument?
+ nature2 & 66cc66 & 113\\ nature3 nature4 
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.30 
+     
+? 
+! Misplaced alignment tab character &.
+l.31 ^^Ipollution1 ^^I&
+                        ccccff & 153\\
+? 
+! Misplaced alignment tab character &.
+l.31 ^^Ipollution1 ^^I& ccccff &
+                                 153\\
+? 
+Runaway argument?
+ pollution2 & cc99ff & 154\\ pollution3 & 9966cc & 155\\ pollution4 &\ETC.
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.35 
+     
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   _
+l.36 ^^Itourelle_
+                 naz ^^I& 006633 & 146\\
+? 
+! Misplaced alignment tab character &.
+l.36 ^^Itourelle_naz ^^I&
+                          006633 & 146\\
+? 
+! Misplaced alignment tab character &.
+l.36 ^^Itourelle_naz ^^I& 006633 &
+                                   146\\
+? 
+Runaway argument?
+ labo & 339966 & 147\\ caserne & 66cc99 & 148\\ gymnaz & 99ffcc & 149\ETC.
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.42 
+     
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   \par 
+l.42 
+     
+? 
+! Misplaced alignment tab character &.
+l.43 ^^IBrad Lab^^I&
+                     3399cc & 215\\
+? 
+! Misplaced alignment tab character &.
+l.43 ^^IBrad Lab^^I& 3399cc &
+                              215\\
+? 
+Runaway argument?
+ Patrouilleur & 3366cc & 216\\ Bazoka & 0000ff & 217\\ Mitrailleur & \ETC.
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.48 
+     
+? 
+! Misplaced alignment tab character &.
+l.49 ^^Itaverne^^I^^I&
+                       990000 & 43\\
+? 
+! Misplaced alignment tab character &.
+l.49 ^^Itaverne^^I^^I& 990000 &
+                                43\\
+? 
+Runaway argument?
+ ferme & cc0000 & 44\\ festival & ff0000 & 45\\ tourelle & ff3366 & 4\ETC.
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.53 
+     
+? 
+! Misplaced alignment tab character &.
+l.54 ^^IZork^^I^^I&
+                    ffff33 & 54\\
+? 
+! Misplaced alignment tab character &.
+l.54 ^^IZork^^I^^I& ffff33 &
+                             54\\
+? 
+Runaway argument?
+ Lance Pep & cccc33 & 53\\ Guerrier Bud & 999933 & 52\\ 
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.57 
+     
+? 
+! Misplaced alignment tab character &.
+l.59 ^^Imaison1^^I^^I&
+                       ff9900 & 7\\
+? 
+! Misplaced alignment tab character &.
+l.59 ^^Imaison1^^I^^I& ff9900 &
+                                7\\
+? 
+Runaway argument?
+ maison2 & ff6600 & 8\\ 
+! Paragraph ended before \\ was complete.
+<to be read again> 
+                   \par 
+l.61 
+     
+? 
+! Undefined control sequence.
+l.64 \hline
+           
+? 
+[1{/usr/share/texmf/dvips/config/pdftex.map}] )
+(\end occurred inside a group at level 1){/usr/share/texmf/dvips/tetex/aae443f0
+.enc}</usr/share/texmf/fonts/type1/bluesky/cm/cmmi10.pfb></usr/share/texmf/font
+s/type1/bluesky/cm/cmmi7.pfb>{/usr/share/texmf/dvips/tetex/f7b6d320.enc}</usr/s
+hare/texmf/fonts/type1/bluesky/cm/cmr10.pfb>
+Output written on index_couleur_carte.pdf (1 page, 19855 bytes).

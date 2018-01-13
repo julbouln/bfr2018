@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<tech_tree team="neonaz">
+  <building type="gymnaz">
+    <char type="brad_lab"/>
+    <building type="labo">
+      <resource type="pollution"/>
+    </building>
+    <building type="caserne">
+      <char type="patrouilleur"/>
+      <char type="mitrailleur"/>
+      <char type="bazooka"/>
+            <building type="mirador"/>
+      <building type="usine_vehicule">
+	<char type="super_guerrier"/>
+      </building>      
+    </building>
+    <building type="artillerie">
+     <char type="lance_missille"/>
+     <char type="grosnaz"/>
+    </building>
+  </building>  
+</tech_tree>

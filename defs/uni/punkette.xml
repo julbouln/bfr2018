@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+
+<char team="rebel" name="punkette">
+ <file path="medias/units/rebels/punkette/pics/punkette.png"/>
+ <icon path="medias/units/rebels/punkette/pics/punkette-icon.png"/>
+ <face path="medias/units/rebels/punkette/pics/punkette-face.png"/>
+ <spe path="medias/units/rebels/punkette/pics/punkette-spe.png"/>
+ <pixel_size w="35" h="41"/>
+ <decal_value x="0" y="0"/>
+ <case_size w="1" h="1"/>
+ <life value="3"/>
+ <speed value="3"/>
+ <view dist="3"/>
+ <attack1 power="4"/>
+ <attack2 power="0" dist="0"/>
+
+ <select_sounds>
+  <sound  path="medias/units/rebels/punkette/sounds/pk_selec01.wav"/>
+  <sound  path="medias/units/rebels/punkette/sounds/pk_selec02.wav"/>
+  <sound  path="medias/units/rebels/punkette/sounds/pk_selec03.wav"/>
+ </select_sounds>
+
+ <states>
+
+   <state name="idle">
+    <frames>
+     <frame n="0"/>
+     <frame n="0"/>
+    </frames>  
+    <refresh value="8"/>
+   </state>
+  
+   <state name="move">
+    <frames>
+     <frame n="0"/>
+     <frame n="1"/>
+     <frame n="0"/>
+     <frame n="2"/>
+    </frames>
+    <refresh value="2"/>
+    <sounds>
+     <sound  path="medias/units/rebels/punkette/sounds/pk_action02.wav"/>
+     <sound  path="medias/units/rebels/punkette/sounds/pk_action03.wav"/>
+    </sounds>
+  </state>
+  
+  <state name="attack">
+    <frames>
+     <frame n="3"/>
+     <frame n="4"/>
+     <frame n="5"/>
+    </frames>
+    <refresh value="4"/>
+    <sounds>
+     <sound  path="medias/units/rebels/punkette/sounds/pk_attaque01.wav"/>
+     <sound  path="medias/units/rebels/punkette/sounds/pk_attaque02.wav"/>
+     <sound  path="medias/units/rebels/punkette/sounds/pk_attaque03.wav"/>
+   </sounds>
+  </state>
+
+  <state name="die">
+    <frames>
+     <frame n="6"/>
+     <frame n="7"/>
+     <frame n="8"/>
+    </frames>
+    <refresh value="8"/>
+  </state>
+
+ </states>
+
+</char>

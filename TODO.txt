@@ -1,0 +1,18 @@
+Map:
+- transitions
+- fog of war
+
+Game:
+- resources
+- combat
+- projectile
+- special FX
+- AI
+- team colors
+
+Interface:
+- gui
+- select multiple
+- building construction
+- main menu
+- settings

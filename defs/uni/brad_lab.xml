@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<char team="neonaz" name="brad_lab">
+ <file path="medias/units/neonazs/brad_lab/pics/brad_lab.png"/>
+ <icon path="medias/units/neonazs/brad_lab/pics/brad_lab-icon.png"/>
+ <face path="medias/units/neonazs/brad_lab/pics/brad_lab-face.png"/>
+
+ <pixel_size w="35" h="42"/>
+ <decal_value x="0" y="0"/>
+ <case_size w="1" h="1"/>
+ <life value="3"/>
+ <speed value="4"/>
+ <view dist="4"/>
+ <attack1 power="3"/>
+ <attack2 power="0" dist="0"/>
+
+ <select_sounds>
+  <sound  path="medias/units/neonazs/brad_lab/sounds/brad_selec01.wav"/>
+  <sound  path="medias/units/neonazs/brad_lab/sounds/brad_selec02.wav"/>
+  <sound  path="medias/units/neonazs/brad_lab/sounds/brad_selec03.wav"/>
+  <sound  path="medias/units/neonazs/brad_lab/sounds/brad_selec04.wav"/>
+ </select_sounds>
+
+ <states>
+
+   <state name="idle">
+    <frames>
+     <frame n="0"/>
+     <frame n="0"/>
+    </frames>  
+    <refresh value="8"/>
+   </state>
+  
+   <state name="move">
+    <frames>
+     <frame n="0"/>
+     <frame n="1"/>
+     <frame n="0"/>
+     <frame n="2"/>
+    </frames>
+    <refresh value="2"/>
+    <sounds>
+     <sound  path="medias/units/neonazs/brad_lab/sounds/brad_action01.wav"/>
+     <sound  path="medias/units/neonazs/brad_lab/sounds/brad_action02.wav"/>
+     <sound  path="medias/units/neonazs/brad_lab/sounds/brad_action03.wav"/>
+    </sounds>
+  </state>
+  
+  <state name="attack">
+    <frames>
+     <frame n="3"/>
+     <frame n="4"/>
+    </frames>
+    <refresh value="4"/>
+    <sounds>
+     <sound  path="medias/units/neonazs/brad_lab/sounds/brad_attaque01.wav"/>
+     <sound  path="medias/units/neonazs/brad_lab/sounds/brad_attaque02.wav"/>
+     <sound  path="medias/units/neonazs/brad_lab/sounds/brad_attaque03.wav"/>
+   </sounds>
+  </state>
+
+  <state name="die">
+    <frames>
+     <frame n="5"/>
+     <frame n="6"/>
+     <frame n="7"/>
+    </frames>
+    <refresh value="4"/>
+   </state>
+ </states>
+
+</char>

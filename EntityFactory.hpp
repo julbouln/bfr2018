@@ -1,0 +1,439 @@
+#pragma once
+
+#include "Components.hpp"
+#include "TextureManager.hpp"
+
+#include "tinyxml2.h"
+#include "tixml2ex.h"
+
+
+enum class TechComponent {
+	Building,
+	Character,
+	Resource
+};
+
+class TechNode {
+public:
+	TechComponent comp;
+	std::string type;
+	std::vector<TechNode> children;
+
+	void parse(tinyxml2::XMLElement *el) {
+		std::string comName = el->Name();
+		if (comName == "building")
+			comp = TechComponent::Building;
+		if (comName == "char")
+			comp = TechComponent::Character;
+		if (comName == "resource")
+			comp = TechComponent::Resource;
+
+		type = el->Attribute("type");
+
+		std::cout << "tech tree parse " << el->Name() << " " << type << " " << (int)comp << std::endl;
+
+		for (tinyxml2::XMLElement *childEl : el) {
+			TechNode childNode;
+			childNode.parse(childEl);
+			children.push_back(childNode);
+		}
+	}
+
+};
+
+
+class EntityFactory {
+
+	std::map<std::string, tinyxml2::XMLDocument *> docs;
+
+	std::vector<std::string> unitFiles;
+	std::vector<std::string> buildingFiles;
+
+	std::map<std::string, TechNode> techTrees;
+
+public:
+	TextureManager texManager;
+	sf::Texture &ifaceRebelTex() {
+		return texManager.getRef("interface_rebel");
+	}
+
+	void loadButton(std::string name, std::string filename) {
+		sf::Image but;
+		but.loadFromFile(filename);
+		texManager.loadTexture(name, but, sf::IntRect{0, 0, (int)but.getSize().x, (int)but.getSize().y / 2});
+		texManager.loadTexture(name + "_down", but, sf::IntRect{0, (int)(but.getSize().y / 2), (int)but.getSize().x, (int)(but.getSize().y) / 2});
+	}
+
+	void loadBuildButton(std::string name, std::string filename) {
+		sf::Image but;
+		but.loadFromFile(filename);
+		int height = (int)but.getSize().y / 5;
+		texManager.loadTexture(name, but, sf::IntRect{0, 0, (int)but.getSize().x, height});
+		texManager.loadTexture(name + "_down", but, sf::IntRect{0, height, (int)but.getSize().x, height});
+		texManager.loadTexture(name + "_building", but, sf::IntRect{0, height * 2, (int)but.getSize().x, height});
+		texManager.loadTexture(name + "_built", but, sf::IntRect{0, height * 3, (int)but.getSize().x, height});
+		texManager.loadTexture(name + "_built_down", but, sf::IntRect{0, height * 4, (int)but.getSize().x, height});
+	}
+
+	void loadTextureWithWhiteMask(std::string name, std::string filename) {
+		sf::Image img;
+		img.loadFromFile(filename);
+		img.createMaskFromColor(sf::Color::White);
+		texManager.loadTexture(name, img, sf::IntRect{0, 0, img.getSize().x, img.getSize().y});
+
+	}
+
+	void loadMisc() {
+		this->loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
+		this->loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
+
+		this->loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
+		this->loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
+
+		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
+		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
+	}
+
+	void loadTerrains() {
+		sf::Image terrains;
+		terrains.loadFromFile("medias/tiles/terrains.png");
+		texManager.loadTexture("sand", terrains, sf::IntRect{0, 0, 32, 96});
+		texManager.loadTexture("water", terrains, sf::IntRect{32, 0, 32, 96});
+		texManager.loadTexture("grass", terrains, sf::IntRect{64, 0, 32, 96});
+		texManager.loadTexture("dirt", terrains, sf::IntRect{96, 0, 32, 96});
+		texManager.loadTexture("concrete", terrains, sf::IntRect{128, 0, 32, 96});
+	}
+
+	TechNode loadTechTree(std::string filename) {
+		tinyxml2::XMLDocument doc;
+		doc.LoadFile(filename.c_str());
+		TechNode tech;
+		tech.parse(doc.RootElement()->FirstChildElement());
+
+		return tech;
+	}
+
+	void loadTechTrees() {
+		techTrees["rebel"] = this->loadTechTree("defs/tech/rebels.xml");
+		techTrees["neonaz"] = this->loadTechTree("defs/tech/neonaz.xml");
+	}
+
+	TechNode *recGetTechNode(TechNode *node, std::string type) {
+//		std::cout << " REC "<<node->type << " <> "<<type << std::endl;
+		if (node->type == type)
+			return node;
+		else
+			for (TechNode &child : node->children) {
+				TechNode *cnode = recGetTechNode(&child, type);
+				if (cnode)
+					return cnode;
+			}
+		return nullptr;
+	}
+
+	TechNode *getTechNode(std::string team, std::string type) {
+		return this->recGetTechNode(&this->techTrees[team], type);
+	}
+
+	// init unit texture with mirroring
+	void initUnitTexture(std::string name, std::string imgPath) {
+		sf::Image image, outImage;
+
+		image.loadFromFile(imgPath);
+		int columnWidth = image.getSize().x / 5;
+		int height = image.getSize().y;
+
+		outImage.create(columnWidth * 8, height, sf::Color::Transparent);
+
+		std::vector<sf::Image> directionsImg;
+
+		for (int i = 0; i < 5; i++) {
+			sf::Image dirImg;
+			dirImg.create(columnWidth, height, sf::Color::Transparent);
+			dirImg.copy(image, 0, 0, sf::IntRect(i * columnWidth, 0, columnWidth, height), true);
+			directionsImg.push_back(dirImg);
+		}
+
+		for (int i = 1; i < 4; i ++) {
+			sf::Image dirImg;
+			dirImg.create(columnWidth, height, sf::Color::Transparent);
+			dirImg.copy(image, 0, 0, sf::IntRect(i * columnWidth, 0, columnWidth, height), true);
+			dirImg.flipHorizontally();
+			directionsImg.push_back(dirImg);
+		}
+
+		for (int i = 0; i < 8; i++) {
+			outImage.copy(directionsImg[i], i * columnWidth, 0, sf::IntRect(0, 0, columnWidth, height), true);
+		}
+
+		outImage.createMaskFromColor(sf::Color::White);
+		texManager.loadTexture(name, outImage, sf::IntRect{0, 0, columnWidth * 8, height});
+	}
+
+	void loadUnits() {
+		for (std::string &fn : this->unitFiles) {
+			tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
+			doc->LoadFile(fn.c_str());
+			std::string name = doc->RootElement()->Attribute("name");
+			this->docs[name] = doc;
+
+			std::string imgPath = doc->RootElement()->FirstChildElement("file")->Attribute("path");
+			this->initUnitTexture(name, imgPath);
+
+			this->loadButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
+
+			texManager.loadTexture(name + "_face", doc->RootElement()->FirstChildElement("face")->Attribute("path"));
+			tinyxml2::XMLElement *speEl = doc->RootElement()->FirstChildElement("spe");
+			if (speEl)
+				texManager.loadTexture(name + "_spe", speEl->Attribute("path"));
+		}
+
+	}
+
+	void loadBuildings() {
+		for (std::string &fn : this->buildingFiles) {
+			tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
+			doc->LoadFile(fn.c_str());
+			std::string name = doc->RootElement()->Attribute("name");
+			this->docs[name] = doc;
+
+			std::string imgPath = doc->RootElement()->FirstChildElement("file")->Attribute("path");
+			sf::Image img;
+			img.loadFromFile(imgPath);
+			img.createMaskFromColor(sf::Color::White);
+			texManager.loadTexture(name, img, sf::IntRect{0, 0, img.getSize().x, img.getSize().y});
+
+			this->loadBuildButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
+		}
+	}
+
+	void loadResources(std::string filename) {
+		tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
+		doc->LoadFile(filename.c_str());
+		std::string name = doc->RootElement()->Attribute("name");
+		this->docs[name] = doc;
+
+		int i = 0;
+		for (tinyxml2::XMLElement *el : doc->RootElement()) {
+			std::string imgfile = el->FirstChildElement("file")->Attribute("path");
+//			std::cout << "RESOURCE: " << imgfile << std::endl;
+			this->loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
+			i++;
+		}
+	}
+
+	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
+		tinyxml2::XMLDocument *doc = this->docs[name];
+		tinyxml2::XMLElement *root = doc->RootElement();
+		tinyxml2::XMLElement * sizeEl = root->FirstChildElement("case_size");
+		tinyxml2::XMLElement * psizeEl = root->FirstChildElement("pixel_size");
+		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
+
+		tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
+		tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
+
+		for (tinyxml2::XMLElement *stateEl : statesEl) {
+			std::string state = stateEl->Attribute("name");
+//			std::cout << "STATE " << state << std::endl;
+
+			AnimationHandler animHandler;
+
+			animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+
+			for (int i = 0; i < directions; i++) {
+				tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
+
+				std::vector<int> frames;
+				for (tinyxml2::XMLElement *frameEl : framesEl) {
+					int frame = frameEl->IntAttribute("n");
+//					std::cout << "ADD FRAME " << frame << std::endl;
+					frames.push_back(frame);
+				}
+
+				Animation anim(frames, 0.5f);
+
+				animHandler.addAnim(anim);
+			}
+			animHandler.update(0.0f);
+
+			tile.animHandlers[state] = animHandler;
+
+		}
+
+	}
+
+	void parseGameObjectFromXml(std::string name, GameObject &obj)
+	{
+		tinyxml2::XMLDocument *doc = this->docs[name];
+		tinyxml2::XMLElement *root = doc->RootElement();
+
+		obj.view = root->FirstChildElement("view")->IntAttribute("dist");
+		obj.life = root->FirstChildElement("life")->IntAttribute("value");
+		obj.name = root->Attribute("name");
+		obj.team = root->Attribute("team");
+	}
+
+	void parseUnitFromXml(std::string name, Unit &unit) {
+		tinyxml2::XMLDocument *doc = this->docs[name];
+		tinyxml2::XMLElement *root = doc->RootElement();
+
+		unit.speed = root->FirstChildElement("speed")->IntAttribute("value");
+
+		unit.attack1 = Attack{(unsigned int)root->FirstChildElement("attack1")->IntAttribute("power"), 0};
+		unit.attack2 = Attack{(unsigned int)root->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)root->FirstChildElement("attack2")->IntAttribute("dist")};
+	}
+
+	void parseBuildingFromXml(std::string name, Building &building)
+	{
+		tinyxml2::XMLDocument *doc = this->docs[name];
+		tinyxml2::XMLElement *root = doc->RootElement();
+
+		building.buildTime = root->FirstChildElement("build_time")->IntAttribute("value");
+		building.built = false;
+	}
+
+	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
+		EntityID entity = registry.create();
+		Tile tile;
+		tile.psize = sf::Vector2f{32, 32};
+		tile.size = sf::Vector2i{1, 1};
+
+		tile.pos = sf::Vector2i(x, y);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+//		tile.sprite.setOrigin(sf::Vector2f(16, 16));
+		tile.sprite.setTexture(texManager.getRef(name));
+
+		Animation staticAnim({}, 1.0f);
+
+		AnimationHandler idleHandler;
+
+		idleHandler.frameSize = sf::IntRect(0, 0, 32, 32);
+
+		idleHandler.addAnim(staticAnim);
+		idleHandler.update(0.0f);
+
+		tile.animHandlers["idle"] = idleHandler;
+
+		tile.tileVariant = 0;
+		tile.direction = North;
+		tile.state = "idle";
+
+		registry.assign<Tile>(entity, tile);
+		return entity;
+	}
+
+#define UNIT_FRAME_COUNT 10
+
+	EntityID createUnit(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
+		EntityID entity = registry.create();
+		Tile tile;
+		this->parseTileFromXml(name, tile, 8);
+
+		tile.pos = sf::Vector2i(x, y);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+//		tile.sprite.setOrigin(sf::Vector2f(tile.psize.x / 2, tile.psize.y / 2));
+//		tile.sprite.setOrigin(sf::Vector2f(16,16));
+		tile.sprite.setTexture(texManager.getRef(name));
+
+		tile.tileVariant = 0;
+		tile.direction = South;
+		tile.state = "idle";
+
+		GameObject obj;
+		this->parseGameObjectFromXml(name, obj);
+
+		Unit unit;
+		this->parseUnitFromXml(name, unit);
+
+		unit.destpos = tile.pos;
+
+		registry.assign<Tile>(entity, tile);
+		registry.assign<GameObject>(entity, obj);
+		registry.assign<Unit>(entity, unit);
+
+		return entity;
+	}
+
+	EntityID createBuilding(entt::Registry<EntityID> &registry, std::string name, int x, int y, bool built) {
+		EntityID entity = registry.create();
+		Tile tile;
+		this->parseTileFromXml(name, tile, 8);
+
+		tile.pos = sf::Vector2i(x, y);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+
+//		tile.sprite.setOrigin(sf::Vector2f(tile.psize.x / 2, tile.psize.y / 2));
+		tile.sprite.setTexture(texManager.getRef(name));
+
+		Animation staticAnim({}, 1.0f);
+
+		AnimationHandler idleHandler;
+
+		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+
+		idleHandler.addAnim(staticAnim);
+		idleHandler.update(0.0f);
+
+		tile.animHandlers["idle"] = idleHandler;
+
+		tile.tileVariant = 0;
+		tile.direction = North;
+		tile.state = "idle";
+
+		GameObject obj;
+		this->parseGameObjectFromXml(name, obj);
+
+		Building building;
+		this->parseBuildingFromXml(name, building);
+		building.built = built;
+
+		registry.assign<Tile>(entity, tile);
+		registry.assign<GameObject>(entity, obj);
+		registry.assign<Building>(entity, building);
+
+		return entity;
+	}
+
+	EntityFactory() {
+		unitFiles.push_back("defs/uni/patrouilleur.xml");
+		unitFiles.push_back("defs/uni/punkette.xml");
+		unitFiles.push_back("defs/uni/guerrier_bud.xml");
+		unitFiles.push_back("defs/uni/brad_lab.xml");
+		unitFiles.push_back("defs/uni/guerrier_bud_powerhead.xml");
+		unitFiles.push_back("defs/uni/lance_pepino.xml");
+		unitFiles.push_back("defs/uni/zork.xml");
+		unitFiles.push_back("defs/uni/super_guerrier.xml");
+		unitFiles.push_back("defs/uni/abdel.xml");
+		unitFiles.push_back("defs/uni/grosnaz.xml");
+		unitFiles.push_back("defs/uni/bazooka.xml");
+		unitFiles.push_back("defs/uni/lance_missille.xml");
+		unitFiles.push_back("defs/uni/mitrailleur.xml");
+
+		buildingFiles.push_back("defs/bui/artillerie.xml");
+		buildingFiles.push_back("defs/bui/caserne.xml");
+		buildingFiles.push_back("defs/bui/ferme.xml");
+		buildingFiles.push_back("defs/bui/festival.xml");
+		buildingFiles.push_back("defs/bui/gymnaz.xml");
+		buildingFiles.push_back("defs/bui/labo.xml");
+		buildingFiles.push_back("defs/bui/mirador.xml");
+		buildingFiles.push_back("defs/bui/raffinerie_bud.xml");
+		buildingFiles.push_back("defs/bui/squat.xml");
+		buildingFiles.push_back("defs/bui/taverne.xml");
+		buildingFiles.push_back("defs/bui/tourelle.xml");
+		buildingFiles.push_back("defs/bui/usine_vehicule.xml");
+
+		this->loadTerrains();
+		this->loadUnits();
+		this->loadBuildings();
+		this->loadMisc();
+		this->loadTechTrees();
+
+		this->loadResources("defs/res/nature.xml");
+//		std::cout << this->getTechNode("rebel", "taverne") << std::endl;
+//		std::cout << this->getTechNode("rebel", "guerrier_bud") << std::endl;
+	}
+
+};

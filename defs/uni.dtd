@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<!ELEMENT char (file, icon, face, spe, pixel_size, decal_value, case_size, life, speed, view, attack1, attack2, select_sounds*, states)>
+<!ATTLIST char
+  name CDATA #REQUIRED
+>
+
+<!ELEMENT file EMPTY>
+<!ATTLIST file
+ path CDATA #REQUIRED
+>
+
+<!ELEMENT icon EMPTY>
+<!ATTLIST icon
+ path CDATA #REQUIRED
+>
+
+<!ELEMENT face EMPTY>
+<!ATTLIST face
+ path CDATA #REQUIRED
+>
+
+<!ELEMENT spe EMPTY>
+<!ATTLIST spe
+ path CDATA #REQUIRED
+>
+
+<!ELEMENT pixel_size EMPTY>
+<!ATTLIST pixel_size
+ w CDATA #REQUIRED
+ h CDATA #REQUIRED
+>
+
+<!ELEMENT decal_value EMPTY>
+<!ATTLIST decal_value
+ x CDATA #REQUIRED
+ y CDATA #REQUIRED
+>
+
+<!ELEMENT case_size EMPTY>
+<!ATTLIST case_size
+ w CDATA #REQUIRED
+ h CDATA #REQUIRED
+>
+
+<!ELEMENT life EMPTY>
+<!ATTLIST life
+ value CDATA #REQUIRED
+>
+
+<!ELEMENT speed EMPTY>
+<!ATTLIST speed
+ value CDATA #REQUIRED
+>
+
+<!ELEMENT view EMPTY>
+<!ATTLIST view
+ dist CDATA #REQUIRED
+>
+
+<!ELEMENT attack1 EMPTY>
+<!ATTLIST attack1
+ power CDATA #REQUIRED
+>
+
+<!ELEMENT attack2 EMPTY>
+<!ATTLIST attack2
+ power CDATA #REQUIRED
+ dist CDATA #REQUIRED
+>
+
+<!ELEMENT select_sounds (sound*)>
+ <!ELEMENT sound EMPTY>
+ <!ATTLIST sound
+  path CDATA #REQUIRED
+ >
+
+
+<!-- ########## TRAITEMENT DE LA BALISE STATE ##################### -->
+
+
+<!ELEMENT states (state*)>
+
+ <!ELEMENT state (frames, refresh, sounds?)>
+ <!ATTLIST state
+  name (idle | move | attack | die) #REQUIRED
+ >
+
+  <!ELEMENT frames (frame*)>
+   <!ELEMENT frame EMPTY>
+   <!ATTLIST frame
+    n CDATA #REQUIRED
+   >
+  <!ELEMENT refresh EMPTY>
+  <!ATTLIST refresh
+   value CDATA #REQUIRED
+  >
+
+  <!ELEMENT sounds (sound*)>
+  
+]>

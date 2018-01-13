@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<tech_tree team="rebels">
+  <building type="taverne">
+    <char type="zork"/>
+    <building type="ferme">
+      <resource type="nature"/>
+    </building>
+    <building type="festival">
+      <char type="punkette"/>
+      <char type="lance_pepino"/>
+      <char type="guerrier_bud"/>
+      <building type="tourelle"/>
+      <building type="squat">
+	<char type="abdel"/>
+      </building>      
+      <building type="raffinerie_bud">
+       <char type="guerrier_bud_powerhead"/>
+      </building>
+    </building>
+  </building>  
+</tech_tree>
