@@ -66,6 +66,7 @@ enum class ResourceType {
 struct Resource {
 	ResourceType type;
 	unsigned int level;
+	float grow;
 };
 
 struct Player {

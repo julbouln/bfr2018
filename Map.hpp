@@ -99,6 +99,7 @@ public:
 	TileLayer terrains;
 
 	ObjLayer objs;
+	ObjLayer resources;
 
 	Map() {
 	}
@@ -129,6 +130,9 @@ public:
 		objs.width = width;
 		objs.height = height;
 
+		resources.width = width;
+		resources.height = height;
+
 		this->width = width;
 		this->height = height;
 
@@ -158,6 +162,7 @@ public:
 		}
 
 		objs.fill();
+		resources.fill();
 	}
 
 

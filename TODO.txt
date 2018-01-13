@@ -11,8 +11,8 @@ Game:
 - team colors
 
 Interface:
+- stages
 - gui
-- select multiple
 - building construction
 - main menu
 - settings

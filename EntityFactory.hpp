@@ -51,6 +51,8 @@ class EntityFactory {
 
 	std::map<std::string, TechNode> techTrees;
 
+	std::map<std::string, int> resourcesCount;
+
 public:
 	TextureManager texManager;
 	sf::Texture &ifaceRebelTex() {
@@ -213,13 +215,17 @@ public:
 		std::string name = doc->RootElement()->Attribute("name");
 		this->docs[name] = doc;
 
+		this->loadTextureWithWhiteMask(name, "medias/resources/" + name + ".png");
+
 		int i = 0;
 		for (tinyxml2::XMLElement *el : doc->RootElement()) {
+			
 			std::string imgfile = el->FirstChildElement("file")->Attribute("path");
 //			std::cout << "RESOURCE: " << imgfile << std::endl;
 			this->loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
 			i++;
 		}
+		resourcesCount[name] = i;
 	}
 
 	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
@@ -397,7 +403,88 @@ public:
 		return entity;
 	}
 
-	EntityFactory() {
+
+
+	EntityID plantResource(entt::Registry<EntityID> &registry, ResourceType type, int x, int y) {
+		EntityID entity = registry.create();
+		Tile tile;
+		tile.psize = sf::Vector2f{32, 32};
+		tile.size = sf::Vector2i{1, 1};
+
+		tile.pos = sf::Vector2i(x, y);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+//		tile.sprite.setOrigin(sf::Vector2f(16, 16));
+		switch (type) {
+		case ResourceType::Nature:
+			tile.sprite.setTexture(texManager.getRef("nature"));
+			break;
+		case ResourceType::Pollution:
+			tile.sprite.setTexture(texManager.getRef("pollution"));
+			break;
+		}
+
+		Animation staticAnim({}, 1.0f);
+
+		AnimationHandler idleHandler;
+
+		idleHandler.frameSize = sf::IntRect(0, 0, 32, 32);
+
+		idleHandler.addAnim(staticAnim);
+		idleHandler.update(0.0f);
+
+		tile.animHandlers["idle"] = idleHandler;
+
+		tile.tileVariant = 0;
+		tile.direction = North;
+		tile.state = "idle";
+
+		Resource resource;
+		resource.type = type;
+		resource.level = 0;
+		resource.grow = 0;
+
+		registry.assign<Tile>(entity, tile);
+		registry.assign<Resource>(entity, resource);
+
+
+		return entity;
+	}
+
+	EntityID growedResource(entt::Registry<EntityID> &registry, std::string name, EntityID entity) {
+		int rnd = rand() % resourcesCount[name];
+
+		Tile &oldTile = registry.get<Tile>(entity);
+
+		Tile tile;
+		this->parseTileFromXml(name+std::to_string(rnd), tile, 8);
+
+		tile.pos = oldTile.pos;
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+		tile.sprite.setTexture(texManager.getRef(name+std::to_string(rnd)));
+
+		Animation staticAnim({}, 1.0f);
+
+		AnimationHandler idleHandler;
+
+		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+
+		idleHandler.addAnim(staticAnim);
+		idleHandler.update(0.0f);
+
+		tile.animHandlers["idle"] = idleHandler;
+
+		tile.tileVariant = 0;
+		tile.direction = North;
+		tile.state = "idle";
+
+		registry.remove<Tile>(entity);
+		registry.assign<Tile>(entity, tile);
+		return entity;
+	}
+
+	void load() {
 		unitFiles.push_back("defs/uni/patrouilleur.xml");
 		unitFiles.push_back("defs/uni/punkette.xml");
 		unitFiles.push_back("defs/uni/guerrier_bud.xml");
@@ -432,8 +519,13 @@ public:
 		this->loadTechTrees();
 
 		this->loadResources("defs/res/nature.xml");
+		this->loadResources("defs/res/pollution.xml");
 //		std::cout << this->getTechNode("rebel", "taverne") << std::endl;
 //		std::cout << this->getTechNode("rebel", "guerrier_bud") << std::endl;
+	}
+
+	EntityFactory() {
+
 	}
 
 };

@@ -159,7 +159,14 @@ public:
 					std::cout << "START SELECTION" << std::endl;
 					this->selectionStart = gamePos;
 
+						this->selectedObjs.clear();
 					EntityID entity = map.objs.get(gameMapPos.x, gameMapPos.y);
+
+					if(entity && registry.has<Building>(entity)) {
+						this->selectedObjs.push_back(entity);
+					}
+/*
+
 					if (entity) {
 						std::cout << "SELECT " << entity << std::endl;
 						this->selectedObjs.clear();
@@ -168,6 +175,7 @@ public:
 					} else {
 						this->selectedObjs.clear();
 					}
+					*/
 				}
 			}
 
@@ -181,15 +189,39 @@ public:
 
 				} else {
 					if (this->selectedObjs.size() > 0) {
-						for (EntityID selectedObj : this->selectedObjs) {
-							if (registry.has<Unit>(selectedObj)) {
-								Tile &tile = registry.get<Tile>(selectedObj);
-								Unit &unit = registry.get<Unit>(selectedObj);
-								unit.nextpos = tile.pos;
-								unit.destpos = sf::Vector2i(gameMapPos);
-								tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+						double squareD = sqrt((double)this->selectedObjs.size());
+						int square = ceil(squareD);
+						int curObj = 0;
+
+						for (int x = 0; x < square; x++) {
+							for (int y = 0; y < square; y++) {
+								if (curObj < this->selectedObjs.size()) {
+									EntityID selectedObj = this->selectedObjs[curObj];
+									if (registry.has<Unit>(selectedObj)) {
+										Tile &tile = registry.get<Tile>(selectedObj);
+										Unit &unit = registry.get<Unit>(selectedObj);
+										unit.nextpos = tile.pos;
+										sf::Vector2i dpos;
+										dpos.x = gameMapPos.x + x;
+										dpos.y = gameMapPos.y + y;
+										unit.destpos = dpos;
+										tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+									}
+									curObj++;
+								}
 							}
 						}
+						/*
+												for (EntityID selectedObj : this->selectedObjs) {
+													if (registry.has<Unit>(selectedObj)) {
+														Tile &tile = registry.get<Tile>(selectedObj);
+														Unit &unit = registry.get<Unit>(selectedObj);
+														unit.nextpos = tile.pos;
+														unit.destpos = sf::Vector2i(gameMapPos);
+														tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+													}
+												}
+												*/
 					}
 				}
 			}
@@ -267,6 +299,7 @@ public:
 
 		this->drawTileLayer(registry, factory, map.terrains, window, dt);
 		this->drawObjLayer(registry, factory, map.objs, window, dt);
+		this->drawObjLayer(registry, factory, map.resources, window, dt);
 
 		for (EntityID selectedObj : this->selectedObjs) {
 			Tile &tile = registry.get<Tile>(selectedObj);
@@ -344,6 +377,7 @@ public:
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
+//			std::cout << "ACTIONS "<<this->selectedObjs.size()<<std::endl;
 			if (this->selectedObjs.size() == 1) {
 				EntityID selectedObj = this->selectedObjs[0];
 
@@ -391,6 +425,16 @@ public:
 								this->action = Action::Building;
 								this->currentBuildType = node.type;
 								break;
+							case TechComponent::Resource:
+								Tile &tile = registry.get<Tile>(selectedObj);
+								for(sf::Vector2i p : this->tileAround(tile,1)) {
+									 float rnd=((float) rand()) / (float) RAND_MAX;
+									 if(rnd > 0.5) {
+									 	if(!map.resources.get(p.x,p.y))
+										 	factory.plantResource(registry,ResourceType::Nature,p.x,p.y);
+									 }
+								}
+								break;
 							}
 						}
 						ImGui::SameLine();
@@ -424,6 +468,7 @@ public:
 		ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
+		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
 		if (ImGui::Begin("Example: Fixed Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::Text("Entities: %d", registry.size());
@@ -448,6 +493,7 @@ public:
 			ImGui::End();
 		}
 		ImGui::PopStyleColor();
+		ImGui::PopFont();
 
 	}
 
@@ -463,7 +509,9 @@ public:
 			std::cout << "built " << this->currentBuild << std::endl;
 		}
 
+		this->growResources(registry, factory, dt);
 		this->updateObjLayer(registry, factory, dt);
+		this->updateResourceLayer(registry, factory, dt);
 		this->updateTileLayer(registry, factory, dt);
 
 	}
@@ -493,7 +541,6 @@ public:
 
 	}
 
-
 	std::vector<sf::Vector2i> tileSurface(Tile &tile) {
 		std::vector<sf::Vector2i> surface;
 		for (int w = 0; w < tile.size.x; w++) {
@@ -519,7 +566,7 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = -dist; w < tile.size.x + dist; w++) {
 			for (int h = -dist; h < tile.size.y + dist; h++) {
-				if(w <= -1 || h <= -1 || w>=tile.size.x || h>=tile.size.y)
+				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y)
 					surface.push_back(sf::Vector2i(tile.pos.x + (w - tile.size.x / 2), tile.pos.y + (h - tile.size.y / 2)));
 			}
 		}
@@ -541,6 +588,49 @@ public:
 				}
 			}
 		}
+	}
+
+	void growResources(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
+		auto view = registry.view<Resource>();
+		for(EntityID entity : view) {
+			Resource &resource = view.get(entity);
+			resource.grow+=0.1;
+
+//				std::cout << "RESOURCE "<<entity<<" grow "<<resource.grow << std::endl;
+
+			if(resource.grow > 5) {
+				std::cout << "RESOURCE "<<entity<<" grow"<< std::endl;
+				resource.grow=0;
+				resource.level++;
+
+//				factory.growedResource(registry, "nature", entity);
+			}
+		}
+
+	}
+
+	void updateResourceLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
+		map.resources.fill();
+		auto view = registry.persistent<Tile, Resource>();
+
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+
+			for (sf::Vector2i p : this->tileSurface(tile)) {
+				map.resources.set(p.x, p.y, entity);
+			}
+
+			map.resources.add(entity);
+		}
+
+
+		sort( map.resources.entities.begin( ), map.resources.entities.end( ), [&registry ]( const auto & lhs, const auto & rhs )
+		{
+			Tile &lht = registry.get<Tile>(lhs);
+			Tile &rht = registry.get<Tile>(rhs);
+			return lht.pos.y < rht.pos.y;
+		});
+
 	}
 
 	void updateObjLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
@@ -621,16 +711,23 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 
 			if (tile.pos != unit.destpos) {
-//				if ((trunc((float)tile.ppos.x / 32.0) - unit.nextpos.x)==0 && (trunc((float)tile.ppos.y / 32.0) - unit.nextpos.y) == 0) {
 				int diffx = abs(tile.ppos.x - unit.nextpos.x * 32);
 				int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
 				if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
+					/*
 					if (tile.pos != unit.nextpos) {
-						if (!map.objs.get(unit.nextpos.x, unit.nextpos.y)) {
+						EntityID entityThere = map.objs.get(unit.nextpos.x, unit.nextpos.y);
+						if (entityThere == 0 || entityThere == entity) {
 							tile.pos = unit.nextpos;
+							tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+						} else {
+							tile.state = "idle";
+
 						}
-//						map.objs.set(tile.pos.x, tile.pos.y, entity);
+					//						map.objs.set(tile.pos.x, tile.pos.y, entity);
 					}
+					*/
+					tile.pos = unit.nextpos;
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 					if (tile.pos != unit.destpos) {
@@ -645,6 +742,7 @@ public:
 							int nx = path.front().x;
 							int ny = path.front().y;
 
+							map.objs.set(nx, ny, entity);
 
 							unit.nextpos.x = nx;
 							unit.nextpos.y = ny;
@@ -656,7 +754,7 @@ public:
 						} else {
 							std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 							tile.state = "idle";
-							unit.destpos = tile.pos;
+//							unit.destpos = tile.pos;
 //							map.objs.set(tile.pos.x, tile.pos.y, entity);
 						}
 					} else {
@@ -665,7 +763,7 @@ public:
 //						map.objs.set(tile.pos.x, tile.pos.y, entity);
 					}
 
-					map.objs.set(tile.pos.x, tile.pos.y, entity);
+//					map.objs.set(tile.pos.x, tile.pos.y, entity);
 
 				} else {
 					float speed = (float)unit.speed / 4.0;
