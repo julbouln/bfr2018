@@ -23,6 +23,8 @@ public:
 
 	bool markUpdateObjLayer;
 
+	EntityID currentPlayer;
+
 	Map map;
 
 	sf::View gameView;
@@ -39,6 +41,8 @@ public:
 		this->timePerTick = 0.1;
 		this->currentBuild = 0;
 		this->markUpdateObjLayer = false;
+
+		this->currentPlayer = 0;
 	}
 
 	void setSize(unsigned int width, unsigned int height) {
@@ -61,20 +65,40 @@ public:
 		map.initTiles(registry, factory);
 		map.generate(registry, factory, mapWidth, mapHeight);
 
-		factory.createUnit(registry, "zork", 10, 10);
-		factory.createUnit(registry, "zork", 10, 11);
-		factory.createUnit(registry, "zork", 10, 12);
-		factory.createUnit(registry, "zork", 11, 10);
-		factory.createUnit(registry, "zork", 11, 11);
-		factory.createUnit(registry, "zork", 11, 12);
-		factory.createUnit(registry, "zork", 12, 10);
-		factory.createUnit(registry, "zork", 12, 11);
-		factory.createUnit(registry, "zork", 12, 12);
 
-		factory.createBuilding(registry, "taverne", 16, 10, true);
+		this->currentPlayer = factory.createPlayer(registry, "rebel", false);
+		factory.createPlayer(registry, "neonaz", true);
 
-//		map.objs.set(10, 10, factory.createUnit(registry, "zork", 10, 10));
+		auto view = registry.view<Player>();
+		for(EntityID entity : view) {
+			Player &player = view.get(entity);
+			if (player.team == "rebel")
+			{
+				factory.createUnit(registry, entity, "zork", 10, 10);
+			} else {
+				factory.createUnit(registry, entity, "brad_lab", 54, 54);
+			}
+		}
+
+		Player &player = registry.get<Player>(this->currentPlayer);
+		iface.setTexture(factory.getTex("interface_"+player.team));
+
+//		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
+
+		/*		factory.createUnit(registry, this->currentPlayer, "zork", 10, 11);
+				factory.createUnit(registry, this->currentPlayer, "zork", 10, 12);
+				factory.createUnit(registry, this->currentPlayer, "zork", 11, 10);
+				factory.createUnit(registry, this->currentPlayer, "zork", 11, 11);
+				factory.createUnit(registry, this->currentPlayer, "zork", 11, 12);
+				factory.createUnit(registry, this->currentPlayer, "zork", 12, 10);
+				factory.createUnit(registry, this->currentPlayer, "zork", 12, 11);
+				factory.createUnit(registry, this->currentPlayer, "zork", 12, 12);
+
+				factory.createBuilding(registry, this->currentPlayer, "taverne", 16, 10, true);
+		*/
+//		map.objs.set(10, 10, factory.createUnit(registry, this->currentPlayer, "zork", 10, 10));
 	}
+
 
 	void handleEvent(entt::Registry<EntityID> &registry, sf::RenderWindow &window, sf::Event &event) {
 		sf::Vector2f gamePos = (window.mapPixelToCoords(sf::Mouse::getPosition(window), this->gameView));
@@ -130,7 +154,9 @@ public:
 							EntityID ent = map.objs.get(x, y);
 							if (ent) {
 								if (registry.has<Unit>(ent)) {
-									this->selectedObjs.push_back(ent);
+									GameObject &obj = registry.get<GameObject>(ent);
+									if (obj.player == this->currentPlayer)
+										this->selectedObjs.push_back(ent);
 								}
 							}
 						}
@@ -159,23 +185,25 @@ public:
 					std::cout << "START SELECTION" << std::endl;
 					this->selectionStart = gamePos;
 
-						this->selectedObjs.clear();
+					this->selectedObjs.clear();
 					EntityID entity = map.objs.get(gameMapPos.x, gameMapPos.y);
 
-					if(entity && registry.has<Building>(entity)) {
-						this->selectedObjs.push_back(entity);
+					if (entity && registry.has<Building>(entity)) {
+						GameObject &obj = registry.get<GameObject>(entity);
+						if (obj.player == this->currentPlayer)
+							this->selectedObjs.push_back(entity);
 					}
-/*
+					/*
 
-					if (entity) {
-						std::cout << "SELECT " << entity << std::endl;
-						this->selectedObjs.clear();
-						this->selectedObjs.push_back(entity);
+										if (entity) {
+											std::cout << "SELECT " << entity << std::endl;
+											this->selectedObjs.clear();
+											this->selectedObjs.push_back(entity);
 
-					} else {
-						this->selectedObjs.clear();
-					}
-					*/
+										} else {
+											this->selectedObjs.clear();
+										}
+										*/
 				}
 			}
 
@@ -275,7 +303,7 @@ public:
 
 			sf::Vector2f pos;
 			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
-			pos.y = tile.ppos.y - tile.psize.y / 2;
+			pos.y = tile.ppos.y - tile.psize.y / 2 - tile.offset.y * 32;
 
 			tile.sprite.setPosition(pos);
 
@@ -340,6 +368,23 @@ public:
 					window.draw(rectangle);
 
 				}
+
+				if (map.resources.get(x, y)) {
+					sf::RectangleShape rectangle;
+
+					sf::Vector2f pos;
+					pos.x = x * 32;
+					pos.y = y * 32;
+
+					rectangle.setSize(sf::Vector2f(32, 32));
+					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					rectangle.setOutlineColor(sf::Color(0x00, 0xff, 0x00, 0x7f));
+					rectangle.setOutlineThickness(1);
+					rectangle.setPosition(pos);
+
+					window.draw(rectangle);
+
+				}
 			}
 		}
 
@@ -369,6 +414,8 @@ public:
 
 
 	void actionGui(entt::Registry<EntityID> &registry, EntityFactory &factory) {
+		Player &player = registry.get<Player>(this->currentPlayer);
+
 		float rightDist = 120.0f;
 		float bottomDist = 60.0f;
 		ImVec2 window_pos = ImVec2(ImGui::GetIO().DisplaySize.x - rightDist, ImGui::GetIO().DisplaySize.y - bottomDist);
@@ -396,16 +443,16 @@ public:
 					ImGui::SameLine();
 
 					ImGui::BeginGroup();
-					if (ImGui::ImageButtonAnim(factory.texManager.getRef("rebel_move"),
-					                           factory.texManager.getRef("rebel_move"),
-					                           factory.texManager.getRef("rebel_move_down"))) {
+					if (ImGui::ImageButtonAnim(factory.texManager.getRef(player.team+"_move"),
+					                           factory.texManager.getRef(player.team+"_move"),
+					                           factory.texManager.getRef(player.team+"_move_down"))) {
 						std::cout << "move clicked " << std::endl;
 					}
 
 					ImGui::SameLine();
-					if (ImGui::ImageButtonAnim(factory.texManager.getRef("rebel_attack"),
-					                           factory.texManager.getRef("rebel_attack"),
-					                           factory.texManager.getRef("rebel_attack_down"))) {
+					if (ImGui::ImageButtonAnim(factory.texManager.getRef(player.team+"_attack"),
+					                           factory.texManager.getRef(player.team+"_attack"),
+					                           factory.texManager.getRef(player.team+"_attack_down"))) {
 						std::cout << "attack clicked " << std::endl;
 
 					}
@@ -413,7 +460,7 @@ public:
 
 				}
 
-				TechNode *pnode = factory.getTechNode("rebel", obj.name);
+				TechNode *pnode = factory.getTechNode(player.team, obj.name);
 				if (pnode->children.size() > 0) {
 					for (TechNode &node : pnode->children) {
 						if (ImGui::ImageButtonAnim(factory.texManager.getRef(node.type + "_icon"),
@@ -427,12 +474,12 @@ public:
 								break;
 							case TechComponent::Resource:
 								Tile &tile = registry.get<Tile>(selectedObj);
-								for(sf::Vector2i p : this->tileAround(tile,1)) {
-									 float rnd=((float) rand()) / (float) RAND_MAX;
-									 if(rnd > 0.5) {
-									 	if(!map.resources.get(p.x,p.y))
-										 	factory.plantResource(registry,ResourceType::Nature,p.x,p.y);
-									 }
+								for (sf::Vector2i p : this->tileAround(tile, 1)) {
+									float rnd = ((float) rand()) / (float) RAND_MAX;
+									if (rnd > 0.5) {
+										if (!map.resources.get(p.x, p.y))
+											factory.plantResource(registry, player.resourceType, p.x, p.y);
+									}
 								}
 								break;
 							}
@@ -444,7 +491,7 @@ public:
 
 			} else {
 				if (this->selectedObjs.size() == 0) {
-					TechNode *node = factory.getTechNode("rebel", "taverne");
+					TechNode *node = factory.getTechRoot(player.team);
 					if (ImGui::ImageButtonAnim(factory.texManager.getRef(node->type + "_icon"),
 					                           factory.texManager.getRef(node->type + "_icon"),
 					                           factory.texManager.getRef(node->type + "_icon_down"))) {
@@ -505,7 +552,7 @@ public:
 		this->currentTime = 0.0;
 
 		if (this->action == Action::Building && this->currentBuild == 0) {
-			this->currentBuild = factory.createBuilding(registry, this->currentBuildType, 8, 8, false);
+			this->currentBuild = factory.createBuilding(registry, this->currentPlayer, this->currentBuildType, 8, 8, false);
 			std::cout << "built " << this->currentBuild << std::endl;
 		}
 
@@ -528,6 +575,7 @@ public:
 			Tile &tile = view.get(entity);
 
 			AnimationHandler &currentAnim = tile.animHandlers[tile.state];
+
 			/* Change the sprite to reflect the tile variant */
 			currentAnim.changeAnim(tile.direction);
 
@@ -591,19 +639,28 @@ public:
 	}
 
 	void growResources(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
-		auto view = registry.view<Resource>();
-		for(EntityID entity : view) {
-			Resource &resource = view.get(entity);
-			resource.grow+=0.1;
+		auto view = registry.persistent<Tile, Resource>();
+		for (EntityID entity : view) {
+			Resource &resource = view.get<Resource>(entity);
+			Tile &tile = view.get<Tile>(entity);
+			resource.grow += 0.1;
 
 //				std::cout << "RESOURCE "<<entity<<" grow "<<resource.grow << std::endl;
 
-			if(resource.grow > 5) {
-				std::cout << "RESOURCE "<<entity<<" grow"<< std::endl;
-				resource.grow=0;
-				resource.level++;
+			if (resource.grow > 5) {
+				std::cout << "RESOURCE " << entity << " grow" << std::endl;
+				resource.grow = 0.0;
 
-//				factory.growedResource(registry, "nature", entity);
+				if (resource.level < 3) {
+					resource.level++;
+					if (resource.level == 1)
+						factory.growedResource(registry, factory.resourceTypeName(resource.type), entity);
+					else
+						tile.animHandlers[tile.state].set(resource.level - 1);
+				} else {
+					// max
+				}
+
 			}
 		}
 

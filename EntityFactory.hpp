@@ -55,8 +55,8 @@ class EntityFactory {
 
 public:
 	TextureManager texManager;
-	sf::Texture &ifaceRebelTex() {
-		return texManager.getRef("interface_rebel");
+	sf::Texture &getTex(std::string name) {
+		return texManager.getRef(name);
 	}
 
 	void loadButton(std::string name, std::string filename) {
@@ -91,6 +91,9 @@ public:
 
 		this->loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
 		this->loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
+
+		this->loadButton("neonaz_move", "medias/interface/buttons/neonaz_move_button.png");
+		this->loadButton("neonaz_attack", "medias/interface/buttons/neonaz_attack_button.png");
 
 		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
 		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
@@ -135,6 +138,10 @@ public:
 
 	TechNode *getTechNode(std::string team, std::string type) {
 		return this->recGetTechNode(&this->techTrees[team], type);
+	}
+
+	TechNode *getTechRoot(std::string team) {
+		return &this->techTrees[team];
 	}
 
 	// init unit texture with mirroring
@@ -219,7 +226,7 @@ public:
 
 		int i = 0;
 		for (tinyxml2::XMLElement *el : doc->RootElement()) {
-			
+
 			std::string imgfile = el->FirstChildElement("file")->Attribute("path");
 //			std::cout << "RESOURCE: " << imgfile << std::endl;
 			this->loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
@@ -233,10 +240,13 @@ public:
 		tinyxml2::XMLElement *root = doc->RootElement();
 		tinyxml2::XMLElement * sizeEl = root->FirstChildElement("case_size");
 		tinyxml2::XMLElement * psizeEl = root->FirstChildElement("pixel_size");
+		tinyxml2::XMLElement * offsetEl = root->FirstChildElement("decal_value");
 		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
 
 		tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
 		tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
+
+		tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
 
 		for (tinyxml2::XMLElement *stateEl : statesEl) {
 			std::string state = stateEl->Attribute("name");
@@ -331,7 +341,7 @@ public:
 
 #define UNIT_FRAME_COUNT 10
 
-	EntityID createUnit(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
+	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y) {
 		EntityID entity = registry.create();
 		Tile tile;
 		this->parseTileFromXml(name, tile, 8);
@@ -349,6 +359,7 @@ public:
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
+		obj.player = player;
 
 		Unit unit;
 		this->parseUnitFromXml(name, unit);
@@ -362,7 +373,7 @@ public:
 		return entity;
 	}
 
-	EntityID createBuilding(entt::Registry<EntityID> &registry, std::string name, int x, int y, bool built) {
+	EntityID createBuilding(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y, bool built) {
 		EntityID entity = registry.create();
 		Tile tile;
 		this->parseTileFromXml(name, tile, 8);
@@ -391,6 +402,7 @@ public:
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
+		obj.player = player;
 
 		Building building;
 		this->parseBuildingFromXml(name, building);
@@ -404,6 +416,15 @@ public:
 	}
 
 
+	std::string resourceTypeName( ResourceType type) {
+		switch (type) {
+		case ResourceType::Nature:
+			return "nature";
+		case ResourceType::Pollution:
+			return "pollution";
+		}
+
+	}
 
 	EntityID plantResource(entt::Registry<EntityID> &registry, ResourceType type, int x, int y) {
 		EntityID entity = registry.create();
@@ -415,14 +436,7 @@ public:
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 //		tile.sprite.setOrigin(sf::Vector2f(16, 16));
-		switch (type) {
-		case ResourceType::Nature:
-			tile.sprite.setTexture(texManager.getRef("nature"));
-			break;
-		case ResourceType::Pollution:
-			tile.sprite.setTexture(texManager.getRef("pollution"));
-			break;
-		}
+		tile.sprite.setTexture(texManager.getRef(this->resourceTypeName(type)));
 
 		Animation staticAnim({}, 1.0f);
 
@@ -457,12 +471,34 @@ public:
 		Tile &oldTile = registry.get<Tile>(entity);
 
 		Tile tile;
-		this->parseTileFromXml(name+std::to_string(rnd), tile, 8);
+
+
+		tinyxml2::XMLDocument *doc = this->docs[name];
+		int i = 0;
+		for (tinyxml2::XMLElement *el : doc->RootElement()) {
+			if (rnd == i) {
+				tinyxml2::XMLElement * sizeEl = el->FirstChildElement("case_size");
+				tinyxml2::XMLElement * offsetEl = el->FirstChildElement("decal_value");
+				tinyxml2::XMLElement * psizeEl = el->FirstChildElement("pixel_size");
+
+				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
+				tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
+				if (offsetEl)
+					tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
+				else
+					tile.offset = sf::Vector2i{0, 0};
+
+				break;
+			}
+			i++;
+		}
+
+//		this->parseTileFromXml(name+std::to_string(rnd), tile, 8);
 
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-		tile.sprite.setTexture(texManager.getRef(name+std::to_string(rnd)));
+		tile.sprite.setTexture(texManager.getRef(name + std::to_string(rnd)));
 
 		Animation staticAnim({}, 1.0f);
 
@@ -481,6 +517,21 @@ public:
 
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
+		return entity;
+	}
+
+	EntityID createPlayer(entt::Registry<EntityID> &registry, std::string team, bool ai) {
+		EntityID entity = registry.create();
+		Player player;
+		player.team = team;
+		player.ai = ai;
+
+		if(team=="rebel")
+			player.resourceType=ResourceType::Nature;
+		else
+			player.resourceType=ResourceType::Pollution;
+
+		registry.assign<Player>(entity, player);
 		return entity;
 	}
 

@@ -3,13 +3,16 @@
 #include <SFML/Graphics.hpp>
 
 #include "AnimationHandler.hpp"
+#include "Entity.hpp"
 
 struct Tile {
-	sf::Vector2f psize;
-	sf::Vector2i size;
+	sf::Vector2f psize; // pixel size
+	sf::Vector2i size; // map size
 
-	sf::Vector2f ppos;
-	sf::Vector2i pos;
+	sf::Vector2f ppos; // pixel pos
+	sf::Vector2i pos; // map pos
+
+	sf::Vector2i offset; // offset
 
 	sf::Sprite sprite;
 	std::map<std::string,AnimationHandler> animHandlers;
@@ -17,6 +20,7 @@ struct Tile {
     int tileVariant;
     std::string state;
     unsigned int direction;
+
 };
 
 struct Attack {
@@ -30,6 +34,7 @@ struct GameObject {
 
 	std::string name;
 	std::string team;
+	EntityID player;
 };
 
 enum {
@@ -71,4 +76,6 @@ struct Resource {
 
 struct Player {
 	std::string team;
+	bool ai;
+	ResourceType resourceType;
 };

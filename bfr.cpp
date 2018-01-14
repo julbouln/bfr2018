@@ -80,7 +80,6 @@ int main()
 	window.display();
 
 	io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
-	// IO.Fonts->AddFontDefault(); // this will load default font as well
 	io.Fonts->AddFontFromFileTTF("medias/fonts/samos.ttf", 16.f);
 	io.Fonts->AddFontFromFileTTF("medias/fonts/Vera.ttf", 14.f);
 	io.Fonts->AddFontDefault(); // this will load default font as well
@@ -92,8 +91,6 @@ int main()
 	sf::Clock clock;
 
 	emptyEntity = registry.create();
-
-	engine.iface.setTexture(factory.ifaceRebelTex());
 
 	engine.generate(registry, factory);
 	engine.initView(window);
@@ -132,7 +129,6 @@ int main()
 
 		ImGui::SFML::Render(window);
 
-		//if (elapsed > sf::seconds(0.04))
 		if (fadeStep > 0)
 		{
 			fadeStep -= 3;
