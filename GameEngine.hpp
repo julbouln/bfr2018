@@ -65,7 +65,6 @@ public:
 		map.initTiles(registry, factory);
 		map.generate(registry, factory, mapWidth, mapHeight);
 
-
 		this->currentPlayer = factory.createPlayer(registry, "rebel", false);
 		factory.createPlayer(registry, "neonaz", true);
 
@@ -260,36 +259,48 @@ public:
 	}
 
 	void drawTileLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, TileLayer &layer, sf::RenderWindow &window, float dt) {
-
 		sf::View wview = window.getView();
 		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 
-		for (int y = 0; y < layer.height; ++y)
+		int mx = screenRect.left/32.0;
+		int my = screenRect.top/32.0;
+		int mw = mx + screenRect.width/32.0;
+		int mh = my + screenRect.height/32.0;
+
+		mx = mx < 0 ? 0 : mx;
+		my = my < 0 ? 0 : my;
+		mw = mw > layer.width ? layer.width : mw;
+		mh = mh > layer.height ? layer.height : mh;
+
+		for (int y = my; y < mh; ++y)
 		{
-			for (int x = 0; x < layer.width; ++x)
+			for (int x = mx; x < mw; ++x)
 			{
-				EntityID ent = layer.get(x, y);
+
+//				sf::FloatRect collider(x * 32,
+//				                       y * 32, 32, 32);
+				//if (screenRect.intersects(collider)) 
+				{
+
+					EntityID ent = layer.get(x, y);
 //					std::cout << "LAY "<< ent << std::endl;
-				if (ent) {
+					if (ent) {
 //					std::cout << " draw " << ent << std::endl;
-					Tile &tile = registry.get<Tile>(ent);
+						Tile &tile = registry.get<Tile>(ent);
 
-					sf::Vector2f pos;
-					pos.x = tile.ppos.x;
-					pos.y = tile.ppos.y;
-					pos.x = x * 32;
-					pos.y = y * 32;
+						sf::Vector2f pos;
+						pos.x = tile.ppos.x;
+						pos.y = tile.ppos.y;
+						pos.x = x * 32;
+						pos.y = y * 32;
 
-					tile.sprite.setPosition(pos);
-
-					sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
-					                       tile.sprite.getGlobalBounds().top, 32, 32);
+						tile.sprite.setPosition(pos);
 
 
-					/* Draw the tile */
-					if (screenRect.intersects(collider))
+						/* Draw the tile */
 						window.draw(tile.sprite);
 
+					}
 				}
 			}
 
@@ -313,7 +324,6 @@ public:
 
 			sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
 			                       tile.sprite.getGlobalBounds().top, 32, 32);
-
 
 			/* Draw the tile */
 			if (screenRect.intersects(collider))
@@ -435,14 +445,13 @@ public:
 		} else {
 			return false;
 		}
-
 	}
 
 	void seedResources(entt::Registry<EntityID> &registry, EntityFactory &factory, ResourceType type, EntityID entity) {
 		Tile &tile = registry.get<Tile>(entity);
 		for (sf::Vector2i p : this->tileAround(tile, 1)) {
 			float rnd = ((float) rand()) / (float) RAND_MAX;
-			if (rnd > 0.7) {
+			if (rnd > 0.8) {
 				if (!map.resources.get(p.x, p.y) && !map.objs.get(p.x, p.y))
 					factory.plantResource(registry, type, p.x, p.y);
 			}
@@ -749,7 +758,7 @@ public:
 
 //				std::cout << "RESOURCE "<<entity<<" grow "<<resource.grow << std::endl;
 
-			if (resource.grow > 5) {
+			if (resource.grow > 10) {
 				std::cout << "RESOURCE " << entity << " grow" << std::endl;
 				resource.grow = 0.0;
 
@@ -945,7 +954,7 @@ public:
 //					map.objs.set(tile.pos.x, tile.pos.y, entity);
 
 				} else {
-					float speed = (float)unit.speed / 4.0;
+					float speed = (float)unit.speed / 2.0;
 					switch (tile.direction) {
 					case North:
 						tile.ppos.y -= speed;

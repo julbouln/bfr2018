@@ -51,7 +51,7 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight), "BFR2018");
 	engine.setSize(gameWidth, gameHeight);
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(30);
 
     srand (time(NULL));
 

@@ -472,7 +472,6 @@ public:
 
 		Tile tile;
 
-
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		int i = 0;
 		for (tinyxml2::XMLElement *el : doc->RootElement()) {
@@ -484,7 +483,7 @@ public:
 				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
 				tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
 				if (offsetEl)
-					tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
+					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
 				else
 					tile.offset = sf::Vector2i{0, 0};
 
