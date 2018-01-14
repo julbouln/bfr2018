@@ -42,7 +42,6 @@ class ObjLayer {
 
 public:
 	std::vector<EntityID> entitiesGrid;
-	std::vector<EntityID> entities;
 
 	unsigned int width;
 	unsigned int height;
@@ -54,7 +53,6 @@ public:
 
 	void fill()
 	{
-		entities.clear();
 		entitiesGrid.clear();
 		while (entitiesGrid.size() < width * height) {
 			entitiesGrid.push_back(0);
@@ -62,10 +60,6 @@ public:
 	}
 
 	int index(int x, int y) const { return x + width * y; }
-
-	void add(EntityID entity) {
-		entities.push_back(entity);
-	}
 
 	EntityID get(int x, int y) {
 		return entitiesGrid[this->index(x, y)];
@@ -100,6 +94,16 @@ public:
 
 	ObjLayer objs;
 	ObjLayer resources;
+
+	std::vector<EntityID> entities;
+
+	void addEntity(EntityID entity) {
+		entities.push_back(entity);
+	}
+
+	void clearEntities() {
+		entities.clear();
+	}
 
 	Map() {
 	}
@@ -142,6 +146,8 @@ public:
 		SimplexNoise simpl(width / 16.0, height / 16.0, 2.0, 0.5);
 
 		terrains.fill();
+		objs.fill();
+		resources.fill();
 
 		for (float y = 0; y < height; y++) {
 			for (float x = 0; x < width; x++) {
@@ -149,20 +155,23 @@ public:
 
 				EntityID t;
 				if (res > -0.5) {
-//					std::cout << " " << x << "x" << y << " " << "dirt" << std::endl;
-//					t = entityFactory.createTerrain(registry, "dirt", x, y);
 					t = tiles["dirt"];
 				} else {
-//					std::cout << " " << x << "x" << y << " " << "water" << std::endl;
 					t = tiles["water"];
-//					t = entityFactory.createTerrain(registry, "water", x, y);
 				}
 				terrains.set(x, y, t);
+
+				if(res > 0.6 && res < 0.65) {
+					float rnd = ((float) rand()) / (float) RAND_MAX;
+					if(rnd > 0.5) {
+						factory.plantResource(registry, ResourceType::Nature, x, y);
+					} else {
+						factory.plantResource(registry, ResourceType::Pollution, x, y);
+					}
+				}
 			}
 		}
 
-		objs.fill();
-		resources.fill();
 	}
 
 

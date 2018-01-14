@@ -92,8 +92,8 @@ public:
 		this->loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
 		this->loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
 
-		this->loadButton("neonaz_move", "medias/interface/buttons/neonaz_move_button.png");
-		this->loadButton("neonaz_attack", "medias/interface/buttons/neonaz_attack_button.png");
+		this->loadButton("neonaz_move", "medias/interface/buttons/naz_move_button.png");
+		this->loadButton("neonaz_attack", "medias/interface/buttons/naz_attack_button.png");
 
 		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
 		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
@@ -224,7 +224,7 @@ public:
 
 		this->loadTextureWithWhiteMask(name, "medias/resources/" + name + ".png");
 
-		int i = 0;
+		int i = 1;
 		for (tinyxml2::XMLElement *el : doc->RootElement()) {
 
 			std::string imgfile = el->FirstChildElement("file")->Attribute("path");
@@ -232,7 +232,7 @@ public:
 			this->loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
 			i++;
 		}
-		resourcesCount[name] = i;
+		resourcesCount[name] = i-1;
 	}
 
 	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
@@ -467,7 +467,7 @@ public:
 
 	EntityID growedResource(entt::Registry<EntityID> &registry, std::string name, EntityID entity) {
 		int rnd = rand() % resourcesCount[name];
-
+		std::string rname = name + std::to_string(rnd+1);
 		Tile &oldTile = registry.get<Tile>(entity);
 
 		Tile tile;
@@ -493,12 +493,14 @@ public:
 			i++;
 		}
 
+		std::cout << "growedResource: "<<rnd<< " "<<rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
+
 //		this->parseTileFromXml(name+std::to_string(rnd), tile, 8);
 
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-		tile.sprite.setTexture(texManager.getRef(name + std::to_string(rnd)));
+		tile.sprite.setTexture(texManager.getRef(rname));
 
 		Animation staticAnim({}, 1.0f);
 
@@ -525,11 +527,15 @@ public:
 		Player player;
 		player.team = team;
 		player.ai = ai;
+		player.resources = 0;
+		player.butchery = 0;
 
 		if(team=="rebel")
 			player.resourceType=ResourceType::Nature;
 		else
 			player.resourceType=ResourceType::Pollution;
+
+
 
 		registry.assign<Player>(entity, player);
 		return entity;

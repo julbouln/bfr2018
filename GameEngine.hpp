@@ -70,7 +70,7 @@ public:
 		factory.createPlayer(registry, "neonaz", true);
 
 		auto view = registry.view<Player>();
-		for(EntityID entity : view) {
+		for (EntityID entity : view) {
 			Player &player = view.get(entity);
 			if (player.team == "rebel")
 			{
@@ -81,7 +81,7 @@ public:
 		}
 
 		Player &player = registry.get<Player>(this->currentPlayer);
-		iface.setTexture(factory.getTex("interface_"+player.team));
+		iface.setTexture(factory.getTex("interface_" + player.team));
 
 //		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
 
@@ -260,6 +260,10 @@ public:
 	}
 
 	void drawTileLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, TileLayer &layer, sf::RenderWindow &window, float dt) {
+
+		sf::View wview = window.getView();
+		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
+
 		for (int y = 0; y < layer.height; ++y)
 		{
 			for (int x = 0; x < layer.width; ++x)
@@ -278,8 +282,13 @@ public:
 
 					tile.sprite.setPosition(pos);
 
+					sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
+					                       tile.sprite.getGlobalBounds().top, 32, 32);
+
+
 					/* Draw the tile */
-					window.draw(tile.sprite);
+					if (screenRect.intersects(collider))
+						window.draw(tile.sprite);
 
 				}
 			}
@@ -288,54 +297,48 @@ public:
 	}
 
 
-	void drawObjLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, ObjLayer &layer, sf::RenderWindow &window, float dt) {
-		/*		for (int y = 0; y < layer.height; ++y)
-				{
-					for (int x = 0; x < layer.width; ++x)
-					{
-						EntityID ent = layer.get(x, y);
-		*/
-		for (EntityID ent : layer.entities) {
-//					std::cout << "LAY "<< ent << std::endl;
-//			if (ent) {
-//					std::cout << " draw " << ent << std::endl;
+	void drawObjLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, sf::RenderWindow &window, float dt) {
+		sf::View wview = window.getView();
+		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
+
+		for (EntityID ent : map.entities) {
 			Tile &tile = registry.get<Tile>(ent);
 
 			sf::Vector2f pos;
-			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
-			pos.y = tile.ppos.y - tile.psize.y / 2 - tile.offset.y * 32;
+
+			pos.x = tile.ppos.x - tile.offset.x * 32;
+			pos.y = tile.ppos.y - tile.offset.y * 32;
 
 			tile.sprite.setPosition(pos);
 
+			sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
+			                       tile.sprite.getGlobalBounds().top, 32, 32);
+
+
 			/* Draw the tile */
-			window.draw(tile.sprite);
-
-//			}
+			if (screenRect.intersects(collider))
+				window.draw(tile.sprite);
 		}
-		/*			}
-
-				}
-				*/
 	}
 
 
 	void draw(entt::Registry<EntityID> &registry, EntityFactory &factory, sf::RenderWindow &window, float dt) {
 		if (this->markUpdateObjLayer) {
-			this->updateObjLayer(registry, factory, 0);
+			this->updateObjsLayer(registry, factory, 0);
 			this->markUpdateObjLayer = false;
 		}
 
 		this->drawTileLayer(registry, factory, map.terrains, window, dt);
-		this->drawObjLayer(registry, factory, map.objs, window, dt);
-		this->drawObjLayer(registry, factory, map.resources, window, dt);
+		this->drawObjLayer(registry, factory, window, dt);
+//		this->drawObjLayer(registry, factory, map.resources, window, dt);
 
 		for (EntityID selectedObj : this->selectedObjs) {
 			Tile &tile = registry.get<Tile>(selectedObj);
 			sf::RectangleShape rectangle;
 
 			sf::Vector2f pos;
-			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
-			pos.y = tile.ppos.y - tile.psize.y / 2;
+			pos.x = tile.ppos.x;
+			pos.y = tile.ppos.y;
 
 			rectangle.setSize(sf::Vector2f(tile.psize));
 			rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
@@ -409,9 +412,69 @@ public:
 		iface.setScale(this->width / 800.0, this->height / 600.0);
 		window.draw(iface);
 		this->testGui(registry, factory);
+		this->gameStateGui(registry, factory);
 		this->actionGui(registry, factory);
 	}
 
+
+	bool spendResources(entt::Registry<EntityID> &registry, EntityFactory &factory, EntityID playerEnt, ResourceType type, int val) {
+		Player &player = registry.get<Player>(playerEnt);
+		if (player.resources > val) {
+			auto view = registry.view<Resource>();
+			for (EntityID entity : view) {
+				Resource &resource = view.get(entity);
+				if (resource.type == type) {
+					val -= resource.level;
+					registry.destroy(entity);
+					if (val <= 0)
+						break;
+				}
+			}
+			this->updateObjsLayer(registry, factory, 0.0);
+			return true;
+		} else {
+			return false;
+		}
+
+	}
+
+	void seedResources(entt::Registry<EntityID> &registry, EntityFactory &factory, ResourceType type, EntityID entity) {
+		Tile &tile = registry.get<Tile>(entity);
+		for (sf::Vector2i p : this->tileAround(tile, 1)) {
+			float rnd = ((float) rand()) / (float) RAND_MAX;
+			if (rnd > 0.7) {
+				if (!map.resources.get(p.x, p.y) && !map.objs.get(p.x, p.y))
+					factory.plantResource(registry, type, p.x, p.y);
+			}
+		}
+	}
+
+	void gameStateGui(entt::Registry<EntityID> &registry, EntityFactory &factory) {
+		Player &player = registry.get<Player>(this->currentPlayer);
+		float leftDist = 200.0f;
+		float topDist = 8.0f;
+
+		ImVec2 window_pos = ImVec2(leftDist, topDist);
+		ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
+		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+		if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+		{
+			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
+			ImGui::ProgressBar((float)player.resources / (float)(map.width * map.height), ImVec2(200.0f, 0.0f), "");
+			ImGui::PopStyleColor();
+
+			ImGui::SameLine();
+
+			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(255, 0, 0, 255));
+			ImGui::ProgressBar(player.butchery, ImVec2(200.0f, 0.0f), "");
+			ImGui::PopStyleColor();
+
+			ImGui::End();
+		}
+		ImGui::PopStyleColor();
+
+	}
 
 	void actionGui(entt::Registry<EntityID> &registry, EntityFactory &factory) {
 		Player &player = registry.get<Player>(this->currentPlayer);
@@ -428,6 +491,7 @@ public:
 			if (this->selectedObjs.size() == 1) {
 				EntityID selectedObj = this->selectedObjs[0];
 
+				Tile &tile = registry.get<Tile>(selectedObj);
 				GameObject &obj = registry.get<GameObject>(selectedObj);
 				if (registry.has<Unit>(selectedObj)) {
 					Unit &unit = registry.get<Unit>(selectedObj);
@@ -443,16 +507,16 @@ public:
 					ImGui::SameLine();
 
 					ImGui::BeginGroup();
-					if (ImGui::ImageButtonAnim(factory.texManager.getRef(player.team+"_move"),
-					                           factory.texManager.getRef(player.team+"_move"),
-					                           factory.texManager.getRef(player.team+"_move_down"))) {
+					if (ImGui::ImageButtonAnim(factory.texManager.getRef(player.team + "_move"),
+					                           factory.texManager.getRef(player.team + "_move"),
+					                           factory.texManager.getRef(player.team + "_move_down"))) {
 						std::cout << "move clicked " << std::endl;
 					}
 
 					ImGui::SameLine();
-					if (ImGui::ImageButtonAnim(factory.texManager.getRef(player.team+"_attack"),
-					                           factory.texManager.getRef(player.team+"_attack"),
-					                           factory.texManager.getRef(player.team+"_attack_down"))) {
+					if (ImGui::ImageButtonAnim(factory.texManager.getRef(player.team + "_attack"),
+					                           factory.texManager.getRef(player.team + "_attack"),
+					                           factory.texManager.getRef(player.team + "_attack_down"))) {
 						std::cout << "attack clicked " << std::endl;
 
 					}
@@ -472,15 +536,20 @@ public:
 								this->action = Action::Building;
 								this->currentBuildType = node.type;
 								break;
-							case TechComponent::Resource:
-								Tile &tile = registry.get<Tile>(selectedObj);
-								for (sf::Vector2i p : this->tileAround(tile, 1)) {
-									float rnd = ((float) rand()) / (float) RAND_MAX;
-									if (rnd > 0.5) {
-										if (!map.resources.get(p.x, p.y))
-											factory.plantResource(registry, player.resourceType, p.x, p.y);
+							case TechComponent::Character:
+								if (this->spendResources(registry, factory, this->currentPlayer, player.resourceType, 10)) {
+									for (sf::Vector2i p : this->tileAround(tile, 1)) {
+										if (!map.objs.get(p.x, p.y)) {
+
+											factory.createUnit(registry, this->currentPlayer, node.type, p.x, p.y);
+											break;
+
+										}
 									}
 								}
+								break;
+							case TechComponent::Resource:
+								this->seedResources(registry, factory, player.resourceType, selectedObj);
 								break;
 							}
 						}
@@ -557,8 +626,7 @@ public:
 		}
 
 		this->growResources(registry, factory, dt);
-		this->updateObjLayer(registry, factory, dt);
-		this->updateResourceLayer(registry, factory, dt);
+		this->updateObjsLayer(registry, factory, dt);
 		this->updateTileLayer(registry, factory, dt);
 
 	}
@@ -593,7 +661,10 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = 0; w < tile.size.x; w++) {
 			for (int h = 0; h < tile.size.y; h++) {
-				surface.push_back(sf::Vector2i(tile.pos.x + (w - tile.size.x / 2), tile.pos.y + (h - tile.size.y / 2)));
+				int x = tile.pos.x + w;
+				int y = tile.pos.y + h;
+				if (x >= 0 && y >= 0 && x < map.width && y < map.height)
+					surface.push_back(sf::Vector2i(x, y));
 			}
 		}
 		return surface;
@@ -604,7 +675,10 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = -1; w < tile.size.x + 1; w++) {
 			for (int h = -1; h < tile.size.y + 1; h++) {
-				surface.push_back(sf::Vector2i(tile.pos.x + (w - tile.size.x / 2), tile.pos.y + (h - tile.size.y / 2)));
+				int x = tile.pos.x + w;
+				int y = tile.pos.y + h;
+				if (x >= 0 && y >= 0 && x < map.width && y < map.height)
+					surface.push_back(sf::Vector2i(x, y));
 			}
 		}
 		return surface;
@@ -614,8 +688,12 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = -dist; w < tile.size.x + dist; w++) {
 			for (int h = -dist; h < tile.size.y + dist; h++) {
-				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y)
-					surface.push_back(sf::Vector2i(tile.pos.x + (w - tile.size.x / 2), tile.pos.y + (h - tile.size.y / 2)));
+				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y) {
+					int x = tile.pos.x + w;
+					int y = tile.pos.y + h;
+					if (x >= 0 && y >= 0 && x < map.width && y < map.height)
+						surface.push_back(sf::Vector2i(x, y));
+				}
 			}
 		}
 		return surface;
@@ -625,20 +703,44 @@ public:
 	void updateTileLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
 		auto view = registry.persistent<Tile, Building, GameObject>();
 
+		// update tile with building
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			Building &building = view.get<Building>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 
-			if (building.built && obj.team == "rebel") {
+			if (building.built) {
 				for (sf::Vector2i p : this->tileSurfaceExtended(tile)) {
-					map.terrains.set(p.x, p.y, map.tiles["grass"]);
+					if (obj.team == "rebel") {
+						map.terrains.set(p.x, p.y, map.tiles["grass"]);
+					} else {
+						map.terrains.set(p.x, p.y, map.tiles["concrete"]);
+					}
 				}
 			}
+		}
+
+		// update tile with resource
+		auto resView = registry.persistent<Tile, Resource>();
+		for (EntityID entity : resView) {
+			Tile &tile = resView.get<Tile>(entity);
+			Resource &resource = resView.get<Resource>(entity);
+
+			for (sf::Vector2i p : this->tileSurface(tile)) {
+				if (resource.type == ResourceType::Nature) {
+					map.terrains.set(p.x, p.y, map.tiles["grass"]);
+				} else {
+					map.terrains.set(p.x, p.y, map.tiles["concrete"]);
+				}
+			}
+
 		}
 	}
 
 	void growResources(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
+		int natureResources = 0;
+		int pollutionResources = 0;
+
 		auto view = registry.persistent<Tile, Resource>();
 		for (EntityID entity : view) {
 			Resource &resource = view.get<Resource>(entity);
@@ -659,38 +761,51 @@ public:
 						tile.animHandlers[tile.state].set(resource.level - 1);
 				} else {
 					// max
-				}
+					this->seedResources(registry, factory, resource.type, entity);
 
+				}
 			}
+
+			switch (resource.type) {
+			case ResourceType::Nature:
+				natureResources += resource.level;
+				break;
+			case ResourceType::Pollution:
+				pollutionResources += resource.level;
+				break;
+			}
+
 		}
+
+		auto playerView = registry.view<Player>();
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+			if (player.team == "rebel")
+				player.resources = natureResources;
+			else
+				player.resources = pollutionResources;
+		}
+
 
 	}
 
-	void updateResourceLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
-		map.resources.fill();
-		auto view = registry.persistent<Tile, Resource>();
+	void updateObjsLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
+		map.clearEntities();
 
-		for (EntityID entity : view) {
-			Tile &tile = view.get<Tile>(entity);
+		map.resources.fill();
+		auto resView = registry.persistent<Tile, Resource>();
+
+		for (EntityID entity : resView) {
+			Tile &tile = resView.get<Tile>(entity);
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				map.resources.set(p.x, p.y, entity);
 			}
 
-			map.resources.add(entity);
+			map.addEntity(entity);
 		}
 
 
-		sort( map.resources.entities.begin( ), map.resources.entities.end( ), [&registry ]( const auto & lhs, const auto & rhs )
-		{
-			Tile &lht = registry.get<Tile>(lhs);
-			Tile &rht = registry.get<Tile>(rhs);
-			return lht.pos.y < rht.pos.y;
-		});
-
-	}
-
-	void updateObjLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
 		map.objs.fill();
 		auto view = registry.persistent<Tile, GameObject>();
 
@@ -703,16 +818,23 @@ public:
 			}
 
 //			std::cout << "SET "<<entity << " "<<tile.pos.x << "x"<< tile.pos.y<< " "<<map.objs.entitiesGrid.size() << std::endl;
-			map.objs.add(entity);
+			map.addEntity(entity);
 		}
 
-
-		sort( map.objs.entities.begin( ), map.objs.entities.end( ), [&registry ]( const auto & lhs, const auto & rhs )
+		std::sort( map.entities.begin( ), map.entities.end( ), [&registry ]( const auto & lhs, const auto & rhs )
 		{
 			Tile &lht = registry.get<Tile>(lhs);
 			Tile &rht = registry.get<Tile>(rhs);
-			return lht.pos.y < rht.pos.y;
+			/*			if (lht.pos.y < rht.pos.y)
+							return true;
+						else if (lht.pos.y == rht.pos.y)
+							return lht.pos.x < rht.pos.x;
+						else
+							return false;
+			*/
+			return (lht.pos.y < rht.pos.y);
 		});
+
 
 	}
 

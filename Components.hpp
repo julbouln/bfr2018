@@ -78,4 +78,6 @@ struct Player {
 	std::string team;
 	bool ai;
 	ResourceType resourceType;
+	int resources;
+	int butchery;
 };

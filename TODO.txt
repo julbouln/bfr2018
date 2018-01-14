@@ -3,7 +3,6 @@ Map:
 - fog of war
 
 Game:
-- resources
 - combat
 - projectile
 - special FX
