@@ -480,11 +480,16 @@ public:
 				tinyxml2::XMLElement * offsetEl = el->FirstChildElement("decal_value");
 				tinyxml2::XMLElement * psizeEl = el->FirstChildElement("pixel_size");
 
-				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
+//				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
+				tile.size = sf::Vector2i{1,1};
 				tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
-				if (offsetEl)
-					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
-				else
+//				if (offsetEl) {
+//					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
+//					tile.offset = sf::Vector2i{0, offsetEl->IntAttribute("h")};
+//				}
+//				else
+//					tile.offset = sf::Vector2i{0, 0};
+
 					tile.offset = sf::Vector2i{0, 0};
 
 				break;

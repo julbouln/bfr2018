@@ -262,10 +262,10 @@ public:
 		sf::View wview = window.getView();
 		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 
-		int mx = screenRect.left/32.0;
-		int my = screenRect.top/32.0;
-		int mw = mx + screenRect.width/32.0;
-		int mh = my + screenRect.height/32.0;
+		int mx = screenRect.left / 32.0;
+		int my = screenRect.top / 32.0;
+		int mw = mx + screenRect.width / 32.0;
+		int mh = my + screenRect.height / 32.0;
 
 		mx = mx < 0 ? 0 : mx;
 		my = my < 0 ? 0 : my;
@@ -279,7 +279,7 @@ public:
 
 //				sf::FloatRect collider(x * 32,
 //				                       y * 32, 32, 32);
-				//if (screenRect.intersects(collider)) 
+				//if (screenRect.intersects(collider))
 				{
 
 					EntityID ent = layer.get(x, y);
@@ -307,7 +307,6 @@ public:
 		}
 	}
 
-
 	void drawObjLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, sf::RenderWindow &window, float dt) {
 		sf::View wview = window.getView();
 		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
@@ -317,8 +316,11 @@ public:
 
 			sf::Vector2f pos;
 
-			pos.x = tile.ppos.x - tile.offset.x * 32;
-			pos.y = tile.ppos.y - tile.offset.y * 32;
+//		pos.x = tile.ppos.x - tile.offset.x * 32;
+//		pos.y = tile.ppos.y - tile.offset.y * 32;
+
+			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
+			pos.y = tile.ppos.y - tile.psize.y / 2;
 
 			tile.sprite.setPosition(pos);
 
@@ -340,15 +342,18 @@ public:
 
 		this->drawTileLayer(registry, factory, map.terrains, window, dt);
 		this->drawObjLayer(registry, factory, window, dt);
-//		this->drawObjLayer(registry, factory, map.resources, window, dt);
 
 		for (EntityID selectedObj : this->selectedObjs) {
 			Tile &tile = registry.get<Tile>(selectedObj);
 			sf::RectangleShape rectangle;
 
 			sf::Vector2f pos;
-			pos.x = tile.ppos.x;
-			pos.y = tile.ppos.y;
+//			pos.x = tile.ppos.x;
+//			pos.y = tile.ppos.y;
+
+			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
+			pos.y = tile.ppos.y - tile.psize.y / 2;
+
 
 			rectangle.setSize(sf::Vector2f(tile.psize));
 			rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
@@ -670,8 +675,8 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = 0; w < tile.size.x; w++) {
 			for (int h = 0; h < tile.size.y; h++) {
-				int x = tile.pos.x + w;
-				int y = tile.pos.y + h;
+				int x = tile.pos.x + (w - tile.size.x / 2) + tile.offset.x;
+				int y = tile.pos.y + (h - tile.size.y / 2) + tile.offset.y;
 				if (x >= 0 && y >= 0 && x < map.width && y < map.height)
 					surface.push_back(sf::Vector2i(x, y));
 			}
@@ -684,8 +689,8 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = -1; w < tile.size.x + 1; w++) {
 			for (int h = -1; h < tile.size.y + 1; h++) {
-				int x = tile.pos.x + w;
-				int y = tile.pos.y + h;
+				int x = tile.pos.x + (w - tile.size.x / 2) + tile.offset.x;
+				int y = tile.pos.y + (h - tile.size.y / 2) + tile.offset.y;
 				if (x >= 0 && y >= 0 && x < map.width && y < map.height)
 					surface.push_back(sf::Vector2i(x, y));
 			}
@@ -698,8 +703,8 @@ public:
 		for (int w = -dist; w < tile.size.x + dist; w++) {
 			for (int h = -dist; h < tile.size.y + dist; h++) {
 				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y) {
-					int x = tile.pos.x + w;
-					int y = tile.pos.y + h;
+					int x = tile.pos.x + (w - tile.size.x / 2) + tile.offset.x;
+					int y = tile.pos.y + (h - tile.size.y / 2) + tile.offset.y;
 					if (x >= 0 && y >= 0 && x < map.width && y < map.height)
 						surface.push_back(sf::Vector2i(x, y));
 				}
