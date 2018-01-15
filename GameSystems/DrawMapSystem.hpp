@@ -106,4 +106,48 @@ public:
 		}
 	}
 
+	void drawDebug(sf::RenderWindow &window, float dt) {
+
+		// draw debug grid
+		for (int y = 0; y < this->map->height; ++y)
+		{
+			for (int x = 0; x < this->map->width; ++x)
+			{
+				if (this->map->objs.get(x, y)) {
+					sf::RectangleShape rectangle;
+
+					sf::Vector2f pos;
+					pos.x = x * 32;
+					pos.y = y * 32;
+
+					rectangle.setSize(sf::Vector2f(32, 32));
+					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					rectangle.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0x7f));
+					rectangle.setOutlineThickness(1);
+					rectangle.setPosition(pos);
+
+					window.draw(rectangle);
+
+				}
+
+				if (this->map->resources.get(x, y)) {
+					sf::RectangleShape rectangle;
+
+					sf::Vector2f pos;
+					pos.x = x * 32;
+					pos.y = y * 32;
+
+					rectangle.setSize(sf::Vector2f(32, 32));
+					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					rectangle.setOutlineColor(sf::Color(0x00, 0xff, 0x00, 0x7f));
+					rectangle.setOutlineThickness(1);
+					rectangle.setPosition(pos);
+
+					window.draw(rectangle);
+
+				}
+			}
+		}
+	}
+
 };

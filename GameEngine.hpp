@@ -314,46 +314,6 @@ public:
 			window.draw(rectangle);
 		}
 
-		// draw debug grid
-		for (int y = 0; y < this->map->height; ++y)
-		{
-			for (int x = 0; x < this->map->width; ++x)
-			{
-				if (this->map->objs.get(x, y)) {
-					sf::RectangleShape rectangle;
-
-					sf::Vector2f pos;
-					pos.x = x * 32;
-					pos.y = y * 32;
-
-					rectangle.setSize(sf::Vector2f(32, 32));
-					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					rectangle.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0x7f));
-					rectangle.setOutlineThickness(1);
-					rectangle.setPosition(pos);
-
-					window.draw(rectangle);
-
-				}
-
-				if (this->map->resources.get(x, y)) {
-					sf::RectangleShape rectangle;
-
-					sf::Vector2f pos;
-					pos.x = x * 32;
-					pos.y = y * 32;
-
-					rectangle.setSize(sf::Vector2f(32, 32));
-					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					rectangle.setOutlineColor(sf::Color(0x00, 0xff, 0x00, 0x7f));
-					rectangle.setOutlineThickness(1);
-					rectangle.setPosition(pos);
-
-					window.draw(rectangle);
-
-				}
-			}
-		}
 
 		if (this->action == Action::Selecting) {
 			sf::RectangleShape rectangle;
@@ -392,7 +352,7 @@ public:
 		if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
-			ImGui::ProgressBar((float)player.resources / (float)(this->map->width * this->map->height), ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.resources / (float)(this->map->width * this->map->height) * 4.0, ImVec2(200.0f, 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
