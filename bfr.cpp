@@ -115,7 +115,7 @@ int main()
 			if (event.type == sf::Event::Closed)
 				window.close();
 
-			if (event.key.code == sf::Keyboard::Escape)
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 				window.close();
 
 			if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */
