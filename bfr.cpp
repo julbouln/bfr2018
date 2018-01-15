@@ -97,7 +97,7 @@ int main()
 
 	emptyEntity = vault.registry.create();
 
-	engine.generate();
+	engine.generate(64,64);
 	engine.initView(window);
 
 	while (window.isOpen())

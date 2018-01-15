@@ -89,9 +89,7 @@ public:
 		gameView.setCenter(pos);
 	}
 
-	void generate() {
-		unsigned int mapWidth = 64;
-		unsigned int mapHeight = 64;
+	void generate(unsigned int mapWidth, unsigned int mapHeight) {
 		map->initTiles(this->vault->registry, this->vault->factory);
 		map->generate(this->vault->registry, this->vault->factory, mapWidth, mapHeight);
 
@@ -191,7 +189,6 @@ public:
 							}
 						}
 					}
-
 				}
 
 				std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
@@ -286,17 +283,6 @@ public:
 		break;
 
 		}
-	}
-
-	EntityID ennemyAtPosition(EntityID playerEnt, int x, int y) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-		EntityID destEnt = this->map->objs.get(x, y);
-		if (destEnt) {
-			GameObject &obj = this->vault->registry.get<GameObject>(destEnt);
-			if (obj.team != player.team)
-				return destEnt;
-		}
-		return 0;
 	}
 
 	void draw(sf::RenderWindow &window, float dt) {

@@ -89,4 +89,17 @@ public:
 			dist++;
 		}
 	}
+
+	EntityID ennemyAtPosition(EntityID playerEnt, int x, int y) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		EntityID destEnt = this->map->objs.get(x, y);
+		if (destEnt) {
+			GameObject &obj = this->vault->registry.get<GameObject>(destEnt);
+			if (obj.team != player.team)
+				return destEnt;
+		}
+		return 0;
+	}
+
+
 };
