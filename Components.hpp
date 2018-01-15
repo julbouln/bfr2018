@@ -17,7 +17,6 @@ struct Tile {
 	sf::Sprite sprite;
 	std::map<std::string,AnimationHandler> animHandlers;
 
-    int tileVariant;
     std::string state;
     unsigned int direction;
 

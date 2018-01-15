@@ -20,12 +20,12 @@ public:
 	}
 
 	void draw(sf::RenderWindow &window, float dt) {
-		this->drawTileLayer(window, dt);
+		this->drawTileLayer(window, this->map->terrains, dt);
+		this->drawTileLayer(window, this->map->transitions, dt);
 		this->drawObjLayer(window, dt);
 	}
 
-	void drawTileLayer(sf::RenderWindow &window, float dt) {
-		TileLayer &layer = this->map->terrains;
+	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, float dt) {
 		sf::View wview = window.getView();
 		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 

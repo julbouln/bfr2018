@@ -105,6 +105,12 @@ public:
 		texManager.loadTexture("grass", terrains, sf::IntRect{64, 0, 32, 96});
 		texManager.loadTexture("dirt", terrains, sf::IntRect{96, 0, 32, 96});
 		texManager.loadTexture("concrete", terrains, sf::IntRect{128, 0, 32, 96});
+
+		sf::Image transitions;
+		transitions.loadFromFile("medias/tiles/bordures.png");
+		transitions.createMaskFromColor(sf::Color::White);
+		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 640});
+		
 	}
 
 	TechNode loadTechTree(std::string filename) {
@@ -310,30 +316,33 @@ public:
 		building.built = false;
 	}
 
-	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
+	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
 		EntityID entity = registry.create();
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
 		tile.size = sf::Vector2i{1, 1};
 
-		tile.pos = sf::Vector2i(x, y);
+		tile.pos = sf::Vector2i(0, 0);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-//		tile.sprite.setOrigin(sf::Vector2f(16, 16));
 		tile.sprite.setTexture(texManager.getRef(name));
 
-		Animation staticAnim({}, 1.0f);
+		Animation staticAnim({0,1,2});
 
 		AnimationHandler idleHandler;
 
 		idleHandler.frameSize = sf::IntRect(0, 0, 32, 32);
 
 		idleHandler.addAnim(staticAnim);
-		idleHandler.update(0.0f);
+
+		idleHandler.changeAnim(0);
+		idleHandler.set(variant);
+
+		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
+
 
 		tile.animHandlers["idle"] = idleHandler;
 
-		tile.tileVariant = 0;
 		tile.direction = North;
 		tile.state = "idle";
 
@@ -355,7 +364,6 @@ public:
 //		tile.sprite.setOrigin(sf::Vector2f(16,16));
 		tile.sprite.setTexture(texManager.getRef(name));
 
-		tile.tileVariant = 0;
 		tile.direction = South;
 		tile.state = "idle";
 
@@ -402,7 +410,6 @@ public:
 
 //		tile.animHandlers["idle"] = idleHandler;
 
-		tile.tileVariant = 0;
 		tile.direction = North;
 		tile.state = "idle";
 
@@ -455,7 +462,6 @@ public:
 
 		tile.animHandlers["idle"] = idleHandler;
 
-		tile.tileVariant = 0;
 		tile.direction = North;
 		tile.state = "idle";
 
@@ -525,10 +531,8 @@ public:
 
 		tile.animHandlers["idle"] = idleHandler;
 
-		tile.tileVariant = 0;
 		tile.direction = North;
 		tile.state = "idle";
-
 
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);

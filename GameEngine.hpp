@@ -95,6 +95,7 @@ public:
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight) {
 		map->initTiles(this->vault->registry, this->vault->factory);
+		map->initTransitions(this->vault->registry, this->vault->factory);
 		map->generate(this->vault->registry, this->vault->factory, mapWidth, mapHeight);
 
 		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);

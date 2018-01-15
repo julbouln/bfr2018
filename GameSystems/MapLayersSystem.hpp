@@ -21,9 +21,9 @@ public:
 			if (building.built) {
 				for (sf::Vector2i p : this->tileSurfaceExtended(tile)) {
 					if (obj.team == "rebel") {
-						this->map->terrains.set(p.x, p.y, this->map->tiles["grass"]);
+						this->map->terrains.set(p.x, p.y, this->map->tiles["grass"][0]);
 					} else {
-						this->map->terrains.set(p.x, p.y, this->map->tiles["concrete"]);
+						this->map->terrains.set(p.x, p.y, this->map->tiles["concrete"][0]);
 					}
 				}
 			}
@@ -37,13 +37,16 @@ public:
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				if (resource.type == ResourceType::Nature) {
-					this->map->terrains.set(p.x, p.y, this->map->tiles["grass"]);
+					this->map->terrains.set(p.x, p.y, this->map->tiles["grass"][0]);
 				} else {
-					this->map->terrains.set(p.x, p.y, this->map->tiles["concrete"]);
+					this->map->terrains.set(p.x, p.y, this->map->tiles["concrete"][0]);
 				}
 			}
 
 		}
+
+		this->map->updateTransitions();
+
 	}
 
 	void updateObjsLayer(float dt) {
