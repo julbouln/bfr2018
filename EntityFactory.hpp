@@ -229,7 +229,7 @@ public:
 			this->loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
 			i++;
 		}
-		resourcesCount[name] = i-1;
+		resourcesCount[name] = i - 1;
 	}
 
 	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
@@ -253,7 +253,7 @@ public:
 
 			animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
 
-					int pixFrame = texManager.getRef(name).getSize().y/tile.psize.y;
+			int pixFrame = texManager.getRef(name).getSize().y / tile.psize.y;
 
 			for (int i = 0; i < directions; i++) {
 				tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
@@ -262,10 +262,10 @@ public:
 				for (tinyxml2::XMLElement *frameEl : framesEl) {
 					int frame = frameEl->IntAttribute("n");
 //					std::cout << "ADD FRAME " << frame << std::endl;
-					if(frame < pixFrame)
+					if (frame < pixFrame)
 						frames.push_back(frame);
 					else
-						std::cout << "BUG: invalid frame "<<frame<<" >= "<<pixFrame<<std::endl;
+						std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
 				}
 
 				Animation anim(frames, 0.5f);
@@ -444,7 +444,7 @@ public:
 //		tile.sprite.setOrigin(sf::Vector2f(16, 16));
 		tile.sprite.setTexture(texManager.getRef(this->resourceTypeName(type)));
 
-		Animation staticAnim({}, 1.0f);
+		Animation staticAnim({0});
 
 		AnimationHandler idleHandler;
 
@@ -473,7 +473,7 @@ public:
 
 	EntityID growedResource(entt::Registry<EntityID> &registry, std::string name, EntityID entity) {
 		int rnd = rand() % resourcesCount[name];
-		std::string rname = name + std::to_string(rnd+1);
+		std::string rname = name + std::to_string(rnd + 1);
 		Tile &oldTile = registry.get<Tile>(entity);
 
 		Tile tile;
@@ -487,7 +487,7 @@ public:
 				tinyxml2::XMLElement * psizeEl = el->FirstChildElement("pixel_size");
 
 //				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
-				tile.size = sf::Vector2i{1,1};
+				tile.size = sf::Vector2i{1, 1};
 				tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
 //				if (offsetEl) {
 //					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
@@ -496,33 +496,37 @@ public:
 //				else
 //					tile.offset = sf::Vector2i{0, 0};
 
-					tile.offset = sf::Vector2i{0, 0};
+				tile.offset = sf::Vector2i{0, 0};
 
 				break;
 			}
 			i++;
 		}
 
-		std::cout << "growedResource: "<<rnd<< " "<<rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
+		std::cout << "growedResource: " << rnd << " " << rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 		tile.sprite.setTexture(texManager.getRef(rname));
 
-		Animation staticAnim({}, 1.0f);
+		Animation staticAnim({0, 1, 2});
 
 		AnimationHandler idleHandler;
 
 		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
 
 		idleHandler.addAnim(staticAnim);
-		idleHandler.update(0.0f);
+		idleHandler.changeAnim(0);
+		idleHandler.set(0);
+
+		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
 
 		tile.animHandlers["idle"] = idleHandler;
 
 		tile.tileVariant = 0;
 		tile.direction = North;
 		tile.state = "idle";
+
 
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
@@ -537,10 +541,10 @@ public:
 		player.resources = 0;
 		player.butchery = 0;
 
-		if(team=="rebel")
-			player.resourceType=ResourceType::Nature;
+		if (team == "rebel")
+			player.resourceType = ResourceType::Nature;
 		else
-			player.resourceType=ResourceType::Pollution;
+			player.resourceType = ResourceType::Pollution;
 
 		registry.assign<Player>(entity, player);
 		return entity;

@@ -151,6 +151,7 @@ public:
     {
         this->t = 0.0f;
         this->currentAnim = -1;
+        this->l = 0;
     }
     AnimationHandler(const sf::IntRect& frameSize)
     {
@@ -158,6 +159,7 @@ public:
 
         this->t = 0.0f;
         this->currentAnim = -1;
+        this->l = 0;
     }
 };
 

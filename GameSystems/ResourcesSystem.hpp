@@ -21,10 +21,14 @@ public:
 
 				if (resource.level < 3) {
 					resource.level++;
-					if (resource.level == 1)
+					if (resource.level == 1) {
 						this->vault->factory.growedResource(this->vault->registry, this->vault->factory.resourceTypeName(resource.type), entity);
-					else
+						Tile &newTile = this->vault->registry.get<Tile>(entity);
+						std::cout << "NEW RESOURCE "<<tile.animHandlers[tile.state].bounds.left << "x" << tile.animHandlers[tile.state].bounds.top << ":" << tile.animHandlers[tile.state].bounds.width << "x" << tile.animHandlers[tile.state].bounds.height << std::endl;
+					}
+					else {
 						tile.animHandlers[tile.state].set(resource.level - 1);
+					}
 				} else {
 					// max
 					this->seedResources(resource.type, entity);

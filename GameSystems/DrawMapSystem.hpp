@@ -4,6 +4,21 @@
 
 class DrawMapSystem : public GameSystem {
 public:
+	sf::Shader colorSwap;
+	sf::Shader pixelation;
+
+	DrawMapSystem() {
+		if (!colorSwap.loadFromFile("defs/new/shaders/color_swap.frag", sf::Shader::Fragment))
+		{
+			// erreur...
+		}
+		if (!pixelation.loadFromFile("defs/new/shaders/pixelation.frag", sf::Shader::Fragment))
+		{
+			// erreur...
+		}
+
+	}
+
 	void draw(sf::RenderWindow &window, float dt) {
 		this->drawTileLayer(window, dt);
 		this->drawObjLayer(window, dt);
@@ -42,6 +57,10 @@ public:
 
 					/* Draw the tile */
 					window.draw(tile.sprite);
+
+//	pixelation.setParameter("texture", sf::Shader::CurrentTexture);
+//	pixelation.setParameter("amount", 32.0);
+//				window.draw(tile.sprite,&pixelation);
 				}
 			}
 
@@ -49,6 +68,7 @@ public:
 	}
 
 	void drawObjLayer(sf::RenderWindow &window, float dt) {
+
 		sf::View wview = window.getView();
 		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 
@@ -69,8 +89,20 @@ public:
 			                       tile.sprite.getGlobalBounds().top, 32, 32);
 
 			/* Draw the tile */
-			if (screenRect.intersects(collider))
-				window.draw(tile.sprite);
+			if (screenRect.intersects(collider)) {
+/*				pixelation.setParameter("texture", sf::Shader::CurrentTexture);
+				window.draw(tile.sprite,&pixelation);
+*/
+
+				colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
+				colorSwap.setParameter("color1", sf::Color(3,255,205));
+				colorSwap.setParameter("replace1", sf::Color(117,122,223));
+				colorSwap.setParameter("color2", sf::Color(0,235,188));
+				colorSwap.setParameter("replace2", sf::Color(90,94,172));
+
+				window.draw(tile.sprite,&colorSwap);
+				
+			}
 		}
 	}
 
