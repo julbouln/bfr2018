@@ -28,6 +28,7 @@ struct Attack {
 	unsigned int distance;
 };
 
+// unit or building
 struct GameObject {
 	float life;
 	unsigned int view;
@@ -83,4 +84,6 @@ struct Player {
 	ResourceType resourceType;
 	int resources;
 	int butchery;
+
+	std::map<std::string, int> objsCount;
 };

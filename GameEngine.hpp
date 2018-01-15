@@ -12,6 +12,8 @@
 #include "GameSystems/PathfindingSystem.hpp"
 #include "GameSystems/CombatSystem.hpp"
 
+#include "AI.hpp"
+
 enum class Action {
 	None,
 	Selecting,
@@ -72,6 +74,8 @@ public:
 		mapLayers.map = this->map;
 		pathfinding.setVault(vault);
 		pathfinding.map = this->map;
+		combat.setVault(vault);
+		combat.map = this->map;
 
 	}
 
@@ -178,7 +182,7 @@ public:
 
 				for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
 					for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
-						if (this->map->bound(x,y)) {
+						if (this->map->bound(x, y)) {
 							EntityID ent = this->map->objs.get(x, y);
 							if (ent) {
 								if (this->vault->registry.has<Unit>(ent)) {
@@ -286,7 +290,7 @@ public:
 	}
 
 	void draw(sf::RenderWindow &window, float dt) {
-		drawMap.draw(window,dt);
+		drawMap.draw(window, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -464,19 +468,12 @@ public:
 								this->currentBuildType = node.type;
 								break;
 							case TechComponent::Character:
-								if (this->resources.spendResources(this->currentPlayer, player.resourceType, 10)) {
+								if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
 									this->markUpdateObjLayer = true;
-									for (sf::Vector2i p : this->tileAround(tile, 1)) {
-										if (!this->map->objs.get(p.x, p.y)) {
-
-											this->vault->factory.createUnit(this->vault->registry, this->currentPlayer, node.type, p.x, p.y);
-											break;
-										}
-									}
 								}
 								break;
 							case TechComponent::Resource:
-								this->resources.seedResources(player.resourceType, selectedObj);
+								this->seedResources(player.resourceType, selectedObj);
 								break;
 							}
 						}
@@ -532,6 +529,30 @@ public:
 		ImGui::PopFont();
 	}
 
+	void updatePlayers(float dt) {
+		auto playerView = this->vault->registry.view<Player>();
+
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+			player.objsCount.clear();
+		}
+
+		auto objView = this->vault->registry.view<GameObject>();
+		for (EntityID entity : objView) {
+			GameObject &obj = objView.get(entity);
+
+			if (obj.player)
+			{
+				Player &player = this->vault->registry.get<Player>(obj.player);
+				if (player.objsCount.count(obj.name)) {
+					player.objsCount[obj.name] = player.objsCount[obj.name] + 1;
+				} else {
+					player.objsCount[obj.name] = 0;
+				}
+			}
+		}
+	}
+
 	void update(float dt) {
 		this->updateEveryFrame(dt);
 		this->currentTime += dt;
@@ -544,11 +565,10 @@ public:
 			std::cout << "built " << this->currentBuild << std::endl;
 		}
 
-		// combat system
-		this->combat.update(dt);
-		// resources system
-		this->resources.update(dt);
+		this->updatePlayers(dt);
 
+		this->combat.update(dt);
+		this->resources.update(dt);
 		this->mapLayers.update(dt);
 	}
 
@@ -562,6 +582,6 @@ public:
 		this->tileAnim.update(dt);
 		this->pathfinding.update(dt);
 	}
-	
+
 };
 

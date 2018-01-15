@@ -101,5 +101,49 @@ public:
 		return 0;
 	}
 
+	bool spendResources(EntityID playerEnt, ResourceType type, int val) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		if (player.resources > val) {
+			auto view = this->vault->registry.view<Resource>();
+			for (EntityID entity : view) {
+				Resource &resource = view.get(entity);
+				if (resource.type == type) {
+					val -= resource.level;
+					this->vault->registry.destroy(entity);
+					if (val <= 0)
+						break;
+				}
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	void seedResources(ResourceType type, EntityID entity) {
+		Tile &tile = this->vault->registry.get<Tile>(entity);
+		for (sf::Vector2i p : this->tileAround(tile, 1)) {
+			float rnd = ((float) rand()) / (float) RAND_MAX;
+			if (rnd > 0.8) {
+				if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y))
+					this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
+			}
+		}
+	}
+
+	bool trainUnit(std::string type, EntityID playerEnt, EntityID entity ) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		Tile &tile = this->vault->registry.get<Tile>(entity);
+
+		if (this->spendResources(playerEnt, player.resourceType, 10)) {			
+			for (sf::Vector2i p : this->tileAround(tile, 1)) {
+				if (!this->map->objs.get(p.x, p.y)) {
+					this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 };

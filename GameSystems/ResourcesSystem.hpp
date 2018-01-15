@@ -2,38 +2,8 @@
 
 #include "GameSystem.hpp"
 
-
 class ResourcesSystem : public GameSystem {
 public:
-	bool spendResources(EntityID playerEnt, ResourceType type, int val) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-		if (player.resources > val) {
-			auto view = this->vault->registry.view<Resource>();
-			for (EntityID entity : view) {
-				Resource &resource = view.get(entity);
-				if (resource.type == type) {
-					val -= resource.level;
-					this->vault->registry.destroy(entity);
-					if (val <= 0)
-						break;
-				}
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	void seedResources(ResourceType type, EntityID entity) {
-		Tile &tile = this->vault->registry.get<Tile>(entity);
-		for (sf::Vector2i p : this->tileAround(tile, 1)) {
-			float rnd = ((float) rand()) / (float) RAND_MAX;
-			if (rnd > 0.8) {
-				if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y))
-					this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
-			}
-		}
-	}
 
 	void update(float dt) {
 		int natureResources = 0;
@@ -44,8 +14,6 @@ public:
 			Resource &resource = view.get<Resource>(entity);
 			Tile &tile = view.get<Tile>(entity);
 			resource.grow += 0.1;
-
-//				std::cout << "RESOURCE "<<entity<<" grow "<<resource.grow << std::endl;
 
 			if (resource.grow > 10) {
 				std::cout << "RESOURCE " << entity << " grow" << std::endl;

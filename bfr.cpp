@@ -90,7 +90,6 @@ int main()
 	io.Fonts->AddFontDefault(); // this will load default font as well
 	ImGui::SFML::UpdateFontTexture();
 
-
 	vault.factory.load();
 
 	sf::Clock clock;
