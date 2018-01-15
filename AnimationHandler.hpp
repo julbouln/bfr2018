@@ -61,6 +61,7 @@ private:
     int currentAnim;
 
 public:
+    int l;
 
     int count() {return animations.size();};
 
@@ -110,6 +111,7 @@ public:
             if (this->t > duration * this->animations[currentAnim].getLength())
             {
                 this->t = 0.0f;
+                this->l++;
             }
         }
 
@@ -132,7 +134,7 @@ public:
         rect.left = rect.width * animID;
         this->bounds = rect;
         this->t = 0.0;
-
+        this->l = 0;
 //    std::cout << rect.left << std::endl;
 
         return;

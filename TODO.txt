@@ -1,3 +1,6 @@
+Improvements:
+- multi-agent pathfinding
+
 Map:
 - transitions
 - fog of war
@@ -15,3 +18,4 @@ Interface:
 - building construction
 - main menu
 - settings
+- minimap

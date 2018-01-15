@@ -73,9 +73,10 @@ public:
 			Player &player = view.get(entity);
 			if (player.team == "rebel")
 			{
-				factory.createUnit(registry, entity, "zork", 10, 10);
+//				factory.createUnit(registry, entity, "zork", 10, 10);
+//				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
 			} else {
-				factory.createUnit(registry, entity, "brad_lab", 54, 54);
+				factory.createUnit(registry, entity, "brad_lab", 15, 10);
 			}
 		}
 
@@ -84,17 +85,17 @@ public:
 
 //		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
 
-		/*		factory.createUnit(registry, this->currentPlayer, "zork", 10, 11);
-				factory.createUnit(registry, this->currentPlayer, "zork", 10, 12);
-				factory.createUnit(registry, this->currentPlayer, "zork", 11, 10);
-				factory.createUnit(registry, this->currentPlayer, "zork", 11, 11);
-				factory.createUnit(registry, this->currentPlayer, "zork", 11, 12);
-				factory.createUnit(registry, this->currentPlayer, "zork", 12, 10);
-				factory.createUnit(registry, this->currentPlayer, "zork", 12, 11);
-				factory.createUnit(registry, this->currentPlayer, "zork", 12, 12);
-
-				factory.createBuilding(registry, this->currentPlayer, "taverne", 16, 10, true);
-		*/
+		factory.createUnit(registry, this->currentPlayer, "zork", 10, 11);
+		factory.createUnit(registry, this->currentPlayer, "zork", 10, 12);
+		factory.createUnit(registry, this->currentPlayer, "zork", 11, 10);
+		factory.createUnit(registry, this->currentPlayer, "zork", 11, 11);
+		factory.createUnit(registry, this->currentPlayer, "zork", 11, 12);
+		factory.createUnit(registry, this->currentPlayer, "zork", 12, 10);
+		factory.createUnit(registry, this->currentPlayer, "zork", 12, 11);
+		factory.createUnit(registry, this->currentPlayer, "zork", 12, 12);
+		/*
+						factory.createBuilding(registry, this->currentPlayer, "taverne", 16, 10, true);
+				*/
 //		map.objs.set(10, 10, factory.createUnit(registry, this->currentPlayer, "zork", 10, 10));
 	}
 
@@ -192,17 +193,6 @@ public:
 						if (obj.player == this->currentPlayer)
 							this->selectedObjs.push_back(entity);
 					}
-					/*
-
-										if (entity) {
-											std::cout << "SELECT " << entity << std::endl;
-											this->selectedObjs.clear();
-											this->selectedObjs.push_back(entity);
-
-										} else {
-											this->selectedObjs.clear();
-										}
-										*/
 				}
 			}
 
@@ -220,35 +210,45 @@ public:
 						int square = ceil(squareD);
 						int curObj = 0;
 
-						for (int x = 0; x < square; x++) {
-							for (int y = 0; y < square; y++) {
-								if (curObj < this->selectedObjs.size()) {
-									EntityID selectedObj = this->selectedObjs[curObj];
-									if (registry.has<Unit>(selectedObj)) {
-										Tile &tile = registry.get<Tile>(selectedObj);
-										Unit &unit = registry.get<Unit>(selectedObj);
-										unit.nextpos = tile.pos;
-										sf::Vector2i dpos;
-										dpos.x = gameMapPos.x + x;
-										dpos.y = gameMapPos.y + y;
-										unit.destpos = dpos;
-										tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+						EntityID destEnt = this->ennemyAtPosition(registry, this->currentPlayer, gameMapPos.x, gameMapPos.y);
+
+						if (destEnt) {
+							while (curObj < this->selectedObjs.size()) {
+								EntityID selectedObj = this->selectedObjs[curObj];
+								if (registry.has<Unit>(selectedObj)) {
+									std::cout << "SET ATTACK " << selectedObj << std::endl;
+									Unit &unit = registry.get<Unit>(selectedObj);
+									unit.destAttack = destEnt;
+
+								}
+								curObj++;
+							}
+
+							std::cout << "ATTACK " << destEnt << std::endl;
+						} else {
+
+							for (int x = 0; x < square; x++) {
+								for (int y = 0; y < square; y++) {
+									if (curObj < this->selectedObjs.size()) {
+										EntityID selectedObj = this->selectedObjs[curObj];
+										if (registry.has<Unit>(selectedObj)) {
+											Tile &tile = registry.get<Tile>(selectedObj);
+											Unit &unit = registry.get<Unit>(selectedObj);
+											unit.nextpos = tile.pos;
+											sf::Vector2i dpos;
+											dpos.x = gameMapPos.x + x;
+											dpos.y = gameMapPos.y + y;
+											unit.destpos = dpos;
+											unit.nopath = 0;
+											tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+											unit.destAttack = 0;
+										}
+										curObj++;
 									}
-									curObj++;
 								}
 							}
 						}
-						/*
-												for (EntityID selectedObj : this->selectedObjs) {
-													if (registry.has<Unit>(selectedObj)) {
-														Tile &tile = registry.get<Tile>(selectedObj);
-														Unit &unit = registry.get<Unit>(selectedObj);
-														unit.nextpos = tile.pos;
-														unit.destpos = sf::Vector2i(gameMapPos);
-														tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-													}
-												}
-												*/
 					}
 				}
 			}
@@ -256,6 +256,17 @@ public:
 		break;
 
 		}
+	}
+
+	EntityID ennemyAtPosition(entt::Registry<EntityID> &registry, EntityID playerEnt, int x, int y) {
+		Player &player = registry.get<Player>(playerEnt);
+		EntityID destEnt = map.objs.get(x, y);
+		if (destEnt) {
+			GameObject &obj = registry.get<GameObject>(destEnt);
+			if (obj.team != player.team)
+				return destEnt;
+		}
+		return 0;
 	}
 
 	void drawTileLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, TileLayer &layer, sf::RenderWindow &window, float dt) {
@@ -276,31 +287,21 @@ public:
 		{
 			for (int x = mx; x < mw; ++x)
 			{
+				EntityID ent = layer.get(x, y);
+				if (ent) {
+					Tile &tile = registry.get<Tile>(ent);
 
-//				sf::FloatRect collider(x * 32,
-//				                       y * 32, 32, 32);
-				//if (screenRect.intersects(collider))
-				{
+					sf::Vector2f pos;
+					pos.x = tile.ppos.x;
+					pos.y = tile.ppos.y;
+					pos.x = x * 32;
+					pos.y = y * 32;
 
-					EntityID ent = layer.get(x, y);
-//					std::cout << "LAY "<< ent << std::endl;
-					if (ent) {
-//					std::cout << " draw " << ent << std::endl;
-						Tile &tile = registry.get<Tile>(ent);
-
-						sf::Vector2f pos;
-						pos.x = tile.ppos.x;
-						pos.y = tile.ppos.y;
-						pos.x = x * 32;
-						pos.y = y * 32;
-
-						tile.sprite.setPosition(pos);
+					tile.sprite.setPosition(pos);
 
 
-						/* Draw the tile */
-						window.draw(tile.sprite);
-
-					}
+					/* Draw the tile */
+					window.draw(tile.sprite);
 				}
 			}
 
@@ -606,12 +607,6 @@ public:
 			ImGui::Separator();
 			ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
 
-//			if (ImGui::ImageButtonBlend(factory.texManager.getRef("zork_icon"))) {
-//			}
-
-//			if (ImGui::ImageButtonWithText(factory.texManager.getRef("zork_icon"),"test",ImVec2(48,48),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))) {
-//			}
-
 			if (ImGui::BeginPopupContextWindow())
 			{
 				if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
@@ -639,10 +634,10 @@ public:
 			std::cout << "built " << this->currentBuild << std::endl;
 		}
 
+		this->updateCombat(registry, factory, dt);
 		this->growResources(registry, factory, dt);
 		this->updateObjsLayer(registry, factory, dt);
 		this->updateTileLayer(registry, factory, dt);
-
 	}
 
 	void updateEveryFrame(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt)
@@ -667,6 +662,51 @@ public:
 			/* Update the sprite */
 			tile.sprite.setTextureRect(currentAnim.bounds);
 
+		}
+
+	}
+
+// HELPERS
+	float approxDistance(sf::Vector2i p1, sf::Vector2i p2) {
+		double dx = abs(p1.x - p2.x);
+		double dy = abs(p1.y - p2.y);
+		return 0.394 * (dx + dy) + 0.554 * std::max(dx, dy);
+	}
+
+	int getDirection(sf::Vector2i src, sf::Vector2i dst) {
+		sf::Vector2i diff = dst - src;
+		if (diff.x <= -1) {
+
+			if (diff.y <= -1)
+				return NorthWest;
+
+			if (diff.y == 0)
+				return West;
+
+			if (diff.y >= 1)
+				return SouthWest;
+		}
+
+		if (diff.x == 0) {
+			if (diff.y <= -1)
+				return North;
+
+			if (diff.y == 0)
+				return North;
+
+			if (diff.y >= 1)
+				return South;
+		}
+
+		if (diff.x >= 1) {
+			if (diff.y <= -1)
+				return NorthEast;
+
+			if (diff.y == 0)
+				return East;
+
+			if (diff.y >= 1)
+				return SouthEast;
 		}
 
 	}
@@ -711,6 +751,46 @@ public:
 			}
 		}
 		return surface;
+	}
+
+	sf::Vector2i nearestTileAround(sf::Vector2i src, Tile &tile, int dist) {
+		sf::Vector2i nearest(1024, 1024);
+
+		for (int w = -dist; w < tile.size.x + dist; w++) {
+			for (int h = -dist; h < tile.size.y + dist; h++) {
+				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y) {
+					sf::Vector2i p;
+
+					p.x = tile.pos.x + (w - tile.size.x / 2) + tile.offset.x;
+					p.y = tile.pos.y + (h - tile.size.y / 2) + tile.offset.y;
+					if (p.x >= 0 && p.y >= 0 && p.x < map.width && p.y < map.height) {
+						if (this->approxDistance(src, p) < this->approxDistance(src, nearest))
+							nearest = p;
+					}
+				}
+			}
+		}
+		return nearest;
+	}
+
+	sf::Vector2i firstFreePosition(sf::Vector2i src) {
+		sf::Vector2i fp;
+		int dist = 1;
+		while (dist < 16) {
+			for (int w = -dist; w < dist + 1; w++) {
+				for (int h = -dist; h < dist + 1; h++) {
+					if (w == -dist || h == -dist || w == dist || h == dist) {
+						int x = w + src.x;
+						int y = h + src.y;
+						if (x >= 0 && y >= 0 && x < map.width && y < map.height) {
+							if (!map.objs.get(x, y))
+								return sf::Vector2i(x, y);
+						}
+					}
+				}
+			}
+			dist++;
+		}
 	}
 
 
@@ -814,7 +894,7 @@ public:
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				map.resources.set(p.x, p.y, entity);
-			}
+			}			
 
 			map.addEntity(entity);
 		}
@@ -825,16 +905,24 @@ public:
 
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
-//			Unit &unit = unitView.get<Unit>(entity);
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				map.objs.set(p.x, p.y, entity);
 			}
 
-//			std::cout << "SET "<<entity << " "<<tile.pos.x << "x"<< tile.pos.y<< " "<<map.objs.entitiesGrid.size() << std::endl;
 			map.addEntity(entity);
 		}
 
+/*
+		auto unitView = registry.persistent<Tile, Unit>();
+
+		for (EntityID entity : unitView) {
+			Tile &tile = unitView.get<Tile>(entity);
+			Unit &unit = unitView.get<Unit>(entity);
+
+			map.objs.set(unit.nextpos.x, unit.nextpos.y, entity);
+		}
+*/
 		std::sort( map.entities.begin( ), map.entities.end( ), [&registry ]( const auto & lhs, const auto & rhs )
 		{
 			Tile &lht = registry.get<Tile>(lhs);
@@ -849,10 +937,12 @@ public:
 			return (lht.pos.y < rht.pos.y);
 		});
 
-
 	}
 
+
 	void updateTileDirection(Tile &tile, int cx, int cy, int nx, int ny) {
+		tile.direction = this->getDirection(sf::Vector2i(cx, cy), sf::Vector2i(nx, ny));
+		/*
 		switch (nx - cx) {
 		case -1:
 			switch (ny - cy) {
@@ -894,8 +984,56 @@ public:
 			break;
 
 		}
+		*/
 	}
 
+	void updateCombat(entt::Registry<EntityID> &registry, EntityFactory &entityFactory, float dt) {
+		auto view = registry.persistent<Tile, Unit>();
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			Unit &unit = view.get<Unit>(entity);
+			if (unit.destAttack && registry.valid(unit.destAttack)) {
+				int dist = 1;
+				if (unit.attack2.distance)
+					dist = unit.attack2.distance;
+				Tile &destTile = registry.get<Tile>(unit.destAttack);
+				GameObject &destObj = registry.get<GameObject>(unit.destAttack);
+
+				sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+				if (tile.pos == dpos) {
+					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
+					tile.direction = this->getDirection(tile.pos, destTile.pos);
+					tile.state = "attack";
+					destObj.life -= (unit.attack1.power * dt);
+					if (destObj.life < 0)
+						destObj.life = 0;
+
+					if (destObj.life == 0) {
+						tile.state = "idle";
+						unit.destAttack = 0;
+
+						destTile.state = "die";
+					}
+				} else {
+					unit.destpos = dpos;
+					unit.nopath = 0;
+					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+				}
+			} else {
+				unit.destAttack = 0;
+			}
+		}
+
+		auto objView = registry.persistent<Tile, GameObject>();
+		for (EntityID entity : objView) {
+			Tile &tile = objView.get<Tile>(entity);
+			GameObject &obj = objView.get<GameObject>(entity);
+			if (obj.life == 0 && tile.animHandlers[tile.state].l >= 1) {
+				registry.destroy(entity);
+			}
+		}
+
+	}
 
 	void updatePathfinding(entt::Registry<EntityID> &registry, EntityFactory &entityFactory, float dt) {
 		auto view = registry.persistent<Tile, Unit>();
@@ -907,20 +1045,8 @@ public:
 				int diffx = abs(tile.ppos.x - unit.nextpos.x * 32);
 				int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
 				if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
-					/*
-					if (tile.pos != unit.nextpos) {
-						EntityID entityThere = map.objs.get(unit.nextpos.x, unit.nextpos.y);
-						if (entityThere == 0 || entityThere == entity) {
-							tile.pos = unit.nextpos;
-							tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-						} else {
-							tile.state = "idle";
-
-						}
-					//						map.objs.set(tile.pos.x, tile.pos.y, entity);
-					}
-					*/
 					tile.pos = unit.nextpos;
+//							map.objs.set(tile.pos.x, tile.pos.y, entity);
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 					if (tile.pos != unit.destpos) {
@@ -935,7 +1061,7 @@ public:
 							int nx = path.front().x;
 							int ny = path.front().y;
 
-							map.objs.set(nx, ny, entity);
+//							map.objs.set(nx, ny, entity);
 
 							unit.nextpos.x = nx;
 							unit.nextpos.y = ny;
@@ -947,17 +1073,18 @@ public:
 						} else {
 							std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 							tile.state = "idle";
-//							unit.destpos = tile.pos;
-//							map.objs.set(tile.pos.x, tile.pos.y, entity);
+							unit.nopath++;
+							if (unit.nopath > 16) {
+								sf::Vector2i fp = this->firstFreePosition(unit.destpos);
+								std::cout << "first free pos " << fp.x << "x" << fp.y << std::endl;
+								unit.destpos = fp;
+								unit.nopath = 0;
+							}
 						}
 					} else {
 						std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
 						tile.state = "idle";
-//						map.objs.set(tile.pos.x, tile.pos.y, entity);
 					}
-
-//					map.objs.set(tile.pos.x, tile.pos.y, entity);
-
 				} else {
 					float speed = (float)unit.speed / 2.0;
 					switch (tile.direction) {
@@ -991,8 +1118,8 @@ public:
 						break;
 					}
 
-//					std::cout << "Pathfinding: " << entity << " intermediate " << tile.ppos.x << "x" << tile.ppos.y << " " << tile.ppos.x / 32 << "x" << tile.ppos.y / 32 << ": " << unit.nextpos.x << "x" << unit.nextpos.y << std::endl;
-//					std::cout << "Pathfinding: " << entity << " diff " << (tile.ppos.x - unit.nextpos.x * 32) << "x" << (tile.ppos.y - unit.nextpos.y * 32) << std::endl;
+//							map.objs.set(unit.nextpos.x, unit.nextpos.y, entity);
+
 				}
 			}
 		}

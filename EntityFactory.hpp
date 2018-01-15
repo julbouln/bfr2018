@@ -38,9 +38,7 @@ public:
 			children.push_back(childNode);
 		}
 	}
-
 };
-
 
 class EntityFactory {
 
@@ -124,7 +122,6 @@ public:
 	}
 
 	TechNode *recGetTechNode(TechNode *node, std::string type) {
-//		std::cout << " REC "<<node->type << " <> "<<type << std::endl;
 		if (node->type == type)
 			return node;
 		else
@@ -244,7 +241,7 @@ public:
 		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
 
 		tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
-		tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
+		tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"), (float)psizeEl->IntAttribute("h")};
 
 		tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
 
@@ -284,7 +281,7 @@ public:
 		tinyxml2::XMLElement *root = doc->RootElement();
 
 		obj.view = root->FirstChildElement("view")->IntAttribute("dist");
-		obj.life = root->FirstChildElement("life")->IntAttribute("value");
+		obj.life = (float)root->FirstChildElement("life")->IntAttribute("value");
 		obj.name = root->Attribute("name");
 		obj.team = root->Attribute("team");
 	}
@@ -357,6 +354,7 @@ public:
 		tile.direction = South;
 		tile.state = "idle";
 
+
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
@@ -364,6 +362,9 @@ public:
 		Unit unit;
 		this->parseUnitFromXml(name, unit);
 
+		unit.nextpos = tile.pos;
+		unit.destAttack = 0;
+		unit.nopath = 0;
 		unit.destpos = tile.pos;
 
 		registry.assign<Tile>(entity, tile);
@@ -498,9 +499,6 @@ public:
 		}
 
 		std::cout << "growedResource: "<<rnd<< " "<<rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
-
-//		this->parseTileFromXml(name+std::to_string(rnd), tile, 8);
-
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
@@ -538,8 +536,6 @@ public:
 			player.resourceType=ResourceType::Nature;
 		else
 			player.resourceType=ResourceType::Pollution;
-
-
 
 		registry.assign<Player>(entity, player);
 		return entity;
@@ -581,8 +577,6 @@ public:
 
 		this->loadResources("defs/res/nature.xml");
 		this->loadResources("defs/res/pollution.xml");
-//		std::cout << this->getTechNode("rebel", "taverne") << std::endl;
-//		std::cout << this->getTechNode("rebel", "guerrier_bud") << std::endl;
 	}
 
 	EntityFactory() {

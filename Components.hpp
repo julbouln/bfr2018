@@ -29,7 +29,7 @@ struct Attack {
 };
 
 struct GameObject {
-	unsigned int life;
+	float life;
 	unsigned int view;
 
 	std::string name;
@@ -54,8 +54,11 @@ struct Unit {
 	Attack attack1;
 	Attack attack2;
 
+	EntityID destAttack;
+
 	sf::Vector2i destpos;
 	sf::Vector2i nextpos;
+	unsigned int nopath;
 };
 
 struct Building {

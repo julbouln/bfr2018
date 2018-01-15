@@ -33,13 +33,9 @@ public:
 	void del(int x, int y) {
 		entitiesGrid[this->index(x, y)] = 0;
 	}
-
-
 };
 
-
 class ObjLayer {
-
 public:
 	std::vector<EntityID> entitiesGrid;
 
@@ -84,7 +80,6 @@ public:
 
 class Map {
 public:
-
 	std::map<std::string,EntityID> tiles;
 
 	unsigned int width;
