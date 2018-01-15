@@ -109,6 +109,15 @@ public:
 	Map() {
 	}
 
+
+	bool bound(int x, int y) {
+		if (x >= 0 && y >= 0 && x < this->width && y < this->height)
+			return true;
+		else
+			return false;
+
+	}
+
 	inline bool operator()(unsigned x, unsigned y) const
 	{
 		if (x < width && y < height) // Unsigned will wrap if < 0

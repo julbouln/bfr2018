@@ -17,6 +17,7 @@
 #include "gui/imgui-sfml.h"
 #include "gui/imgui-sfml-extra.h"
 
+#include "GameVault.hpp"
 #include "GameEngine.hpp"
 
 
@@ -37,15 +38,19 @@ sf::Text genText(sf::Font &font, std::string str, int size) {
 	return text;
 }
 
+
 int main()
 {
 	int gameWidth = 800;
 	int gameHeight = 600;
-	entt::Registry<EntityID> registry;
-	EntityID emptyEntity;
-	EntityFactory factory;
 
-	GameEngine engine;
+	GameVault vault;
+
+//	entt::Registry<EntityID> registry;
+//	EntityFactory factory;
+
+	EntityID emptyEntity;
+	GameEngine engine(&vault);
 
 	ImGuiIO& io = ImGui::GetIO();
 
@@ -53,7 +58,7 @@ int main()
 	engine.setSize(gameWidth, gameHeight);
 	window.setFramerateLimit(30);
 
-    srand (time(NULL));
+	srand (time(NULL));
 
 	ImGui::SFML::Init(window, false);
 
@@ -86,13 +91,13 @@ int main()
 	ImGui::SFML::UpdateFontTexture();
 
 
-	factory.load();
+	vault.factory.load();
 
 	sf::Clock clock;
 
-	emptyEntity = registry.create();
+	emptyEntity = vault.registry.create();
 
-	engine.generate(registry, factory);
+	engine.generate();
 	engine.initView(window);
 
 	while (window.isOpen())
@@ -101,7 +106,6 @@ int main()
 
 		sf::Time elapsed = clock.restart();
 		float dt = elapsed.asSeconds();
-		engine.update(registry, factory, dt);
 		ImGui::SFML::Update(window, elapsed);
 
 		while (window.pollEvent(event))
@@ -116,16 +120,17 @@ int main()
 				window.close();
 
 			if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */
-				engine.handleEvent(registry, window, event);
+				engine.handleEvent(window, event);
 			}
 		}
 
-		window.setView(engine.gameView);
+		engine.update(dt);
 
+		window.setView(engine.gameView);
 
 		// clear the window with black color
 		window.clear(sf::Color::Black);
-		engine.draw(registry, factory, window, dt);
+		engine.draw(window, dt);
 
 		ImGui::SFML::Render(window);
 
