@@ -886,7 +886,7 @@ public:
 	void updateObjsLayer(entt::Registry<EntityID> &registry, EntityFactory &factory, float dt) {
 		map.clearEntities();
 
-		map.resources.fill();
+		map.resources.clear();
 		auto resView = registry.persistent<Tile, Resource>();
 
 		for (EntityID entity : resView) {
@@ -894,13 +894,12 @@ public:
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				map.resources.set(p.x, p.y, entity);
-			}			
+			}
 
 			map.addEntity(entity);
 		}
 
-
-		map.objs.fill();
+		map.objs.clear();
 		auto view = registry.persistent<Tile, GameObject>();
 
 		for (EntityID entity : view) {
@@ -913,7 +912,6 @@ public:
 			map.addEntity(entity);
 		}
 
-/*
 		auto unitView = registry.persistent<Tile, Unit>();
 
 		for (EntityID entity : unitView) {
@@ -922,7 +920,7 @@ public:
 
 			map.objs.set(unit.nextpos.x, unit.nextpos.y, entity);
 		}
-*/
+
 		std::sort( map.entities.begin( ), map.entities.end( ), [&registry ]( const auto & lhs, const auto & rhs )
 		{
 			Tile &lht = registry.get<Tile>(lhs);
@@ -1032,7 +1030,6 @@ public:
 				registry.destroy(entity);
 			}
 		}
-
 	}
 
 	void updatePathfinding(entt::Registry<EntityID> &registry, EntityFactory &entityFactory, float dt) {
@@ -1046,7 +1043,7 @@ public:
 				int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
 				if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
 					tile.pos = unit.nextpos;
-//							map.objs.set(tile.pos.x, tile.pos.y, entity);
+					//map.objs.set(tile.pos.x, tile.pos.y, entity);
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 					if (tile.pos != unit.destpos) {
@@ -1061,10 +1058,10 @@ public:
 							int nx = path.front().x;
 							int ny = path.front().y;
 
-//							map.objs.set(nx, ny, entity);
-
 							unit.nextpos.x = nx;
 							unit.nextpos.y = ny;
+
+							map.objs.set(unit.nextpos.x, unit.nextpos.y, entity); // mark next pos as blocking
 
 							this->updateTileDirection(tile, cx, cy, nx, ny);
 							tile.state = "move";
@@ -1117,9 +1114,6 @@ public:
 						tile.ppos.y += speed;
 						break;
 					}
-
-//							map.objs.set(unit.nextpos.x, unit.nextpos.y, entity);
-
 				}
 			}
 		}

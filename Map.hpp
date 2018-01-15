@@ -55,6 +55,12 @@ public:
 		}
 	}
 
+	void clear() {
+		for(int i=0;i<entitiesGrid.size();i++) {
+			entitiesGrid[i]=0;
+		}
+	}
+
 	int index(int x, int y) const { return x + width * y; }
 
 	EntityID get(int x, int y) {
