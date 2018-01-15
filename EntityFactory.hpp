@@ -253,6 +253,8 @@ public:
 
 			animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
 
+					int pixFrame = texManager.getRef(name).getSize().y/tile.psize.y;
+
 			for (int i = 0; i < directions; i++) {
 				tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
 
@@ -260,7 +262,10 @@ public:
 				for (tinyxml2::XMLElement *frameEl : framesEl) {
 					int frame = frameEl->IntAttribute("n");
 //					std::cout << "ADD FRAME " << frame << std::endl;
-					frames.push_back(frame);
+					if(frame < pixFrame)
+						frames.push_back(frame);
+					else
+						std::cout << "BUG: invalid frame "<<frame<<" >= "<<pixFrame<<std::endl;
 				}
 
 				Animation anim(frames, 0.5f);
@@ -386,16 +391,16 @@ public:
 //		tile.sprite.setOrigin(sf::Vector2f(tile.psize.x / 2, tile.psize.y / 2));
 		tile.sprite.setTexture(texManager.getRef(name));
 
-		Animation staticAnim({}, 1.0f);
+//		Animation staticAnim({}, 1.0f);
 
-		AnimationHandler idleHandler;
+//		AnimationHandler idleHandler;
 
-		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+//		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
 
-		idleHandler.addAnim(staticAnim);
-		idleHandler.update(0.0f);
+//		idleHandler.addAnim(staticAnim);
+//		idleHandler.update(0.0f);
 
-		tile.animHandlers["idle"] = idleHandler;
+//		tile.animHandlers["idle"] = idleHandler;
 
 		tile.tileVariant = 0;
 		tile.direction = North;

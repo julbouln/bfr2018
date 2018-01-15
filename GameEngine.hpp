@@ -73,10 +73,10 @@ public:
 			Player &player = view.get(entity);
 			if (player.team == "rebel")
 			{
-//				factory.createUnit(registry, entity, "zork", 10, 10);
+				factory.createUnit(registry, entity, "zork", 10, 10);
 //				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
 			} else {
-				factory.createUnit(registry, entity, "brad_lab", 15, 10);
+				factory.createUnit(registry, entity, "brad_lab", mapWidth-10, mapHeight-10);
 			}
 		}
 
@@ -84,7 +84,7 @@ public:
 		iface.setTexture(factory.getTex("interface_" + player.team));
 
 //		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
-
+/*
 		factory.createUnit(registry, this->currentPlayer, "zork", 10, 11);
 		factory.createUnit(registry, this->currentPlayer, "zork", 10, 12);
 		factory.createUnit(registry, this->currentPlayer, "zork", 11, 10);
@@ -93,6 +93,7 @@ public:
 		factory.createUnit(registry, this->currentPlayer, "zork", 12, 10);
 		factory.createUnit(registry, this->currentPlayer, "zork", 12, 11);
 		factory.createUnit(registry, this->currentPlayer, "zork", 12, 12);
+		*/
 		/*
 						factory.createBuilding(registry, this->currentPlayer, "taverne", 16, 10, true);
 				*/
@@ -361,8 +362,6 @@ public:
 			rectangle.setOutlineColor(sf::Color::Blue);
 			rectangle.setOutlineThickness(2);
 			rectangle.setPosition(pos);
-
-//			rectangle.setOrigin(sf::Vector2f(sf::Vector2f(tile.psize.x / 2, tile.psize.y / 2)));
 
 			window.draw(rectangle);
 		}
