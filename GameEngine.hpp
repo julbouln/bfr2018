@@ -120,7 +120,7 @@ public:
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
 
 				if (player.ai) {
-					ai.nazAI.parse(this->vault->registry, player.aiTree, entity);
+					ai.nazAI.parse(player.team,player.aiTree, entity);
 				}
 			}
 
@@ -516,7 +516,7 @@ public:
 
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-			player.objsCount.clear();
+			player.objsByType.clear();
 		}
 
 		auto objView = this->vault->registry.view<GameObject>();
@@ -526,10 +526,12 @@ public:
 			if (obj.player)
 			{
 				Player &player = this->vault->registry.get<Player>(obj.player);
-				if (player.objsCount.count(obj.name)) {
-					player.objsCount[obj.name] = player.objsCount[obj.name] + 1;
+				if (player.objsByType.count(obj.name)) {
+					player.objsByType[obj.name].push_back(entity);
 				} else {
-					player.objsCount[obj.name] = 1;
+					std::vector<EntityID> vec;
+					vec.push_back(entity);
+					player.objsByType[obj.name] = vec;
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-<AI>
+<AI team="neonaz">
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
@@ -7,9 +7,40 @@
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-		<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
-		<HasLessObjectsTypeThan type="labo" qty="3"/>
+		<HasLessObjectsTypeThan type="labo" qty="2"/>
 		<Build type="labo"/>		
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="labo" qty="1"/>
+		</Inverter>	
+		<Inverter>
+			<HasMoreResourcesThan amount="100"/>
+		</Inverter>
+		<Plant type="pollution"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+		</Inverter>
+		<Inverter>
+			<HasLessObjectsTypeThan type="labo" qty="1"/>
+		</Inverter>	
+		<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		<HasMoreResourcesThan amount="30"/>
+		<Build type="caserne"/>	
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="20"/>
+		<HasLessObjectsTypeThan type="patrouilleur" qty="10"/>
+		<Train type="patrouilleur"/>
 	</Sequence>
 </AI>

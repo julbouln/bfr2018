@@ -13,11 +13,13 @@ enum class TechComponent {
 	Resource
 };
 
+
 class TechNode {
 public:
 	TechComponent comp;
 	std::string type;
 	std::vector<TechNode> children;
+	std::string parentType;
 
 	void parse(tinyxml2::XMLElement *el) {
 		std::string comName = el->Name();
@@ -34,6 +36,7 @@ public:
 
 		for (tinyxml2::XMLElement *childEl : el) {
 			TechNode childNode;
+			childNode.parentType = this->type;
 			childNode.parse(childEl);
 			children.push_back(childNode);
 		}

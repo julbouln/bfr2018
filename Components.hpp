@@ -91,7 +91,7 @@ struct Player {
 
 	Fog fog;
 
-	std::map<std::string, int> objsCount;
+	std::map<std::string, std::vector<EntityID>> objsByType;
 
 	BrainTree::BehaviorTree aiTree;
 

@@ -40,7 +40,7 @@ public:
 		mw = mw > this->map->width ? this->map->width : mw;
 		mh = mh > this->map->height ? this->map->height : mh;
 
-		return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw-mx, mh-my));
+		return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw - mx, mh - my));
 	}
 
 	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, float dt) {
@@ -83,9 +83,10 @@ public:
 		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 
 		for (EntityID ent : this->map->entities) {
-			Tile &tile = this->vault->registry.get<Tile>(ent);
+			if (this->vault->registry.valid(ent)) { // DIRTY
+				Tile &tile = this->vault->registry.get<Tile>(ent);
 
-			sf::Vector2f pos;
+				sf::Vector2f pos;
 
 //		pos.x = tile.ppos.x - tile.offset.x * 32;
 //		pos.y = tile.ppos.y - tile.offset.y * 32;
@@ -93,28 +94,29 @@ public:
 //			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
 //			pos.y = tile.ppos.y - tile.psize.y / 2;
 
-			pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
-			pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
+				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
+				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
 
-			tile.sprite.setPosition(pos);
+				tile.sprite.setPosition(pos);
 
-			sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
-			                       tile.sprite.getGlobalBounds().top, 32, 32);
+				sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
+				                       tile.sprite.getGlobalBounds().top, 32, 32);
 
-			/* Draw the tile */
-			if (screenRect.intersects(collider)) {
-				/*				pixelation.setParameter("texture", sf::Shader::CurrentTexture);
-								window.draw(tile.sprite,&pixelation);
-				*/
+				/* Draw the tile */
+				if (screenRect.intersects(collider)) {
+					/*				pixelation.setParameter("texture", sf::Shader::CurrentTexture);
+									window.draw(tile.sprite,&pixelation);
+					*/
 
-				colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
-				colorSwap.setParameter("color1", sf::Color(3, 255, 205));
-				colorSwap.setParameter("replace1", sf::Color(117, 122, 223));
-				colorSwap.setParameter("color2", sf::Color(0, 235, 188));
-				colorSwap.setParameter("replace2", sf::Color(90, 94, 172));
+					colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
+					colorSwap.setParameter("color1", sf::Color(3, 255, 205));
+					colorSwap.setParameter("replace1", sf::Color(117, 122, 223));
+					colorSwap.setParameter("color2", sf::Color(0, 235, 188));
+					colorSwap.setParameter("replace2", sf::Color(90, 94, 172));
 
-				window.draw(tile.sprite, &colorSwap);
+					window.draw(tile.sprite, &colorSwap);
 
+				}
 			}
 		}
 	}

@@ -18,7 +18,8 @@ enum class AITag {
 	THasMoreResourcesThan,
 	THasLessObjectsTypeThan,
 	TBuild,
-	TPlant
+	TPlant,
+	TTrain
 };
 
 static std::map<std::string, AITag> aiTags =
@@ -33,7 +34,8 @@ static std::map<std::string, AITag> aiTags =
 	{ "HasMoreResourcesThan", AITag::THasMoreResourcesThan},
 	{ "HasLessObjectsTypeThan", AITag::THasLessObjectsTypeThan},
 	{ "Build", AITag::TBuild},
-	{ "Plant", AITag::TPlant}
+	{ "Plant", AITag::TPlant},
+	{ "Train", AITag::TTrain}
 };
 
 class Probability : public BrainTree::Leaf
@@ -59,10 +61,10 @@ private:
 };
 
 
-class HasMoreResourcesThan : public BrainTree::Leaf
+class HasMoreResourcesThan : public BrainTree::Leaf, public GameSystem
 {
 public:
-	HasMoreResourcesThan(BrainTree::Blackboard::Ptr board, GameVault *vault, EntityID entity, double amount) : Leaf(board), vault(vault), entity(entity), amount(amount) {}
+	HasMoreResourcesThan(BrainTree::Blackboard::Ptr board, EntityID entity, double amount) : Leaf(board), entity(entity), amount(amount) {}
 
 	Status update() override
 	{
@@ -74,25 +76,24 @@ public:
 	}
 
 private:
-	GameVault *vault;
 	EntityID entity;
 	float amount;
 };
 
 
-class HasLessObjectsTypeThan : public BrainTree::Leaf
+class HasLessObjectsTypeThan : public BrainTree::Leaf, public GameSystem
 {
 public:
-	HasLessObjectsTypeThan(BrainTree::Blackboard::Ptr board, GameVault *vault, EntityID entity, std::string type, int qty) : Leaf(board), vault(vault), entity(entity), type(type), qty(qty) {}
+	HasLessObjectsTypeThan(BrainTree::Blackboard::Ptr board, EntityID entity, std::string type, int qty) : Leaf(board), entity(entity), type(type), qty(qty) {}
 
 	Status update() override
 	{
 		Player &player = vault->registry.get<Player>(entity);
 		int foundQty = 0;
-		if (player.objsCount.count(type) == 0)
+		if (player.objsByType.count(type) == 0)
 			foundQty = 0;
 		else
-			foundQty = player.objsCount[type];
+			foundQty = player.objsByType[type].size();
 
 		if (foundQty < qty) {
 			std::cout << "AI: " << entity << " has less than " << qty << " (" << foundQty << ") " << type << std::endl;
@@ -103,7 +104,6 @@ public:
 	}
 
 private:
-	GameVault *vault;
 	EntityID entity;
 	std::string type;
 	int qty;
@@ -112,7 +112,7 @@ private:
 class Build : public BrainTree::Leaf, public GameSystem
 {
 public:
-	Build(BrainTree::Blackboard::Ptr board, GameVault *vault, EntityID entity, std::string name) : Leaf(board), vault(vault), entity(entity), name(name) {}
+	Build(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name) : Leaf(board), entity(entity), name(name) {}
 
 	Status update() override
 	{
@@ -134,6 +134,10 @@ public:
 							intersect = true;
 						}
 					}
+
+					if (!this->map->bound( x - tile.size.x, y - tile.size.y) || !this->map->bound(x + tile.size.x, y + tile.size.y))
+						intersect = true;
+
 					if (!intersect)
 						buildPos.push_back(sf::Vector2i(x, y));
 
@@ -141,20 +145,25 @@ public:
 			}
 		}
 
-		std::random_shuffle ( buildPos.begin(), buildPos.end() );
+		if (buildPos.size() > 0) {
+			std::random_shuffle ( buildPos.begin(), buildPos.end() );
 
-		obj.mapped = true;
-		tile.pos = buildPos.front();
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+			obj.mapped = true;
+			tile.pos = buildPos.front();
+			tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-		std::cout << "AI:" << name << " build at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+			std::cout << "AI:" << name << " build at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+			return Node::Status::Success;
+		} else {
+			std::cout << "AI:" << name << " cannot be built !"<<std::endl;
+			this->vault->registry.destroy(buildingEnt);
+			return Node::Status::Failure;
 
+		}
 
-		return Node::Status::Success;
 	}
 
 private:
-	GameVault *vault;
 	EntityID entity;
 	std::string name;
 };
@@ -162,18 +171,71 @@ private:
 class Plant : public BrainTree::Leaf, public GameSystem
 {
 public:
-	Plant(BrainTree::Blackboard::Ptr board, GameVault *vault, EntityID entity, std::string name) : Leaf(board), vault(vault), entity(entity), name(name) {}
+	Plant(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name) : Leaf(board), entity(entity), name(name) {}
 
 	Status update() override
 	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		std::vector<EntityID> plantAround;
+		ResourceType type;
+		if (name == "nature") {
+			plantAround = player.objsByType["ferme"];
+			type = ResourceType::Nature;
+		} else {
+			plantAround = player.objsByType["labo"];
+			type = ResourceType::Pollution;
+		}
+
+		std::random_shuffle ( plantAround.begin(), plantAround.end() );
+		this->seedResources(type, plantAround.front());
+
+		std::cout << "AI:" << name << " plant " << name << " around " << plantAround.front() << std::endl;
+		TechNode *n = this->vault->factory.getTechNode(blackboard->GetString("team"), name);
+//		std::cout << "NODE "<< n->parentType << std::endl;
+//		std::cout << ->parent->type << std::endl;
+
+		return Node::Status::Success;
 	}
 
 private:
-	GameVault *vault;
 	EntityID entity;
 	std::string name;
 
 };
+
+
+class Train : public BrainTree::Leaf, public GameSystem
+{
+public:
+	Train(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name) : Leaf(board), entity(entity), name(name) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		std::vector<EntityID> trainAround = player.objsByType[this->vault->factory.getTechNode(blackboard->GetString("team"), name)->parentType];
+
+		std::random_shuffle ( trainAround.begin(), trainAround.end() );
+		if (trainUnit(name, entity, trainAround.front() )) {
+			std::cout << "AI:" << name << " train " << name << " around " << trainAround.front() << std::endl;
+
+			return Node::Status::Success;
+
+		} else {
+			return Node::Status::Failure;
+
+		}
+
+
+	}
+
+private:
+	EntityID entity;
+	std::string name;
+
+};
+
 
 class AIParser : public GameSystem {
 	tinyxml2::XMLDocument doc;
@@ -185,54 +247,55 @@ public:
 			std::cout << "AI: error loading file: " << error << std::endl;
 	}
 
-	void parse(entt::Registry<EntityID> &registry, BrainTree::BehaviorTree &tree, EntityID entity) {
+	void parse(std::string team, BrainTree::BehaviorTree &tree, EntityID entity) {
 		auto rootSelector = std::make_shared<BrainTree::Selector>();
 		auto blackboard = tree.getBlackboard();
+		blackboard->SetString("team", team);
 
 		for (tinyxml2::XMLElement *child : doc.FirstChildElement()) {
 			std::cout << "AI: add " << child->Name() << " to root" << std::endl;
-			rootSelector->addChild(this->parseElement(registry, blackboard, child, entity));
+			rootSelector->addChild(this->parseElement(blackboard, child, entity));
 		}
 		tree.setRoot(rootSelector);
 	}
 
-	std::shared_ptr<BrainTree::Node> parseElement(entt::Registry<EntityID> &registry, std::shared_ptr<BrainTree::Blackboard> blackboard, tinyxml2::XMLElement *element, EntityID entity) {
+	std::shared_ptr<BrainTree::Node> parseElement(std::shared_ptr<BrainTree::Blackboard> blackboard, tinyxml2::XMLElement *element, EntityID entity) {
 		std::cout << "AI: parse node " << element->Name() << std::endl;
 		switch (aiTags[element->Name()]) {
 		case AITag::TSelector: {
 			auto selector = std::make_shared<BrainTree::Selector>();
 			for (tinyxml2::XMLElement *child : element) {
-				selector->addChild(this->parseElement(registry, blackboard, child, entity));
+				selector->addChild(this->parseElement(blackboard, child, entity));
 			}
 			return selector;
 		}
 		case AITag::TRandomSelector: {
 			auto selector = std::make_shared<BrainTree::RandomSelector>();
 			for (tinyxml2::XMLElement *child : element) {
-				selector->addChild(this->parseElement(registry, blackboard, child, entity));
+				selector->addChild(this->parseElement(blackboard, child, entity));
 			}
 			return selector;
 		}
 		case AITag::TSequence: {
 			auto sequence = std::make_shared<BrainTree::Sequence>();
 			for (tinyxml2::XMLElement *child : element) {
-				sequence->addChild(this->parseElement(registry, blackboard, child, entity));
+				sequence->addChild(this->parseElement(blackboard, child, entity));
 			}
 			return sequence;
 		}
 		case AITag::TInverter: {
 			auto node = std::make_shared<BrainTree::Inverter>();
-			node->setChild(this->parseElement(registry, blackboard, element->FirstChildElement(), entity));
+			node->setChild(this->parseElement(blackboard, element->FirstChildElement(), entity));
 			return node;
 		}
 		case AITag::TSucceeder: {
 			auto node = std::make_shared<BrainTree::Succeeder>();
-			node->setChild(this->parseElement(registry, blackboard, element->FirstChildElement(), entity));
+			node->setChild(this->parseElement(blackboard, element->FirstChildElement(), entity));
 			return node;
 		}
 		case AITag::TUntilFail: {
 			auto node = std::make_shared<BrainTree::UntilFail>();
-			node->setChild(this->parseElement(registry, blackboard, element->FirstChildElement(), entity));
+			node->setChild(this->parseElement(blackboard, element->FirstChildElement(), entity));
 			return node;
 		}
 		case AITag::TProbability: {
@@ -244,19 +307,38 @@ public:
 		}
 		case AITag::THasMoreResourcesThan: {
 			float amount = element->FloatAttribute("amount");
-			auto node = std::make_shared<HasMoreResourcesThan>(blackboard, this->vault, entity, amount);
+			auto node = std::make_shared<HasMoreResourcesThan>(blackboard, entity, amount);
+			node->map = this->map;
+			node->setVault(this->vault);
 			return node;
 		}
 		case AITag::THasLessObjectsTypeThan: {
 			int qty = element->IntAttribute("qty");
 			std::string type = element->Attribute("type");
-			auto node = std::make_shared<HasLessObjectsTypeThan>(blackboard, this->vault, entity, type, qty);
+			auto node = std::make_shared<HasLessObjectsTypeThan>(blackboard, entity, type, qty);
+			node->map = this->map;
+			node->setVault(this->vault);
 			return node;
 		}
 		case AITag::TBuild: {
 			std::string name = element->Attribute("type");
-			auto node = std::make_shared<Build>(blackboard, this->vault, entity, name);
+			auto node = std::make_shared<Build>(blackboard, entity, name);
 			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
+		case AITag::TPlant: {
+			std::string name = element->Attribute("type");
+			auto node = std::make_shared<Plant>(blackboard, entity, name);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
+		case AITag::TTrain: {
+			std::string name = element->Attribute("type");
+			auto node = std::make_shared<Train>(blackboard, entity, name);
+			node->map = this->map;
+			node->setVault(this->vault);
 			return node;
 		}
 		}
