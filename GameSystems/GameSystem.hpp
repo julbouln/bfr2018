@@ -101,24 +101,31 @@ public:
 		return 0;
 	}
 
-	bool spendResources(EntityID playerEnt, ResourceType type, int val) {
+	void spendResources(EntityID playerEnt, ResourceType type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
-		if (player.resources > val) {
-			auto view = this->vault->registry.view<Resource>();
-			for (EntityID entity : view) {
-				Resource &resource = view.get(entity);
-				if (resource.type == type) {
-					val -= resource.level;
-					this->vault->registry.destroy(entity);
-					if (val <= 0)
-						break;
-				}
+
+		auto view = this->vault->registry.view<Resource>();
+		for (EntityID entity : view) {
+			Resource &resource = view.get(entity);
+			if (resource.type == type) {
+				val -= resource.level;
+				this->vault->registry.destroy(entity);
+				if (val <= 0)
+					break;
 			}
-			return true;
-		} else {
-			return false;
 		}
 	}
+
+	bool canSpendResources(EntityID playerEnt, ResourceType type, int val) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		if (player.resources > val)
+			return true;
+		else
+			return false;
+
+	}
+
+// action
 
 	void seedResources(ResourceType type, EntityID entity) {
 		Tile &tile = this->vault->registry.get<Tile>(entity);
@@ -135,15 +142,36 @@ public:
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		Tile &tile = this->vault->registry.get<Tile>(entity);
 
-		if (this->spendResources(playerEnt, player.resourceType, 10)) {			
+		if (this->canSpendResources(playerEnt, player.resourceType, 10)) {
 			for (sf::Vector2i p : this->tileAround(tile, 1)) {
 				if (!this->map->objs.get(p.x, p.y)) {
-					this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
+					EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
+//					std::cout << "CREATE "<<newEnt<<std::endl;
+					this->spendResources(playerEnt, player.resourceType, 10);
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	void goTo(Unit &unit, sf::Vector2i destpos) {
+		unit.destpos = destpos;
+		unit.nopath = 0;
+	}
+
+	void goTo(EntityID entity, sf::Vector2i destpos) {
+		Unit &unit = this->vault->registry.get<Unit>(entity);
+		this->goTo(unit, destpos);
+	}
+
+	void attack(Unit &unit, EntityID destEnt) {
+		unit.destAttack = destEnt;
+	}
+
+	void attack(EntityID entity, EntityID destEnt) {
+		Unit &unit = this->vault->registry.get<Unit>(entity);
+		this->attack(unit, destEnt);
 	}
 
 };

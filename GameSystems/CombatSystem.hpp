@@ -5,11 +5,40 @@
 class CombatSystem : public GameSystem {
 public:
 	void update(float dt) {
-		auto view = this->vault->registry.persistent<Tile, Unit>();
+
+		// if an ennemy is in sight, then attack
+		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
+			Unit &unit = view.get<Unit>(entity);
+			if (!unit.destAttack) {
+				std::vector<EntityID>targets;
+				for (sf::Vector2i p : this->tileAround(tile, obj.view)) {
+					EntityID pEnt = this->map->objs.get(p.x, p.y);
+					if (pEnt) {
+						if (this->vault->registry.has<GameObject>(pEnt)) {
+							GameObject &pObj = this->vault->registry.get<GameObject>(pEnt);
+							if (pObj.team != obj.team)
+								targets.push_back(pEnt);
+						}
+					}
+				}
+				if(targets.size()>0) {
+					// attack random in sight target
+					std::random_shuffle ( targets.begin(), targets.end() );					
+					this->attack(unit, targets.front());
+				}
+
+			}
+		}
+
+//		auto view = this->vault->registry.persistent<Tile, Unit>();
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			Unit &unit = view.get<Unit>(entity);
-			if (unit.destAttack && this->vault->registry.valid(unit.destAttack)) {
+			GameObject &obj = view.get<GameObject>(entity);
+			if (unit.destAttack && obj.life > 0 && this->vault->registry.valid(unit.destAttack)) {
 				int dist = 1;
 				if (unit.attack2.distance)
 					dist = unit.attack2.distance;
@@ -18,6 +47,7 @@ public:
 
 				sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 				if (tile.pos == dpos) {
+					unit.destpos = dpos;
 					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
 					tile.direction = this->getDirection(tile.pos, destTile.pos);
 					tile.state = "attack";
@@ -32,8 +62,7 @@ public:
 						destTile.state = "die";
 					}
 				} else {
-					unit.destpos = dpos;
-					unit.nopath = 0;
+					this->goTo(unit, dpos);
 					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 				}
 			} else {
@@ -49,6 +78,9 @@ public:
 				this->vault->registry.destroy(entity);
 			}
 		}
+
+
+
 	}
 
 };

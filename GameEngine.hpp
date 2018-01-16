@@ -118,6 +118,7 @@ public:
 
 			} else {
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+//				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
 
 				if (player.ai) {
 					ai.nazAI.parse(player.team,player.aiTree, entity);
@@ -267,15 +268,11 @@ public:
 							while (curObj < this->selectedObjs.size()) {
 								EntityID selectedObj = this->selectedObjs[curObj];
 								if (this->vault->registry.has<Unit>(selectedObj)) {
-									std::cout << "SET ATTACK " << selectedObj << std::endl;
-									Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-									unit.destAttack = destEnt;
-
+									this->attack(selectedObj, destEnt);
 								}
 								curObj++;
 							}
 
-							std::cout << "ATTACK " << destEnt << std::endl;
 						} else {
 
 							for (int x = 0; x < square; x++) {
@@ -283,16 +280,8 @@ public:
 									if (curObj < this->selectedObjs.size()) {
 										EntityID selectedObj = this->selectedObjs[curObj];
 										if (this->vault->registry.has<Unit>(selectedObj)) {
-											Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+											this->goTo(selectedObj, sf::Vector2i(gameMapPos.x + x, gameMapPos.y + y));
 											Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-											unit.nextpos = tile.pos;
-											sf::Vector2i dpos;
-											dpos.x = gameMapPos.x + x;
-											dpos.y = gameMapPos.y + y;
-											unit.destpos = dpos;
-											unit.nopath = 0;
-											tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-
 											unit.destAttack = 0;
 										}
 										curObj++;
@@ -316,24 +305,23 @@ public:
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
-			Tile &tile = this->vault->registry.get<Tile>(selectedObj);
-			sf::RectangleShape rectangle;
+			//if (this->vault->registry.valid(selectedObj)) 
+			{
+				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+				sf::RectangleShape rectangle;
 
-			sf::Vector2f pos;
-//			pos.x = tile.ppos.x;
-//			pos.y = tile.ppos.y;
+				sf::Vector2f pos;
+				pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
+				pos.y = tile.ppos.y - tile.psize.y / 2;
 
-			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
-			pos.y = tile.ppos.y - tile.psize.y / 2;
+				rectangle.setSize(sf::Vector2f(tile.psize));
+				rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				rectangle.setOutlineColor(sf::Color::Blue);
+				rectangle.setOutlineThickness(2);
+				rectangle.setPosition(pos);
 
-
-			rectangle.setSize(sf::Vector2f(tile.psize));
-			rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-			rectangle.setOutlineColor(sf::Color::Blue);
-			rectangle.setOutlineThickness(2);
-			rectangle.setPosition(pos);
-
-			window.draw(rectangle);
+				window.draw(rectangle);
+			}
 		}
 
 
@@ -538,6 +526,16 @@ public:
 
 	}
 
+	// remove entity from selected is not valid anymore
+	void updateSelected(float dt) {
+		std::vector<EntityID> newSelectedObjs;
+		for(EntityID entity : this->selectedObjs) {
+			if(this->vault->registry.valid(entity))
+				newSelectedObjs.push_back(entity);
+		}
+		this->selectedObjs = newSelectedObjs;
+	}
+
 	void update(float dt) {
 		this->updateEveryFrame(dt);
 		this->currentTime += dt;
@@ -557,13 +555,15 @@ public:
 		this->mapLayers.update(dt);
 
 
-		// AI		
+		// AI
 		auto playerView = this->vault->registry.view<Player>();
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
 			if (player.ai)
 				player.aiTree.update();
 		}
+
+		this->updateSelected(dt);
 
 	}
 

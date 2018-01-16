@@ -46,8 +46,7 @@ public:
 							if (unit.nopath > 16) {
 								sf::Vector2i fp = this->firstFreePosition(unit.destpos);
 								std::cout << "first free pos " << fp.x << "x" << fp.y << std::endl;
-								unit.destpos = fp;
-								unit.nopath = 0;
+								this->goTo(unit, fp);
 							}
 						}
 					} else {

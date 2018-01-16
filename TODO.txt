@@ -1,15 +1,10 @@
 Improvements:
 - multi-agent pathfinding
 
-Map:
-- transitions
-- fog of war
-
 Game:
 - combat
 - projectile
 - special FX
-- AI
 - team colors
 
 Interface:
