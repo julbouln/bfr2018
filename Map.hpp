@@ -89,7 +89,7 @@ public:
 	std::map<std::string, std::vector<EntityID>> tiles;
 
 	std::vector<EntityID> dirtTransitions;
-	std::map<int,int> dirtTransitionsMapping;
+	std::map<int, int> dirtTransitionsMapping;
 
 	unsigned int width;
 	unsigned int height;
@@ -159,21 +159,20 @@ public:
 			dirtTransitions.push_back(factory.createTerrain(registry, "dirt_transition", i));
 		}
 
-		dirtTransitionsMapping[1]=2;
-		dirtTransitionsMapping[2]=0;
-		dirtTransitionsMapping[3]=4;
-		dirtTransitionsMapping[4]=1;
-		dirtTransitionsMapping[5]=6;
-		dirtTransitionsMapping[8]=3;
-		dirtTransitionsMapping[10]=7;
-		dirtTransitionsMapping[12]=5;
+		dirtTransitionsMapping[1] = 2;
+		dirtTransitionsMapping[2] = 0;
+		dirtTransitionsMapping[3] = 4;
+		dirtTransitionsMapping[4] = 1;
+		dirtTransitionsMapping[5] = 6;
+		dirtTransitionsMapping[8] = 3;
+		dirtTransitionsMapping[10] = 7;
+		dirtTransitionsMapping[12] = 5;
 
 		// miss
 
 	}
 
-
-
+// https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
 	void updateTransitions() {
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
@@ -193,11 +192,11 @@ public:
 
 
 				}
-				
-				if(bitmask) {
+
+				if (bitmask) {
 					int trans = 0;
-					if(dirtTransitionsMapping.count(bitmask) > 0) {
-						trans=dirtTransitions[dirtTransitionsMapping[bitmask]];
+					if (dirtTransitionsMapping.count(bitmask) > 0) {
+						trans = dirtTransitions[dirtTransitionsMapping[bitmask]];
 						transitions.set(x, y, trans);
 					}
 					else

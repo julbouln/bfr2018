@@ -51,6 +51,8 @@ class EntityFactory {
 
 	std::map<std::string, int> resourcesCount;
 
+	std::map<std::string, sf::IntRect> centerRects;
+
 public:
 	TextureManager texManager;
 	sf::Texture &getTex(std::string name) {
@@ -78,6 +80,7 @@ public:
 	void loadTextureWithWhiteMask(std::string name, std::string filename) {
 		sf::Image img;
 		img.loadFromFile(filename);
+		this->getSpecialPix(name, img, img.getSize().x, img.getSize().y);
 		img.createMaskFromColor(sf::Color::White);
 		texManager.loadTexture(name, img, sf::IntRect{0, 0, img.getSize().x, img.getSize().y});
 
@@ -110,7 +113,7 @@ public:
 		transitions.loadFromFile("medias/tiles/bordures.png");
 		transitions.createMaskFromColor(sf::Color::White);
 		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 640});
-		
+
 	}
 
 	TechNode loadTechTree(std::string filename) {
@@ -147,6 +150,36 @@ public:
 		return &this->techTrees[team];
 	}
 
+	void getSpecialPix(std::string name, sf::Image &image, int width, int height) {
+		sf::Vector2i pix1;
+		sf::Vector2i pix2;
+		int found = 0;
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				if(found > 1)
+					return;
+				if (image.getPixel(x, y) == sf::Color(255, 36, 196)) {
+					std::cout << name << " special pix "<<x<<"x"<<y<<std::endl;
+					if(found==0) {
+						pix1= sf::Vector2i(x,y);
+					} else {
+						pix2 = sf::Vector2i(x,y);
+						sf::IntRect centerRect(pix1,pix2-pix1);
+						std::cout << name << " center rect " << centerRect.left << "x" << centerRect.top << ":" << centerRect.width << "x" << centerRect.height << std::endl;
+						centerRects[name]=centerRect;
+					}
+
+					found++;
+				}
+			}
+		}
+
+		if(found) {
+
+		}
+
+	}
+
 	// init unit texture with mirroring
 	void initUnitTexture(std::string name, std::string imgPath) {
 		sf::Image image, outImage;
@@ -154,6 +187,8 @@ public:
 		image.loadFromFile(imgPath);
 		int columnWidth = image.getSize().x / 5;
 		int height = image.getSize().y;
+
+		this->getSpecialPix(name, image, columnWidth, height);
 
 		outImage.create(columnWidth * 8, height, sf::Color::Transparent);
 
@@ -210,10 +245,7 @@ public:
 			this->docs[name] = doc;
 
 			std::string imgPath = doc->RootElement()->FirstChildElement("file")->Attribute("path");
-			sf::Image img;
-			img.loadFromFile(imgPath);
-			img.createMaskFromColor(sf::Color::White);
-			texManager.loadTexture(name, img, sf::IntRect{0, 0, img.getSize().x, img.getSize().y});
+			this->loadTextureWithWhiteMask(name, imgPath);
 
 			this->loadBuildButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
 		}
@@ -327,7 +359,7 @@ public:
 
 		tile.sprite.setTexture(texManager.getRef(name));
 
-		Animation staticAnim({0,1,2});
+		Animation staticAnim({0, 1, 2});
 
 		AnimationHandler idleHandler;
 
@@ -367,6 +399,7 @@ public:
 		tile.direction = South;
 		tile.state = "idle";
 
+		tile.centerRect = this->centerRects[name];
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
@@ -413,6 +446,8 @@ public:
 		tile.direction = North;
 		tile.state = "idle";
 
+		tile.centerRect = this->centerRects[name];
+
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
@@ -441,6 +476,8 @@ public:
 
 	EntityID plantResource(entt::Registry<EntityID> &registry, ResourceType type, int x, int y) {
 		EntityID entity = registry.create();
+
+		std::string name = this->resourceTypeName(type);
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
 		tile.size = sf::Vector2i{1, 1};
@@ -449,7 +486,7 @@ public:
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 //		tile.sprite.setOrigin(sf::Vector2f(16, 16));
-		tile.sprite.setTexture(texManager.getRef(this->resourceTypeName(type)));
+		tile.sprite.setTexture(texManager.getRef(name));
 
 		Animation staticAnim({0});
 
@@ -464,6 +501,8 @@ public:
 
 		tile.direction = North;
 		tile.state = "idle";
+
+		tile.centerRect = this->centerRects[name];
 
 		Resource resource;
 		resource.type = type;
@@ -534,6 +573,8 @@ public:
 		tile.direction = North;
 		tile.state = "idle";
 
+		tile.centerRect = this->centerRects[rname];
+
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
 		return entity;
@@ -587,11 +628,12 @@ public:
 		this->loadTerrains();
 		this->loadUnits();
 		this->loadBuildings();
-		this->loadMisc();
-		this->loadTechTrees();
 
 		this->loadResources("defs/res/nature.xml");
 		this->loadResources("defs/res/pollution.xml");
+
+		this->loadMisc();
+		this->loadTechTrees();
 	}
 
 	EntityFactory() {

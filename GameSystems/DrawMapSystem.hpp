@@ -23,6 +23,7 @@ public:
 		this->drawTileLayer(window, this->map->terrains, dt);
 		this->drawTileLayer(window, this->map->transitions, dt);
 		this->drawObjLayer(window, dt);
+		this->drawDebug(window,dt);
 	}
 
 	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, float dt) {
@@ -80,8 +81,11 @@ public:
 //		pos.x = tile.ppos.x - tile.offset.x * 32;
 //		pos.y = tile.ppos.y - tile.offset.y * 32;
 
-			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
-			pos.y = tile.ppos.y - tile.psize.y / 2;
+//			pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
+//			pos.y = tile.ppos.y - tile.psize.y / 2;
+
+			pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x*32;
+			pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y*32;
 
 			tile.sprite.setPosition(pos);
 

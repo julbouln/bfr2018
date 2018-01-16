@@ -98,7 +98,8 @@ public:
 						else
 							return false;
 			*/
-			return (lht.pos.y < rht.pos.y);
+			return (lht.pos.y + lht.size.y/2 < rht.pos.y + rht.size.y/2);
+//			return (lht.ppos.y - (lht.centerRect.top + lht.centerRect.height / 2) + 16 + lht.offset.x*32 < rht.ppos.y - (rht.centerRect.top + rht.centerRect.height / 2) + + 16 + rht.offset.x*32);
 		});
 	}
 };

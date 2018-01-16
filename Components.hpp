@@ -14,6 +14,8 @@ struct Tile {
 
 	sf::Vector2i offset; // offset
 
+	sf::IntRect centerRect;
+
 	sf::Sprite sprite;
 	std::map<std::string,AnimationHandler> animHandlers;
 
