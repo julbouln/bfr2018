@@ -85,6 +85,15 @@ public:
 						tile.ppos.y += speed;
 						break;
 					}
+
+					if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
+						// something wrong, realign
+						GameObject &obj = this->vault->registry.get<GameObject>(entity);
+						std::cout << "Pathfinding: SOMETHING WRONG WITH "<<entity<< " state:"<<tile.state << " life:"<<obj.life<<std::endl;
+						tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+					}
+
 				}
 			}
 		}

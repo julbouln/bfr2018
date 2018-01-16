@@ -24,9 +24,9 @@ public:
 						}
 					}
 				}
-				if(targets.size()>0) {
+				if (targets.size() > 0) {
 					// attack random in sight target
-					std::random_shuffle ( targets.begin(), targets.end() );					
+					std::random_shuffle ( targets.begin(), targets.end() );
 					this->attack(unit, targets.front());
 				}
 
@@ -58,15 +58,36 @@ public:
 					if (destObj.life == 0) {
 						tile.state = "idle";
 						unit.destAttack = 0;
-
-						destTile.state = "die";
+						unit.nextpos = tile.pos;
+						unit.destpos = tile.pos;
 					}
+
 				} else {
 					this->goTo(unit, dpos);
 					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 				}
 			} else {
 				unit.destAttack = 0;
+			}
+		}
+
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			Unit &unit = view.get<Unit>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
+
+			if (obj.life == 0) {
+				tile.state = "die";
+				unit.destAttack = 0;
+				unit.destpos = tile.pos;
+				unit.nextpos = tile.pos;
+			}
+
+			if (unit.destAttack && !this->vault->registry.valid(unit.destAttack)) {
+				tile.state = "idle";
+				unit.destAttack = 0;
+				unit.nextpos = tile.pos;
+				unit.destpos = tile.pos;
 			}
 		}
 

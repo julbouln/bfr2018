@@ -114,14 +114,37 @@ public:
 			if (player.team == "rebel")
 			{
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 10);
+
+						
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 11);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 12);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 11);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 12);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 11);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 12);
+				
+
 //				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
 
 			} else {
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 11);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 12);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 11);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 12);
+				
+
+//				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
 //				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
 
 				if (player.ai) {
-					ai.nazAI.parse(player.team,player.aiTree, entity);
+//					ai.nazAI.parse(player.team,player.aiTree, entity);
 				}
 			}
 
@@ -136,16 +159,6 @@ public:
 		iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
 
 //		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
-		/*
-				factory.createUnit(registry, this->currentPlayer, "zork", 10, 11);
-				factory.createUnit(registry, this->currentPlayer, "zork", 10, 12);
-				factory.createUnit(registry, this->currentPlayer, "zork", 11, 10);
-				factory.createUnit(registry, this->currentPlayer, "zork", 11, 11);
-				factory.createUnit(registry, this->currentPlayer, "zork", 11, 12);
-				factory.createUnit(registry, this->currentPlayer, "zork", 12, 10);
-				factory.createUnit(registry, this->currentPlayer, "zork", 12, 11);
-				factory.createUnit(registry, this->currentPlayer, "zork", 12, 12);
-				*/
 		/*
 						factory.createBuilding(registry, this->currentPlayer, "taverne", 16, 10, true);
 				*/
