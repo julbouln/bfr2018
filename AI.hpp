@@ -16,7 +16,9 @@ enum class AITag {
 	TUntilFail,
 	TProbability,
 	THasMoreResourcesThan,
-	THasLessObjectsTypeThan
+	THasLessObjectsTypeThan,
+	TBuild,
+	TPlant
 };
 
 static std::map<std::string, AITag> aiTags =
@@ -29,7 +31,9 @@ static std::map<std::string, AITag> aiTags =
 	{ "UntilFail", AITag::TUntilFail },
 	{ "Probability", AITag::TProbability},
 	{ "HasMoreResourcesThan", AITag::THasMoreResourcesThan},
-	{ "HasLessObjectsTypeThan", AITag::THasLessObjectsTypeThan}
+	{ "HasLessObjectsTypeThan", AITag::THasLessObjectsTypeThan},
+	{ "Build", AITag::TBuild},
+	{ "Plant", AITag::TPlant}
 };
 
 class Probability : public BrainTree::Leaf
@@ -84,8 +88,16 @@ public:
 	Status update() override
 	{
 		Player &player = vault->registry.get<Player>(entity);
-		if (player.objsCount.count(type)==0 || player.objsCount[type] < qty)
+		int foundQty = 0;
+		if (player.objsCount.count(type) == 0)
+			foundQty = 0;
+		else
+			foundQty = player.objsCount[type];
+
+		if (foundQty < qty) {
+			std::cout << "AI: " << entity << " has less than " << qty << " (" << foundQty << ") " << type << std::endl;
 			return Node::Status::Success;
+		}
 		else
 			return Node::Status::Failure;
 	}
@@ -97,6 +109,71 @@ private:
 	int qty;
 };
 
+class Build : public BrainTree::Leaf, public GameSystem
+{
+public:
+	Build(BrainTree::Blackboard::Ptr board, GameVault *vault, EntityID entity, std::string name) : Leaf(board), vault(vault), entity(entity), name(name) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		EntityID buildingEnt = this->vault->factory.createBuilding(vault->registry, entity, name, 200, 200, false);
+		GameObject &obj = vault->registry.get<GameObject>(buildingEnt);
+		Tile &tile = vault->registry.get<Tile>(buildingEnt);
+
+		std::vector<sf::Vector2i> buildPos;
+		for (int x = 0; x < this->map->width; x++) {
+			for (int y = 0; y < this->map->height; y++) {
+//				std::cout << "FOG:" << (int)player.fog.get(x,y) << std::endl;
+				if (player.fog.get(x, y) != FogState::Unvisited) {
+					tile.pos = sf::Vector2i(x, y);
+					bool intersect = false;
+					for (sf::Vector2i p : this->tileSurface(tile)) {
+						if (this->map->objs.get(p.x, p.y)) {
+							intersect = true;
+						}
+					}
+					if (!intersect)
+						buildPos.push_back(sf::Vector2i(x, y));
+
+				}
+			}
+		}
+
+		std::random_shuffle ( buildPos.begin(), buildPos.end() );
+
+		obj.mapped = true;
+		tile.pos = buildPos.front();
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+		std::cout << "AI:" << name << " build at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+
+
+		return Node::Status::Success;
+	}
+
+private:
+	GameVault *vault;
+	EntityID entity;
+	std::string name;
+};
+
+class Plant : public BrainTree::Leaf, public GameSystem
+{
+public:
+	Plant(BrainTree::Blackboard::Ptr board, GameVault *vault, EntityID entity, std::string name) : Leaf(board), vault(vault), entity(entity), name(name) {}
+
+	Status update() override
+	{
+	}
+
+private:
+	GameVault *vault;
+	EntityID entity;
+	std::string name;
+
+};
 
 class AIParser : public GameSystem {
 	tinyxml2::XMLDocument doc;
@@ -176,6 +253,12 @@ public:
 			auto node = std::make_shared<HasLessObjectsTypeThan>(blackboard, this->vault, entity, type, qty);
 			return node;
 		}
+		case AITag::TBuild: {
+			std::string name = element->Attribute("type");
+			auto node = std::make_shared<Build>(blackboard, this->vault, entity, name);
+			node->map = this->map;
+			return node;
+		}
 		}
 		std::cout << "AI: unknown tag " << element->Name() << std::endl;
 		return nullptr;
@@ -190,4 +273,8 @@ class AI : public GameSystem
 public:
 	AIParser rebelAI;
 	AIParser nazAI;
+
+	AI() {
+		nazAI.load("defs/new/ai/neonaz.xml");
+	}
 };

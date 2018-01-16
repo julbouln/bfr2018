@@ -26,10 +26,10 @@ public:
 	}
 
 
-	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile) {
+	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) {
 		std::vector<sf::Vector2i> surface;
-		for (int w = -1; w < tile.size.x + 1; w++) {
-			for (int h = -1; h < tile.size.y + 1; h++) {
+		for (int w = -dist; w < tile.size.x + dist; w++) {
+			for (int h = -dist; h < tile.size.y + dist; h++) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
 				if (this->map->bound(p.x, p.y))
 					surface.push_back(p);

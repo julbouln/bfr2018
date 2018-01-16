@@ -5,6 +5,9 @@
 #include "AnimationHandler.hpp"
 #include "Entity.hpp"
 
+#include "Map.hpp"
+#include "BrainTree/BrainTree.h"
+
 struct Tile {
 	sf::Vector2f psize; // pixel size
 	sf::Vector2i size; // map size
@@ -33,6 +36,7 @@ struct Attack {
 struct GameObject {
 	float life;
 	unsigned int view;
+	bool mapped;
 
 	std::string name;
 	std::string team;
@@ -65,7 +69,6 @@ struct Unit {
 
 struct Building {
 	unsigned int buildTime;
-	bool built;
 };
 
 enum class ResourceType {
@@ -86,5 +89,10 @@ struct Player {
 	int resources;
 	int butchery;
 
+	Fog fog;
+
 	std::map<std::string, int> objsCount;
+
+	BrainTree::BehaviorTree aiTree;
+
 };

@@ -345,7 +345,6 @@ public:
 		tinyxml2::XMLElement *root = doc->RootElement();
 
 		building.buildTime = root->FirstChildElement("build_time")->IntAttribute("value");
-		building.built = false;
 	}
 
 	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
@@ -404,6 +403,7 @@ public:
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
+		obj.mapped = true;
 
 		Unit unit;
 		this->parseUnitFromXml(name, unit);
@@ -451,10 +451,10 @@ public:
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
+		obj.mapped = built;
 
 		Building building;
 		this->parseBuildingFromXml(name, building);
-		building.built = built;
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<GameObject>(entity, obj);

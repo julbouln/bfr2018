@@ -1,0 +1,15 @@
+<AI>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+		<Build type="gymnaz"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+		<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+		</Inverter>
+		<HasLessObjectsTypeThan type="labo" qty="3"/>
+		<Build type="labo"/>		
+	</Sequence>
+</AI>

@@ -28,6 +28,7 @@ public:
 	MapLayersSystem mapLayers;
 	PathfindingSystem pathfinding;
 	CombatSystem combat;
+	AI ai;
 
 	sf::Sprite iface;
 
@@ -77,6 +78,12 @@ public:
 		combat.setVault(vault);
 		combat.map = this->map;
 
+		ai.setVault(vault);
+		ai.map = this->map;
+		ai.rebelAI.setVault(this->vault);
+		ai.rebelAI.map = this->map;
+		ai.nazAI.setVault(this->vault);
+		ai.nazAI.map = this->map;
 	}
 
 	void setSize(unsigned int width, unsigned int height) {
@@ -94,9 +101,9 @@ public:
 	}
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight) {
-		map->initTiles(this->vault->registry, this->vault->factory);
-		map->initTransitions(this->vault->registry, this->vault->factory);
-		map->generate(this->vault->registry, this->vault->factory, mapWidth, mapHeight);
+		mapLayers.initTiles();
+		mapLayers.initTransitions();
+		mapLayers.generate(mapWidth, mapHeight);
 
 		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
 		this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
@@ -108,9 +115,20 @@ public:
 			{
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 10);
 //				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
+
 			} else {
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+
+				if (player.ai) {
+					ai.nazAI.parse(this->vault->registry, player.aiTree, entity);
+				}
 			}
+
+
+			player.fog.width = mapWidth;
+			player.fog.height = mapHeight;
+			player.fog.fill();
+
 		}
 
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
@@ -209,7 +227,8 @@ public:
 				if (this->action == Action::Building)
 				{
 					Building &building = this->vault->registry.get<Building>(this->currentBuild);
-					building.built = true;
+					GameObject &obj = this->vault->registry.get<GameObject>(this->currentBuild);
+					obj.mapped = true;
 					this->action = Action::None;
 					this->currentBuild = 0;
 				} else {
@@ -292,6 +311,8 @@ public:
 
 	void draw(sf::RenderWindow &window, float dt) {
 		drawMap.draw(window, dt);
+
+//		drawMap.drawFog(window, this->currentPlayer, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -508,10 +529,11 @@ public:
 				if (player.objsCount.count(obj.name)) {
 					player.objsCount[obj.name] = player.objsCount[obj.name] + 1;
 				} else {
-					player.objsCount[obj.name] = 0;
+					player.objsCount[obj.name] = 1;
 				}
 			}
 		}
+
 	}
 
 	void update(float dt) {
@@ -531,6 +553,16 @@ public:
 		this->combat.update(dt);
 		this->resources.update(dt);
 		this->mapLayers.update(dt);
+
+
+		// AI		
+		auto playerView = this->vault->registry.view<Player>();
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+			if (player.ai)
+				player.aiTree.update();
+		}
+
 	}
 
 	void updateEveryFrame(float dt)
