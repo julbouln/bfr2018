@@ -54,6 +54,15 @@
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="30"/>
+		<HasLessObjectsTypeThan type="lance_pepino" qty="5"/>
+		<Train type="lance_pepino"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>

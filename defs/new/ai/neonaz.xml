@@ -54,6 +54,15 @@
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="30"/>
+		<HasLessObjectsTypeThan type="mitrailleur" qty="5"/>
+		<Train type="mitrailleur"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>

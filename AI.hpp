@@ -179,22 +179,22 @@ public:
 			std::random_shuffle ( explorers.begin(), explorers.end() );
 			EntityID explorer = explorers.front();
 
-			Tile &exTile = this->vault->registry.get<Tile>(explorer);
+			if (this->vault->registry.valid(explorer)) {
+				Tile &exTile = this->vault->registry.get<Tile>(explorer);
 
-			sf::Vector2i explorePos =  sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
-			int cnt = 0;
-			while (player.fog.get(explorePos.x, explorePos.y) != FogState::Unvisited && cnt < 32) {
-				explorePos = sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
-				cnt++;
-			}
+				sf::Vector2i explorePos =  sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
+				int cnt = 0;
+				while (player.fog.get(explorePos.x, explorePos.y) != FogState::Unvisited && cnt < 32) {
+					explorePos = sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
+					cnt++;
+				}
 
-			if (exTile.state == "idle") {
-				std::cout << "AI: " << explorer << " explore " << explorePos.x << "x" << explorePos.y << std::endl;
-				this->goTo(explorer, explorePos);
-				return Node::Status::Success;
-			} else {
-				return Node::Status::Failure;
+				if (exTile.state == "idle") {
+					std::cout << "AI: " << explorer << " explore " << explorePos.x << "x" << explorePos.y << std::endl;
+					this->goTo(explorer, explorePos);
+				}
 			}
+			return Node::Status::Success;
 		} else {
 			return Node::Status::Failure;
 		}
@@ -283,14 +283,17 @@ public:
 			type = ResourceType::Pollution;
 		}
 
-		std::random_shuffle ( plantAround.begin(), plantAround.end() );
-		this->seedResources(type, plantAround.front());
+		if (plantAround.size() > 0) {
+			std::random_shuffle ( plantAround.begin(), plantAround.end() );
+			if (this->vault->registry.valid(plantAround.front())) {
+				this->seedResources(type, plantAround.front());
 
-		std::cout << "AI:" << name << " plant " << name << " around " << plantAround.front() << std::endl;
-		TechNode *n = this->vault->factory.getTechNode(blackboard->GetString("team"), name);
+				std::cout << "AI:" << name << " plant " << name << " around " << plantAround.front() << std::endl;
+				TechNode *n = this->vault->factory.getTechNode(blackboard->GetString("team"), name);
 //		std::cout << "NODE "<< n->parentType << std::endl;
 //		std::cout << ->parent->type << std::endl;
-
+			}
+		}
 		return Node::Status::Success;
 	}
 
@@ -337,7 +340,7 @@ public:
 
 		if (player.enemyFound && player.objsByType.count(name) > 0) {
 			int tot = player.objsByType[name].size();
-			int perCnt = (int)((float)per/100.0 * (float)tot);
+			int perCnt = (int)((float)per / 100.0 * (float)tot);
 
 			std::vector<EntityID> attackers = player.objsByType[name];
 			std::random_shuffle ( attackers.begin(), attackers.end() );
@@ -345,7 +348,7 @@ public:
 			for (int i = 0; i < perCnt; i++) {
 				EntityID attacker = attackers[i];
 				if (this->vault->registry.valid(attacker)) {
-					std::cout << "DEBUG AI SendExpedition"<<i<< " "<< perCnt << " " << name << " " << attacker<<std::endl;
+					std::cout << "DEBUG AI SendExpedition" << i << " " << perCnt << " " << name << " " << attacker << std::endl;
 					Tile &atTile = this->vault->registry.get<Tile>(attacker);
 
 					if (atTile.state == "idle") {
