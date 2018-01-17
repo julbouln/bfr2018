@@ -9,6 +9,8 @@ class MapLayersSystem : public GameSystem {
 	std::map<int, int> dirtTransitionsMapping;
 
 	std::vector<EntityID> fogTransitions;
+	std::vector<EntityID> fogTransitions2;
+	std::vector<EntityID> debugTransitions;
 
 public:
 	void update(float dt) {
@@ -208,6 +210,11 @@ public:
 
 		for (int i = 0; i < 16; i++) {
 			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
+			fogTransitions2.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition2", i));
+		}
+
+		for (int i = 0; i < 256; i++) {
+			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
 		}
 
 		// miss
@@ -230,9 +237,9 @@ public:
 	}
 
 
-	int fogTransitionBitmask(int x, int y) {
+	int fogTransitionBitmask4(int x, int y) {
 		int bitmask = 0;
-		if (this->map->fog.get(x, y) != fogTransitions[15]) {
+		if (this->map->fog.get(x, y) == 0) {
 			if (this->map->bound(x, y - 1))
 				bitmask += 1 * ((this->map->fog.get(x, y - 1) == fogTransitions[15]) ? 1 : 0);
 			if (this->map->bound(x - 1, y))
@@ -241,6 +248,50 @@ public:
 				bitmask += 4 * ((this->map->fog.get(x + 1, y) == fogTransitions[15]) ? 1 : 0);
 			if (this->map->bound(x, y + 1))
 				bitmask += 8 * ((this->map->fog.get(x, y + 1) == fogTransitions[15]) ? 1 : 0);
+		}
+		return bitmask;
+	}
+
+
+	int fogTransitionBitmask(int x, int y) {
+		int bitmask = 0;
+		if (this->map->fog.get(x, y) == 0) {
+			if (this->map->bound(x, y - 1))
+				bitmask += 1 * ((this->map->fog.get(x, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x - 1, y))
+				bitmask += 2 * ((this->map->fog.get(x - 1, y) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y))
+				bitmask += 4 * ((this->map->fog.get(x + 1, y) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x, y + 1))
+				bitmask += 8 * ((this->map->fog.get(x, y + 1) == fogTransitions[15]) ? 1 : 0);
+
+			if (this->map->bound(x - 1, y - 1))
+				bitmask += 16 * ((this->map->fog.get(x - 1, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y - 1))
+				bitmask += 32 * ((this->map->fog.get(x + 1, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x - 1, y + 1))
+				bitmask += 64 * ((this->map->fog.get(x - 1, y + 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y + 1))
+				bitmask += 128 * ((this->map->fog.get(x + 1, y + 1) == fogTransitions[15]) ? 1 : 0);
+
+			/*
+			if (this->map->bound(x - 1, y - 1))
+				bitmask += 1 * ((this->map->fog.get(x - 1, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x, y - 1))
+				bitmask += 2 * ((this->map->fog.get(x, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y - 1))
+				bitmask += 4 * ((this->map->fog.get(x + 1, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x - 1, y))
+				bitmask += 8 * ((this->map->fog.get(x - 1, y) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y))
+				bitmask += 16 * ((this->map->fog.get(x + 1, y) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x - 1, y + 1))
+				bitmask += 32 * ((this->map->fog.get(x - 1, y + 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x, y + 1))
+				bitmask += 64 * ((this->map->fog.get(x, y + 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y + 1))
+				bitmask += 128 * ((this->map->fog.get(x + 1, y + 1) == fogTransitions[15]) ? 1 : 0);
+	*/
 		}
 		return bitmask;
 	}
@@ -266,9 +317,13 @@ public:
 	void updateFogTransition(int x, int y) {
 		int bitmask = this->fogTransitionBitmask(x, y);
 
-		if (bitmask) {
-			this->map->fog.set(x, y, fogTransitions[bitmask]);
+		if(bitmask) {
+		if (bitmask & 0xf) {
+			this->map->fog.set(x, y, fogTransitions[bitmask & 0xf] );
+		} else {
+			this->map->fog.set(x, y, fogTransitions2[(bitmask >> 4) & 0xf] );			
 		}
+	}
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673

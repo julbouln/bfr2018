@@ -105,7 +105,7 @@ public:
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
-		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
 		this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 		auto view = this->vault->registry.view<Player>();

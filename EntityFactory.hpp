@@ -120,7 +120,14 @@ public:
 		transitions.createMaskFromColor(sf::Color::White);
 		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 640});
 
-		texManager.loadTexture("fog_transition", "medias/new/fog.png");
+
+		sf::Image fogTransitions;
+		fogTransitions.loadFromFile("medias/new/fog.png");
+		texManager.loadTexture("fog_transition", fogTransitions, sf::IntRect{0, 0, 32, 512});
+		texManager.loadTexture("fog_transition2", fogTransitions, sf::IntRect{32, 0, 32, 512});
+
+
+		texManager.loadTexture("debug_transition", "medias/new/debug_transitions256.png");
 
 	}
 
