@@ -447,20 +447,7 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-
-//		tile.sprite.setOrigin(sf::Vector2f(tile.psize.x / 2, tile.psize.y / 2));
 		tile.sprite.setTexture(texManager.getRef(name));
-
-//		Animation staticAnim({}, 1.0f);
-
-//		AnimationHandler idleHandler;
-
-//		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
-
-//		idleHandler.addAnim(staticAnim);
-//		idleHandler.update(0.0f);
-
-//		tile.animHandlers["idle"] = idleHandler;
 
 		tile.direction = North;
 		tile.state = "idle";
@@ -471,6 +458,7 @@ public:
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
 		obj.mapped = built;
+		obj.life = obj.life * tile.size.x * tile.size.y;
 
 		Building building;
 		this->parseBuildingFromXml(name, building);
