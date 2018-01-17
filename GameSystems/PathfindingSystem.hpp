@@ -2,6 +2,9 @@
 
 #include "GameSystem.hpp"
 
+//#define PATHFINDING_DEBUG
+#define PATHFINDING_MAX_NO_PATH 16
+
 class PathfindingSystem : public GameSystem {
 public:
 	void update(float dt) {
@@ -38,19 +41,27 @@ public:
 							tile.direction = this->getDirection(sf::Vector2i(cx, cy), sf::Vector2i(nx, ny));
 							tile.state = "move";
 
-							std::cout << "Pathfinding: " << entity << " next pos " << nx << "x" << ny << "(" << nx - cx << "x" << ny - cy << ")" << std::endl;
+#ifdef PATHFINDING_DEBUG
+							std::cout << "Pathfinding: " << entity << " next position " << nx << "x" << ny << "(" << nx - cx << "x" << ny - cy << ")" << std::endl;
+#endif
 						} else {
+#ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
+#endif
 							tile.state = "idle";
 							unit.nopath++;
-							if (unit.nopath > 16) {
+							if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
 								sf::Vector2i fp = this->firstFreePosition(unit.destpos);
-								std::cout << "first free pos " << fp.x << "x" << fp.y << std::endl;
+#ifdef PATHFINDING_DEBUG
+								std::cout << "Pathfinding: " << entity << " go to first free position " << fp.x << "x" << fp.y << std::endl;
+#endif
 								this->goTo(unit, fp);
 							}
 						}
 					} else {
+#ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
+#endif
 						tile.state = "idle";
 					}
 				} else {
@@ -89,7 +100,7 @@ public:
 					if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
 						// something wrong, realign
 						GameObject &obj = this->vault->registry.get<GameObject>(entity);
-						std::cout << "Pathfinding: SOMETHING WRONG WITH "<<entity<< " state:"<<tile.state << " life:"<<obj.life<<std::endl;
+						std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << std::endl;
 						tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 					}

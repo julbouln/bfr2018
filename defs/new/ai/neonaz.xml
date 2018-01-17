@@ -74,6 +74,7 @@
 		<HasFoundEnemy/>
 		<RandomSelector>
 			<SendExpedition type="patrouilleur" per="50"/>
+			<SendExpedition type="mitrailleur" per="50"/>
 		</RandomSelector>
 	</Sequence>
 </AI>

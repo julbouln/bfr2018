@@ -6,13 +6,14 @@
 #include "tinyxml2.h"
 #include "tixml2ex.h"
 
+//#define TECH_TREE_DEBUG
+//#define FACTORY_DEBUG
 
 enum class TechComponent {
 	Building,
 	Character,
 	Resource
 };
-
 
 class TechNode {
 public:
@@ -32,7 +33,9 @@ public:
 
 		type = el->Attribute("type");
 
-		std::cout << "tech tree parse " << el->Name() << " " << type << " " << (int)comp << std::endl;
+#ifdef TECH_TREE_DEBUG
+		std::cout << "TechTree: parse " << el->Name() << " " << type << " " << (int)comp << std::endl;
+#endif
 
 		for (tinyxml2::XMLElement *childEl : el) {
 			TechNode childNode;
@@ -162,13 +165,17 @@ public:
 				if(found > 1)
 					return;
 				if (image.getPixel(x, y) == sf::Color(255, 36, 196)) {
-					std::cout << name << " special pix "<<x<<"x"<<y<<std::endl;
+#ifdef FACTORY_DEBUG
+					std::cout << "EntityFactory: " << name << " special pix "<<x<<"x"<<y<<std::endl;
+#endif
 					if(found==0) {
 						pix1= sf::Vector2i(x,y);
 					} else {
 						pix2 = sf::Vector2i(x,y);
 						sf::IntRect centerRect(pix1,pix2-pix1);
-						std::cout << name << " center rect " << centerRect.left << "x" << centerRect.top << ":" << centerRect.width << "x" << centerRect.height << std::endl;
+#ifdef FACTORY_DEBUG
+						std::cout << "EntityFactory: " << name << " center rect " << centerRect.left << "x" << centerRect.top << ":" << centerRect.width << "x" << centerRect.height << std::endl;
+#endif
 						centerRects[name]=centerRect;
 					}
 
@@ -553,7 +560,7 @@ public:
 			i++;
 		}
 
-		std::cout << "growedResource: " << rnd << " " << rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
+//		std::cout << "growedResource: " << rnd << " " << rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 

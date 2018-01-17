@@ -74,6 +74,7 @@
 		<HasFoundEnemy/>
 		<RandomSelector>
 			<SendExpedition type="punkette" per="50"/>
+			<SendExpedition type="lance_pepino" per="50"/>
 		</RandomSelector>
 	</Sequence>
 

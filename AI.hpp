@@ -6,6 +6,7 @@
 #include "GameSystems/GameSystem.hpp"
 #include "BrainTree/BrainTree.h"
 
+//#define AI_DEBUG
 
 enum class AITag {
 	TSelector,
@@ -104,7 +105,9 @@ public:
 			foundQty = player.objsByType[type].size();
 
 		if (foundQty < qty) {
+#ifdef AI_DEBUG
 			std::cout << "AI: " << entity << " has less than " << qty << " (" << foundQty << ") " << type << std::endl;
+#endif
 			return Node::Status::Success;
 		}
 		else
@@ -130,7 +133,9 @@ public:
 		int exploredPer = (explored * 100) / (this->map->width * this->map->height) ;
 
 		if (exploredPer < per) {
+#ifdef AI_DEBUG
 			std::cout << "AI: " << entity << " has explored less than " << per << " (" << exploredPer << "/" << explored << ") " << std::endl;
+#endif
 			return Node::Status::Success;
 		}
 		else
@@ -153,7 +158,9 @@ public:
 		Player &player = vault->registry.get<Player>(entity);
 
 		if (player.enemyFound) {
+#ifdef AI_DEBUG
 			std::cout << "AI: " << entity << " enemy found at " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
+#endif
 			return Node::Status::Success;
 		}
 		else
@@ -190,7 +197,9 @@ public:
 				}
 
 				if (exTile.state == "idle") {
+#ifdef AI_DEBUG
 					std::cout << "AI: " << explorer << " explore " << explorePos.x << "x" << explorePos.y << std::endl;
+#endif
 					this->goTo(explorer, explorePos);
 				}
 			}
@@ -250,10 +259,14 @@ public:
 			tile.pos = buildPos.front();
 			tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
+#ifdef AI_DEBUG
 			std::cout << "AI:" << name << " build at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+#endif
 			return Node::Status::Success;
 		} else {
+#ifdef AI_DEBUG
 			std::cout << "AI:" << name << " cannot be built !" << std::endl;
+#endif
 			this->vault->registry.destroy(buildingEnt);
 			return Node::Status::Failure;
 		}
@@ -288,10 +301,10 @@ public:
 			if (this->vault->registry.valid(plantAround.front())) {
 				this->seedResources(type, plantAround.front());
 
+#ifdef AI_DEBUG
 				std::cout << "AI:" << name << " plant " << name << " around " << plantAround.front() << std::endl;
+#endif
 				TechNode *n = this->vault->factory.getTechNode(blackboard->GetString("team"), name);
-//		std::cout << "NODE "<< n->parentType << std::endl;
-//		std::cout << ->parent->type << std::endl;
 			}
 		}
 		return Node::Status::Success;
@@ -315,7 +328,9 @@ public:
 
 		std::random_shuffle ( trainAround.begin(), trainAround.end() );
 		if (trainUnit(name, entity, trainAround.front() )) {
+#ifdef AI_DEBUG
 			std::cout << "AI:" << name << " train " << name << " around " << trainAround.front() << std::endl;
+#endif
 			return Node::Status::Success;
 		} else {
 			return Node::Status::Failure;
@@ -348,11 +363,12 @@ public:
 			for (int i = 0; i < perCnt; i++) {
 				EntityID attacker = attackers[i];
 				if (this->vault->registry.valid(attacker)) {
-					std::cout << "DEBUG AI SendExpedition" << i << " " << perCnt << " " << name << " " << attacker << std::endl;
 					Tile &atTile = this->vault->registry.get<Tile>(attacker);
 
 					if (atTile.state == "idle") {
+#ifdef AI_DEBUG
 						std::cout << "AI: " << attacker << " expedition " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
+#endif
 						this->goTo(attacker, player.enemyPos);
 					}
 				}
@@ -386,14 +402,18 @@ public:
 		blackboard->SetString("team", team);
 
 		for (tinyxml2::XMLElement *child : doc.FirstChildElement()) {
+#ifdef AI_DEBUG
 			std::cout << "AI: add " << child->Name() << " to root" << std::endl;
+#endif
 			rootSelector->addChild(this->parseElement(blackboard, child, entity));
 		}
 		tree.setRoot(rootSelector);
 	}
 
 	std::shared_ptr<BrainTree::Node> parseElement(std::shared_ptr<BrainTree::Blackboard> blackboard, tinyxml2::XMLElement *element, EntityID entity) {
+#ifdef AI_DEBUG
 		std::cout << "AI: parse node " << element->Name() << std::endl;
+#endif
 		switch (aiTags[element->Name()]) {
 		case AITag::TSelector: {
 			auto selector = std::make_shared<BrainTree::Selector>();
@@ -434,7 +454,9 @@ public:
 		case AITag::TProbability: {
 			int per = element->IntAttribute("per");
 			int frac = element->IntAttribute("frac");
+#ifdef AI_DEBUG
 			std::cout << "AI: probability " << per << "/" << frac << std::endl;
+#endif
 			auto node = std::make_shared<Probability>(blackboard, per, frac);
 			return node;
 		}

@@ -2,7 +2,6 @@ Improvements:
 - multi-agent pathfinding
 
 Game:
-- combat
 - projectile
 - special FX
 - team colors
