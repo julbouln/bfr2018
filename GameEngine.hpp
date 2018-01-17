@@ -322,8 +322,8 @@ public:
 	void draw(sf::RenderWindow &window, float dt) {
 		drawMap.draw(window, dt);
 
-//		drawMap.drawFog(window, this->currentPlayer, dt);
-//		drawMap.drawTileLayer(window, this->map->fog, dt);
+		drawMap.drawTileLayer(window, this->map->fogHidden, dt, sf::Color(0x00,0x00,0x00,0x7f));
+		drawMap.drawTileLayer(window, this->map->fog, dt, sf::Color(0x00,0x00,0x00));
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -500,10 +500,11 @@ public:
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
 		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
-		if (ImGui::Begin("Example: Fixed Overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+		if (ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
-			ImGui::Text("Entities: %d", this->vault->registry.size());
-			ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
+			ImGui::Text("Total Entities: %d", this->vault->registry.size());
+			ImGui::Text("Drawn Entities: %d", drawMap.entitiesDrawList.size());
+//			ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
 			ImGui::Separator();
 			ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
 

@@ -137,20 +137,12 @@ public:
 
 	TileLayer terrains;
 	TileLayer transitions;
+
+	TileLayer fogHidden;
 	TileLayer fog;
 
 	ObjLayer objs;
 	ObjLayer resources;
-
-	std::vector<EntityID> entities;
-
-	void addEntity(EntityID entity) {
-		entities.push_back(entity);
-	}
-
-	void clearEntities() {
-		entities.clear();
-	}
 
 	Map() {
 	}

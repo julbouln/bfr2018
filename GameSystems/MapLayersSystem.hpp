@@ -9,6 +9,9 @@ class MapLayersSystem : public GameSystem {
 	std::map<int, int> dirtTransitionsMapping;
 
 	std::vector<EntityID> fogTransitions;
+
+	std::map<int, int> fogTransitionsMapping;
+
 	std::vector<EntityID> fogTransitions2;
 	std::vector<EntityID> debugTransitions;
 
@@ -59,8 +62,6 @@ public:
 	}
 
 	void updateObjsLayer(float dt) {
-		this->map->clearEntities();
-
 		this->map->resources.clear();
 		auto resView = this->vault->registry.persistent<Tile, Resource>();
 
@@ -70,8 +71,6 @@ public:
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				this->map->resources.set(p.x, p.y, entity);
 			}
-
-			this->map->addEntity(entity);
 		}
 
 		this->map->objs.clear();
@@ -83,8 +82,6 @@ public:
 			for (sf::Vector2i p : this->tileSurface(tile)) {
 				this->map->objs.set(p.x, p.y, entity);
 			}
-
-			this->map->addEntity(entity);
 		}
 
 		auto unitView = this->vault->registry.persistent<Tile, Unit>();
@@ -96,20 +93,6 @@ public:
 			this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity);
 		}
 
-		std::sort( this->map->entities.begin( ), this->map->entities.end( ), [this ]( const auto & lhs, const auto & rhs )
-		{
-			Tile &lht = vault->registry.get<Tile>(lhs);
-			Tile &rht = vault->registry.get<Tile>(rhs);
-			/*			if (lht.pos.y < rht.pos.y)
-							return true;
-						else if (lht.pos.y == rht.pos.y)
-							return lht.pos.x < rht.pos.x;
-						else
-							return false;
-			*/
-			return (lht.pos.y + lht.size.y / 2 < rht.pos.y + rht.size.y / 2);
-//			return (lht.ppos.y - (lht.centerRect.top + lht.centerRect.height / 2) + 16 + lht.offset.x*32 < rht.ppos.y - (rht.centerRect.top + rht.centerRect.height / 2) + + 16 + rht.offset.x*32);
-		});
 	}
 
 
@@ -152,10 +135,17 @@ public:
 			for (int x = 0; x < this->map->width; ++x)
 			{
 				FogState st = player.fog.get(x, y);
+
 				if (st == FogState::Unvisited) {
-					this->map->fog.set(x, y, fogTransitions[15]);
+					this->map->fog.set(x, y, fogTransitions[0]);
 				} else {
 					this->map->fog.set(x, y, 0);
+				}
+
+				if (st == FogState::Hidden) {
+					this->map->fogHidden.set(x, y, fogTransitions[0]);
+				} else {
+					this->map->fogHidden.set(x, y, 0);
 				}
 			}
 		}
@@ -163,7 +153,8 @@ public:
 		{
 			for (int x = 0; x < this->map->width; ++x)
 			{
-				this->updateFogTransition(x, y);
+				this->updateFogTransition(this->map->fog, x, y);
+				this->updateFogTransition(this->map->fogHidden, x, y);
 			}
 		}
 
@@ -212,11 +203,25 @@ public:
 		dirtTransitionsMapping[0x40] = 15;
 		dirtTransitionsMapping[0x80] = 14;
 
-
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < 13; i++) {
 			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
-			fogTransitions2.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition2", i));
+//			fogTransitions2.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition2", i));
 		}
+
+		fogTransitionsMapping[1] = 3;
+		fogTransitionsMapping[2] = 2;
+		fogTransitionsMapping[3] = 5;
+		fogTransitionsMapping[4] = 1;
+		fogTransitionsMapping[5] = 6;
+		fogTransitionsMapping[8] = 4;
+		fogTransitionsMapping[10] = 8;
+		fogTransitionsMapping[12] = 7;
+		fogTransitionsMapping[15] = 0;
+
+		fogTransitionsMapping[0x10] = 9;
+		fogTransitionsMapping[0x20] = 10;
+		fogTransitionsMapping[0x40] = 11;
+		fogTransitionsMapping[0x80] = 12;
 
 		for (int i = 0; i < 256; i++) {
 			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
@@ -286,26 +291,27 @@ public:
 	}
 
 
-	int fogTransitionBitmask(int x, int y) {
+	int fogTransitionBitmask(TileLayer &layer, int x, int y) {
+		EntityID fogEnt = fogTransitions[0];
 		int bitmask = 0;
-		if (this->map->fog.get(x, y) == 0) {
+		if (layer.get(x, y) == 0) {
 			if (this->map->bound(x, y - 1))
-				bitmask += 1 * ((this->map->fog.get(x, y - 1) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 1 * ((layer.get(x, y - 1) == fogEnt) ? 1 : 0);
 			if (this->map->bound(x - 1, y))
-				bitmask += 2 * ((this->map->fog.get(x - 1, y) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 2 * ((layer.get(x - 1, y) == fogEnt) ? 1 : 0);
 			if (this->map->bound(x + 1, y))
-				bitmask += 4 * ((this->map->fog.get(x + 1, y) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 4 * ((layer.get(x + 1, y) == fogEnt) ? 1 : 0);
 			if (this->map->bound(x, y + 1))
-				bitmask += 8 * ((this->map->fog.get(x, y + 1) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 8 * ((layer.get(x, y + 1) == fogEnt) ? 1 : 0);
 
 			if (this->map->bound(x - 1, y - 1))
-				bitmask += 16 * ((this->map->fog.get(x - 1, y - 1) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 16 * ((layer.get(x - 1, y - 1) == fogEnt) ? 1 : 0);
 			if (this->map->bound(x + 1, y - 1))
-				bitmask += 32 * ((this->map->fog.get(x + 1, y - 1) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 32 * ((layer.get(x + 1, y - 1) == fogEnt) ? 1 : 0);
 			if (this->map->bound(x - 1, y + 1))
-				bitmask += 64 * ((this->map->fog.get(x - 1, y + 1) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 64 * ((layer.get(x - 1, y + 1) == fogEnt) ? 1 : 0);
 			if (this->map->bound(x + 1, y + 1))
-				bitmask += 128 * ((this->map->fog.get(x + 1, y + 1) == fogTransitions[15]) ? 1 : 0);
+				bitmask += 128 * ((layer.get(x + 1, y + 1) == fogEnt) ? 1 : 0);
 
 		}
 		return bitmask;
@@ -315,8 +321,6 @@ public:
 		int bitmask = this->dirtTransitionBitmask(x, y);
 
 		if (bitmask) {
-//					this->map->transitions.set(x, y, debugTransitions[bitmask]);
-
 			if (bitmask & 0xf) {
 				if (dirtTransitionsMapping.count(bitmask & 0xf) > 0) {
 					int trans = dirtTransitions[dirtTransitionsMapping[bitmask & 0xf]];
@@ -342,14 +346,24 @@ public:
 	}
 
 
-	void updateFogTransition(int x, int y) {
-		int bitmask = this->fogTransitionBitmask(x, y);
+	void updateFogTransition(TileLayer &layer, int x, int y) {
+		int bitmask = this->fogTransitionBitmask(layer, x, y);
 
 		if (bitmask) {
 			if (bitmask & 0xf) {
-				this->map->fog.set(x, y, fogTransitions[bitmask & 0xf] );
+				if (fogTransitionsMapping.count(bitmask & 0xf) > 0) {
+					int trans = fogTransitions[fogTransitionsMapping[bitmask & 0xf]];
+					layer.set(x, y, trans);
+				} else {
+					layer.set(x, y, debugTransitions[bitmask & 0xf]);
+				}
 			} else {
-				this->map->fog.set(x, y, fogTransitions2[(bitmask >> 4) & 0xf] );
+				if (fogTransitionsMapping.count(bitmask) > 0) {
+					int trans = fogTransitions[fogTransitionsMapping[bitmask]];
+					layer.set(x, y, trans);
+				} else {
+					layer.set(x, y, debugTransitions[bitmask]);
+				}
 			}
 		}
 	}
@@ -377,6 +391,9 @@ public:
 		this->map->resources.width = width;
 		this->map->resources.height = height;
 
+		this->map->fogHidden.width = width;
+		this->map->fogHidden.height = height;
+
 		this->map->fog.width = width;
 		this->map->fog.height = height;
 
@@ -392,6 +409,7 @@ public:
 		this->map->transitions.fill();
 		this->map->objs.fill();
 		this->map->resources.fill();
+		this->map->fogHidden.fill();
 		this->map->fog.fill();
 
 		for (float y = 0; y < height; y++) {
@@ -414,7 +432,7 @@ public:
 									t = tiles["water"][0];
 								}
 
-				*/				
+				*/
 				this->map->terrains.set(x, y, t);
 
 				if (res > 0.6 && res < 0.65) {
