@@ -89,6 +89,10 @@ struct Player {
 	int resources;
 	int butchery;
 
+	sf::Vector2i initialPos;
+	bool enemyFound;
+	sf::Vector2i enemyPos;
+
 	Fog fog;
 
 	std::map<std::string, std::vector<EntityID>> objsByType;

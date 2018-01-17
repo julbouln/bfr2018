@@ -90,7 +90,7 @@ enum class FogState {
 };
 
 class Fog {
-		std::vector<FogState> grid;
+	std::vector<FogState> grid;
 public:
 	unsigned int width;
 	unsigned int height;
@@ -106,6 +106,15 @@ public:
 		while (grid.size() < width * height) {
 			grid.push_back(FogState::Unvisited);
 		}
+	}
+
+	int visited() {
+		int visited = 0;
+		for (FogState st : grid) {
+			if (st != FogState::Unvisited)
+				visited++;
+		}
+		return visited;
 	}
 
 	int index(int x, int y) const { return x + width * y; }

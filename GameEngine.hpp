@@ -105,7 +105,7 @@ public:
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
-		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
+		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 		this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 		auto view = this->vault->registry.view<Player>();
@@ -113,9 +113,11 @@ public:
 			Player &player = view.get(entity);
 			if (player.team == "rebel")
 			{
+				player.initialPos = sf::Vector2i(10,10);
+				player.enemyFound = false;
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 10);
 
-						
+/*						
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 11);
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 12);
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 10);
@@ -124,12 +126,18 @@ public:
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 10);
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 11);
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 12);
-				
+				*/
+
+				if (player.ai) {
+					ai.rebelAI.parse(player.team,player.aiTree, entity);
+				}
 
 //				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
 
 			} else {
-
+				player.initialPos = sf::Vector2i(mapWidth - 10, mapHeight - 10);
+				player.enemyFound = false;
+/*
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
@@ -138,13 +146,13 @@ public:
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 10);
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 11);
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 12);
-				
+*/				
 
-//				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
 //				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
 
 				if (player.ai) {
-//					ai.nazAI.parse(player.team,player.aiTree, entity);
+					ai.nazAI.parse(player.team,player.aiTree, entity);
 				}
 			}
 

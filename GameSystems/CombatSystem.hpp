@@ -19,8 +19,14 @@ public:
 					if (pEnt) {
 						if (this->vault->registry.has<GameObject>(pEnt)) {
 							GameObject &pObj = this->vault->registry.get<GameObject>(pEnt);
-							if (pObj.team != obj.team)
+							if (pObj.team != obj.team) {
+								// TODO: optimize
+								Player &player = this->vault->registry.get<Player>(obj.player);
+								player.enemyFound = true;
+								player.enemyPos = p;
+
 								targets.push_back(pEnt);
+							}
 						}
 					}
 				}

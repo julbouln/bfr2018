@@ -17,9 +17,13 @@ enum class AITag {
 	TProbability,
 	THasMoreResourcesThan,
 	THasLessObjectsTypeThan,
+	THasExploredLessThan,
+	THasFoundEnnemy,
+	TExplore,
 	TBuild,
 	TPlant,
-	TTrain
+	TTrain,
+	TSendExpedition
 };
 
 static std::map<std::string, AITag> aiTags =
@@ -33,9 +37,13 @@ static std::map<std::string, AITag> aiTags =
 	{ "Probability", AITag::TProbability},
 	{ "HasMoreResourcesThan", AITag::THasMoreResourcesThan},
 	{ "HasLessObjectsTypeThan", AITag::THasLessObjectsTypeThan},
+	{ "HasExploredLessThan", AITag::THasExploredLessThan},
+	{ "HasFoundEnnemy", AITag::THasFoundEnnemy},
+	{ "Explore", AITag::TExplore},
 	{ "Build", AITag::TBuild},
 	{ "Plant", AITag::TPlant},
-	{ "Train", AITag::TTrain}
+	{ "Train", AITag::TTrain},
+	{ "SendExpedition", AITag::TSendExpedition},
 };
 
 class Probability : public BrainTree::Leaf
@@ -109,6 +117,96 @@ private:
 	int qty;
 };
 
+
+class HasExploredLessThan : public BrainTree::Leaf, public GameSystem
+{
+public:
+	HasExploredLessThan(BrainTree::Blackboard::Ptr board, EntityID entity, int per) : Leaf(board), entity(entity), per(per) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+		int explored = player.fog.visited();
+		int exploredPer = (explored * 100) / (this->map->width * this->map->height) ;
+
+		if (exploredPer < per) {
+			std::cout << "AI: " << entity << " has explored less than " << per << " (" << exploredPer << "/" << explored << ") " << std::endl;
+			return Node::Status::Success;
+		}
+		else
+			return Node::Status::Failure;
+	}
+
+private:
+	EntityID entity;
+	int per;
+};
+
+
+class HasFoundEnnemy : public BrainTree::Leaf, public GameSystem
+{
+public:
+	HasFoundEnnemy(BrainTree::Blackboard::Ptr board, EntityID entity) : Leaf(board), entity(entity) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		if (player.enemyFound) {
+			std::cout << "AI: " << entity << " enemy found at " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
+			return Node::Status::Success;
+		}
+		else
+			return Node::Status::Failure;
+	}
+
+private:
+	EntityID entity;
+};
+
+
+class Explore : public BrainTree::Leaf, public GameSystem
+{
+public:
+	Explore(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name) : Leaf(board), entity(entity), name(name) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		if (player.objsByType.count(name) > 0) {
+			std::vector<EntityID> explorers = player.objsByType[name];
+			std::random_shuffle ( explorers.begin(), explorers.end() );
+			EntityID explorer = explorers.front();
+
+			Tile &exTile = this->vault->registry.get<Tile>(explorer);
+
+			sf::Vector2i explorePos =  sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
+			int cnt = 0;
+			while (player.fog.get(explorePos.x, explorePos.y) != FogState::Unvisited && cnt < 32) {
+				explorePos = sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
+				cnt++;
+			}
+
+			if (exTile.state == "idle") {
+				std::cout << "AI: " << explorer << " explore " << explorePos.x << "x" << explorePos.y << std::endl;
+				this->goTo(explorer, explorePos);
+				return Node::Status::Success;
+			} else {
+				return Node::Status::Failure;
+			}
+		} else {
+			return Node::Status::Failure;
+		}
+
+	}
+
+private:
+	EntityID entity;
+	std::string name;
+
+};
+
 class Build : public BrainTree::Leaf, public GameSystem
 {
 public:
@@ -155,12 +253,10 @@ public:
 			std::cout << "AI:" << name << " build at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
 			return Node::Status::Success;
 		} else {
-			std::cout << "AI:" << name << " cannot be built !"<<std::endl;
+			std::cout << "AI:" << name << " cannot be built !" << std::endl;
 			this->vault->registry.destroy(buildingEnt);
 			return Node::Status::Failure;
-
 		}
-
 	}
 
 private:
@@ -201,9 +297,7 @@ public:
 private:
 	EntityID entity;
 	std::string name;
-
 };
-
 
 class Train : public BrainTree::Leaf, public GameSystem
 {
@@ -219,15 +313,10 @@ public:
 		std::random_shuffle ( trainAround.begin(), trainAround.end() );
 		if (trainUnit(name, entity, trainAround.front() )) {
 			std::cout << "AI:" << name << " train " << name << " around " << trainAround.front() << std::endl;
-
 			return Node::Status::Success;
-
 		} else {
 			return Node::Status::Failure;
-
 		}
-
-
 	}
 
 private:
@@ -236,6 +325,47 @@ private:
 
 };
 
+
+class SendExpedition : public BrainTree::Leaf, public GameSystem
+{
+public:
+	SendExpedition(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name, int per) : Leaf(board), entity(entity), name(name), per(per) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		if (player.enemyFound && player.objsByType.count(name) > 0) {
+			int tot = player.objsByType[name].size();
+			int perCnt = (int)((float)per/100.0 * (float)tot);
+
+			std::vector<EntityID> attackers = player.objsByType[name];
+			std::random_shuffle ( attackers.begin(), attackers.end() );
+
+			for (int i = 0; i < perCnt; i++) {
+				EntityID attacker = attackers[i];
+				if (this->vault->registry.valid(attacker)) {
+					std::cout << "DEBUG AI SendExpedition"<<i<< " "<< perCnt << " " << name << " " << attacker<<std::endl;
+					Tile &atTile = this->vault->registry.get<Tile>(attacker);
+
+					if (atTile.state == "idle") {
+						std::cout << "AI: " << attacker << " expedition " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
+						this->goTo(attacker, player.enemyPos);
+					}
+				}
+			}
+			return Node::Status::Success;
+		} else {
+			return Node::Status::Failure;
+		}
+
+	}
+
+private:
+	EntityID entity;
+	std::string name;
+	int per;
+};
 
 class AIParser : public GameSystem {
 	tinyxml2::XMLDocument doc;
@@ -320,6 +450,13 @@ public:
 			node->setVault(this->vault);
 			return node;
 		}
+		case AITag::THasExploredLessThan: {
+			int per = element->IntAttribute("per");
+			auto node = std::make_shared<HasExploredLessThan>(blackboard, entity, per);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
 		case AITag::TBuild: {
 			std::string name = element->Attribute("type");
 			auto node = std::make_shared<Build>(blackboard, entity, name);
@@ -341,6 +478,21 @@ public:
 			node->setVault(this->vault);
 			return node;
 		}
+		case AITag::TExplore: {
+			std::string name = element->Attribute("type");
+			auto node = std::make_shared<Explore>(blackboard, entity, name);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
+		case AITag::TSendExpedition: {
+			std::string name = element->Attribute("type");
+			int per = element->IntAttribute("per");
+			auto node = std::make_shared<SendExpedition>(blackboard, entity, name, per);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
 		}
 		std::cout << "AI: unknown tag " << element->Name() << std::endl;
 		return nullptr;
@@ -357,6 +509,7 @@ public:
 	AIParser nazAI;
 
 	AI() {
+		rebelAI.load("defs/new/ai/rebel.xml");
 		nazAI.load("defs/new/ai/neonaz.xml");
 	}
 };

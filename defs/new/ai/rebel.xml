@@ -1,56 +1,56 @@
-<AI team="neonaz">
+<AI team="rebel">
 	<Sequence>
 		<Probability frac="10" per="1"/>
-		<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
-		<Build type="gymnaz"/>
+		<HasLessObjectsTypeThan type="taverne" qty="1"/>
+		<Build type="taverne"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+			<HasLessObjectsTypeThan type="taverne" qty="1"/>
 		</Inverter>
-		<HasLessObjectsTypeThan type="labo" qty="2"/>
-		<Build type="labo"/>		
+		<HasLessObjectsTypeThan type="ferme" qty="2"/>
+		<Build type="ferme"/>		
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="labo" qty="1"/>
+			<HasLessObjectsTypeThan type="ferme" qty="1"/>
 		</Inverter>	
 		<Inverter>
 			<HasMoreResourcesThan amount="100"/>
 		</Inverter>
-		<Plant type="pollution"/>
+		<Plant type="nature"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+			<HasLessObjectsTypeThan type="taverne" qty="1"/>
 		</Inverter>
 		<Inverter>
-			<HasLessObjectsTypeThan type="labo" qty="1"/>
+			<HasLessObjectsTypeThan type="ferme" qty="1"/>
 		</Inverter>	
-		<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		<HasLessObjectsTypeThan type="festival" qty="1"/>
 		<HasMoreResourcesThan amount="30"/>
-		<Build type="caserne"/>	
+		<Build type="festival"/>	
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+			<HasLessObjectsTypeThan type="taverne" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="20"/>
-		<HasLessObjectsTypeThan type="brad_lab" qty="2"/>
-		<Train type="brad_lab"/>
+		<HasLessObjectsTypeThan type="zork" qty="2"/>
+		<Train type="zork"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="20"/>
-		<HasLessObjectsTypeThan type="patrouilleur" qty="10"/>
-		<Train type="patrouilleur"/>
+		<HasLessObjectsTypeThan type="punkette" qty="10"/>
+		<Train type="punkette"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
@@ -58,13 +58,14 @@
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>
 		</Selector>
-		<Explore type="brad_lab"/>
+		<Explore type="zork"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<HasFoundEnemy/>
 		<RandomSelector>
-			<SendExpedition type="patrouilleur" per="50"/>
+			<SendExpedition type="punkette" per="50"/>
 		</RandomSelector>
 	</Sequence>
+
 </AI>
