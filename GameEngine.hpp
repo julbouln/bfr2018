@@ -323,6 +323,7 @@ public:
 		drawMap.draw(window, dt);
 
 //		drawMap.drawFog(window, this->currentPlayer, dt);
+		drawMap.drawTileLayer(window, this->map->fog, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -575,6 +576,7 @@ public:
 		this->resources.update(dt);
 		this->mapLayers.update(dt);
 
+		this->mapLayers.updateFog(this->currentPlayer,dt);
 
 		// AI
 		auto playerView = this->vault->registry.view<Player>();

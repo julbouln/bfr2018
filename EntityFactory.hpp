@@ -120,6 +120,8 @@ public:
 		transitions.createMaskFromColor(sf::Color::White);
 		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 640});
 
+		texManager.loadTexture("fog_transition", "medias/new/fog.png");
+
 	}
 
 	TechNode loadTechTree(std::string filename) {

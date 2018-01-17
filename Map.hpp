@@ -137,6 +137,7 @@ public:
 
 	TileLayer terrains;
 	TileLayer transitions;
+	TileLayer fog;
 
 	ObjLayer objs;
 	ObjLayer resources;

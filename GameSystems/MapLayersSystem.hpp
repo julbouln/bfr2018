@@ -8,6 +8,8 @@ class MapLayersSystem : public GameSystem {
 	std::vector<EntityID> dirtTransitions;
 	std::map<int, int> dirtTransitionsMapping;
 
+	std::vector<EntityID> fogTransitions;
+
 public:
 	void update(float dt) {
 		this->updateTileLayer(dt);
@@ -112,13 +114,13 @@ public:
 	void updatePlayersFog(float dt) {
 
 		auto playerView = this->vault->registry.view<Player>();
-		for(EntityID entity : playerView) {
+		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
 
-			for(int x=0;x<this->map->width;x++) {
-				for(int y=0;y<this->map->height;y++) {
-					if(player.fog.get(x,y) == FogState::InSight)
-						player.fog.set(x,y,FogState::Hidden);
+			for (int x = 0; x < this->map->width; x++) {
+				for (int y = 0; y < this->map->height; y++) {
+					if (player.fog.get(x, y) == FogState::InSight)
+						player.fog.set(x, y, FogState::Hidden);
 				}
 			}
 		}
@@ -129,14 +131,42 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Player &player = this->vault->registry.get<Player>(obj.player);
 
-			if(obj.mapped) {
-			for (sf::Vector2i p : this->tileSurfaceExtended(tile, obj.view)) {
-				player.fog.set(p.x, p.y, FogState::InSight);
+			if (obj.mapped) {
+				for (sf::Vector2i p : this->tileSurfaceExtended(tile, obj.view)) {
+					player.fog.set(p.x, p.y, FogState::InSight);
+				}
+			}
+
+		}
+
+	}
+
+	void updateFog(EntityID playerEnt, float dt) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+
+		// draw debug grid
+		for (int y = 0; y < this->map->height; ++y)
+		{
+			for (int x = 0; x < this->map->width; ++x)
+			{
+				FogState st = player.fog.get(x, y);
+				if (st == FogState::Unvisited) {
+					this->map->fog.set(x, y, fogTransitions[15]);
+				} else {
+					this->map->fog.set(x, y, 0);
+				}
+			}
+		}
+		for (int y = 0; y < this->map->height; ++y)
+		{
+			for (int x = 0; x < this->map->width; ++x)
+			{
+				this->updateFogTransition(x, y);
 			}
 		}
 
-		}
 	}
+
 
 // Terrains/Transitions
 
@@ -175,45 +205,78 @@ public:
 		dirtTransitionsMapping[10] = 7;
 		dirtTransitionsMapping[12] = 5;
 
+
+		for (int i = 0; i < 16; i++) {
+			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
+		}
+
 		// miss
 
+	}
+
+	int terrainTransitionBitmask(int x, int y) {
+		int bitmask = 0;
+		if (this->map->terrains.get(x, y) != tiles["dirt"][0]) {
+			if (this->map->bound(x, y - 1))
+				bitmask += 1 * ((this->map->terrains.get(x, y - 1) == tiles["dirt"][0]) ? 1 : 0);
+			if (this->map->bound(x - 1, y))
+				bitmask += 2 * ((this->map->terrains.get(x - 1, y) == tiles["dirt"][0]) ? 1 : 0);
+			if (this->map->bound(x + 1, y))
+				bitmask += 4 * ((this->map->terrains.get(x + 1, y) == tiles["dirt"][0]) ? 1 : 0);
+			if (this->map->bound(x, y + 1))
+				bitmask += 8 * ((this->map->terrains.get(x, y + 1) == tiles["dirt"][0]) ? 1 : 0);
+		}
+		return bitmask;
+	}
+
+
+	int fogTransitionBitmask(int x, int y) {
+		int bitmask = 0;
+		if (this->map->fog.get(x, y) != fogTransitions[15]) {
+			if (this->map->bound(x, y - 1))
+				bitmask += 1 * ((this->map->fog.get(x, y - 1) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x - 1, y))
+				bitmask += 2 * ((this->map->fog.get(x - 1, y) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x + 1, y))
+				bitmask += 4 * ((this->map->fog.get(x + 1, y) == fogTransitions[15]) ? 1 : 0);
+			if (this->map->bound(x, y + 1))
+				bitmask += 8 * ((this->map->fog.get(x, y + 1) == fogTransitions[15]) ? 1 : 0);
+		}
+		return bitmask;
+	}
+
+	void updateTerrainTransition(int x, int y) {
+		int bitmask = this->terrainTransitionBitmask(x, y);
+
+		if (bitmask) {
+			int trans = 0;
+			if (dirtTransitionsMapping.count(bitmask) > 0) {
+				trans = dirtTransitions[dirtTransitionsMapping[bitmask]];
+				this->map->transitions.set(x, y, trans);
+			}
+			else
+				this->map->transitions.set(x, y, 0);
+//						trans=dirtTransitions[bitmask];
+		}
+		else
+			this->map->transitions.set(x, y, 0);
+	}
+
+
+	void updateFogTransition(int x, int y) {
+		int bitmask = this->fogTransitionBitmask(x, y);
+
+		if (bitmask) {
+			this->map->fog.set(x, y, fogTransitions[bitmask]);
+		}
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
 	void updateTransitions() {
 		for (int x = 0; x < this->map->width; x++) {
 			for (int y = 0; y < this->map->height; y++) {
-				int bitmask = 0;
-				if (this->map->terrains.get(x, y) != tiles["dirt"][0]) {
-					if (this->map->bound(x, y - 1))
-						bitmask += 1 * ((this->map->terrains.get(x, y - 1) == tiles["dirt"][0]) ? 1 : 0);
-					if (this->map->bound(x - 1, y))
-						bitmask += 2 * ((this->map->terrains.get(x - 1, y) == tiles["dirt"][0]) ? 1 : 0);
-					if (this->map->bound(x + 1, y))
-						bitmask += 4 * ((this->map->terrains.get(x + 1, y) == tiles["dirt"][0]) ? 1 : 0);
-					if (this->map->bound(x, y + 1))
-						bitmask += 8 * ((this->map->terrains.get(x, y + 1) == tiles["dirt"][0]) ? 1 : 0);
 
-//					if (bitmask)
-//						std::cout << "BITMASK " << x << "x" << y << " : " << bitmask << std::endl;
-
-
-				}
-
-				if (bitmask) {
-					int trans = 0;
-					if (dirtTransitionsMapping.count(bitmask) > 0) {
-						trans = dirtTransitions[dirtTransitionsMapping[bitmask]];
-						this->map->transitions.set(x, y, trans);
-					}
-					else
-						this->map->transitions.set(x, y, 0);
-//						trans=dirtTransitions[bitmask];
-
-				}
-				else
-					this->map->transitions.set(x, y, 0);
-
+				this->updateTerrainTransition(x, y);
 			}
 		}
 	}
@@ -231,6 +294,9 @@ public:
 		this->map->resources.width = width;
 		this->map->resources.height = height;
 
+		this->map->fog.width = width;
+		this->map->fog.height = height;
+
 		this->map->width = width;
 		this->map->height = height;
 
@@ -243,6 +309,7 @@ public:
 		this->map->transitions.fill();
 		this->map->objs.fill();
 		this->map->resources.fill();
+		this->map->fog.fill();
 
 		for (float y = 0; y < height; y++) {
 			for (float x = 0; x < width; x++) {
