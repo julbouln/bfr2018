@@ -323,7 +323,7 @@ public:
 		drawMap.draw(window, dt);
 
 //		drawMap.drawFog(window, this->currentPlayer, dt);
-		drawMap.drawTileLayer(window, this->map->fog, dt);
+//		drawMap.drawTileLayer(window, this->map->fog, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {

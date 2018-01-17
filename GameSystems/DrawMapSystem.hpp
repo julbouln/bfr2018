@@ -166,46 +166,4 @@ public:
 		}
 	}
 
-	void drawFog(sf::RenderWindow &window, EntityID playerEnt, float dt) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-
-		sf::IntRect clip = this->viewClip(window);
-
-		// draw debug grid
-		for (int y = clip.top; y < clip.top + clip.height; ++y)
-		{
-			for (int x = clip.left; x < clip.left + clip.width; ++x)
-			{
-				FogState st = player.fog.get(x, y);
-				if (st == FogState::Unvisited) {
-					sf::RectangleShape rectangle;
-
-					sf::Vector2f pos;
-					pos.x = x * 32;
-					pos.y = y * 32;
-
-					rectangle.setSize(sf::Vector2f(32, 32));
-					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0xff));
-					rectangle.setPosition(pos);
-
-					window.draw(rectangle);
-				} else {
-					if (st == FogState::Hidden) {
-						sf::RectangleShape rectangle;
-
-						sf::Vector2f pos;
-						pos.x = x * 32;
-						pos.y = y * 32;
-
-						rectangle.setSize(sf::Vector2f(32, 32));
-						rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x7f));
-						rectangle.setPosition(pos);
-
-						window.draw(rectangle);
-					}
-				}
-			}
-		}
-	}
-
 };

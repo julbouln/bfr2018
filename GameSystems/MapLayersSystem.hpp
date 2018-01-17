@@ -45,7 +45,7 @@ public:
 			Tile &tile = resView.get<Tile>(entity);
 			Resource &resource = resView.get<Resource>(entity);
 
-			for (sf::Vector2i p : this->tileSurfaceExtended(tile,1)) {
+			for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
 				if (resource.type == ResourceType::Nature) {
 					this->map->terrains.set(p.x, p.y, tiles["grass"][0]);
 				} else {
@@ -315,13 +315,26 @@ public:
 		int bitmask = this->dirtTransitionBitmask(x, y);
 
 		if (bitmask) {
-			if(bitmask & 0xf) {
-				int trans = dirtTransitions[dirtTransitionsMapping[bitmask & 0xf]];
-				this->map->transitions.set(x, y, trans);
+//					this->map->transitions.set(x, y, debugTransitions[bitmask]);
+
+			if (bitmask & 0xf) {
+				if (dirtTransitionsMapping.count(bitmask & 0xf) > 0) {
+					int trans = dirtTransitions[dirtTransitionsMapping[bitmask & 0xf]];
+					this->map->transitions.set(x, y, trans);
+				} else {
+					this->map->transitions.set(x, y, debugTransitions[bitmask & 0xf]);
+
+				}
 			} else {
-				int trans = dirtTransitions[dirtTransitionsMapping[bitmask]];
-				this->map->transitions.set(x, y, trans);
+				if (dirtTransitionsMapping.count(bitmask) > 0) {
+					int trans = dirtTransitions[dirtTransitionsMapping[bitmask]];
+					this->map->transitions.set(x, y, trans);
+				} else {
+					this->map->transitions.set(x, y, debugTransitions[bitmask]);
+
+				}
 			}
+
 		}
 		else {
 			this->map->transitions.set(x, y, 0);
@@ -373,7 +386,7 @@ public:
 		float random_w = ((float) rand()) / (float) RAND_MAX;
 		float random_h = ((float) rand()) / (float) RAND_MAX;
 
-		SimplexNoise simpl(width / 16.0, height / 16.0, 2.0, 0.5);
+		SimplexNoise simpl(width / 64.0, height / 64.0, 2.0, 0.5);
 
 		this->map->terrains.fill();
 		this->map->transitions.fill();
@@ -387,14 +400,21 @@ public:
 
 				EntityID t;
 //				t = this->randTile("dirt");
+//				t = tiles["dirt"][0];
+
 				t = tiles["dirt"][0];
+				if (res < -0.3)
+					t = tiles["sand"][0];
+				if (res < -0.5)
+					t = tiles["water"][0];
 				/*
-								if (res > -0.5) {
-									t = tiles["dirt"];
+								if (res > -0.4) {
+									t = tiles["dirt"][0];
 								} else {
-									t = tiles["water"];
+									t = tiles["water"][0];
 								}
-				*/
+
+				*/				
 				this->map->terrains.set(x, y, t);
 
 				if (res > 0.6 && res < 0.65) {
