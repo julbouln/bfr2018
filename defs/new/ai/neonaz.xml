@@ -31,7 +31,7 @@
 			<HasLessObjectsTypeThan type="labo" qty="1"/>
 		</Inverter>	
 		<HasLessObjectsTypeThan type="caserne" qty="1"/>
-		<HasMoreResourcesThan amount="30"/>
+		<HasMoreResourcesThan amount="100"/>
 		<Build type="caserne"/>	
 	</Sequence>
 	<Sequence>
@@ -39,7 +39,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="20"/>
+		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="brad_lab" qty="2"/>
 		<Train type="brad_lab"/>
 	</Sequence>
@@ -48,7 +48,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="20"/>
+		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="patrouilleur" qty="10"/>
 		<Train type="patrouilleur"/>
 	</Sequence>
@@ -57,7 +57,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="30"/>
+		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="mitrailleur" qty="5"/>
 		<Train type="mitrailleur"/>
 	</Sequence>

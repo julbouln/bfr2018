@@ -31,7 +31,7 @@
 			<HasLessObjectsTypeThan type="ferme" qty="1"/>
 		</Inverter>	
 		<HasLessObjectsTypeThan type="festival" qty="1"/>
-		<HasMoreResourcesThan amount="30"/>
+		<HasMoreResourcesThan amount="100"/>
 		<Build type="festival"/>	
 	</Sequence>
 	<Sequence>
@@ -39,7 +39,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="taverne" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="20"/>
+		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="zork" qty="2"/>
 		<Train type="zork"/>
 	</Sequence>
@@ -48,7 +48,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="20"/>
+		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="punkette" qty="10"/>
 		<Train type="punkette"/>
 	</Sequence>
@@ -57,7 +57,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="30"/>
+		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="lance_pepino" qty="5"/>
 		<Train type="lance_pepino"/>
 	</Sequence>

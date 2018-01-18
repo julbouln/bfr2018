@@ -157,7 +157,7 @@ public:
 			for (sf::Vector2i p : this->tileAround(tile, 1)) {
 				if (!this->map->objs.get(p.x, p.y)) {
 					EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
-					this->spendResources(playerEnt, player.resourceType, 10*this->objTypeLife(type));
+					this->spendResources(playerEnt, player.resourceType, 2*this->objTypeLife(type));
 #ifdef GAME_SYSTEM_DEBUG
 					std::cout << "GameSystem: train "<<type<<std::endl;
 #endif

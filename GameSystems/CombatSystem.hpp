@@ -89,11 +89,13 @@ public:
 				unit.nextpos = tile.pos;
 			}
 
-			if (unit.destAttack && !this->vault->registry.valid(unit.destAttack)) {
-				tile.state = "idle";
-				unit.destAttack = 0;
-				unit.nextpos = tile.pos;
-				unit.destpos = tile.pos;
+			if (tile.state == "attack") {
+				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
+					tile.state = "idle";
+					unit.destAttack = 0;
+					unit.nextpos = tile.pos;
+					unit.destpos = tile.pos;
+				}
 			}
 		}
 
