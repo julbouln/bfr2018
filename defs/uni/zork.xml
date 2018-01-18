@@ -31,18 +31,85 @@
 
    <state name="idle">
     <frames>
-     <frame n="0"/>
-     <frame n="0"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+	<frame n="17"/>
+     	<frame n="0"/>
+     	<frame n="1"/>
+	<frame n="2"/>
+	<frame n="3"/>
+	<frame n="4"/>
+	<frame n="5"/>
+	<frame n="6"/>
+	<frame n="7"/>
+	<frame n="8"/>
+	<frame n="9"/>
+	<frame n="8"/>
+	<frame n="10"/>
+	<frame n="11"/>
+	<frame n="12"/>
+	<frame n="11"/>
+	<frame n="10"/>
+	<frame n="13"/>
+	<frame n="14"/>
+	<frame n="15"/>
+	<frame n="10"/>
+	<frame n="11"/>
+	<frame n="12"/>
+	<frame n="11"/>
+	<frame n="10"/>
+	<frame n="13"/>
+	<frame n="14"/>
+	<frame n="15"/>
+	<frame n="10"/>
+	<frame n="11"/>
+	<frame n="12"/>
+	<frame n="11"/>
+	<frame n="10"/>
+	<frame n="13"/>
+	<frame n="14"/>
+	<frame n="15"/>
+	<frame n="10"/>
+	<frame n="11"/>
+	<frame n="12"/>
+	<frame n="11"/>
+	<frame n="10"/>
+	<frame n="13"/>
+	<frame n="14"/>
+	<frame n="15"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+	<frame n="16"/>
+
     </frames>  
-    <refresh value="8"/>
+    <refresh value="13"/>
    </state>
   
    <state name="move">
     <frames>
-     <frame n="0"/>
-     <frame n="1"/>
-     <frame n="0"/>
-     <frame n="2"/>
+     <frame n="17"/>
+     <frame n="18"/>
+     <frame n="17"/>
+     <frame n="19"/>
     </frames>
     <refresh value="2"/>
     <sounds>
@@ -55,8 +122,8 @@
   
   <state name="attack">
     <frames>
-     <frame n="3"/>
-     <frame n="4"/>
+     <frame n="20"/>
+     <frame n="21"/>
     </frames>
     <refresh value="4"/>
     <sounds>
@@ -69,9 +136,9 @@
 
   <state name="die">
     <frames>
-     <frame n="8"/>
-     <frame n="9"/>
-     <frame n="9"/>
+     <frame n="25"/>
+     <frame n="26"/>
+
     </frames>
     <refresh value="8"/>
   </state>

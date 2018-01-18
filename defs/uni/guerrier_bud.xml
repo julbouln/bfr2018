@@ -41,7 +41,7 @@
    <state name="idle">
     <frames>
      <frame n="0"/>
-     <frame n="0"/>
+     <frame n="3"/>
     </frames>  
     <refresh value="8"/>
    </state>

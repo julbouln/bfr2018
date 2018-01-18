@@ -9,7 +9,7 @@
  <pixel_size w="213" h="148"/>
  <decal_value x="0" y="1"/>
  <case_size w="6" h="4"/>
- <life value="5"/>
+ <life value="10"/>
  <view dist="5"/>
 
  <states>

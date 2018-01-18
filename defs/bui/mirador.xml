@@ -8,8 +8,8 @@
  <pixel_size w="144" h="399"/>
  <decal_value x="0" y="10"/>
  <case_size w="4" h="2"/>
- <life value="6"/>
- <view dist="4"/>
+ <life value="8"/>
+ <view dist="7"/>
  <attack2 power="6" dist="3"/>
 
  <states>

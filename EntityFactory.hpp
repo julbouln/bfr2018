@@ -630,6 +630,8 @@ public:
 		unitFiles.push_back("defs/uni/lance_missille.xml");
 		unitFiles.push_back("defs/uni/mitrailleur.xml");
 
+		unitFiles.push_back("defs/uni/punk.xml");
+
 		buildingFiles.push_back("defs/bui/artillerie.xml");
 		buildingFiles.push_back("defs/bui/caserne.xml");
 		buildingFiles.push_back("defs/bui/ferme.xml");

@@ -40,16 +40,6 @@
   </frames>
   <refresh value="2"/>
  </decor>
-<decor name="mountain">
-  <file path="medias/misc/maison1.png"/>
-  <decal_value w="1" h="1"/>
-  <pixel_size w="160" h="160"/>
-  <case_size w="4" h="3" />
-  <frames>
-   <frame n="0"/>
-  </frames>
-  <refresh value="2"/>
- </decor>
 
  <decor name="mountain" >
   <file path="medias/misc/buisson.png"/>
@@ -73,7 +63,52 @@
   <refresh value="0"/>
  </decor>
 
+<decor name="mountain" >
+  <file path="medias/misc/lac.png"/>
+  <decal_value w="1" h="1"/>
+  <pixel_size w="196" h="132"/>
+  <case_size w="5" h="3" />
+  <frames>
+   <frame n="0"/>
+   <frame n="1"/>
+  </frames>
+  <refresh value="2"/>
+ </decor>
 
+<decor name="mountain" >
+  <file path="medias/misc/foret1.png"/>
+  <decal_value w="1" h="1"/>
+  <pixel_size w="317" h="189"/>
+  <case_size w="9" h="6" />
+  <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </decor>
+
+<decor name="mountain" >
+  <file path="medias/misc/caillou.png"/>
+  <decal_value w="1" h="1"/>
+  <pixel_size w="32" h="32"/>
+  <case_size w="1" h="1" />
+  <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </decor>
+
+<decor name="mountain" >
+  <file path="medias/misc/grotte.png"/>
+  <decal_value w="1" h="1"/>
+  <pixel_size w="160" h="160"/>
+  <case_size w="5" h="5" />
+  <frames>
+   <frame n="1"/>
+   <frame n="2"/>
+   <frame n="0"/>
+  </frames>
+  <refresh value="20"/>
+ </decor>
 
 
 </decors>

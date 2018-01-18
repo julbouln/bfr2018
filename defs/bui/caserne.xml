@@ -8,7 +8,7 @@
  <pixel_size w="256" h="256"/>
  <decal_value x="0" y="4"/>
  <case_size w="6" h="4"/>
- <life value="4"/>
+ <life value="14"/>
  <view dist="2"/>
 
  <states>

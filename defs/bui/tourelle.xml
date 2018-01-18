@@ -9,7 +9,7 @@
  <decal_value x="0" y="4"/>
  <case_size w="4" h="2"/>
  <life value="6"/>
- <view dist="4"/>
+ <view dist="6"/>
  <attack2 power="6" dist="3"/>
 
  <states>
