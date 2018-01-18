@@ -92,12 +92,9 @@ public:
 
 			this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity);
 		}
-
 	}
 
-
 	void updatePlayersFog(float dt) {
-
 		auto playerView = this->vault->registry.view<Player>();
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
@@ -157,9 +154,7 @@ public:
 				this->updateFogTransition(this->map->fogHidden, x, y);
 			}
 		}
-
 	}
-
 
 // Terrains/Transitions
 
@@ -205,7 +200,6 @@ public:
 
 		for (int i = 0; i < 13; i++) {
 			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
-//			fogTransitions2.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition2", i));
 		}
 
 		fogTransitionsMapping[1] = 3;
@@ -231,141 +225,73 @@ public:
 
 	}
 
-	int dirtTransitionBitmask4(int x, int y) {
+	int transitionBitmask(TileLayer &layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
-		EntityID dirtEnt = tiles["dirt"][0];
-		if (this->map->terrains.get(x, y) != dirtEnt) {
-			if (this->map->bound(x, y - 1))
-				bitmask += 1 * ((this->map->terrains.get(x, y - 1) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x - 1, y))
-				bitmask += 2 * ((this->map->terrains.get(x - 1, y) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y))
-				bitmask += 4 * ((this->map->terrains.get(x + 1, y) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x, y + 1))
-				bitmask += 8 * ((this->map->terrains.get(x, y + 1) == dirtEnt) ? 1 : 0);
+		if (this->map->bound(x, y - 1))
+			bitmask += 1 * ((layer.get(x, y - 1) == ent) ? 1 : 0);
+		if (this->map->bound(x - 1, y))
+			bitmask += 2 * ((layer.get(x - 1, y) == ent) ? 1 : 0);
+		if (this->map->bound(x + 1, y))
+			bitmask += 4 * ((layer.get(x + 1, y) == ent) ? 1 : 0);
+		if (this->map->bound(x, y + 1))
+			bitmask += 8 * ((layer.get(x, y + 1) == ent) ? 1 : 0);
+
+		if (this->map->bound(x - 1, y - 1))
+			bitmask += 16 * ((layer.get(x - 1, y - 1) == ent) ? 1 : 0);
+		if (this->map->bound(x + 1, y - 1))
+			bitmask += 32 * ((layer.get(x + 1, y - 1) == ent) ? 1 : 0);
+		if (this->map->bound(x - 1, y + 1))
+			bitmask += 64 * ((layer.get(x - 1, y + 1) == ent) ? 1 : 0);
+		if (this->map->bound(x + 1, y + 1))
+			bitmask += 128 * ((layer.get(x + 1, y + 1) == ent) ? 1 : 0);
+
+		return bitmask;
+	}
+
+	int voidTransitionBitmask(TileLayer &layer, EntityID ent, int x, int y) {
+		int bitmask = 0;
+		if (layer.get(x, y) != ent) {
+			bitmask = this->transitionBitmask(layer, ent, x, y);
 		}
 		return bitmask;
 	}
 
 
-	int dirtTransitionBitmask(int x, int y) {
-		int bitmask = 0;
-		EntityID dirtEnt = tiles["dirt"][0];
-		if (this->map->terrains.get(x, y) != dirtEnt) {
-			if (this->map->bound(x, y - 1))
-				bitmask += 1 * ((this->map->terrains.get(x, y - 1) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x - 1, y))
-				bitmask += 2 * ((this->map->terrains.get(x - 1, y) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y))
-				bitmask += 4 * ((this->map->terrains.get(x + 1, y) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x, y + 1))
-				bitmask += 8 * ((this->map->terrains.get(x, y + 1) == dirtEnt) ? 1 : 0);
+	int updateTransition(TileLayer &inLayer, TileLayer &outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
+		int bitmask = this->voidTransitionBitmask(inLayer, ent, x, y);
 
-			if (this->map->bound(x - 1, y - 1))
-				bitmask += 16 * ((this->map->terrains.get(x - 1, y - 1) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y - 1))
-				bitmask += 32 * ((this->map->terrains.get(x + 1, y - 1) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x - 1, y + 1))
-				bitmask += 64 * ((this->map->terrains.get(x - 1, y + 1) == dirtEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y + 1))
-				bitmask += 128 * ((this->map->terrains.get(x + 1, y + 1) == dirtEnt) ? 1 : 0);
+		if (bitmask) {
+			if (bitmask & 0xf) {
+				if (mapping.count(bitmask & 0xf) > 0) {
+					int trans = transitions[mapping[bitmask & 0xf]];
+					outLayer.set(x, y, trans);
+				} else {
+					outLayer.set(x, y, debugTransitions[bitmask & 0xf]);
 
-		}
-		return bitmask;
-	}
-
-
-	int fogTransitionBitmask4(int x, int y) {
-		int bitmask = 0;
-		if (this->map->fog.get(x, y) == 0) {
-			if (this->map->bound(x, y - 1))
-				bitmask += 1 * ((this->map->fog.get(x, y - 1) == fogTransitions[15]) ? 1 : 0);
-			if (this->map->bound(x - 1, y))
-				bitmask += 2 * ((this->map->fog.get(x - 1, y) == fogTransitions[15]) ? 1 : 0);
-			if (this->map->bound(x + 1, y))
-				bitmask += 4 * ((this->map->fog.get(x + 1, y) == fogTransitions[15]) ? 1 : 0);
-			if (this->map->bound(x, y + 1))
-				bitmask += 8 * ((this->map->fog.get(x, y + 1) == fogTransitions[15]) ? 1 : 0);
-		}
-		return bitmask;
-	}
-
-
-	int fogTransitionBitmask(TileLayer &layer, int x, int y) {
-		EntityID fogEnt = fogTransitions[0];
-		int bitmask = 0;
-		if (layer.get(x, y) == 0) {
-			if (this->map->bound(x, y - 1))
-				bitmask += 1 * ((layer.get(x, y - 1) == fogEnt) ? 1 : 0);
-			if (this->map->bound(x - 1, y))
-				bitmask += 2 * ((layer.get(x - 1, y) == fogEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y))
-				bitmask += 4 * ((layer.get(x + 1, y) == fogEnt) ? 1 : 0);
-			if (this->map->bound(x, y + 1))
-				bitmask += 8 * ((layer.get(x, y + 1) == fogEnt) ? 1 : 0);
-
-			if (this->map->bound(x - 1, y - 1))
-				bitmask += 16 * ((layer.get(x - 1, y - 1) == fogEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y - 1))
-				bitmask += 32 * ((layer.get(x + 1, y - 1) == fogEnt) ? 1 : 0);
-			if (this->map->bound(x - 1, y + 1))
-				bitmask += 64 * ((layer.get(x - 1, y + 1) == fogEnt) ? 1 : 0);
-			if (this->map->bound(x + 1, y + 1))
-				bitmask += 128 * ((layer.get(x + 1, y + 1) == fogEnt) ? 1 : 0);
-
+				}
+			} else {
+				if (dirtTransitionsMapping.count(bitmask) > 0) {
+					int trans = transitions[mapping[bitmask]];
+					outLayer.set(x, y, trans);
+				} else {
+					outLayer.set(x, y, debugTransitions[bitmask]);
+				}
+			}
 		}
 		return bitmask;
 	}
 
 	void updateDirtTransition(int x, int y) {
-		int bitmask = this->dirtTransitionBitmask(x, y);
-
-		if (bitmask) {
-			if (bitmask & 0xf) {
-				if (dirtTransitionsMapping.count(bitmask & 0xf) > 0) {
-					int trans = dirtTransitions[dirtTransitionsMapping[bitmask & 0xf]];
-					this->map->transitions.set(x, y, trans);
-				} else {
-					this->map->transitions.set(x, y, debugTransitions[bitmask & 0xf]);
-
-				}
-			} else {
-				if (dirtTransitionsMapping.count(bitmask) > 0) {
-					int trans = dirtTransitions[dirtTransitionsMapping[bitmask]];
-					this->map->transitions.set(x, y, trans);
-				} else {
-					this->map->transitions.set(x, y, debugTransitions[bitmask]);
-
-				}
-			}
-
-		}
-		else {
+		EntityID dirtEnt = tiles["dirt"][0];
+		int bitmask = this->updateTransition(this->map->terrains, this->map->transitions, dirtEnt, dirtTransitions, dirtTransitionsMapping, x, y);
+		if(!bitmask) {
 			this->map->transitions.set(x, y, 0);
 		}
 	}
 
-
 	void updateFogTransition(TileLayer &layer, int x, int y) {
-		int bitmask = this->fogTransitionBitmask(layer, x, y);
-
-		if (bitmask) {
-			if (bitmask & 0xf) {
-				if (fogTransitionsMapping.count(bitmask & 0xf) > 0) {
-					int trans = fogTransitions[fogTransitionsMapping[bitmask & 0xf]];
-					layer.set(x, y, trans);
-				} else {
-					layer.set(x, y, debugTransitions[bitmask & 0xf]);
-				}
-			} else {
-				if (fogTransitionsMapping.count(bitmask) > 0) {
-					int trans = fogTransitions[fogTransitionsMapping[bitmask]];
-					layer.set(x, y, trans);
-				} else {
-					layer.set(x, y, debugTransitions[bitmask]);
-				}
-			}
-		}
+		EntityID fogEnt = fogTransitions[0];
+		this->updateTransition(layer, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
@@ -417,8 +343,6 @@ public:
 				float res = (simpl.fractal(64, x / (width) + random_w * width, y / (height) + random_h * height));
 
 				EntityID t;
-//				t = this->randTile("dirt");
-//				t = tiles["dirt"][0];
 
 				t = tiles["dirt"][0];
 				if (res < -0.3)

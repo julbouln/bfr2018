@@ -1,13 +1,13 @@
 Misc
+- do not display obj & resource if fog hidden or unvisited
 - use sprite selected image
 - restrict building construction position
 - timed building construction
 - add random terrain tile (0,1 or 2)
 - add mouse cursors
 - add ruins & corpses
-- vautour FX
 - add hit blood FX
-- do not display obj & resource if fog hidden or unvisited
+- vautour FX
 
 Improvements:
 - improve AI building placement
@@ -25,3 +25,6 @@ Interface:
 - main menu
 - settings
 - minimap
+
+Sound:
+- add units state sounds
