@@ -198,7 +198,7 @@ public:
 
 				if (exTile.state == "idle") {
 #ifdef AI_DEBUG
-					std::cout << "AI: " << explorer << " explore " << explorePos.x << "x" << explorePos.y << std::endl;
+					std::cout << "AI: " << entity << " explore with " << explorer << " at " << explorePos.x << "x" << explorePos.y << std::endl;
 #endif
 					this->goTo(explorer, explorePos);
 				}
@@ -260,12 +260,12 @@ public:
 			tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 #ifdef AI_DEBUG
-			std::cout << "AI:" << name << " build at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+			std::cout << "AI: " << entity << " build " << name << " at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
 #endif
 			return Node::Status::Success;
 		} else {
 #ifdef AI_DEBUG
-			std::cout << "AI:" << name << " cannot be built !" << std::endl;
+			std::cout << "AI: " << entity << " cannot build " << name << std::endl;
 #endif
 			this->vault->registry.destroy(buildingEnt);
 			return Node::Status::Failure;
@@ -302,7 +302,7 @@ public:
 				this->seedResources(type, plantAround.front());
 
 #ifdef AI_DEBUG
-				std::cout << "AI:" << name << " plant " << name << " around " << plantAround.front() << std::endl;
+				std::cout << "AI: " << entity << " plant " << name << " around " << plantAround.front() << std::endl;
 #endif
 				TechNode *n = this->vault->factory.getTechNode(blackboard->GetString("team"), name);
 			}
@@ -324,14 +324,19 @@ public:
 	{
 		Player &player = vault->registry.get<Player>(entity);
 
-		std::vector<EntityID> trainAround = player.objsByType[this->vault->factory.getTechNode(blackboard->GetString("team"), name)->parentType];
+		std::string parentName = this->vault->factory.getTechNode(blackboard->GetString("team"), name)->parentType;
+		if (player.objsByType.count(parentName) > 0) {
+			std::vector<EntityID> trainAround = player.objsByType[parentName];
 
-		std::random_shuffle ( trainAround.begin(), trainAround.end() );
-		if (trainUnit(name, entity, trainAround.front() )) {
+			std::random_shuffle ( trainAround.begin(), trainAround.end() );
+			if (trainUnit(name, entity, trainAround.front() )) {
 #ifdef AI_DEBUG
-			std::cout << "AI:" << name << " train " << name << " around " << trainAround.front() << std::endl;
+				std::cout << "AI: " << entity << " train " << name << " around " << trainAround.front() << std::endl;
 #endif
-			return Node::Status::Success;
+				return Node::Status::Success;
+			} else {
+				return Node::Status::Failure;
+			}
 		} else {
 			return Node::Status::Failure;
 		}
@@ -367,7 +372,7 @@ public:
 
 					if (atTile.state == "idle") {
 #ifdef AI_DEBUG
-						std::cout << "AI: " << attacker << " expedition " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
+						std::cout << "AI: " << entity << " launch expedition with " << attacker << " at " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
 #endif
 						this->goTo(attacker, player.enemyPos);
 					}

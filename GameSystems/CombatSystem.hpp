@@ -54,7 +54,7 @@ public:
 				sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 				if (tile.pos == dpos) {
 					unit.destpos = dpos;
-					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
+//					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
 					tile.direction = this->getDirection(tile.pos, destTile.pos);
 					tile.state = "attack";
 					destObj.life -= (unit.attack1.power * dt);
@@ -70,7 +70,7 @@ public:
 
 				} else {
 					this->goTo(unit, dpos);
-					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+//					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 				}
 			} else {
 				unit.destAttack = 0;

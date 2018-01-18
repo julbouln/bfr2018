@@ -16,7 +16,7 @@ public:
 			resource.grow += 0.1;
 
 			if (resource.grow > 10*(resource.level+1)) {
-				std::cout << "RESOURCE " << entity << " grow" << std::endl;
+//				std::cout << "RESOURCE " << entity << " grow" << std::endl;
 				resource.grow = 0.0;
 
 				if (resource.level < 3) {
@@ -24,7 +24,7 @@ public:
 					if (resource.level == 1) {
 						this->vault->factory.growedResource(this->vault->registry, this->vault->factory.resourceTypeName(resource.type), entity);
 						Tile &newTile = this->vault->registry.get<Tile>(entity);
-						std::cout << "NEW RESOURCE "<<tile.animHandlers[tile.state].bounds.left << "x" << tile.animHandlers[tile.state].bounds.top << ":" << tile.animHandlers[tile.state].bounds.width << "x" << tile.animHandlers[tile.state].bounds.height << std::endl;
+//						std::cout << "NEW RESOURCE "<<tile.animHandlers[tile.state].bounds.left << "x" << tile.animHandlers[tile.state].bounds.top << ":" << tile.animHandlers[tile.state].bounds.width << "x" << tile.animHandlers[tile.state].bounds.height << std::endl;
 					}
 					else {
 						tile.animHandlers[tile.state].set(resource.level - 1);

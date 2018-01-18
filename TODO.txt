@@ -1,4 +1,17 @@
+Misc
+- use sprite selected image
+- restrict building construction position
+- timed building construction
+- add random terrain tile (0,1 or 2)
+- add mouse cursors
+- add ruins & corpses
+- vautour FX
+- add hit blood FX
+- do not display obj & resource if fog hidden or unvisited
+
 Improvements:
+- improve AI building placement
+- improve AI expedition destination
 - multi-agent pathfinding
 
 Game:
@@ -9,7 +22,6 @@ Game:
 Interface:
 - stages
 - gui
-- building construction
 - main menu
 - settings
 - minimap

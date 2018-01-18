@@ -45,7 +45,7 @@ public:
 		return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw - mx, mh - my));
 	}
 
-	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, float dt, sf::Color colorVariant = sf::Color(0xff,0xff,0xff)) {
+	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		sf::IntRect clip = this->viewClip(window);
 
 //		std::cout << "clip "<<clip.left<<"x"<<clip.top<<":"<<clip.width<<"x"<<clip.height<<std::endl;
@@ -118,18 +118,29 @@ public:
 		{
 			Tile &lht = vault->registry.get<Tile>(lhs);
 			Tile &rht = vault->registry.get<Tile>(rhs);
-			return (lht.ppos.y + (lht.centerRect.top + lht.centerRect.height)/2 < rht.ppos.y + (rht.centerRect.top+rht.centerRect.height)/2);
+			return (lht.ppos.y + (lht.centerRect.top + lht.centerRect.height) / 2 < rht.ppos.y + (rht.centerRect.top + rht.centerRect.height) / 2);
 		});
 	}
 
 	void drawObjLayer(sf::RenderWindow &window, float dt) {
 		this->updateObjsDrawList(window, dt);
-		sf::View wview = window.getView();
-		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 
 		for (EntityID ent : this->entitiesDrawList) {
-			if (this->vault->registry.valid(ent)) { // DIRTY
+			if (this->vault->registry.valid(ent)) { // DIRTY ?
 				Tile &tile = this->vault->registry.get<Tile>(ent);
+
+				// unit shadow
+				if (this->vault->registry.has<Unit>(ent)) {
+					sf::Sprite shadow;
+					shadow.setTexture(this->vault->factory.getTex("shadow"));
+					sf::Vector2f spos;
+
+					spos.x = tile.ppos.x;
+					spos.y = tile.ppos.y + 13;
+
+					shadow.setPosition(spos);
+					window.draw(shadow);
+				}
 
 				sf::Vector2f pos;
 
@@ -138,9 +149,6 @@ public:
 
 				tile.sprite.setPosition(pos);
 
-				sf::FloatRect collider(tile.sprite.getGlobalBounds().left,
-				                       tile.sprite.getGlobalBounds().top, 32, 32);
-
 				colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
 				colorSwap.setParameter("color1", sf::Color(3, 255, 205));
 				colorSwap.setParameter("replace1", sf::Color(117, 122, 223));
@@ -148,6 +156,44 @@ public:
 				colorSwap.setParameter("replace2", sf::Color(90, 94, 172));
 
 				window.draw(tile.sprite, &colorSwap);
+
+				// life bar
+				if (this->vault->registry.has<GameObject>(ent)) {
+					GameObject &obj = this->vault->registry.get<GameObject>(ent);
+					sf::Vector2f lpos;
+					lpos.x = tile.ppos.x;
+					lpos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32;
+
+					sf::RectangleShape lifeBarFrame;
+					lifeBarFrame.setSize(sf::Vector2f(32, 8));
+					lifeBarFrame.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					lifeBarFrame.setOutlineColor(sf::Color(0x00, 0x00, 0x00, 0xff));
+					lifeBarFrame.setOutlineThickness(1);
+					lifeBarFrame.setPosition(lpos);
+
+					window.draw(lifeBarFrame);
+
+					sf::RectangleShape lifeBar;
+
+					float lifePer = (obj.life / obj.maxLife);
+					sf::Color lifeCol = sf::Color(0x00, 0xff, 0x00, 0xff);
+					if (lifePer < 0.75)
+						lifeCol = sf::Color(0xff, 0xff, 0x00, 0xff);
+					if (lifePer < 0.50)
+						lifeCol = sf::Color(0xff, 0xa5, 0x00, 0xff);
+					if (lifePer < 0.25)
+						lifeCol = sf::Color(0xff, 0x00, 0x00, 0xff);
+
+
+					lifeBar.setSize(sf::Vector2f(32 * lifePer, 8));
+					lifeBar.setFillColor(lifeCol);
+					lifeBar.setOutlineColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					lifeBar.setOutlineThickness(1);
+					lifeBar.setPosition(lpos);
+
+					window.draw(lifeBar);
+				}
+
 			}
 		}
 	}

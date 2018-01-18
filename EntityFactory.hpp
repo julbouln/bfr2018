@@ -104,6 +104,10 @@ public:
 
 		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
 		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
+
+		this->loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
+		this->loadTextureWithWhiteMask("selection", "medias/tiles/cadre_unit.png");
+
 	}
 
 	void loadTerrains() {
@@ -345,6 +349,7 @@ public:
 
 		obj.view = root->FirstChildElement("view")->IntAttribute("dist");
 		obj.life = (float)root->FirstChildElement("life")->IntAttribute("value");
+		obj.maxLife = obj.life;
 		obj.name = root->Attribute("name");
 		obj.team = root->Attribute("team");
 	}
@@ -391,7 +396,6 @@ public:
 
 		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
 
-
 		tile.animHandlers["idle"] = idleHandler;
 
 		tile.direction = North;
@@ -404,6 +408,9 @@ public:
 #define UNIT_FRAME_COUNT 10
 
 	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y) {
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create unit "<<name<<" at "<<x<<"x"<<y<<std::endl;
+#endif
 		EntityID entity = registry.create();
 		Tile tile;
 		this->parseTileFromXml(name, tile, 8);
@@ -411,9 +418,9 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-//		tile.sprite.setOrigin(sf::Vector2f(tile.psize.x / 2, tile.psize.y / 2));
-//		tile.sprite.setOrigin(sf::Vector2f(16,16));
 		tile.sprite.setTexture(texManager.getRef(name));
+
+		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
 
 		tile.direction = South;
 		tile.state = "idle";
@@ -459,7 +466,8 @@ public:
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
 		obj.mapped = built;
-		obj.life = obj.life * tile.size.x * tile.size.y;
+		obj.life = obj.life * (tile.size.x * tile.size.y)/2;
+		obj.maxLife = obj.life;
 
 		Building building;
 		this->parseBuildingFromXml(name, building);
@@ -471,7 +479,6 @@ public:
 		return entity;
 	}
 
-
 	std::string resourceTypeName( ResourceType type) {
 		switch (type) {
 		case ResourceType::Nature:
@@ -479,7 +486,6 @@ public:
 		case ResourceType::Pollution:
 			return "pollution";
 		}
-
 	}
 
 	EntityID plantResource(entt::Registry<EntityID> &registry, ResourceType type, int x, int y) {

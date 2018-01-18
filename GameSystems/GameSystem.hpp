@@ -4,6 +4,8 @@
 #include "System.hpp"
 #include "Map.hpp"
 
+#define GAME_SYSTEM_DEBUG
+
 class GameSystem : public System {
 public:
 	Map *map;
@@ -101,28 +103,37 @@ public:
 		return 0;
 	}
 
-	void spendResources(EntityID playerEnt, ResourceType type, int val) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-
-		auto view = this->vault->registry.view<Resource>();
-		for (EntityID entity : view) {
-			Resource &resource = view.get(entity);
-			if (resource.type == type) {
-				val -= resource.level;
-				this->vault->registry.destroy(entity);
-				if (val <= 0)
-					break;
-			}
-		}
-	}
-
 	bool canSpendResources(EntityID playerEnt, ResourceType type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		if (player.resources > val)
 			return true;
 		else
 			return false;
+	}
 
+	void spendResources(EntityID playerEnt, ResourceType type, int val) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		int spended = val;
+		auto view = this->vault->registry.view<Resource>();
+#ifdef GAME_SYSTEM_DEBUG
+		std::cout << "GameSystem: spend " << val << " "<<(int)type<<std::endl;
+#endif
+		for (EntityID entity : view) {
+			Resource &resource = view.get(entity);
+			if (resource.type == type) {
+				spended -= resource.level;
+				this->vault->registry.destroy(entity);
+				if (spended <= 0)
+					return;
+			}
+		}
+	}
+
+	// get object initial life from XML
+	float objTypeLife(std::string type) {
+		GameObject obj;
+		this->vault->factory.parseGameObjectFromXml(type, obj);
+		return obj.life;
 	}
 
 // action
@@ -146,8 +157,10 @@ public:
 			for (sf::Vector2i p : this->tileAround(tile, 1)) {
 				if (!this->map->objs.get(p.x, p.y)) {
 					EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
-//					std::cout << "CREATE "<<newEnt<<std::endl;
-					this->spendResources(playerEnt, player.resourceType, 10);
+					this->spendResources(playerEnt, player.resourceType, 10*this->objTypeLife(type));
+#ifdef GAME_SYSTEM_DEBUG
+					std::cout << "GameSystem: train "<<type<<std::endl;
+#endif
 					return true;
 				}
 			}

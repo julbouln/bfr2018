@@ -35,6 +35,7 @@ struct Attack {
 // unit or building
 struct GameObject {
 	float life;
+	float maxLife;
 	unsigned int view;
 	bool mapped;
 

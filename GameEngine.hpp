@@ -105,7 +105,7 @@ public:
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
-		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
+		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 		this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 		auto view = this->vault->registry.view<Player>();
@@ -113,23 +113,23 @@ public:
 			Player &player = view.get(entity);
 			if (player.team == "rebel")
 			{
-				player.initialPos = sf::Vector2i(10,10);
+				player.initialPos = sf::Vector2i(10, 10);
 				player.enemyFound = false;
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 10);
 
-/*						
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 11);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 12);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 10);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 11);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 12);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 10);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 11);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 12);
-				*/
+				/*
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 11);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 12);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 10);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 11);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 12);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 10);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 11);
+								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 12);
+								*/
 
 				if (player.ai) {
-					ai.rebelAI.parse(player.team,player.aiTree, entity);
+					ai.rebelAI.parse(player.team, player.aiTree, entity);
 				}
 
 //				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
@@ -137,22 +137,22 @@ public:
 			} else {
 				player.initialPos = sf::Vector2i(mapWidth - 10, mapHeight - 10);
 				player.enemyFound = false;
-/*
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 11);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 12);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 10);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 11);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 12);
-*/				
+				/*
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 11);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 12);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 10);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 11);
+								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 12);
+				*/
 
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
 //				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
 
 				if (player.ai) {
-					ai.nazAI.parse(player.team,player.aiTree, entity);
+					ai.nazAI.parse(player.team, player.aiTree, entity);
 				}
 			}
 
@@ -322,12 +322,12 @@ public:
 	void draw(sf::RenderWindow &window, float dt) {
 		drawMap.draw(window, dt);
 
-		drawMap.drawTileLayer(window, this->map->fogHidden, dt, sf::Color(0x00,0x00,0x00,0x7f));
-		drawMap.drawTileLayer(window, this->map->fog, dt, sf::Color(0x00,0x00,0x00));
+		drawMap.drawTileLayer(window, this->map->fogHidden, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
+		drawMap.drawTileLayer(window, this->map->fog, dt, sf::Color(0x00, 0x00, 0x00));
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
-			//if (this->vault->registry.valid(selectedObj)) 
+			//if (this->vault->registry.valid(selectedObj))
 			{
 				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
 				sf::RectangleShape rectangle;
@@ -367,7 +367,7 @@ public:
 		iface.setPosition(sf::Vector2f(0, 0));
 		iface.setScale(this->width / 800.0, this->height / 600.0);
 		window.draw(iface);
-		this->testGui();
+		this->debugGui();
 		this->gameStateGui();
 		this->actionGui();
 	}
@@ -492,7 +492,7 @@ public:
 		ImGui::PopStyleColor();
 	}
 
-	void testGui() {
+	void debugGui() {
 		const float DISTANCE = 10.0f;
 		static int corner = 0;
 		ImVec2 window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
@@ -502,9 +502,37 @@ public:
 		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
 		if (ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
-			ImGui::Text("Total Entities: %d", this->vault->registry.size());
-			ImGui::Text("Drawn Entities: %d", drawMap.entitiesDrawList.size());
+			ImGui::Text("Total Entities: %d", (int)this->vault->registry.size());
+			ImGui::Text("Drawn Entities: %d", (int)drawMap.entitiesDrawList.size());
 //			ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
+			if (this->selectedObjs.size() > 0)
+			{
+				if (this->selectedObjs.size() > 1) {
+					ImGui::Text("Selected entities: %d", (int)this->selectedObjs.size());
+				} else {
+					EntityID selectedObj = this->selectedObjs.front();
+					if (this->vault->registry.valid(selectedObj)) {
+						GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
+						Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+						ImGui::Text("Name: %s", obj.name.c_str());
+						ImGui::Text("Team: %s", obj.team.c_str());
+						ImGui::Text("Case position: %dx%d", tile.pos.x, tile.pos.y);
+						ImGui::Text("Case size: %dx%d", tile.size.x, tile.size.y);
+						ImGui::Text("Pixel position: %.2fx%.2f", tile.ppos.x, tile.ppos.y);
+						ImGui::Text("Pixel size: %.2fx%.2f", tile.psize.x, tile.psize.y);
+						ImGui::Text("State: %s", tile.state.c_str());
+						ImGui::Text("Life: %f", obj.life);
+						if (this->vault->registry.has<Unit>(selectedObj)) {
+							Unit &unit = this->vault->registry.get<Unit>(selectedObj);
+
+							ImGui::Text("Next pos: %dx%d", unit.nextpos.x, unit.nextpos.y);
+							ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
+							ImGui::Text("Dest attack: %d", (int)unit.destAttack);
+						}
+					}
+				}
+			}
+
 			ImGui::Separator();
 			ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
 
@@ -552,8 +580,8 @@ public:
 	// remove entity from selected is not valid anymore
 	void updateSelected(float dt) {
 		std::vector<EntityID> newSelectedObjs;
-		for(EntityID entity : this->selectedObjs) {
-			if(this->vault->registry.valid(entity))
+		for (EntityID entity : this->selectedObjs) {
+			if (this->vault->registry.valid(entity))
 				newSelectedObjs.push_back(entity);
 		}
 		this->selectedObjs = newSelectedObjs;
@@ -577,7 +605,7 @@ public:
 		this->resources.update(dt);
 		this->mapLayers.update(dt);
 
-		this->mapLayers.updateFog(this->currentPlayer,dt);
+		this->mapLayers.updateFog(this->currentPlayer, dt);
 
 		// AI
 		auto playerView = this->vault->registry.view<Player>();
