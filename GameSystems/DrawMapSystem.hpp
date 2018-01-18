@@ -161,7 +161,7 @@ public:
 					sf::Color col1 = sf::Color(3, 255, 205);
 					sf::Color col2 = sf::Color(0, 235, 188);
 					sf::Color replace1 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
-					sf::Color replace2 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
+					sf::Color replace2 = this->vault->factory.getPlayerColor(col2, player.colorIdx);
 
 					colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
 					colorSwap.setParameter("color1", col1);
@@ -178,38 +178,40 @@ public:
 				// life bar
 				if (this->vault->registry.has<GameObject>(ent)) {
 					GameObject &obj = this->vault->registry.get<GameObject>(ent);
-					sf::Vector2f lpos;
-					lpos.x = tile.ppos.x;
-					lpos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32;
+					if (obj.life > 0) {
+						sf::Vector2f lpos;
+						lpos.x = tile.ppos.x;
+						lpos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32;
 
-					sf::RectangleShape lifeBarFrame;
-					lifeBarFrame.setSize(sf::Vector2f(32, 8));
-					lifeBarFrame.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					lifeBarFrame.setOutlineColor(sf::Color(0x00, 0x00, 0x00, 0xff));
-					lifeBarFrame.setOutlineThickness(1);
-					lifeBarFrame.setPosition(lpos);
+						sf::RectangleShape lifeBarFrame;
+						lifeBarFrame.setSize(sf::Vector2f(32, 8));
+						lifeBarFrame.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						lifeBarFrame.setOutlineColor(sf::Color(0x00, 0x00, 0x00, 0xff));
+						lifeBarFrame.setOutlineThickness(1);
+						lifeBarFrame.setPosition(lpos);
 
-					window.draw(lifeBarFrame);
+						window.draw(lifeBarFrame);
 
-					sf::RectangleShape lifeBar;
+						sf::RectangleShape lifeBar;
 
-					float lifePer = (obj.life / obj.maxLife);
-					sf::Color lifeCol = sf::Color(0x00, 0xff, 0x00, 0xff);
-					if (lifePer < 0.75)
-						lifeCol = sf::Color(0xff, 0xff, 0x00, 0xff);
-					if (lifePer < 0.50)
-						lifeCol = sf::Color(0xff, 0xa5, 0x00, 0xff);
-					if (lifePer < 0.25)
-						lifeCol = sf::Color(0xff, 0x00, 0x00, 0xff);
+						float lifePer = (obj.life / obj.maxLife);
+						sf::Color lifeCol = sf::Color(0x00, 0xff, 0x00, 0xff);
+						if (lifePer < 0.75)
+							lifeCol = sf::Color(0xff, 0xff, 0x00, 0xff);
+						if (lifePer < 0.50)
+							lifeCol = sf::Color(0xff, 0xa5, 0x00, 0xff);
+						if (lifePer < 0.25)
+							lifeCol = sf::Color(0xff, 0x00, 0x00, 0xff);
 
 
-					lifeBar.setSize(sf::Vector2f(32 * lifePer, 8));
-					lifeBar.setFillColor(lifeCol);
-					lifeBar.setOutlineColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					lifeBar.setOutlineThickness(1);
-					lifeBar.setPosition(lpos);
+						lifeBar.setSize(sf::Vector2f(32 * lifePer, 8));
+						lifeBar.setFillColor(lifeCol);
+						lifeBar.setOutlineColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						lifeBar.setOutlineThickness(1);
+						lifeBar.setPosition(lpos);
 
-					window.draw(lifeBar);
+						window.draw(lifeBar);
+					}
 				}
 
 			}
@@ -254,7 +256,6 @@ public:
 					rectangle.setPosition(pos);
 
 					window.draw(rectangle);
-
 				}
 			}
 		}

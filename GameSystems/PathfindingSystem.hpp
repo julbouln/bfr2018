@@ -8,12 +8,13 @@
 class PathfindingSystem : public GameSystem {
 public:
 	void update(float dt) {
-		auto view = this->vault->registry.persistent<Tile, Unit>();
+		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			if (tile.pos != unit.destpos) {
+			if (tile.pos != unit.destpos && obj.life > 0) {
 				int diffx = abs(tile.ppos.x - unit.nextpos.x * 32);
 				int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
 				if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
@@ -66,14 +67,8 @@ public:
 						this->changeState(tile, "idle");
 					}
 				} else {
-					if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
-						// something wrong, realign
-						GameObject &obj = this->vault->registry.get<GameObject>(entity);
-						std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << std::endl;
-						tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-//						unit.nextpos = tile.pos;
-					} else {
-
+					//if (tile.state == "move") 
+					{
 						float speed = (float)unit.speed / 2.0;
 						switch (tile.direction) {
 						case North:
@@ -106,9 +101,15 @@ public:
 							break;
 						}
 
-
 					}
 
+					if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
+						// something wrong, realign
+						GameObject &obj = this->vault->registry.get<GameObject>(entity);
+						std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " "<< tile.pos.x << "x"<<tile.pos.y<< " -> "<<unit.nextpos.x<<"x"<<unit.nextpos.y<< std::endl;
+						tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+//						unit.nextpos = tile.pos;
+					}
 				}
 			}
 		}

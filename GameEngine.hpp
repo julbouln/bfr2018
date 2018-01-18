@@ -636,9 +636,9 @@ public:
 					this->scoreBonusText.setString("COMBO");
 					break;
 				case 3:
-					std::cout << "! KILLER " << player.team <<  std::endl;
+					std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
 					this->scoreBonus=true;
-					this->scoreBonusText.setString("KILLER");
+					this->scoreBonusText.setString("SERIAL-KILLER");
 					break;
 				case 4:
 					std::cout << "! MEGAKILL " << player.team << std::endl;

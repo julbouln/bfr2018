@@ -53,40 +53,40 @@ public:
 
 				sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 				if (tile.pos == dpos) {
-					unit.destpos = dpos;
+					if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+						unit.destpos = dpos;
 //					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
-					tile.direction = this->getDirection(tile.pos, destTile.pos);
-					this->changeState(tile, "attack");
-					destObj.life -= (unit.attack1.power * dt);
-					if (destObj.life <= 0) {
-						destObj.life = 0;
-						Player &player = this->vault->registry.get<Player>(obj.player);
-						player.kills.insert(unit.destAttack);
-					}
-
-					if (destObj.life == 0) {
-						this->changeState(tile, "idle");
-						unit.destAttack = 0;
-						unit.nextpos = tile.pos;
-						unit.destpos = tile.pos;
-					} else {
-						if (this->vault->registry.has<Unit>(unit.destAttack)) {
-							Unit &destUnit = this->vault->registry.get<Unit>(unit.destAttack);
-							if (destTile.state == "idle") {
-								// if ennemy is idle, he will fight back
-								this->attack(destUnit, entity);
-
-							} else if (destTile.state == "attack" && destUnit.destAttack) {
-								// if ennemy is attacking a building, he will fight back
-								if (this->vault->registry.has<Building>(destUnit.destAttack)) {
-									this->attack(destUnit, entity);
-
-								}
-							}
+						destObj.life -= (unit.attack1.power * dt);
+						if (destObj.life <= 0) {
+							destObj.life = 0;
+							Player &player = this->vault->registry.get<Player>(obj.player);
+							player.kills.insert(unit.destAttack);
+						} else {
+							tile.direction = this->getDirection(tile.pos, destTile.pos);
+							this->changeState(tile, "attack");
 						}
 
-					}
+						if (destObj.life == 0) {
+							this->changeState(tile, "idle");
+							unit.destAttack = 0;
+							unit.destpos = tile.pos;
+						} else {
+							if (this->vault->registry.has<Unit>(unit.destAttack)) {
+								Unit &destUnit = this->vault->registry.get<Unit>(unit.destAttack);
+								if (destTile.state == "idle") {
+									// if ennemy is idle, he will fight back
+									this->attack(destUnit, entity);
 
+								} else if (destTile.state == "attack" && destUnit.destAttack) {
+									// if ennemy is attacking a building, he will fight back
+									if (this->vault->registry.has<Building>(destUnit.destAttack)) {
+										this->attack(destUnit, entity);
+									}
+								}
+							}
+
+						}
+					}
 				} else {
 					this->goTo(unit, dpos);
 //					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
@@ -104,15 +104,13 @@ public:
 			if (obj.life == 0) {
 				this->changeState(tile, "die");
 				unit.destAttack = 0;
-				unit.nextpos = tile.pos;
-				unit.destpos = tile.pos;				
+				unit.destpos = tile.pos;
 			}
 
 			if (tile.state == "attack") {
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
 					this->changeState(tile, "idle");
 					unit.destAttack = 0;
-					unit.nextpos = tile.pos;
 					unit.destpos = tile.pos;
 				}
 			}
