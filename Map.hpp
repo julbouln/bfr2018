@@ -148,8 +148,11 @@ public:
 	unsigned int height;
 
 	TileLayer terrains;
-	TileLayer transitions;
-	TileLayer terrainTransitions;
+
+	std::vector<TileLayer> transitions;
+
+//	TileLayer transitions;
+//	TileLayer terrainTransitions;
 
 	TileLayer fogHidden;
 	TileLayer fog;
@@ -162,8 +165,14 @@ public:
 
 	void setSize(unsigned int width, unsigned int height) {
 		this->terrains.setSize(width, height);
-		this->transitions.setSize(width, height);
-		this->terrainTransitions.setSize(width, height);
+
+		for(int i=0;i<3;i++) {
+			TileLayer layer;
+			layer.setSize(width,height);
+			this->transitions.push_back(layer);
+		}
+//		this->transitions.setSize(width, height);
+//		this->terrainTransitions.setSize(width, height);
 		this->objs.setSize(width, height);
 		this->resources.setSize(width, height);
 		this->fogHidden.setSize(width, height);

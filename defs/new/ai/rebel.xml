@@ -63,6 +63,15 @@
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="guerrier_bud" qty="5"/>
+		<Train type="guerrier_bud"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>
@@ -73,8 +82,10 @@
 		<Probability frac="10" per="1"/>
 		<HasFoundEnemy/>
 		<RandomSelector>
+			<SendExpedition type="zork" per="50"/>
 			<SendExpedition type="punkette" per="50"/>
 			<SendExpedition type="lance_pepino" per="50"/>
+			<SendExpedition type="guerrier_bud" per="50"/>
 		</RandomSelector>
 	</Sequence>
 

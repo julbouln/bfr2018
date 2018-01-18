@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <SFML/Graphics.hpp>
 
 #include "AnimationHandler.hpp"
@@ -85,9 +86,13 @@ struct Resource {
 
 struct Player {
 	std::string team;
+	int colorIdx;
 	bool ai;
 	ResourceType resourceType;
 	int resources;
+
+	std::set<EntityID> kills;
+
 	int butchery;
 
 	sf::Vector2i initialPos;

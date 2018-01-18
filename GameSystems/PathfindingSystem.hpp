@@ -66,43 +66,46 @@ public:
 						this->changeState(tile, "idle");
 					}
 				} else {
-					float speed = (float)unit.speed / 2.0;
-					switch (tile.direction) {
-					case North:
-						tile.ppos.y -= speed;
-						break;
-					case NorthEast:
-						tile.ppos.x += speed;
-						tile.ppos.y -= speed;
-						break;
-					case East:
-						tile.ppos.x += speed;
-						break;
-					case SouthEast:
-						tile.ppos.x += speed;
-						tile.ppos.y += speed;
-						break;
-					case South:
-						tile.ppos.y += speed;
-						break;
-					case NorthWest:
-						tile.ppos.x -= speed;
-						tile.ppos.y -= speed;
-						break;
-					case West:
-						tile.ppos.x -= speed;
-						break;
-					case SouthWest:
-						tile.ppos.x -= speed;
-						tile.ppos.y += speed;
-						break;
-					}
-
 					if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
 						// something wrong, realign
 						GameObject &obj = this->vault->registry.get<GameObject>(entity);
 						std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << std::endl;
 						tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+//						unit.nextpos = tile.pos;
+					} else {
+
+						float speed = (float)unit.speed / 2.0;
+						switch (tile.direction) {
+						case North:
+							tile.ppos.y -= speed;
+							break;
+						case NorthEast:
+							tile.ppos.x += speed;
+							tile.ppos.y -= speed;
+							break;
+						case East:
+							tile.ppos.x += speed;
+							break;
+						case SouthEast:
+							tile.ppos.x += speed;
+							tile.ppos.y += speed;
+							break;
+						case South:
+							tile.ppos.y += speed;
+							break;
+						case NorthWest:
+							tile.ppos.x -= speed;
+							tile.ppos.y -= speed;
+							break;
+						case West:
+							tile.ppos.x -= speed;
+							break;
+						case SouthWest:
+							tile.ppos.x -= speed;
+							tile.ppos.y += speed;
+							break;
+						}
+
 
 					}
 

@@ -6,6 +6,7 @@ class MapLayersSystem : public GameSystem {
 	std::map<std::string, std::vector<EntityID>> tiles;
 
 	std::vector<EntityID> dirtTransitions;
+	std::vector<EntityID> waterTransitions;
 	std::vector<EntityID> concreteTransitions;
 
 	std::map<int, int> terrainTransitionsMapping;
@@ -185,6 +186,9 @@ public:
 		for (int i = 0; i < 20; i++) {
 			dirtTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "dirt_transition", i));
 		}
+		for (int i = 0; i < 20; i++) {
+			waterTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "water_transition", i));
+		}
 
 		for (int i = 0; i < 20; i++) {
 			concreteTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "concrete_transition", i));
@@ -231,6 +235,7 @@ public:
 
 	}
 
+// https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
 	int transitionBitmask(TileLayer &layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (this->map->bound(x, y - 1))
@@ -292,14 +297,6 @@ public:
 		return bitmask;
 	}
 
-	void updateDirtTransition(int x, int y) {
-		EntityID dirtEnt = tiles["dirt"][0];
-		int bitmask = this->voidTransitionBitmask(this->map->terrains, dirtEnt, x, y);
-		bitmask = this->updateTransition(bitmask, this->map->transitions, dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
-		if(!bitmask) {
-			this->map->transitions.set(x, y, 0);
-		}
-	}
 
 
 	void updateGrassConcreteTransition(int x, int y) {
@@ -307,12 +304,33 @@ public:
 		EntityID concreteEnt = tiles["concrete"][0];
 		int bitmask = this->pairTransitionBitmask(this->map->terrains, grassEnt, concreteEnt, x, y);
 
-		bitmask = this->updateTransition(bitmask, this->map->terrainTransitions, concreteEnt, concreteTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->transitions[0], concreteEnt, concreteTransitions, terrainTransitionsMapping, x, y);
 		if(!bitmask) {
-			this->map->terrainTransitions.set(x, y, 0);
+			this->map->transitions[0].set(x, y, 0);
 		}
 	}
 	
+
+	void updateSandWaterTransition(int x, int y) {
+		EntityID sandEnt = tiles["sand"][0];
+		EntityID waterEnt = tiles["water"][0];
+		int bitmask = this->pairTransitionBitmask(this->map->terrains, sandEnt, waterEnt, x, y);
+
+		bitmask = this->updateTransition(bitmask, this->map->transitions[1], waterEnt, waterTransitions, terrainTransitionsMapping, x, y);
+		if(!bitmask) {
+			this->map->transitions[1].set(x, y, 0);
+		}
+	}
+
+
+	void updateDirtTransition(int x, int y) {
+		EntityID dirtEnt = tiles["dirt"][0];
+		int bitmask = this->voidTransitionBitmask(this->map->terrains, dirtEnt, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->transitions[2], dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
+		if(!bitmask) {
+			this->map->transitions[2].set(x, y, 0);
+		}
+	}
 
 	void updateFogTransition(TileLayer &layer, int x, int y) {
 		EntityID fogEnt = fogTransitions[0];
@@ -320,13 +338,13 @@ public:
 		this->updateTransition(bitmask, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
 	}
 
-// https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
 	void updateTransitions() {
 		for (int x = 0; x < this->map->width; x++) {
 			for (int y = 0; y < this->map->height; y++) {
 
 				this->updateDirtTransition(x, y);
 				this->updateGrassConcreteTransition(x, y);
+				this->updateSandWaterTransition(x, y);
 			}
 		}
 	}

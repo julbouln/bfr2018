@@ -63,6 +63,15 @@
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="bazooka" qty="5"/>
+		<Train type="bazooka"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>
@@ -73,8 +82,10 @@
 		<Probability frac="10" per="1"/>
 		<HasFoundEnemy/>
 		<RandomSelector>
+			<SendExpedition type="brad_lab" per="50"/>
 			<SendExpedition type="patrouilleur" per="50"/>
 			<SendExpedition type="mitrailleur" per="50"/>
+			<SendExpedition type="bazooka" per="50"/>
 		</RandomSelector>
 	</Sequence>
 </AI>

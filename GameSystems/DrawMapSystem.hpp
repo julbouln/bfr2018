@@ -23,10 +23,14 @@ public:
 
 	void draw(sf::RenderWindow &window, float dt) {
 		this->drawTileLayer(window, this->map->terrains, dt);
-		this->drawTileLayer(window, this->map->terrainTransitions, dt);
-		this->drawTileLayer(window, this->map->transitions, dt);
+		for (TileLayer &transitionLayer : this->map->transitions) {
+			this->drawTileLayer(window, transitionLayer, dt);
+		}
 		this->drawObjLayer(window, dt);
 		this->drawDebug(window, dt);
+
+		this->drawTileLayer(window, this->map->fogHidden, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
+		this->drawTileLayer(window, this->map->fog, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
 	sf::IntRect viewClip(sf::RenderWindow &window) {
@@ -150,13 +154,26 @@ public:
 
 				tile.sprite.setPosition(pos);
 
-				colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
-				colorSwap.setParameter("color1", sf::Color(3, 255, 205));
-				colorSwap.setParameter("replace1", sf::Color(117, 122, 223));
-				colorSwap.setParameter("color2", sf::Color(0, 235, 188));
-				colorSwap.setParameter("replace2", sf::Color(90, 94, 172));
+				if (this->vault->registry.has<GameObject>(ent)) {
+					GameObject &obj = this->vault->registry.get<GameObject>(ent);
+					Player &player = this->vault->registry.get<Player>(obj.player);
 
-				window.draw(tile.sprite, &colorSwap);
+					sf::Color col1 = sf::Color(3, 255, 205);
+					sf::Color col2 = sf::Color(0, 235, 188);
+					sf::Color replace1 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
+					sf::Color replace2 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
+
+					colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
+					colorSwap.setParameter("color1", col1);
+					colorSwap.setParameter("replace1", replace1);
+					colorSwap.setParameter("color2", col2);
+					colorSwap.setParameter("replace2", replace2);
+
+					window.draw(tile.sprite, &colorSwap);
+				} else {
+					window.draw(tile.sprite);
+
+				}
 
 				// life bar
 				if (this->vault->registry.has<GameObject>(ent)) {

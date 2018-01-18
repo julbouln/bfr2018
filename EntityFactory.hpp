@@ -58,6 +58,7 @@ class EntityFactory {
 	std::map<std::string, int> resourcesCount;
 
 	std::map<std::string, sf::IntRect> centerRects;
+	std::map<int,std::vector<sf::Color> > playerColors;
 
 public:
 	TextureManager texManager;
@@ -120,7 +121,7 @@ public:
 		texManager.loadTexture("concrete", terrains, sf::IntRect{128, 0, 32, 96});
 
 		sf::Image transitions;
-		transitions.loadFromFile("medias/tiles/bordures.png");
+		transitions.loadFromFile("medias/new/transitions.png");
 		transitions.createMaskFromColor(sf::Color::White);
 
 		texManager.loadTexture("sand_transition", transitions, sf::IntRect{0, 0, 32, 640});
@@ -298,6 +299,24 @@ public:
 		resourcesCount[name] = i - 1;
 	}
 
+	void loadPlayerColors(std::string filename) {
+		tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
+		doc->LoadFile(filename.c_str());
+
+		for (tinyxml2::XMLElement *vcolEl : doc->RootElement()) {
+			sf::Color key=sf::Color(vcolEl->IntAttribute("r"),vcolEl->IntAttribute("g"),vcolEl->IntAttribute("b"));
+			std::vector<sf::Color> colors;
+			for (tinyxml2::XMLElement *colEl : vcolEl) {
+				colors.push_back(sf::Color(colEl->IntAttribute("r"),colEl->IntAttribute("g"),colEl->IntAttribute("b")));
+			}
+			playerColors[key.r<<16+key.g<<8+key.b]=colors;
+		}
+	}
+
+	sf::Color getPlayerColor(sf::Color key, int idx) {
+		return playerColors[key.r<<16+key.g<<8+key.b][idx];
+	}
+
 	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
@@ -313,6 +332,7 @@ public:
 
 		for (tinyxml2::XMLElement *stateEl : statesEl) {
 			std::string state = stateEl->Attribute("name");
+			int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
 //			std::cout << "STATE " << state << std::endl;
 
 			AnimationHandler animHandler;
@@ -334,7 +354,7 @@ public:
 						std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
 				}
 
-				Animation anim(frames, 0.5f);
+				Animation anim(frames, 0.1f * refresh);
 
 				animHandler.addAnim(anim);
 			}
@@ -651,6 +671,8 @@ public:
 
 		this->loadResources("defs/res/nature.xml");
 		this->loadResources("defs/res/pollution.xml");
+
+		this->loadPlayerColors("defs/unit_color.xml");
 
 		this->loadMisc();
 		this->loadTechTrees();

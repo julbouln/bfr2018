@@ -120,7 +120,7 @@ public:
 #endif
 		for (EntityID entity : view) {
 			Resource &resource = view.get(entity);
-			if (resource.type == type) {
+			if (resource.type == type && resource.level > 0) {
 				spended -= resource.level;
 				this->vault->registry.destroy(entity);
 				if (spended <= 0)

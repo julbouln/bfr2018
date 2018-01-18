@@ -17,7 +17,6 @@ Improvements:
 Game:
 - projectile
 - special FX
-- team colors
 
 Interface:
 - stages

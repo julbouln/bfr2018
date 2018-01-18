@@ -50,14 +50,21 @@ public:
 
 	float timePerTick;
 	float currentTime;
+	unsigned long ticks;
 
 	unsigned int width;
 	unsigned int height;
+
+	sf::Font font;
+	bool scoreBonus;
+	sf::Text scoreBonusText;
+
 
 	GameEngine(GameVault *vault) {
 		this->setVault(vault);
 		this->action = Action::None;
 		this->timePerTick = 0.1;
+		this->ticks = 0;
 		this->currentBuild = 0;
 		this->markUpdateObjLayer = false;
 
@@ -84,6 +91,12 @@ public:
 		ai.rebelAI.map = this->map;
 		ai.nazAI.setVault(this->vault);
 		ai.nazAI.map = this->map;
+
+		font.loadFromFile("medias/fonts/samos.ttf");
+		scoreBonusText.setFont(font);
+		scoreBonusText.setCharacterSize(48);
+		scoreBonusText.setColor(sf::Color::White);
+
 	}
 
 	void setSize(unsigned int width, unsigned int height) {
@@ -105,7 +118,7 @@ public:
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
-		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
+		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 		this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 		auto view = this->vault->registry.view<Player>();
@@ -115,6 +128,8 @@ public:
 			{
 				player.initialPos = sf::Vector2i(10, 10);
 				player.enemyFound = false;
+				player.colorIdx = rand() % 12;
+				player.kills.clear();
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 10);
 
 				/*
@@ -137,6 +152,8 @@ public:
 			} else {
 				player.initialPos = sf::Vector2i(mapWidth - 10, mapHeight - 10);
 				player.enemyFound = false;
+				player.colorIdx = rand() % 12;
+				player.kills.clear();
 				/*
 								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
 								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
@@ -322,9 +339,6 @@ public:
 	void draw(sf::RenderWindow &window, float dt) {
 		drawMap.draw(window, dt);
 
-		drawMap.drawTileLayer(window, this->map->fogHidden, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		drawMap.drawTileLayer(window, this->map->fog, dt, sf::Color(0x00, 0x00, 0x00));
-
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
 			//if (this->vault->registry.valid(selectedObj))
@@ -370,6 +384,15 @@ public:
 		this->debugGui();
 		this->gameStateGui();
 		this->actionGui();
+
+		if (this->scoreBonus) {
+			sf::FloatRect textRect = this->scoreBonusText.getLocalBounds();
+			scoreBonusText.setOrigin(textRect.left + textRect.width / 2.0f,
+			                  textRect.top  + textRect.height / 2.0f);
+			scoreBonusText.setPosition(sf::Vector2f(this->width / 2, this->height / 2));
+
+			window.draw(scoreBonusText);
+		}
 	}
 
 	void gameStateGui() {
@@ -390,7 +413,7 @@ public:
 			ImGui::SameLine();
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(255, 0, 0, 255));
-			ImGui::ProgressBar(player.butchery, ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.butchery / 1000.0, ImVec2(200.0f, 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::End();
@@ -589,16 +612,71 @@ public:
 		this->selectedObjs = newSelectedObjs;
 	}
 
+	void updateDecade(float dt) {
+		auto playerView = this->vault->registry.view<Player>();
+
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+//			std::cout << "Player "<<entity<< " "<<player.team<<" kills "<<player.kills.size() << std::endl;
+
+			player.butchery += pow(player.kills.size(), 2);
+
+			if (entity == this->currentPlayer) {
+				switch (player.kills.size()) {
+				case 0:
+					this->scoreBonus=false;
+					break;
+				case 1:
+					this->scoreBonus=false;
+					// normal
+					break;
+				case 2:
+					std::cout << "! COMBO " << player.team <<  std::endl;
+					this->scoreBonus=true;
+					this->scoreBonusText.setString("COMBO");
+					break;
+				case 3:
+					std::cout << "! KILLER " << player.team <<  std::endl;
+					this->scoreBonus=true;
+					this->scoreBonusText.setString("KILLER");
+					break;
+				case 4:
+					std::cout << "! MEGAKILL " << player.team << std::endl;
+					this->scoreBonus=true;
+					this->scoreBonusText.setString("MEGAKILL");
+					break;
+				case 5:
+					std::cout << "! BARBARIAN " << player.team << std::endl;
+					this->scoreBonus=true;
+					this->scoreBonusText.setString("BARBARIAN");
+					break;
+				default: // >= 6
+					std::cout << "! BUTCHERY " << player.team << std::endl;
+					this->scoreBonus=true;
+					this->scoreBonusText.setString("BUTCHERY");
+					break;
+
+				}
+			}
+			player.kills.clear();
+		}
+
+	}
+
 	void update(float dt) {
 		this->updateEveryFrame(dt);
 		this->currentTime += dt;
 		if (this->currentTime < this->timePerTick) return;
 
+		this->ticks++;
 		this->currentTime = 0.0;
+
+		if (this->ticks % 10 == 0) {
+			this->updateDecade(dt);
+		}
 
 		if (this->action == Action::Building && this->currentBuild == 0) {
 			this->currentBuild = this->vault->factory.createBuilding(this->vault->registry, this->currentPlayer, this->currentBuildType, 8, 8, false);
-			std::cout << "built " << this->currentBuild << std::endl;
 		}
 
 		this->updatePlayers(dt);
