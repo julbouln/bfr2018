@@ -23,6 +23,7 @@ public:
 
 	void draw(sf::RenderWindow &window, float dt) {
 		this->drawTileLayer(window, this->map->terrains, dt);
+		this->drawTileLayer(window, this->map->terrainTransitions, dt);
 		this->drawTileLayer(window, this->map->transitions, dt);
 		this->drawObjLayer(window, dt);
 		this->drawDebug(window, dt);

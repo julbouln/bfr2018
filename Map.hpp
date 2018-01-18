@@ -12,6 +12,12 @@ public:
 		this->fill();
 	}
 
+	void setSize(unsigned int w, unsigned int h) {
+		this->width = w;
+		this->height = h;
+		this->fill();
+	}
+
 	void fill()
 	{
 		entitiesGrid.clear();
@@ -44,6 +50,12 @@ public:
 	ObjLayer() {}
 
 	ObjLayer(unsigned int width, unsigned int height) : width(width), height(height)  {
+		this->fill();
+	}
+
+	void setSize(unsigned int w, unsigned int h) {
+		this->width = w;
+		this->height = h;
 		this->fill();
 	}
 
@@ -137,6 +149,7 @@ public:
 
 	TileLayer terrains;
 	TileLayer transitions;
+	TileLayer terrainTransitions;
 
 	TileLayer fogHidden;
 	TileLayer fog;
@@ -147,6 +160,18 @@ public:
 	Map() {
 	}
 
+	void setSize(unsigned int width, unsigned int height) {
+		this->terrains.setSize(width, height);
+		this->transitions.setSize(width, height);
+		this->terrainTransitions.setSize(width, height);
+		this->objs.setSize(width, height);
+		this->resources.setSize(width, height);
+		this->fogHidden.setSize(width, height);
+		this->fog.setSize(width, height);
+
+		this->width = width;
+		this->height = height;
+	}
 
 	bool bound(int x, int y) {
 		if (x >= 0 && y >= 0 && x < this->width && y < this->height)

@@ -122,7 +122,11 @@ public:
 		sf::Image transitions;
 		transitions.loadFromFile("medias/tiles/bordures.png");
 		transitions.createMaskFromColor(sf::Color::White);
+
+		texManager.loadTexture("sand_transition", transitions, sf::IntRect{0, 0, 32, 640});
+		texManager.loadTexture("water_transition", transitions, sf::IntRect{32, 0, 32, 640});
 		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 640});
+		texManager.loadTexture("concrete_transition", transitions, sf::IntRect{128, 0, 32, 640});
 
 
 //		sf::Image fogTransitions;
@@ -420,10 +424,9 @@ public:
 
 		tile.sprite.setTexture(texManager.getRef(name));
 
-		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
-
 		tile.direction = South;
 		tile.state = "idle";
+		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
 
 		tile.centerRect = this->centerRects[name];
 
@@ -459,6 +462,7 @@ public:
 
 		tile.direction = North;
 		tile.state = "idle";
+		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
 
 		tile.centerRect = this->centerRects[name];
 

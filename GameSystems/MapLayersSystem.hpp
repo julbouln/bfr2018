@@ -6,7 +6,9 @@ class MapLayersSystem : public GameSystem {
 	std::map<std::string, std::vector<EntityID>> tiles;
 
 	std::vector<EntityID> dirtTransitions;
-	std::map<int, int> dirtTransitionsMapping;
+	std::vector<EntityID> concreteTransitions;
+
+	std::map<int, int> terrainTransitionsMapping;
 
 	std::vector<EntityID> fogTransitions;
 
@@ -184,19 +186,23 @@ public:
 			dirtTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "dirt_transition", i));
 		}
 
-		dirtTransitionsMapping[1] = 2;
-		dirtTransitionsMapping[2] = 0;
-		dirtTransitionsMapping[3] = 4;
-		dirtTransitionsMapping[4] = 1;
-		dirtTransitionsMapping[5] = 6;
-		dirtTransitionsMapping[8] = 3;
-		dirtTransitionsMapping[10] = 7;
-		dirtTransitionsMapping[12] = 5;
+		for (int i = 0; i < 20; i++) {
+			concreteTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "concrete_transition", i));
+		}
 
-		dirtTransitionsMapping[0x10] = 12;
-		dirtTransitionsMapping[0x20] = 13;
-		dirtTransitionsMapping[0x40] = 15;
-		dirtTransitionsMapping[0x80] = 14;
+		terrainTransitionsMapping[1] = 2;
+		terrainTransitionsMapping[2] = 0;
+		terrainTransitionsMapping[3] = 4;
+		terrainTransitionsMapping[4] = 1;
+		terrainTransitionsMapping[5] = 6;
+		terrainTransitionsMapping[8] = 3;
+		terrainTransitionsMapping[10] = 7;
+		terrainTransitionsMapping[12] = 5;
+
+		terrainTransitionsMapping[0x10] = 12;
+		terrainTransitionsMapping[0x20] = 13;
+		terrainTransitionsMapping[0x40] = 15;
+		terrainTransitionsMapping[0x80] = 14;
 
 		for (int i = 0; i < 13; i++) {
 			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
@@ -256,10 +262,15 @@ public:
 		return bitmask;
 	}
 
+	int pairTransitionBitmask(TileLayer &layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
+		int bitmask = 0;
+		if (layer.get(x, y) == srcEnt) {
+			bitmask = this->transitionBitmask(layer, dstEnt, x, y);
+		}
+		return bitmask;
+	}
 
-	int updateTransition(TileLayer &inLayer, TileLayer &outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
-		int bitmask = this->voidTransitionBitmask(inLayer, ent, x, y);
-
+	int updateTransition(int bitmask, TileLayer &outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
 		if (bitmask) {
 			if (bitmask & 0xf) {
 				if (mapping.count(bitmask & 0xf) > 0) {
@@ -270,7 +281,7 @@ public:
 
 				}
 			} else {
-				if (dirtTransitionsMapping.count(bitmask) > 0) {
+				if (mapping.count(bitmask) > 0) {
 					int trans = transitions[mapping[bitmask]];
 					outLayer.set(x, y, trans);
 				} else {
@@ -283,15 +294,30 @@ public:
 
 	void updateDirtTransition(int x, int y) {
 		EntityID dirtEnt = tiles["dirt"][0];
-		int bitmask = this->updateTransition(this->map->terrains, this->map->transitions, dirtEnt, dirtTransitions, dirtTransitionsMapping, x, y);
+		int bitmask = this->voidTransitionBitmask(this->map->terrains, dirtEnt, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->transitions, dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
 		if(!bitmask) {
 			this->map->transitions.set(x, y, 0);
 		}
 	}
 
+
+	void updateGrassConcreteTransition(int x, int y) {
+		EntityID grassEnt = tiles["grass"][0];
+		EntityID concreteEnt = tiles["concrete"][0];
+		int bitmask = this->pairTransitionBitmask(this->map->terrains, grassEnt, concreteEnt, x, y);
+
+		bitmask = this->updateTransition(bitmask, this->map->terrainTransitions, concreteEnt, concreteTransitions, terrainTransitionsMapping, x, y);
+		if(!bitmask) {
+			this->map->terrainTransitions.set(x, y, 0);
+		}
+	}
+	
+
 	void updateFogTransition(TileLayer &layer, int x, int y) {
 		EntityID fogEnt = fogTransitions[0];
-		this->updateTransition(layer, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
+		int bitmask = this->voidTransitionBitmask(layer, fogEnt, x, y);
+		this->updateTransition(bitmask, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
@@ -300,43 +326,18 @@ public:
 			for (int y = 0; y < this->map->height; y++) {
 
 				this->updateDirtTransition(x, y);
+				this->updateGrassConcreteTransition(x, y);
 			}
 		}
 	}
 
 	void generate(unsigned int width, unsigned int height) {
-		this->map->terrains.width = width;
-		this->map->terrains.height = height;
-
-		this->map->transitions.width = width;
-		this->map->transitions.height = height;
-
-		this->map->objs.width = width;
-		this->map->objs.height = height;
-
-		this->map->resources.width = width;
-		this->map->resources.height = height;
-
-		this->map->fogHidden.width = width;
-		this->map->fogHidden.height = height;
-
-		this->map->fog.width = width;
-		this->map->fog.height = height;
-
-		this->map->width = width;
-		this->map->height = height;
+		this->map->setSize(width, height);
 
 		float random_w = ((float) rand()) / (float) RAND_MAX;
 		float random_h = ((float) rand()) / (float) RAND_MAX;
 
 		SimplexNoise simpl(width / 64.0, height / 64.0, 2.0, 0.5);
-
-		this->map->terrains.fill();
-		this->map->transitions.fill();
-		this->map->objs.fill();
-		this->map->resources.fill();
-		this->map->fogHidden.fill();
-		this->map->fog.fill();
 
 		for (float y = 0; y < height; y++) {
 			for (float x = 0; x < width; x++) {
