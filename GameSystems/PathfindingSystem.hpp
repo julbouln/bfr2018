@@ -39,7 +39,8 @@ public:
 							this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity); // mark next pos as blocking
 
 							tile.direction = this->getDirection(sf::Vector2i(cx, cy), sf::Vector2i(nx, ny));
-							tile.state = "move";
+							this->changeState(tile, "move");
+
 
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " next position " << nx << "x" << ny << "(" << nx - cx << "x" << ny - cy << ")" << std::endl;
@@ -48,7 +49,7 @@ public:
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
-							tile.state = "idle";
+							this->changeState(tile, "idle");
 							unit.nopath++;
 							if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
 								sf::Vector2i fp = this->firstFreePosition(unit.destpos);
@@ -62,7 +63,7 @@ public:
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
 #endif
-						tile.state = "idle";
+						this->changeState(tile, "idle");
 					}
 				} else {
 					float speed = (float)unit.speed / 2.0;

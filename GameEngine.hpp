@@ -105,7 +105,7 @@ public:
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
-		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+		this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
 		this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 		auto view = this->vault->registry.view<Player>();
@@ -520,11 +520,13 @@ public:
 						ImGui::Text("Case size: %dx%d", tile.size.x, tile.size.y);
 						ImGui::Text("Pixel position: %.2fx%.2f", tile.ppos.x, tile.ppos.y);
 						ImGui::Text("Pixel size: %.2fx%.2f", tile.psize.x, tile.psize.y);
+						ImGui::Text("Direction: %d", tile.direction);
 						ImGui::Text("State: %s", tile.state.c_str());
+						ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
+						ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentAnim());
 						ImGui::Text("Life: %f", obj.life);
 						if (this->vault->registry.has<Unit>(selectedObj)) {
 							Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-
 							ImGui::Text("Next pos: %dx%d", unit.nextpos.x, unit.nextpos.y);
 							ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
 							ImGui::Text("Dest attack: %d", (int)unit.destAttack);

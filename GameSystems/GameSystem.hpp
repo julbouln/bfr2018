@@ -116,7 +116,7 @@ public:
 		int spended = val;
 		auto view = this->vault->registry.view<Resource>();
 #ifdef GAME_SYSTEM_DEBUG
-		std::cout << "GameSystem: spend " << val << " "<<(int)type<<std::endl;
+		std::cout << "GameSystem: spend " << val << " " << (int)type << std::endl;
 #endif
 		for (EntityID entity : view) {
 			Resource &resource = view.get(entity);
@@ -134,6 +134,16 @@ public:
 		GameObject obj;
 		this->vault->factory.parseGameObjectFromXml(type, obj);
 		return obj.life;
+	}
+
+	void changeState(Tile &tile, std::string state) {
+		tile.state = state;
+/*		AnimationHandler &currentAnim = tile.animHandlers[tile.state];
+
+		currentAnim.changeAnim(tile.direction);
+		currentAnim.update(0);
+		tile.sprite.setTextureRect(currentAnim.bounds);
+		*/
 	}
 
 // action
@@ -157,9 +167,9 @@ public:
 			for (sf::Vector2i p : this->tileAround(tile, 1)) {
 				if (!this->map->objs.get(p.x, p.y)) {
 					EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
-					this->spendResources(playerEnt, player.resourceType, 2*this->objTypeLife(type));
+					this->spendResources(playerEnt, player.resourceType, 2 * this->objTypeLife(type));
 #ifdef GAME_SYSTEM_DEBUG
-					std::cout << "GameSystem: train "<<type<<std::endl;
+					std::cout << "GameSystem: train " << type << std::endl;
 #endif
 					return true;
 				}

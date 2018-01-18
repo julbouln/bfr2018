@@ -56,13 +56,13 @@ public:
 					unit.destpos = dpos;
 //					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
 					tile.direction = this->getDirection(tile.pos, destTile.pos);
-					tile.state = "attack";
+					this->changeState(tile,"attack");
 					destObj.life -= (unit.attack1.power * dt);
 					if (destObj.life < 0)
 						destObj.life = 0;
 
 					if (destObj.life == 0) {
-						tile.state = "idle";
+						this->changeState(tile,"idle");
 						unit.destAttack = 0;
 						unit.nextpos = tile.pos;
 						unit.destpos = tile.pos;
@@ -83,7 +83,7 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 
 			if (obj.life == 0) {
-				tile.state = "die";
+				this->changeState(tile,"die");
 				unit.destAttack = 0;
 				unit.destpos = tile.pos;
 				unit.nextpos = tile.pos;
@@ -91,7 +91,7 @@ public:
 
 			if (tile.state == "attack") {
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
-					tile.state = "idle";
+					this->changeState(tile,"idle");
 					unit.destAttack = 0;
 					unit.nextpos = tile.pos;
 					unit.destpos = tile.pos;

@@ -59,21 +59,27 @@ private:
     float t;
 
     int currentAnim;
+    int currentFrame;
 
 public:
     int l;
 
     int count() {return animations.size();};
 
+    int getCurrentFrame() {
+        return currentFrame;
+    }
+    int getCurrentAnim() {
+        return currentAnim;
+    }
     /* Add a new animation */
     void addAnim(Animation anim) {
-
         this->animations.push_back(anim);
-
         return;
     }
 
     void set(int frame) {
+        this->currentFrame = frame;
         /* Set the sprite to the new frame */
         sf::IntRect rect = this->frameSize;
         rect.left = rect.width * this->currentAnim;
@@ -129,13 +135,13 @@ public:
         this->currentAnim = animID;
         /* Update the animation bounds */
         sf::IntRect rect = this->frameSize;
-//    rect.top = rect.height * animID;
-//    std::cout << "DIR "<<direction<<std::endl;
+
         rect.left = rect.width * animID;
+        rect.top = rect.height * currentFrame;
+
         this->bounds = rect;
         this->t = 0.0;
         this->l = 0;
-//    std::cout << rect.left << std::endl;
 
         return;
     }
@@ -150,6 +156,7 @@ public:
     AnimationHandler()
     {
         this->t = 0.0f;
+        this->currentFrame = 0;
         this->currentAnim = -1;
         this->l = 0;
     }
@@ -158,6 +165,7 @@ public:
         this->frameSize = frameSize;
 
         this->t = 0.0f;
+        this->currentFrame = 0;
         this->currentAnim = -1;
         this->l = 0;
     }
