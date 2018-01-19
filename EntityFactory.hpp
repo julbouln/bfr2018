@@ -58,7 +58,7 @@ class EntityFactory {
 	std::map<std::string, int> resourcesCount;
 
 	std::map<std::string, sf::IntRect> centerRects;
-	std::map<int,std::vector<sf::Color> > playerColors;
+	std::map<int, std::vector<sf::Color> > playerColors;
 
 public:
 	TextureManager texManager;
@@ -94,6 +94,8 @@ public:
 	}
 
 	void loadMisc() {
+
+		this->loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/intro_bg-bot.png");
 		this->loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
 		this->loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
 
@@ -105,6 +107,9 @@ public:
 
 		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
 		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
+
+		this->loadTextureWithWhiteMask("button2", "medias/interface/buttons/button2.png");
+
 
 		this->loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
 		this->loadTextureWithWhiteMask("selection", "medias/tiles/cadre_unit.png");
@@ -131,7 +136,7 @@ public:
 
 
 //		sf::Image fogTransitions;
-		texManager.loadTexture("fog_transition","medias/new/fog.png");
+		texManager.loadTexture("fog_transition", "medias/new/fog.png");
 //		fogTransitions.loadFromFile("medias/new/fow.png");
 //		texManager.loadTexture("fog_transition", fogTransitions, sf::IntRect{0, 0, 32, 512});
 //		texManager.loadTexture("fog_transition2", fogTransitions, sf::IntRect{32, 0, 32, 512});
@@ -181,21 +186,21 @@ public:
 		int found = 0;
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				if(found > 1)
+				if (found > 1)
 					return;
 				if (image.getPixel(x, y) == sf::Color(255, 36, 196)) {
 #ifdef FACTORY_DEBUG
-					std::cout << "EntityFactory: " << name << " special pix "<<x<<"x"<<y<<std::endl;
+					std::cout << "EntityFactory: " << name << " special pix " << x << "x" << y << std::endl;
 #endif
-					if(found==0) {
-						pix1= sf::Vector2i(x,y);
+					if (found == 0) {
+						pix1 = sf::Vector2i(x, y);
 					} else {
-						pix2 = sf::Vector2i(x,y);
-						sf::IntRect centerRect(pix1,pix2-pix1);
+						pix2 = sf::Vector2i(x, y);
+						sf::IntRect centerRect(pix1, pix2 - pix1);
 #ifdef FACTORY_DEBUG
 						std::cout << "EntityFactory: " << name << " center rect " << centerRect.left << "x" << centerRect.top << ":" << centerRect.width << "x" << centerRect.height << std::endl;
 #endif
-						centerRects[name]=centerRect;
+						centerRects[name] = centerRect;
 					}
 
 					found++;
@@ -203,7 +208,7 @@ public:
 			}
 		}
 
-		if(found) {
+		if (found) {
 
 		}
 
@@ -304,17 +309,17 @@ public:
 		doc->LoadFile(filename.c_str());
 
 		for (tinyxml2::XMLElement *vcolEl : doc->RootElement()) {
-			sf::Color key=sf::Color(vcolEl->IntAttribute("r"),vcolEl->IntAttribute("g"),vcolEl->IntAttribute("b"));
+			sf::Color key = sf::Color(vcolEl->IntAttribute("r"), vcolEl->IntAttribute("g"), vcolEl->IntAttribute("b"));
 			std::vector<sf::Color> colors;
 			for (tinyxml2::XMLElement *colEl : vcolEl) {
-				colors.push_back(sf::Color(colEl->IntAttribute("r"),colEl->IntAttribute("g"),colEl->IntAttribute("b")));
+				colors.push_back(sf::Color(colEl->IntAttribute("r"), colEl->IntAttribute("g"), colEl->IntAttribute("b")));
 			}
-			playerColors[key.r<<16+key.g<<8+key.b]=colors;
+			playerColors[key.r << 16 + key.g << 8 + key.b] = colors;
 		}
 	}
 
 	sf::Color getPlayerColor(sf::Color key, int idx) {
-		return playerColors[key.r<<16+key.g<<8+key.b][idx];
+		return playerColors[key.r << 16 + key.g << 8 + key.b][idx];
 	}
 
 	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
@@ -433,7 +438,7 @@ public:
 
 	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y) {
 #ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: create unit "<<name<<" at "<<x<<"x"<<y<<std::endl;
+		std::cout << "EntityFactory: create unit " << name << " at " << x << "x" << y << std::endl;
 #endif
 		EntityID entity = registry.create();
 		Tile tile;
@@ -490,7 +495,7 @@ public:
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = player;
 		obj.mapped = built;
-		obj.life = obj.life * (tile.size.x * tile.size.y)/2;
+		obj.life = obj.life * (tile.size.x * tile.size.y) / 2;
 		obj.maxLife = obj.life;
 
 		Building building;

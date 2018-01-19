@@ -91,25 +91,15 @@ public:
 			window.clear(sf::Color::Black);
 			peekStage()->draw(dt);
 
-			/*
-						if (fadeStep > 0)
-						{
-							fadeStep -= 3;
-							if (fadeStep < 0)
-								fadeStep = 0;
-							fade.setFillColor(sf::Color(0, 0, 0, fadeStep));
-							window.draw(fade);
-						}
-			*/
 			window.display();
 		}
 	}
 
 
-	Game(unsigned int w, unsigned int h)
+	Game(unsigned int width, unsigned int height)
 	{
-		this->width = w;
-		this->height = h;
+		this->width = width;
+		this->height = height;
 		this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
 		this->window.setFramerateLimit(30);
 
