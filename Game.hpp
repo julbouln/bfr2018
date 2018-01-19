@@ -1,0 +1,143 @@
+#pragma once
+
+#include <iostream>
+#include <vector>
+#include <math.h>
+#include <string>
+#include <map>
+#include <random>
+#include <stack>
+
+#include <SFML/Graphics.hpp>
+
+#include "gui/imgui.h"
+#include "gui/imgui-sfml.h"
+#include "gui/imgui-sfml-extra.h"
+
+#include "Stage.hpp"
+#include "GameVault.hpp"
+
+class Game {
+public:
+	std::stack<Stage*> stages;
+
+	unsigned int width, height;
+
+	GameVault vault;
+
+	EntityID emptyEntity;
+
+	sf::RenderWindow window;
+
+	void pushStage(Stage* stage)
+	{
+		this->stages.push(stage);
+		return;
+	}
+
+	void popStage()
+	{
+		delete this->stages.top();
+		this->stages.pop();
+		return;
+	}
+
+	void changeStage(Stage* stage)
+	{
+		if (!this->stages.empty())
+			popStage();
+		pushStage(stage);
+		return;
+	}
+
+	Stage* peekStage()
+	{
+		if (this->stages.empty()) return nullptr;
+		return this->stages.top();
+	}
+
+	void loop()
+	{
+		sf::Clock clock;
+		ImGuiIO& io = ImGui::GetIO();
+
+		while (window.isOpen())
+		{
+			sf::Event event;
+
+			sf::Time elapsed = clock.restart();
+			float dt = elapsed.asSeconds();
+			ImGui::SFML::Update(window, elapsed);
+
+			while (window.pollEvent(event))
+			{
+				ImGui::SFML::ProcessEvent(event);
+
+				// "close requested" event: we close the window
+				if (event.type == sf::Event::Closed)
+					window.close();
+
+				if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+					window.close();
+
+				if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */
+					peekStage()->handleEvent(event);
+				}
+			}
+
+			peekStage()->update(dt);
+
+			// clear the window with black color
+			window.clear(sf::Color::Black);
+			peekStage()->draw(dt);
+
+			/*
+						if (fadeStep > 0)
+						{
+							fadeStep -= 3;
+							if (fadeStep < 0)
+								fadeStep = 0;
+							fade.setFillColor(sf::Color(0, 0, 0, fadeStep));
+							window.draw(fade);
+						}
+			*/
+			window.display();
+		}
+	}
+
+
+	Game(unsigned int w, unsigned int h)
+	{
+		this->width = w;
+		this->height = h;
+		this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+		this->window.setFramerateLimit(30);
+
+		srand (time(NULL));
+
+		ImGui::SFML::Init(window, false);
+
+		ImGuiIO& io = ImGui::GetIO();
+
+		io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
+		io.Fonts->AddFontFromFileTTF("medias/fonts/samos.ttf", 16.f);
+		io.Fonts->AddFontFromFileTTF("medias/fonts/Vera.ttf", 14.f);
+		io.Fonts->AddFontDefault(); // this will load default font as well
+		ImGui::SFML::UpdateFontTexture();
+
+		emptyEntity = vault.registry.create();
+
+		window.clear(sf::Color::Black);
+		window.display();
+
+		vault.factory.load();
+	}
+
+
+	~Game()
+	{
+		while (!this->stages.empty()) popStage();
+	}
+
+
+};

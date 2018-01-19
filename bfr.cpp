@@ -1,26 +1,8 @@
-#include <iostream>
-#include <vector>
-#include <math.h>
-#include <string>
-#include <map>
-#include <random>
-
-#include <SFML/Graphics.hpp>
-
-#include "SimplexNoise.h"
-#include "JPS.h"
-
-#include "Components.hpp"
-#include "EntityFactory.hpp"
-
-#include "gui/imgui.h"
-#include "gui/imgui-sfml.h"
-#include "gui/imgui-sfml-extra.h"
-
-#include "GameVault.hpp"
 #include "GameEngine.hpp"
 
+#include "Game.hpp"
 
+/*
 sf::Text genText(sf::Font &font, std::string str, int size) {
 	sf::Text text;
 
@@ -37,31 +19,20 @@ sf::Text genText(sf::Font &font, std::string str, int size) {
 	text.setColor(sf::Color::White);
 	return text;
 }
-
+*/
 
 int main()
 {
-	int gameWidth = 800;
-	int gameHeight = 600;
+//	int gameWidth = 800;
+//	int gameHeight = 600;
 
-	GameVault vault;
 
-//	entt::Registry<EntityID> registry;
-//	EntityFactory factory;
+//	GameEngine engine(&vault);
 
-	EntityID emptyEntity;
-	GameEngine engine(&vault);
 
-	ImGuiIO& io = ImGui::GetIO();
 
-	sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight), "BFR2018");
-	engine.setSize(gameWidth, gameHeight);
-	window.setFramerateLimit(30);
 
-	srand (time(NULL));
-
-	ImGui::SFML::Init(window, false);
-
+/*
 	sf::Font font;
 	if (!font.loadFromFile("medias/fonts/samos.ttf"))
 	{
@@ -84,64 +55,14 @@ int main()
 	window.draw(loading);
 	window.display();
 
-	io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
-	io.Fonts->AddFontFromFileTTF("medias/fonts/samos.ttf", 16.f);
-	io.Fonts->AddFontFromFileTTF("medias/fonts/Vera.ttf", 14.f);
-	io.Fonts->AddFontDefault(); // this will load default font as well
-	ImGui::SFML::UpdateFontTexture();
+*/
 
-	vault.factory.load();
 
-	sf::Clock clock;
 
-	emptyEntity = vault.registry.create();
+	Game game(800,600);
 
-	engine.generate(64,64);
-	engine.initView(window);
+    game.pushStage(new GameEngine(&game));
+    game.loop();
 
-	while (window.isOpen())
-	{
-		sf::Event event;
-
-		sf::Time elapsed = clock.restart();
-		float dt = elapsed.asSeconds();
-		ImGui::SFML::Update(window, elapsed);
-
-		while (window.pollEvent(event))
-		{
-			ImGui::SFML::ProcessEvent(event);
-
-			// "close requested" event: we close the window
-			if (event.type == sf::Event::Closed)
-				window.close();
-
-			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
-				window.close();
-
-			if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */
-				engine.handleEvent(window, event);
-			}
-		}
-
-		engine.update(dt);
-
-		window.setView(engine.gameView);
-
-		// clear the window with black color
-		window.clear(sf::Color::Black);
-		engine.draw(window, dt);
-
-		ImGui::SFML::Render(window);
-
-		if (fadeStep > 0)
-		{
-			fadeStep -= 3;
-			if (fadeStep < 0)
-				fadeStep = 0;
-			fade.setFillColor(sf::Color(0, 0, 0, fadeStep));
-			window.draw(fade);
-		}
-
-		window.display();
-	}
+    return 0;
 }

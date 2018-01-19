@@ -1,8 +1,15 @@
 #pragma once
 
-#include "GameVault.hpp"
+#include "Game.hpp"
+
+#include "GameStage.hpp"
 #include "System.hpp"
 #include "Map.hpp"
+
+#include "SimplexNoise.h"
+#include "JPS.h"
+
+#include "Components.hpp"
 
 #include "GameSystems/GameSystem.hpp"
 #include "GameSystems/TileAnimSystem.hpp"
@@ -20,7 +27,7 @@ enum class Action {
 	Building
 };
 
-class GameEngine : public GameSystem {
+class GameEngine : public GameSystem, public GameStage {
 public:
 	ResourcesSystem resources;
 	TileAnimSystem tileAnim;
@@ -52,16 +59,12 @@ public:
 	float currentTime;
 	unsigned long ticks;
 
-	unsigned int width;
-	unsigned int height;
-
 	sf::Font font;
 	bool scoreBonus;
 	sf::Text scoreBonusText;
 
-
-	GameEngine(GameVault *vault) {
-		this->setVault(vault);
+	GameEngine(Game *game) {
+		this->game = game;
 		this->action = Action::None;
 		this->timePerTick = 0.1;
 		this->ticks = 0;
@@ -71,6 +74,18 @@ public:
 		this->currentPlayer = 0;
 		this->map = new Map();
 
+		this->setSize(this->game->width, this->game->height);
+		this->setVaults(&(this->game->vault));
+		this->generate(64, 64);
+		this->initView(this->game->window);
+
+		this->initEffects();
+		this->fadeOut();
+	}
+
+	void setVaults(GameVault *vault) {
+
+		this->setVault(vault);
 		// init systems
 		tileAnim.setVault(vault);
 		tileAnim.map = this->map; // not needed
@@ -97,11 +112,6 @@ public:
 		scoreBonusText.setCharacterSize(48);
 		scoreBonusText.setColor(sf::Color::White);
 
-	}
-
-	void setSize(unsigned int width, unsigned int height) {
-		this->width = width;
-		this->height = height;
 	}
 
 	void initView(sf::RenderWindow &window) {
@@ -191,8 +201,8 @@ public:
 	}
 
 
-	void handleEvent(sf::RenderWindow &window, sf::Event &event) {
-		sf::Vector2f gamePos = (window.mapPixelToCoords(sf::Mouse::getPosition(window), this->gameView));
+	void handleEvent(sf::Event &event) {
+		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(sf::Mouse::getPosition(this->game->window), this->gameView));
 		sf::Vector2f gameMapPos = gamePos;
 		gameMapPos.x /= 32.0;
 		gameMapPos.y /= 32.0;
@@ -336,8 +346,8 @@ public:
 		}
 	}
 
-	void draw(sf::RenderWindow &window, float dt) {
-		drawMap.draw(window, dt);
+	void draw(float dt) {
+		drawMap.draw(this->game->window, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -356,7 +366,7 @@ public:
 				rectangle.setOutlineThickness(2);
 				rectangle.setPosition(pos);
 
-				window.draw(rectangle);
+				this->game->window.draw(rectangle);
 			}
 		}
 
@@ -372,15 +382,15 @@ public:
 			rectangle.setOutlineThickness(2);
 			rectangle.setPosition(this->selectionStart);
 
-			window.draw(rectangle);
+			this->game->window.draw(rectangle);
 		}
 
 
-		window.setView(this->guiView);
+		this->game->window.setView(this->guiView);
 
 		iface.setPosition(sf::Vector2f(0, 0));
 		iface.setScale(this->width / 800.0, this->height / 600.0);
-		window.draw(iface);
+		this->game->window.draw(iface);
 		this->debugGui();
 		this->gameStateGui();
 		this->actionGui();
@@ -388,11 +398,16 @@ public:
 		if (this->scoreBonus) {
 			sf::FloatRect textRect = this->scoreBonusText.getLocalBounds();
 			scoreBonusText.setOrigin(textRect.left + textRect.width / 2.0f,
-			                  textRect.top  + textRect.height / 2.0f);
+			                         textRect.top  + textRect.height / 2.0f);
 			scoreBonusText.setPosition(sf::Vector2f(this->width / 2, this->height / 2));
 
-			window.draw(scoreBonusText);
+			this->game->window.draw(scoreBonusText);
 		}
+
+
+			ImGui::SFML::Render(this->game->window);
+
+		this->updateFadeOut();
 	}
 
 	void gameStateGui() {
@@ -624,35 +639,35 @@ public:
 			if (entity == this->currentPlayer) {
 				switch (player.kills.size()) {
 				case 0:
-					this->scoreBonus=false;
+					this->scoreBonus = false;
 					break;
 				case 1:
-					this->scoreBonus=false;
+					this->scoreBonus = false;
 					// normal
 					break;
 				case 2:
 					std::cout << "! COMBO " << player.team <<  std::endl;
-					this->scoreBonus=true;
+					this->scoreBonus = true;
 					this->scoreBonusText.setString("COMBO");
 					break;
 				case 3:
 					std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
-					this->scoreBonus=true;
+					this->scoreBonus = true;
 					this->scoreBonusText.setString("SERIAL-KILLER");
 					break;
 				case 4:
 					std::cout << "! MEGAKILL " << player.team << std::endl;
-					this->scoreBonus=true;
+					this->scoreBonus = true;
 					this->scoreBonusText.setString("MEGAKILL");
 					break;
 				case 5:
 					std::cout << "! BARBARIAN " << player.team << std::endl;
-					this->scoreBonus=true;
+					this->scoreBonus = true;
 					this->scoreBonusText.setString("BARBARIAN");
 					break;
 				default: // >= 6
 					std::cout << "! BUTCHERY " << player.team << std::endl;
-					this->scoreBonus=true;
+					this->scoreBonus = true;
 					this->scoreBonusText.setString("BUTCHERY");
 					break;
 
@@ -664,6 +679,8 @@ public:
 	}
 
 	void update(float dt) {
+		this->game->window.setView(this->gameView);
+
 		this->updateEveryFrame(dt);
 		this->currentTime += dt;
 		if (this->currentTime < this->timePerTick) return;
@@ -696,6 +713,7 @@ public:
 		}
 
 		this->updateSelected(dt);
+
 
 	}
 
