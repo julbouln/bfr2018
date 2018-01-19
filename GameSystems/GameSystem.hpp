@@ -138,12 +138,32 @@ public:
 
 	void changeState(Tile &tile, std::string state) {
 		tile.state = state;
-/*		AnimationHandler &currentAnim = tile.animHandlers[tile.state];
+		/*		AnimationHandler &currentAnim = tile.animHandlers[tile.state];
 
-		currentAnim.changeAnim(tile.direction);
-		currentAnim.update(0);
-		tile.sprite.setTextureRect(currentAnim.bounds);
-		*/
+				currentAnim.changeAnim(tile.direction);
+				currentAnim.update(0);
+				tile.sprite.setTextureRect(currentAnim.bounds);
+				*/
+	}
+
+	void playSound(sf::Sound &snd, std::string name) {
+		snd.setBuffer(this->vault->factory.getSndBuf(name));
+		snd.play();
+	}
+
+	void playRandomUnitSound(EntityID ent, std::string state) {
+		Unit &unit = this->vault->registry.get<Unit>(ent);
+		GameObject &obj = this->vault->registry.get<GameObject>(ent);
+
+		this->playRandomUnitSound(obj, unit, state);
+	}
+
+	void playRandomUnitSound(GameObject &obj, Unit &unit, std::string state) {
+		if (unit.soundActions[state] > 0) {
+			int rnd = rand() % unit.soundActions[state];
+			unit.sound.setBuffer(this->vault->factory.getSndBuf(obj.name + "_" + state + "_" + std::to_string(rnd)));
+			unit.sound.play();
+		}
 	}
 
 // action

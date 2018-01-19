@@ -2,6 +2,7 @@
 
 #include "Components.hpp"
 #include "TextureManager.hpp"
+#include "SoundBufferManager.hpp"
 
 #include "tinyxml2.h"
 #include "tixml2ex.h"
@@ -62,8 +63,14 @@ class EntityFactory {
 
 public:
 	TextureManager texManager;
+	SoundBufferManager sndManager;
+
 	sf::Texture &getTex(std::string name) {
 		return texManager.getRef(name);
+	}
+
+	sf::SoundBuffer &getSndBuf(std::string name) {
+		return sndManager.getRef(name);
 	}
 
 	void loadButton(std::string name, std::string filename) {
@@ -96,8 +103,15 @@ public:
 	void loadMisc() {
 
 		this->loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/intro_bg-bot.png");
+
 		this->loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
 		this->loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
+
+		this->loadTextureWithWhiteMask("indice_bg_rebel", "medias/interface/bgs/indice_bio-bg.png");
+		this->loadTextureWithWhiteMask("indice_bg_neonaz", "medias/interface/bgs/indice_pol-bg.png");
+
+		this->loadTextureWithWhiteMask("indice_rebel", "medias/interface/bgs/indice_bio.png");
+		this->loadTextureWithWhiteMask("indice_neonaz", "medias/interface/bgs/indice_pol.png");
 
 		this->loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
 		this->loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
@@ -110,10 +124,16 @@ public:
 
 		this->loadTextureWithWhiteMask("button2", "medias/interface/buttons/button2.png");
 
+		this->loadButton("menu_button", "medias/interface/buttons/menu_button.png");
 
 		this->loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
 		this->loadTextureWithWhiteMask("selection", "medias/tiles/cadre_unit.png");
 
+		sndManager.loadSoundBuffer("combo","medias/misc/combo.wav");
+		sndManager.loadSoundBuffer("killer","medias/misc/killer.wav");
+		sndManager.loadSoundBuffer("megakill","medias/misc/megakill.wav");
+		sndManager.loadSoundBuffer("barbarian","medias/misc/barbarian.wav");
+		sndManager.loadSoundBuffer("butchery","medias/misc/butchery.wav");
 	}
 
 	void loadTerrains() {
@@ -258,15 +278,41 @@ public:
 			std::string name = doc->RootElement()->Attribute("name");
 			this->docs[name] = doc;
 
-			std::string imgPath = doc->RootElement()->FirstChildElement("file")->Attribute("path");
+			tinyxml2::XMLElement *root = doc->RootElement();
+			std::string imgPath = root->FirstChildElement("file")->Attribute("path");
 			this->initUnitTexture(name, imgPath);
 
-			this->loadButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
+			this->loadButton(name + "_icon", root->FirstChildElement("icon")->Attribute("path"));
 
-			texManager.loadTexture(name + "_face", doc->RootElement()->FirstChildElement("face")->Attribute("path"));
-			tinyxml2::XMLElement *speEl = doc->RootElement()->FirstChildElement("spe");
+			texManager.loadTexture(name + "_face", root->FirstChildElement("face")->Attribute("path"));
+			tinyxml2::XMLElement *speEl = root->FirstChildElement("spe");
 			if (speEl)
 				texManager.loadTexture(name + "_spe", speEl->Attribute("path"));
+
+
+			tinyxml2::XMLElement * selSnds = root->FirstChildElement("select_sounds");
+			if (selSnds) {
+				int i = 0;
+				for (tinyxml2::XMLElement *selSnd : selSnds) {
+					sndManager.loadSoundBuffer(name + "_select_" + std::to_string(i), selSnd->Attribute("path"));
+					i++;
+				}
+			}
+
+			tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
+
+			for (tinyxml2::XMLElement *stateEl : statesEl) {
+				std::string stName = stateEl->Attribute("name");
+				tinyxml2::XMLElement *sndsEl = stateEl->FirstChildElement("sounds");
+				if (sndsEl) {
+					int i = 0;
+					for (tinyxml2::XMLElement *sndEl : sndsEl) {
+						sndManager.loadSoundBuffer(name + "_" + stName + "_" + std::to_string(i), sndEl->Attribute("path"));
+						i++;
+					}
+
+				}
+			}
 		}
 
 	}
@@ -391,6 +437,37 @@ public:
 
 		unit.attack1 = Attack{(unsigned int)root->FirstChildElement("attack1")->IntAttribute("power"), 0};
 		unit.attack2 = Attack{(unsigned int)root->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)root->FirstChildElement("attack2")->IntAttribute("dist")};
+
+
+		tinyxml2::XMLElement * selSnds = root->FirstChildElement("select_sounds");
+		if (selSnds) {
+			int i = 0;
+			for (tinyxml2::XMLElement *selSnd : selSnds) {
+				i++;
+			}
+			unit.soundActions["select"] = i;
+		} else {
+			unit.soundActions["select"] = 0;
+
+		}
+
+
+		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
+
+		for (tinyxml2::XMLElement *stateEl : statesEl) {
+			std::string stName = stateEl->Attribute("name");
+			tinyxml2::XMLElement *sndsEl = stateEl->FirstChildElement("sounds");
+			if (sndsEl) {
+				int i = 0;
+				for (tinyxml2::XMLElement *sndEl : sndsEl) {
+					i++;
+				}
+				unit.soundActions[stName] = i;
+
+			} else {
+				unit.soundActions[stName] = 0;
+			}
+		}
 	}
 
 	void parseBuildingFromXml(std::string name, Building &building)
@@ -403,6 +480,11 @@ public:
 
 	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
 		EntityID entity = registry.create();
+
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create terrain " << entity << " " << name << " " << variant << std::endl;
+#endif
+
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
 		tile.size = sf::Vector2i{1, 1};
@@ -437,10 +519,10 @@ public:
 #define UNIT_FRAME_COUNT 10
 
 	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y) {
-#ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: create unit " << name << " at " << x << "x" << y << std::endl;
-#endif
 		EntityID entity = registry.create();
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create unit " << entity << " " << name << " at " << x << "x" << y << std::endl;
+#endif
 		Tile tile;
 		this->parseTileFromXml(name, tile, 8);
 
@@ -477,6 +559,9 @@ public:
 
 	EntityID createBuilding(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y, bool built) {
 		EntityID entity = registry.create();
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create building " << entity << " " << name << " at " << x << "x" << y << std::endl;
+#endif
 		Tile tile;
 		this->parseTileFromXml(name, tile, 8);
 
@@ -520,6 +605,10 @@ public:
 	EntityID plantResource(entt::Registry<EntityID> &registry, ResourceType type, int x, int y) {
 		EntityID entity = registry.create();
 
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: plant resource " << entity << " " << (int)type << " at " << x << "x" << y << std::endl;
+#endif
+
 		std::string name = this->resourceTypeName(type);
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
@@ -550,7 +639,7 @@ public:
 		Resource resource;
 		resource.type = type;
 		resource.level = 0;
-		resource.grow = 0;
+		resource.grow = 0.0;
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Resource>(entity, resource);
@@ -576,7 +665,7 @@ public:
 
 				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
 //				tile.size = sf::Vector2i{1, 1};
-				tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"),(float)psizeEl->IntAttribute("h")};
+				tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"), (float)psizeEl->IntAttribute("h")};
 				if (offsetEl) {
 //					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
 					tile.offset = sf::Vector2i{0, offsetEl->IntAttribute("h")};
@@ -625,11 +714,17 @@ public:
 
 	EntityID createPlayer(entt::Registry<EntityID> &registry, std::string team, bool ai) {
 		EntityID entity = registry.create();
+
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create player " << entity << " " << team << std::endl;
+#endif
+
 		Player player;
 		player.team = team;
 		player.ai = ai;
 		player.resources = 0;
-		player.butchery = 0;
+		player.butchery = 0.0;
+		player.enemyFound = false;
 
 		if (team == "rebel")
 			player.resourceType = ResourceType::Nature;

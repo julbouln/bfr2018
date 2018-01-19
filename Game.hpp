@@ -139,11 +139,10 @@ public:
 		io.Fonts->AddFontDefault(); // this will load default font as well
 		ImGui::SFML::UpdateFontTexture();
 
-		emptyEntity = vault.registry.create();
-
 		window.clear(sf::Color::Black);
 		window.display();
 
+		emptyEntity = vault.registry.create();
 		vault.factory.load();
 	}
 

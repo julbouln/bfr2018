@@ -1,13 +1,8 @@
-#ifndef TEXTURE_MANAGER_HPP
-#define TEXTURE_MANAGER_HPP
-
-#include "entt/entt.hpp"
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <map>
-
-#include "Entity.hpp"
 
 class TextureManager
 {
@@ -18,21 +13,45 @@ private:
 
 public:
 
-    void loadTexture(std::string name, int w, int h);
+    void loadTexture(std::string name, int w, int h)
+    {
+        sf::Texture tex;
+        tex.create(w, h);
+        this->textures[name] = tex;
+        return;
+    }
 
-    /* Add a texture from a file */
-    void loadTexture(std::string name, const std::string &filename);
+    void loadTexture(std::string name, const std::string& filename)
+    {
+        /* Load the texture */
+        sf::Texture tex;
+        tex.loadFromFile(filename);
 
-    /* Add a texture from a image */
-    void loadTexture(std::string name, sf::Image img, const sf::IntRect &area);
+        /* Add it to the list of textures */
+        this->textures[name] = tex;
 
-    /* Translate an id into a reference */
-    sf::Texture& getRef(std::string texture);
+        return;
+    }
+
+    void loadTexture(std::string name, sf::Image img, const sf::IntRect &area) {
+        /* Load the texture */
+        sf::Texture tex;
+        tex.loadFromImage(img, area);
+
+        /* Add it to the list of textures */
+        this->textures[name] = tex;
+
+        return;
+
+    }
+
+    sf::Texture& getRef(std::string texture)
+    {
+        return this->textures.at(texture);
+    }
 
     /* Constructor */
     TextureManager()
     {
     }
 };
-
-#endif /* TEXTURE_MANAGER_HPP */

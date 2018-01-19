@@ -60,7 +60,7 @@ public:
 		fade.setPosition(sf::Vector2f(0, 0));
 		fade.setFillColor(sf::Color(0, 0, 0, 255));
 		fade.setSize(sf::Vector2f(this->width, this->height));
-		fadeSpeed = 5;
+		fadeSpeed = 8;
 	}
 
 	virtual void fadeOutCallback() = 0;

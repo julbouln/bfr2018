@@ -2,6 +2,7 @@
 
 #include <set>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 #include "AnimationHandler.hpp"
 #include "Entity.hpp"
@@ -67,6 +68,9 @@ struct Unit {
 	sf::Vector2i destpos;
 	sf::Vector2i nextpos;
 	unsigned int nopath;
+
+	sf::Sound sound;
+	std::map<std::string, int> soundActions;
 };
 
 struct Building {

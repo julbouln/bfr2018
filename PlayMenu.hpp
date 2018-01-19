@@ -21,7 +21,7 @@ public:
 		ImGui::SetNextWindowPosCenter();
 		if (ImGui::Begin("Play menu", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
-			ImVec2 sz(192, 64);
+			ImVec2 sz(128, 32);
 
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(0, 0, 0, 255) );
 
@@ -33,16 +33,24 @@ public:
 			ImGui::Text("Map size"); ImGui::SameLine();
 			ImGui::Combo("", &mapSize, mapSizes, IM_ARRAYSIZE(mapSizes));   // Combo using proper array. You can also pass a callback to retrieve array value, no need to create/copy an array just for that.
 
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
+//			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
 			if (ImGui::Button("Back", sz)) {
 				nextStage = 1;
 				this->fadeOut();
+			}; ImGui::SameLine();
+
+			if (this->game->isRegisteredStage("game")) {
+				if (ImGui::Button("Continue", sz)) {
+					nextStage = 3;
+					this->fadeOut();
+				}; ImGui::SameLine();
 			}
+
 			if (ImGui::Button("Play", sz)) {
 				nextStage = 2;
 				this->fadeOut();
 			}
-			ImGui::PopStyleVar();
+//			ImGui::PopStyleVar();
 
 			ImGui::PopStyleColor();
 
@@ -123,6 +131,9 @@ public:
 			this->game->pushRegisteredStage("game");
 		}
 		break;
+		case 3:
+			this->game->pushRegisteredStage("game");
+			break;
 		}
 
 	}

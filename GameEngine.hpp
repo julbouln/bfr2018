@@ -38,6 +38,8 @@ public:
 	AI ai;
 
 	sf::Sprite iface;
+	sf::Sprite indice_bg;
+	sf::Sprite indice;
 
 	Action action;
 	sf::Vector2f selectionStart;
@@ -48,8 +50,6 @@ public:
 	EntityID currentBuild;
 	std::string currentBuildType;
 
-	bool markUpdateObjLayer;
-
 	EntityID currentPlayer;
 
 	sf::View gameView;
@@ -58,10 +58,13 @@ public:
 	float timePerTick;
 	float currentTime;
 	unsigned long ticks;
+	bool markUpdateObjLayer;
 
 	sf::Font font;
+
 	bool scoreBonus;
 	sf::Text scoreBonusText;
+	sf::Sound scoreSound;
 
 	GameEngine(Game *game) {
 		this->game = game;
@@ -73,7 +76,10 @@ public:
 		this->game = game;
 		this->init();
 		this->generate(mapWidth, mapHeight, playerTeam);
+	}
 
+	~GameEngine() {
+		delete this->map;
 	}
 
 	void init() {
@@ -89,19 +95,20 @@ public:
 		this->setSize(this->game->width, this->game->height);
 		this->setVaults(&(this->game->vault));
 
-		this->initView(this->game->window);
+		this->initView();
 
 		this->initEffects();
 		this->fadeIn();
-
+		this->debugCorner = 1;
 	}
 
 	void reset() {
-		
+		this->fadeIn();
+		this->nextStage = 0;
 	}
 
 	void fadeOutCallback() {
-
+		this->game->pushRegisteredStage("play_menu");
 	}
 
 	void setVaults(GameVault *vault) {
@@ -135,8 +142,8 @@ public:
 
 	}
 
-	void initView(sf::RenderWindow &window) {
-		sf::Vector2f pos = sf::Vector2f(window.getSize());
+	void initView() {
+		sf::Vector2f pos = sf::Vector2f(this->game->window.getSize());
 		guiView.setSize(pos);
 		gameView.setSize(pos);
 		pos *= 0.5f;
@@ -145,7 +152,7 @@ public:
 	}
 
 	void centerMapView(sf::Vector2i position) {
-		sf::Vector2f centre(position.x*32,position.y*32);
+		sf::Vector2f centre(position.x * 32, position.y * 32);
 		this->gameView.setCenter(centre);
 	}
 
@@ -160,24 +167,25 @@ public:
 			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
-			this->centerMapView(sf::Vector2i(8,8));
+			this->centerMapView(sf::Vector2i(8, 8));
 		} else {
 			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 
-			this->centerMapView(sf::Vector2i(mapWidth - 8,mapHeight - 8));
+			this->centerMapView(sf::Vector2i(mapWidth - 8, mapHeight - 8));
 		}
 
 
 		auto view = this->vault->registry.view<Player>();
 		for (EntityID entity : view) {
 			Player &player = view.get(entity);
+
+			player.colorIdx = rand() % 12;
+
 			if (player.team == "rebel")
 			{
+
 				player.initialPos = sf::Vector2i(10, 10);
-				player.enemyFound = false;
-				player.colorIdx = rand() % 12;
-				player.kills.clear();
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
 
 				/*
@@ -199,9 +207,6 @@ public:
 
 			} else {
 				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
-				player.enemyFound = false;
-				player.colorIdx = rand() % 12;
-				player.kills.clear();
 				/*
 								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
 								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
@@ -230,6 +235,8 @@ public:
 
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 		iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
+		indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
+		indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
 
 //		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
 		/*
@@ -238,9 +245,27 @@ public:
 //		map.objs.set(10, 10, factory.createUnit(registry, this->currentPlayer, "zork", 10, 10));
 	}
 
+	void menuGui() {
+		ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+		if (ImGui::Begin("Menu", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+		{
+
+			if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("menu_button"),
+			                           this->vault->factory.texManager.getRef("menu_button"),
+			                           this->vault->factory.texManager.getRef("menu_button_down"))) {
+				nextStage = 1;
+				fadeOut();
+			}
+			ImGui::End();
+		}
+		ImGui::PopStyleColor();
+
+	}
+
 	void gameStateGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-		float leftDist = 200.0f;
+		float leftDist = 192.0f;
 		float topDist = 8.0f;
 
 		ImVec2 window_pos = ImVec2(leftDist, topDist);
@@ -300,6 +325,7 @@ public:
 					                           this->vault->factory.texManager.getRef(player.team + "_move"),
 					                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
 						std::cout << "move clicked " << std::endl;
+
 					}
 
 					ImGui::SameLine();
@@ -358,11 +384,12 @@ public:
 		ImGui::PopStyleColor();
 	}
 
+	int debugCorner;
+
 	void debugGui() {
 		const float DISTANCE = 10.0f;
-		static int corner = 0;
-		ImVec2 window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
-		ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+		ImVec2 window_pos = ImVec2((debugCorner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (debugCorner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
+		ImVec2 window_pos_pivot = ImVec2((debugCorner & 1) ? 1.0f : 0.0f, (debugCorner & 2) ? 1.0f : 0.0f);
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
 		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
@@ -406,10 +433,10 @@ public:
 
 			if (ImGui::BeginPopupContextWindow())
 			{
-				if (ImGui::MenuItem("Top-left", NULL, corner == 0)) corner = 0;
-				if (ImGui::MenuItem("Top-right", NULL, corner == 1)) corner = 1;
-				if (ImGui::MenuItem("Bottom-left", NULL, corner == 2)) corner = 2;
-				if (ImGui::MenuItem("Bottom-right", NULL, corner == 3)) corner = 3;
+				if (ImGui::MenuItem("Top-left", NULL, debugCorner == 0)) debugCorner = 0;
+				if (ImGui::MenuItem("Top-right", NULL, debugCorner == 1)) debugCorner = 1;
+				if (ImGui::MenuItem("Bottom-left", NULL, debugCorner == 2)) debugCorner = 2;
+				if (ImGui::MenuItem("Bottom-right", NULL, debugCorner == 3)) debugCorner = 3;
 				ImGui::EndPopup();
 			}
 			ImGui::End();
@@ -477,26 +504,31 @@ public:
 					std::cout << "! COMBO " << player.team <<  std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("COMBO");
+					this->playSound(scoreSound, "combo");
 					break;
 				case 3:
 					std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
 					this->scoreBonus = true;
-					this->scoreBonusText.setString("SERIAL-KILLER");
+					this->scoreBonusText.setString("SERIAL KILLER");
+					this->playSound(scoreSound, "killer");
 					break;
 				case 4:
 					std::cout << "! MEGAKILL " << player.team << std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("MEGAKILL");
+					this->playSound(scoreSound, "megakill");
 					break;
 				case 5:
 					std::cout << "! BARBARIAN " << player.team << std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("BARBARIAN");
+					this->playSound(scoreSound, "barbarian");
 					break;
 				default: // >= 6
 					std::cout << "! BUTCHERY " << player.team << std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("BUTCHERY");
+					this->playSound(scoreSound, "butchery");
 					break;
 
 				}
@@ -563,6 +595,7 @@ public:
 		iface.setScale(this->width / 800.0, this->height / 600.0);
 		this->game->window.draw(iface);
 		this->debugGui();
+		this->menuGui();
 		this->gameStateGui();
 		this->actionGui();
 
@@ -576,8 +609,17 @@ public:
 		}
 
 
+		/*
+				indice_bg.setPosition(sf::Vector2f((this->width - indice_bg.getTexture()->getSize().x)/2.0, 0));
+				indice_bg.setScale(this->width / 800.0, this->height / 600.0);
+				this->game->window.draw(indice_bg);
+		*/
 		ImGui::SFML::Render(this->game->window);
-
+		/*
+				indice.setPosition(sf::Vector2f((this->width - indice.getTexture()->getSize().x)/2.0, 0));
+				indice.setScale(this->width / 800.0, this->height / 600.0);
+				this->game->window.draw(indice);
+		*/
 		this->updateFading();
 	}
 
@@ -671,9 +713,12 @@ public:
 							EntityID ent = this->map->objs.get(x, y);
 							if (ent) {
 								if (this->vault->registry.has<Unit>(ent)) {
+									Unit &unit = this->vault->registry.get<Unit>(ent);
 									GameObject &obj = this->vault->registry.get<GameObject>(ent);
-									if (obj.player == this->currentPlayer)
+									if (obj.player == this->currentPlayer) {
+										this->playRandomUnitSound(obj, unit, "select");
 										this->selectedObjs.push_back(ent);
+									}
 								}
 							}
 						}
@@ -733,6 +778,7 @@ public:
 							while (curObj < this->selectedObjs.size()) {
 								EntityID selectedObj = this->selectedObjs[curObj];
 								if (this->vault->registry.has<Unit>(selectedObj)) {
+									this->playRandomUnitSound(selectedObj, "attack");
 									this->attack(selectedObj, destEnt);
 								}
 								curObj++;
@@ -746,6 +792,8 @@ public:
 										EntityID selectedObj = this->selectedObjs[curObj];
 										if (this->vault->registry.has<Unit>(selectedObj)) {
 											this->goTo(selectedObj, sf::Vector2i(gameMapPos.x + x, gameMapPos.y + y));
+										this->playRandomUnitSound(selectedObj, "move");
+
 											Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 											unit.destAttack = 0;
 										}

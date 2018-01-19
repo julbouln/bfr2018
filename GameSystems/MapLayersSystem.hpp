@@ -186,6 +186,7 @@ public:
 		for (int i = 0; i < 20; i++) {
 			dirtTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "dirt_transition", i));
 		}
+
 		for (int i = 0; i < 20; i++) {
 			waterTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "water_transition", i));
 		}
@@ -230,9 +231,6 @@ public:
 		for (int i = 0; i < 256; i++) {
 			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
 		}
-
-		// miss
-
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
