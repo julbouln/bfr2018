@@ -64,6 +64,7 @@ struct Unit {
 	Attack attack2;
 
 	EntityID destAttack;
+	sf::Vector2i destAttackPos;
 
 	sf::Vector2i destpos;
 	sf::Vector2i nextpos;

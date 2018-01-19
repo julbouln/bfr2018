@@ -100,6 +100,7 @@ public:
 		this->initEffects();
 		this->fadeIn();
 		this->debugCorner = 1;
+		this->gameSpeed = 1;
 	}
 
 	void reset() {
@@ -385,8 +386,14 @@ public:
 	}
 
 	int debugCorner;
+	int gameSpeed;
 
-	void debugGui() {
+	void debugGui(float dt) {
+		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(sf::Mouse::getPosition(this->game->window), this->gameView));
+		sf::Vector2f gameMapPos = gamePos;
+		gameMapPos.x /= 32.0;
+		gameMapPos.y /= 32.0;
+
 		const float DISTANCE = 10.0f;
 		ImVec2 window_pos = ImVec2((debugCorner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (debugCorner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
 		ImVec2 window_pos_pivot = ImVec2((debugCorner & 1) ? 1.0f : 0.0f, (debugCorner & 2) ? 1.0f : 0.0f);
@@ -395,8 +402,18 @@ public:
 		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
 		if (ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
+			ImGui::Text("FPS: %.2f", 1 / dt);
 			ImGui::Text("Total Entities: %d", (int)this->vault->registry.size());
 			ImGui::Text("Drawn Entities: %d", (int)drawMap.entitiesDrawList.size());
+
+			ImGui::Text("Speed"); ImGui::SameLine();
+			ImGui::RadioButton("0", &gameSpeed, 0); ImGui::SameLine();
+			ImGui::RadioButton("x1", &gameSpeed, 1); ImGui::SameLine();
+			ImGui::RadioButton("x4", &gameSpeed, 4); ImGui::SameLine();
+			ImGui::RadioButton("x16", &gameSpeed, 16);
+
+			this->setGameSpeed(gameSpeed);
+
 //			ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
 			if (this->selectedObjs.size() > 0)
 			{
@@ -430,6 +447,7 @@ public:
 
 			ImGui::Separator();
 			ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+			ImGui::Text("Game Position: (%.1f,%.1f)", gameMapPos.x, gameMapPos.y);
 
 			if (ImGui::BeginPopupContextWindow())
 			{
@@ -480,6 +498,19 @@ public:
 				newSelectedObjs.push_back(entity);
 		}
 		this->selectedObjs = newSelectedObjs;
+	}
+
+	void updateHundred(float dt) {
+		auto playerView = this->vault->registry.view<Player>();
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+			int playerObjs = 0;
+			for (auto o : player.objsByType) {
+				playerObjs += o.second.size();
+			}
+			std::cout << "Player: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
+		}
+
 	}
 
 	void updateDecade(float dt) {
@@ -560,8 +591,9 @@ public:
 				sf::RectangleShape rectangle;
 
 				sf::Vector2f pos;
-				pos.x = tile.ppos.x - tile.psize.x / 2 + 16;
-				pos.y = tile.ppos.y - tile.psize.y / 2;
+				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
+				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
+
 
 				rectangle.setSize(sf::Vector2f(tile.psize));
 				rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
@@ -594,7 +626,7 @@ public:
 		iface.setPosition(sf::Vector2f(0, 0));
 		iface.setScale(this->width / 800.0, this->height / 600.0);
 		this->game->window.draw(iface);
-		this->debugGui();
+		this->debugGui(dt);
 		this->menuGui();
 		this->gameStateGui();
 		this->actionGui();
@@ -623,15 +655,33 @@ public:
 		this->updateFading();
 	}
 
+	void setGameSpeed(float factor) {
+		if (factor == 0.0) {
+			this->game->window.setFramerateLimit(30);
+			this->timePerTick = FLT_MAX;
+		} else {
+			this->game->window.setFramerateLimit(30 * factor);
+			this->timePerTick = 0.1 / factor;
+		}
+	}
+
 	void update(float dt) {
+//		std::cout << "GameEngine: update " << dt << std::endl;
 		this->game->window.setView(this->gameView);
 
+		if(this->timePerTick == FLT_MAX) return;
+
 		this->updateEveryFrame(dt);
+
 		this->currentTime += dt;
 		if (this->currentTime < this->timePerTick) return;
 
 		this->ticks++;
 		this->currentTime = 0.0;
+
+		if (this->ticks % 100 == 0) {
+			this->updateHundred(dt);
+		}
 
 		if (this->ticks % 10 == 0) {
 			this->updateDecade(dt);
@@ -792,7 +842,7 @@ public:
 										EntityID selectedObj = this->selectedObjs[curObj];
 										if (this->vault->registry.has<Unit>(selectedObj)) {
 											this->goTo(selectedObj, sf::Vector2i(gameMapPos.x + x, gameMapPos.y + y));
-										this->playRandomUnitSound(selectedObj, "move");
+											this->playRandomUnitSound(selectedObj, "move");
 
 											Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 											unit.destAttack = 0;

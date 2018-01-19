@@ -32,7 +32,7 @@ public:
 				} else {
 					// max
 					this->seedResources(resource.type, entity);
-					this->vault->registry.destroy(entity);
+//					this->vault->registry.destroy(entity);
 				}
 			}
 

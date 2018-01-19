@@ -14,7 +14,7 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			if (!unit.destAttack) {
 				std::vector<EntityID>targets;
-				for (sf::Vector2i p : this->tileAround(tile, obj.view)) {
+				for (sf::Vector2i p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
 					if (pEnt) {
 						if (this->vault->registry.has<GameObject>(pEnt)) {
@@ -48,48 +48,76 @@ public:
 				int dist = 1;
 				if (unit.attack2.distance)
 					dist = unit.attack2.distance;
+
 				Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.destAttack);
 
-				sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
-				if (tile.pos == dpos) {
-					if (tile.pos == unit.nextpos) { // unit must be arrived at a position
-						unit.destpos = dpos;
-//					std::cout << "REALLY ATTACK " << entity << " " << destObj.life << std::endl;
-						destObj.life -= (unit.attack1.power * dt);
-						if (destObj.life <= 0) {
-							destObj.life = 0;
-							Player &player = this->vault->registry.get<Player>(obj.player);
-							player.kills.insert(unit.destAttack);
-						} else {
-							tile.direction = this->getDirection(tile.pos, destTile.pos);
-							this->changeState(tile, "attack");
-						}
+//				float curDist = this->approxDistance(tile.pos, destTile.pos);
+//				std::cout << "CombatSystem: "<<entity<< " "<<curDist<<"/"<<dist << " from target "<<unit.destAttack<<std::endl;
 
-						if (destObj.life == 0) {
-							this->changeState(tile, "idle");
-							unit.destAttack = 0;
+				bool inRange = false;
+				for (sf::Vector2i p : this->tileAround(destTile, dist)) {
+					if (tile.pos == p)
+						inRange = true;
+				}
+
+				if (!inRange && tile.pos == unit.destAttackPos && tile.pos == unit.nextpos) {
+//					std::cout << "CombatSystem: " << entity << " arrived but enemy is not in range anymore, wait a bit" << std::endl;
+//					tile.state = "idle";
+//					unit.destAttack = 0;
+					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+					unit.destAttackPos = dpos;
+						this->goTo(unit, dpos);
+				} else {
+
+					if (inRange) {
+						if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+//					std::cout << "CombatSystem: "<<entity <<" arrived at target, fight "<<unit.destAttack<<std::endl;
 							unit.destpos = tile.pos;
-						} else {
-							if (this->vault->registry.has<Unit>(unit.destAttack)) {
-								Unit &destUnit = this->vault->registry.get<Unit>(unit.destAttack);
-								if (destTile.state == "idle") {
-									// if ennemy is idle, he will fight back
-									this->attack(destUnit, entity);
-
-								} else if (destTile.state == "attack" && destUnit.destAttack) {
-									// if ennemy is attacking a building, he will fight back
-									if (this->vault->registry.has<Building>(destUnit.destAttack)) {
-										this->attack(destUnit, entity);
-									}
+							unit.destAttackPos = tile.pos;
+							destObj.life -= (unit.attack1.power * dt);
+							if (destObj.life <= 0) {
+								destObj.life = 0;
+								if (destTile.state != "die") {
+									Player &player = this->vault->registry.get<Player>(obj.player);
+									player.kills.insert(unit.destAttack);
 								}
+								if (this->vault->registry.has<Unit>(unit.destAttack))
+									destTile.state = "die";
+
+							} else {
+								tile.direction = this->getDirection(tile.pos, destTile.pos);
+								this->changeState(tile, "attack");
 							}
 
+							if (destObj.life == 0) {
+								this->changeState(tile, "idle");
+								unit.destAttack = 0;
+								unit.destpos = tile.pos;
+							} else {
+								if (this->vault->registry.has<Unit>(unit.destAttack)) {
+									Unit &destUnit = this->vault->registry.get<Unit>(unit.destAttack);
+									if (destTile.state == "idle") {
+										// if ennemy is idle, he will fight back
+										this->attack(destUnit, entity);
+
+									} else if (destTile.state == "attack" && destUnit.destAttack) {
+										// if ennemy is attacking a building, he will fight back
+										if (this->vault->registry.has<Building>(destUnit.destAttack)) {
+											this->attack(destUnit, entity);
+										}
+									}
+								}
+
+							}
 						}
-					}
-				} else {
-					this->goTo(unit, dpos);
+					} else {
+						sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+//					std::cout << "CombatSystem: "<<entity <<" target out of range, go to "<<dpos.x<<"x"<<dpos.y<<std::endl;
+						unit.destAttackPos = dpos;
+						this->goTo(unit, dpos);
 //					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+					}
 				}
 			} else {
 				unit.destAttack = 0;

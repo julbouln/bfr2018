@@ -3,6 +3,7 @@
 #include "GameSystem.hpp"
 
 //#define PATHFINDING_DEBUG
+
 #define PATHFINDING_MAX_NO_PATH 16
 
 class PathfindingSystem : public GameSystem {

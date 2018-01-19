@@ -53,6 +53,15 @@
 		<Train type="punkette"/>
 	</Sequence>
 	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan type="punkette" qty="100"/>
+		<Train type="punkette"/>
+	</Sequence>
+	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
@@ -62,12 +71,30 @@
 		<Train type="lance_pepino"/>
 	</Sequence>
 	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan type="lance_pepino" qty="50"/>
+		<Train type="lance_pepino"/>
+	</Sequence>
+	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="guerrier_bud" qty="5"/>
+		<Train type="guerrier_bud"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan type="guerrier_bud" qty="50"/>
 		<Train type="guerrier_bud"/>
 	</Sequence>
 	<Sequence>

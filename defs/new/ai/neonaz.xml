@@ -53,12 +53,30 @@
 		<Train type="patrouilleur"/>
 	</Sequence>
 	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan type="patrouilleur" qty="100"/>
+		<Train type="patrouilleur"/>
+	</Sequence>
+	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
 		<HasLessObjectsTypeThan type="mitrailleur" qty="5"/>
+		<Train type="mitrailleur"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan type="mitrailleur" qty="50"/>
 		<Train type="mitrailleur"/>
 	</Sequence>
 	<Sequence>
@@ -70,6 +88,63 @@
 		<HasLessObjectsTypeThan type="bazooka" qty="5"/>
 		<Train type="bazooka"/>
 	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan type="bazooka" qty="50"/>
+		<Train type="bazooka"/>
+	</Sequence>
+
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>	
+		<HasLessObjectsTypeThan type="usine_vehicule" qty="1"/>
+		<HasMoreResourcesThan amount="100"/>
+		<Build type="usine_vehicule"/>	
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="usine_vehicule" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="super_guerrier" qty="5"/>
+		<Train type="super_guerrier"/>
+	</Sequence>
+
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="caserne" qty="1"/>
+		</Inverter>	
+		<HasLessObjectsTypeThan type="artillerie" qty="1"/>
+		<HasMoreResourcesThan amount="100"/>
+		<Build type="artillerie"/>	
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="artillerie" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="lance_missille" qty="5"/>
+		<Train type="lance_missille"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="artillerie" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="grosnaz" qty="5"/>
+		<Train type="grosnaz"/>
+	</Sequence>
+
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Selector>
@@ -86,6 +161,9 @@
 			<SendExpedition type="patrouilleur" per="50"/>
 			<SendExpedition type="mitrailleur" per="50"/>
 			<SendExpedition type="bazooka" per="50"/>
+			<SendExpedition type="super_guerrier" per="50"/>
+			<SendExpedition type="lance_missille" per="50"/>
+			<SendExpedition type="grosnaz" per="50"/>
 		</RandomSelector>
 	</Sequence>
 </AI>

@@ -370,7 +370,7 @@ public:
 				if (this->vault->registry.valid(attacker)) {
 					Tile &atTile = this->vault->registry.get<Tile>(attacker);
 
-					if (atTile.state == "idle") {
+					if (atTile.state == "idle" && this->approxDistance(atTile.pos, player.enemyPos) > 8) {
 #ifdef AI_DEBUG
 						std::cout << "AI: " << entity << " launch expedition with " << attacker << " at " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
 #endif

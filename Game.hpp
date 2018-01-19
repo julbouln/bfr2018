@@ -113,6 +113,7 @@ public:
 
 			// clear the window with black color
 			window.clear(sf::Color::Black);
+
 			peekStage()->draw(dt);
 
 			window.display();
@@ -125,7 +126,7 @@ public:
 		this->width = width;
 		this->height = height;
 		this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
-		this->window.setFramerateLimit(30);
+		this->window.setFramerateLimit(60);
 
 		srand (time(NULL));
 

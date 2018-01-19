@@ -44,7 +44,7 @@ public:
 		std::vector<sf::Vector2i> surface;
 		for (int w = -dist; w < tile.size.x + dist; w++) {
 			for (int h = -dist; h < tile.size.y + dist; h++) {
-				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y) {
+				if (w <= -dist || h <= -dist || w >= tile.size.x || h >= tile.size.y) {
 					sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
 					if (this->map->bound(p.x, p.y))
 						surface.push_back(p);
@@ -55,6 +55,29 @@ public:
 	}
 
 	sf::Vector2i nearestTileAround(sf::Vector2i src, Tile &tile, int dist) {
+		sf::Vector2i nearest(1024, 1024);
+		for (sf::Vector2i p : this->tileAround(tile, dist)) {
+//			float mod = 1.0;
+//			if (this->map->objs.get(p.x, p.y)) {
+//				mod = 2.0;
+//			} else {
+//				std::cout << "DEBUG: free pos " << p.x << "x" << p.y << " around " << tile.pos.x << "x" << tile.pos.y << " (" << tile.size.x << "x" << tile.size.y << ")" << std::endl;
+//			}
+			if (!this->map->objs.get(p.x, p.y)) {
+				if (this->approxDistance(src, p) < this->approxDistance(src, nearest)) {
+//					std::cout << "DEBUG: free pos " << p.x << "x" << p.y << " around " << tile.pos.x << "x" << tile.pos.y << " (" << tile.size.x << "x" << tile.size.y << ")" << std::endl;
+					nearest = p;
+				} else {
+				}
+			}
+		}
+		if (nearest.x == 1024 && nearest.y == 1024) {
+			std::cout << "BUG: no nearest pos around " << tile.pos.x << "x" << tile.pos.y << std::endl;
+		}
+		return nearest;
+	}
+
+	sf::Vector2i nearestTileAround2(sf::Vector2i src, Tile &tile, int dist) {
 		sf::Vector2i nearest(1024, 1024);
 
 		for (int w = -dist; w < tile.size.x + dist; w++) {
@@ -69,6 +92,13 @@ public:
 				}
 			}
 		}
+
+		/*
+				if(nearest.x==1024 && nearest.y==1024) {
+					std::cout << "BUG: no free nearest position " << std::endl;
+					nearest=tile.pos;
+				}
+		*/
 		return nearest;
 	}
 

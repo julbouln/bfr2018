@@ -13,5 +13,6 @@ int main()
     game.pushRegisteredStage("main_menu");
     game.loop();
 
+//	sf::sleep(sf::milliseconds(100));
     return 0;
 }

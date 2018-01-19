@@ -13,6 +13,8 @@ public:
 		background.setScale(this->width / 800.0, this->height / 600.0);
 		this->game->window.draw(background);
 
+		this->guiPushStyles();
+
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
 		ImGui::SetNextWindowPosCenter();
 		if (ImGui::Begin("Main menu", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
@@ -43,8 +45,9 @@ public:
 
 			ImGui::End();
 		}
-		ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
 
+		this->guiPopStyles();
 
 		ImGui::SFML::Render(this->game->window);
 
