@@ -8,6 +8,8 @@ class Stage
 public:
 	Game* game;
 
+
+	virtual void reset() = 0;
 // pure virtual
 	virtual void draw(const float dt) = 0;
 	virtual void update(const float dt) = 0;

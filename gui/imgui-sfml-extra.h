@@ -32,7 +32,7 @@ inline bool ImageButtonBlend(const sf::Texture& texture, const ImVec4& bg_col = 
 
 	// Default to using texture ID as ID. User can still push string/integer prefixes.
 	// We could hash the size/uv to create a unique ID but that would prevent the user from animating UV.
-	PushID(texture.getNativeHandle());
+	PushID((intptr_t)texture.getNativeHandle());
 	const ImGuiID id = window->GetID("#image");
 	PopID();
 
@@ -51,7 +51,7 @@ inline bool ImageButtonBlend(const sf::Texture& texture, const ImVec4& bg_col = 
 	if (bg_col.w > 0.0f)
 		window->DrawList->AddRectFilled(image_bb.Min, image_bb.Max, GetColorU32(bg_col));*/
 
-	window->DrawList->AddImage((void *)texture.getNativeHandle(), image_bb.Min, image_bb.Max, uv0, uv1, GetColorU32(
+	window->DrawList->AddImage((void *)(intptr_t)texture.getNativeHandle(), image_bb.Min, image_bb.Max, uv0, uv1, GetColorU32(
 	                               (hovered && held) ? drawCol_Down : hovered ? drawCol_hover : drawCol_normal));
 
 	return pressed;
@@ -78,7 +78,7 @@ inline bool ImageButtonAnim(const sf::Texture& texture, const sf::Texture& textu
 
 	// Default to using texture ID as ID. User can still push string/integer prefixes.
 	// We could hash the size/uv to create a unique ID but that would prevent the user from animating UV.
-	PushID(texture.getNativeHandle());
+	PushID((intptr_t)texture.getNativeHandle());
 	const ImGuiID id = window->GetID("#image");
 	PopID();
 
@@ -96,7 +96,7 @@ inline bool ImageButtonAnim(const sf::Texture& texture, const sf::Texture& textu
 	RenderFrame(bb.Min, bb.Max, col, true, ImClamp((float)ImMin(padding.x, padding.y), 0.0f, style.FrameRounding));
 	if (bg_col.w > 0.0f)
 		window->DrawList->AddRectFilled(image_bb.Min, image_bb.Max, GetColorU32(bg_col));*/
-	void *tex = (hovered && held) ? (void *)texture_down.getNativeHandle() : hovered ? (void *)texture_hover.getNativeHandle() : (void *)texture.getNativeHandle();
+	void *tex = (hovered && held) ? (void *)(intptr_t)texture_down.getNativeHandle() : hovered ? (void *)(intptr_t)texture_hover.getNativeHandle() : (void *)(intptr_t)texture.getNativeHandle();
 
 	window->DrawList->AddImage(tex, image_bb.Min, image_bb.Max, uv0, uv1, GetColorU32(
 	                               drawCol_normal));
@@ -146,7 +146,7 @@ inline bool ImageButtonWithText(const sf::Texture& texture, const char* label, c
 	if (bg_col.w > 0.0f)
 		window->DrawList->AddRectFilled(image_bb.Min, image_bb.Max, GetColorU32(bg_col));
 
-	window->DrawList->AddImage((void*)texture.getNativeHandle(), image_bb.Min, image_bb.Max, uv0, uv1, GetColorU32(tint_col));
+	window->DrawList->AddImage((void*)(intptr_t)texture.getNativeHandle(), image_bb.Min, image_bb.Max, uv0, uv1, GetColorU32(tint_col));
 
 	if (textSize.x > 0) ImGui::RenderText(start, label);
 	return pressed;

@@ -21,6 +21,8 @@ class Game {
 public:
 	std::stack<Stage*> stages;
 
+	std::map<std::string,Stage*>registeredStages;
+
 	unsigned int width, height;
 
 	GameVault vault;
@@ -28,6 +30,28 @@ public:
 	EntityID emptyEntity;
 
 	sf::RenderWindow window;
+
+	void registerStage(std::string name, Stage *stage) {
+		this->registeredStages[name]=stage;
+	}
+
+	void unregisterStage(std::string name) {
+		delete this->registeredStages[name];
+		this->registeredStages.erase(name);
+	}
+
+	Stage *getStage(std::string name) {
+		return this->registeredStages[name];
+	}
+
+	void pushRegisteredStage(std::string name) {
+		this->registeredStages[name]->reset();
+		this->pushStage(this->registeredStages[name]);
+	}
+
+	bool isRegisteredStage(std::string name) {
+		return this->registeredStages.count(name) > 0;
+	}
 
 	void pushStage(Stage* stage)
 	{
@@ -37,7 +61,7 @@ public:
 
 	void popStage()
 	{
-		delete this->stages.top();
+//		delete this->stages.top();
 		this->stages.pop();
 		return;
 	}

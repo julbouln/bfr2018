@@ -12,18 +12,17 @@ Misc
 Improvements:
 - improve AI building placement
 - improve AI expedition destination
-- multi-agent pathfinding
+- improve multi-agent pathfinding
 
 Game:
+- add end game conditions
 - projectile
 - special FX
 
 Interface:
-- stages
-- gui
-- main menu
-- settings
-- minimap
+- finish gui
+- add settings
+- add minimap
 
 Sound:
 - add units state sounds

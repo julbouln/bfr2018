@@ -12,6 +12,10 @@ public:
 
 	sf::RectangleShape fade;
 	int fadeStep;
+	int fadeType;
+	int fadeSpeed;
+
+	int nextStage;
 
 	void setSize(unsigned int width, unsigned int height) {
 		this->width = width;
@@ -19,32 +23,36 @@ public:
 	}
 
 	void fadeOut() {
-		this->fadeStep = 255;
+		this->fadeStep = 0;
+		this->fadeType = 1;
 	}
 
-	void updateFadeOut() {
-		if (fadeStep > 0)
+	void fadeIn() {
+		this->fadeStep = 255;
+		this->fadeType = 0;
+	}
+
+	void updateFading() {
+		if (fadeType == 1 && fadeStep < 255)
 		{
-			fadeStep -= 3;
+			fadeStep += fadeSpeed;
+			if (fadeStep > 255)
+				fadeStep = 255;
+			fade.setFillColor(sf::Color(0, 0, 0, fadeStep));
+			this->game->window.draw(fade);
+		}
+
+		if (fadeType == 0 && fadeStep > 0)
+		{
+			fadeStep -= fadeSpeed;
 			if (fadeStep < 0)
 				fadeStep = 0;
 			fade.setFillColor(sf::Color(0, 0, 0, fadeStep));
 			this->game->window.draw(fade);
 		}
-	}
 
-	void fadeIn() {
-		this->fadeStep = 0;
-	}
-
-	void updateFadeIn() {
-		if (fadeStep < 255)
-		{
-			fadeStep += 3;
-			if (fadeStep > 255)
-				fadeStep = 255;
-			fade.setFillColor(sf::Color(0, 0, 0, fadeStep));
-			this->game->window.draw(fade);
+		if(fadeType == 1 && fadeStep >= 255) {
+			fadeOutCallback();
 		}
 	}
 
@@ -52,6 +60,9 @@ public:
 		fade.setPosition(sf::Vector2f(0, 0));
 		fade.setFillColor(sf::Color(0, 0, 0, 255));
 		fade.setSize(sf::Vector2f(this->width, this->height));
+		fadeSpeed = 5;
 	}
+
+	virtual void fadeOutCallback() = 0;
 
 };

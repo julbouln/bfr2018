@@ -7,6 +7,7 @@
 class MainMenu : public GameStage {
 public:
 	sf::Sprite background;
+
 	void draw(float dt) {
 		background.setPosition(sf::Vector2f(0, 0));
 		background.setScale(this->width / 800.0, this->height / 600.0);
@@ -21,7 +22,8 @@ public:
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(0, 0, 0, 255) );
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
 			if (ImGui::Button("Play", sz)) {
-				this->game->pushStage(new PlayMenu(this->game));
+				nextStage = 1;
+				this->fadeOut();
 			}
 
 			if (ImGui::Button("Settings", sz)) {
@@ -45,6 +47,8 @@ public:
 
 
 		ImGui::SFML::Render(this->game->window);
+
+		this->updateFading();
 	}
 
 	void update(float dt) {
@@ -59,9 +63,22 @@ public:
 		this->setSize(this->game->width, this->game->height);
 
 		this->initEffects();
-		this->fadeOut();
+		this->fadeIn();
 
 		background.setTexture(this->game->vault.factory.getTex("intro_background"));
+	}
+
+	void reset() {
+		this->fadeIn();
+		this->nextStage = 0;
+	}
+
+	void fadeOutCallback() {
+		switch (nextStage) {
+		case 1:
+			this->game->pushRegisteredStage("play_menu");
+			break;
+		}
 
 	}
 };

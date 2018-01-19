@@ -89,7 +89,7 @@ public:
 		img.loadFromFile(filename);
 		this->getSpecialPix(name, img, img.getSize().x, img.getSize().y);
 		img.createMaskFromColor(sf::Color::White);
-		texManager.loadTexture(name, img, sf::IntRect{0, 0, img.getSize().x, img.getSize().y});
+		texManager.loadTexture(name, img, sf::IntRect{0, 0, (int)img.getSize().x, (int)img.getSize().y});
 
 	}
 
@@ -576,7 +576,7 @@ public:
 
 				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
 //				tile.size = sf::Vector2i{1, 1};
-				tile.psize = sf::Vector2f{psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h")};
+				tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"),(float)psizeEl->IntAttribute("h")};
 				if (offsetEl) {
 //					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
 					tile.offset = sf::Vector2i{0, offsetEl->IntAttribute("h")};

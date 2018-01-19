@@ -66,7 +66,7 @@ public:
 	GameEngine(Game *game) {
 		this->game = game;
 		this->init();
-		this->generate(64, 64,"rebel");
+		this->generate(64, 64, "rebel");
 	}
 
 	GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
@@ -92,7 +92,15 @@ public:
 		this->initView(this->game->window);
 
 		this->initEffects();
-		this->fadeOut();
+		this->fadeIn();
+
+	}
+
+	void reset() {
+		
+	}
+
+	void fadeOutCallback() {
 
 	}
 
@@ -136,18 +144,28 @@ public:
 		gameView.setCenter(pos);
 	}
 
+	void centerMapView(sf::Vector2i position) {
+		sf::Vector2f centre(position.x*32,position.y*32);
+		this->gameView.setCenter(centre);
+	}
+
+
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		mapLayers.initTiles();
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
 
-		if(playerTeam=="rebel") {
+		if (playerTeam == "rebel") {
 			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
+
+			this->centerMapView(sf::Vector2i(8,8));
 		} else {
 			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
-			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);			
+			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+
+			this->centerMapView(sf::Vector2i(mapWidth - 8,mapHeight - 8));
 		}
 
 
@@ -160,7 +178,7 @@ public:
 				player.enemyFound = false;
 				player.colorIdx = rand() % 12;
 				player.kills.clear();
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
 
 				/*
 								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 11);
@@ -180,7 +198,7 @@ public:
 //				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
 
 			} else {
-				player.initialPos = sf::Vector2i(mapWidth - 10, mapHeight - 10);
+				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
 				player.enemyFound = false;
 				player.colorIdx = rand() % 12;
 				player.kills.clear();
@@ -268,7 +286,7 @@ public:
 					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
 					ImGui::BeginGroup();
-					ImGui::Text("PV: %d", obj.life);
+					ImGui::Text("PV: %d", (int)obj.life);
 					ImGui::Text("AC: %d", unit.attack1.power);
 					ImGui::Text("DC: %d", unit.attack1.distance);
 					ImGui::Text("AE: %d", unit.attack2.power);
@@ -427,7 +445,7 @@ public:
 
 	}
 
-	// remove entity from selected is not valid anymore
+// remove entity from selected is not valid anymore
 	void updateSelected(float dt) {
 		std::vector<EntityID> newSelectedObjs;
 		for (EntityID entity : this->selectedObjs) {
@@ -560,7 +578,7 @@ public:
 
 		ImGui::SFML::Render(this->game->window);
 
-		this->updateFadeOut();
+		this->updateFading();
 	}
 
 	void update(float dt) {

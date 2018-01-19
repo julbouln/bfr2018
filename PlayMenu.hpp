@@ -4,6 +4,8 @@
 #include "GameStage.hpp"
 #include "GameEngine.hpp"
 
+class MainMenu;
+
 class PlayMenu : public GameStage {
 public:
 	int team;
@@ -32,36 +34,13 @@ public:
 			ImGui::Combo("", &mapSize, mapSizes, IM_ARRAYSIZE(mapSizes));   // Combo using proper array. You can also pass a callback to retrieve array value, no need to create/copy an array just for that.
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
+			if (ImGui::Button("Back", sz)) {
+				nextStage = 1;
+				this->fadeOut();
+			}
 			if (ImGui::Button("Play", sz)) {
-				std::string playerTeam = "rebel";
-				unsigned int mapWidth = 64;
-				unsigned int mapHeight = 64;
-
-				switch (team) {
-				case 0:
-					playerTeam = "rebel";
-					break;
-				case 1:
-					playerTeam = "neonaz";
-					break;
-				}
-
-				switch (mapSize) {
-				case 0:
-					mapWidth = 32;
-					mapHeight = 32;
-					break;
-				case 1:
-					mapWidth = 64;
-					mapHeight = 64;
-					break;
-				case 2:
-					mapWidth = 128;
-					mapHeight = 128;
-					break;
-				}
-
-				this->game->pushStage(new GameEngine(this->game, mapWidth, mapHeight, playerTeam));
+				nextStage = 2;
+				this->fadeOut();
 			}
 			ImGui::PopStyleVar();
 
@@ -73,6 +52,8 @@ public:
 
 
 		ImGui::SFML::Render(this->game->window);
+
+		this->updateFading();
 	}
 
 	void update(float dt) {
@@ -87,11 +68,62 @@ public:
 		this->setSize(this->game->width, this->game->height);
 
 		this->initEffects();
-		this->fadeOut();
+		this->fadeIn();
 
 		background.setTexture(this->game->vault.factory.getTex("intro_background"));
 
 		this->team = 0;
 		this->mapSize = 0;
+	}
+
+	void reset() {
+		this->fadeIn();
+		this->nextStage = 0;
+	}
+
+	void fadeOutCallback() {
+		switch (nextStage) {
+		case 1:
+			this->game->pushRegisteredStage("main_menu");
+			break;
+		case 2: {
+			std::string playerTeam = "rebel";
+			unsigned int mapWidth = 64;
+			unsigned int mapHeight = 64;
+
+			switch (team) {
+			case 0:
+				playerTeam = "rebel";
+				break;
+			case 1:
+				playerTeam = "neonaz";
+				break;
+			}
+
+			switch (mapSize) {
+			case 0:
+				mapWidth = 48;
+				mapHeight = 48;
+				break;
+			case 1:
+				mapWidth = 64;
+				mapHeight = 64;
+				break;
+			case 2:
+				mapWidth = 128;
+				mapHeight = 128;
+				break;
+			}
+
+			if (this->game->isRegisteredStage("game")) {
+				this->game->unregisterStage("game");
+			}
+
+			this->game->registerStage("game", new GameEngine(this->game, mapWidth, mapHeight, playerTeam));
+			this->game->pushRegisteredStage("game");
+		}
+		break;
+		}
+
 	}
 };
