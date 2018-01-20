@@ -66,6 +66,13 @@ public:
 	sf::Text scoreBonusText;
 	sf::Sound scoreSound;
 
+	sf::RenderTexture minimapTarget;
+	sf::Sprite minimap;
+	sf::FloatRect minimapRect;
+
+	int debugCorner;
+	int gameSpeed;
+
 	GameEngine(Game *game) {
 		this->game = game;
 		this->init();
@@ -101,6 +108,7 @@ public:
 		this->fadeIn();
 		this->debugCorner = 1;
 		this->gameSpeed = 1;
+
 	}
 
 	void reset() {
@@ -239,11 +247,12 @@ public:
 		indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
 		indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
 
-//		factory.createUnit(registry, this->currentPlayer, "zork", 10, 10);
-		/*
-						factory.createBuilding(registry, this->currentPlayer, "taverne", 16, 10, true);
-				*/
-//		map.objs.set(10, 10, factory.createUnit(registry, this->currentPlayer, "zork", 10, 10));
+		minimapTarget.create(this->map->width, this->map->height);
+		minimap.setTexture(minimapTarget.getTexture());
+
+		// 128,512
+		// TODO: convert to window dimension relative coord
+		minimapRect = sf::FloatRect(128 - 96 / 2, 520 - 96 / 2, 96, 96);
 	}
 
 	void menuGui() {
@@ -302,7 +311,6 @@ public:
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
-//			std::cout << "ACTIONS "<<this->selectedObjs.size()<<std::endl;
 			if (this->selectedObjs.size() == 1) {
 				EntityID selectedObj = this->selectedObjs[0];
 
@@ -385,8 +393,6 @@ public:
 		ImGui::PopStyleColor();
 	}
 
-	int debugCorner;
-	int gameSpeed;
 
 	void debugGui(float dt) {
 		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(sf::Mouse::getPosition(this->game->window), this->gameView));
@@ -414,7 +420,6 @@ public:
 
 			this->setGameSpeed(gameSpeed);
 
-//			ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
 			if (this->selectedObjs.size() > 0)
 			{
 				if (this->selectedObjs.size() > 1) {
@@ -580,8 +585,26 @@ public:
 		this->pathfinding.update(dt);
 	}
 
+	sf::IntRect viewClip() {
+		sf::View wview = this->game->window.getView();
+		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
+
+		int mx = screenRect.left / 32.0;
+		int my = screenRect.top / 32.0;
+		int mw = mx + screenRect.width / 32.0;
+		int mh = my + screenRect.height / 32.0;
+
+		mx = mx < 0 ? 0 : mx;
+		my = my < 0 ? 0 : my;
+		mw = mw > this->map->width ? this->map->width : mw;
+		mh = mh > this->map->height ? this->map->height : mh;
+
+		return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw - mx, mh - my));
+	}
+
 	void draw(float dt) {
-		drawMap.draw(this->game->window, dt);
+		sf::IntRect clip = this->viewClip();
+		drawMap.draw(this->game->window, clip, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -652,6 +675,12 @@ public:
 				indice.setScale(this->width / 800.0, this->height / 600.0);
 				this->game->window.draw(indice);
 		*/
+
+		drawMap.drawMinimap(this->game->window, minimapTarget, clip, this->currentPlayer);
+		minimap.setPosition(sf::Vector2f(minimapRect.left, minimapRect.top));
+		minimap.setScale(sf::Vector2f(96.0 / this->map->width, 96.0 / this->map->height));
+		this->game->window.draw(minimap);
+
 		this->updateFading();
 	}
 
@@ -669,7 +698,7 @@ public:
 //		std::cout << "GameEngine: update " << dt << std::endl;
 		this->game->window.setView(this->gameView);
 
-		if(this->timePerTick == FLT_MAX) return;
+		if (this->timePerTick == FLT_MAX) return;
 
 		this->updateEveryFrame(dt);
 
@@ -711,7 +740,8 @@ public:
 	}
 
 	void handleEvent(sf::Event &event) {
-		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(sf::Mouse::getPosition(this->game->window), this->gameView));
+		sf::Vector2i mousePos = sf::Mouse::getPosition(this->game->window);
+		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(mousePos, this->gameView));
 		sf::Vector2f gameMapPos = gamePos;
 		gameMapPos.x /= 32.0;
 		gameMapPos.y /= 32.0;
@@ -746,64 +776,77 @@ public:
 		case sf::Event::MouseButtonReleased:
 		{
 			if (event.mouseButton.button == sf::Mouse::Left) {
-				this->selectionEnd = gamePos;
-				sf::FloatRect selectRect(this->selectionStart, this->selectionEnd - this->selectionStart);
-				if (selectRect.width < 0) {
-					selectRect.left = selectRect.left + selectRect.width;
-					selectRect.width = -selectRect.width;
-				}
-				if (selectRect.height < 0) {
-					selectRect.top = selectRect.top + selectRect.height;
-					selectRect.height = -selectRect.height;
-				}
+				if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
+				} else {
 
-				for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
-					for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
-						if (this->map->bound(x, y)) {
-							EntityID ent = this->map->objs.get(x, y);
-							if (ent) {
-								if (this->vault->registry.has<Unit>(ent)) {
-									Unit &unit = this->vault->registry.get<Unit>(ent);
-									GameObject &obj = this->vault->registry.get<GameObject>(ent);
-									if (obj.player == this->currentPlayer) {
-										this->playRandomUnitSound(obj, unit, "select");
-										this->selectedObjs.push_back(ent);
+					this->selectionEnd = gamePos;
+					sf::FloatRect selectRect(this->selectionStart, this->selectionEnd - this->selectionStart);
+					if (selectRect.width < 0) {
+						selectRect.left = selectRect.left + selectRect.width;
+						selectRect.width = -selectRect.width;
+					}
+					if (selectRect.height < 0) {
+						selectRect.top = selectRect.top + selectRect.height;
+						selectRect.height = -selectRect.height;
+					}
+
+					for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
+						for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
+							if (this->map->bound(x, y)) {
+								EntityID ent = this->map->objs.get(x, y);
+								if (ent) {
+									if (this->vault->registry.has<Unit>(ent)) {
+										Unit &unit = this->vault->registry.get<Unit>(ent);
+										GameObject &obj = this->vault->registry.get<GameObject>(ent);
+										if (obj.player == this->currentPlayer) {
+											this->playRandomUnitSound(obj, unit, "select");
+											this->selectedObjs.push_back(ent);
+										}
 									}
 								}
 							}
 						}
 					}
-				}
 
-				std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
-				this->selectionStart = sf::Vector2f(0, 0);
-				this->selectionEnd = sf::Vector2f(0, 0);
-				this->action = Action::None;
+					std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
+					this->selectionStart = sf::Vector2f(0, 0);
+					this->selectionEnd = sf::Vector2f(0, 0);
+					this->action = Action::None;
+				}
 			}
 		}
 		break;
 		case sf::Event::MouseButtonPressed:
 		{
 			if (event.mouseButton.button == sf::Mouse::Left) {
-				if (this->action == Action::Building)
-				{
-					Building &building = this->vault->registry.get<Building>(this->currentBuild);
-					GameObject &obj = this->vault->registry.get<GameObject>(this->currentBuild);
-					obj.mapped = true;
-					this->action = Action::None;
-					this->currentBuild = 0;
+				if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
+//					sf::IntRect mRect = sf::IntRect(this->minimapRect);
+					sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
+
+					std::cout << "minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
+					this->centerMapView(sf::Vector2i(mPos));
 				} else {
-					this->action = Action::Selecting;
-					std::cout << "START SELECTION" << std::endl;
-					this->selectionStart = gamePos;
 
-					this->selectedObjs.clear();
-					EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
+					if (this->action == Action::Building)
+					{
+						Building &building = this->vault->registry.get<Building>(this->currentBuild);
+						GameObject &obj = this->vault->registry.get<GameObject>(this->currentBuild);
+						obj.mapped = true;
+						this->action = Action::None;
+						this->currentBuild = 0;
+					} else {
+						this->action = Action::Selecting;
+						std::cout << "START SELECTION" << std::endl;
+						this->selectionStart = gamePos;
 
-					if (entity && this->vault->registry.has<Building>(entity)) {
-						GameObject &obj = this->vault->registry.get<GameObject>(entity);
-						if (obj.player == this->currentPlayer)
-							this->selectedObjs.push_back(entity);
+						this->selectedObjs.clear();
+						EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
+
+						if (entity && this->vault->registry.has<Building>(entity)) {
+							GameObject &obj = this->vault->registry.get<GameObject>(entity);
+							if (obj.player == this->currentPlayer)
+								this->selectedObjs.push_back(entity);
+						}
 					}
 				}
 			}

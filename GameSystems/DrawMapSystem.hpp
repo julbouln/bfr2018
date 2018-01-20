@@ -11,50 +11,88 @@ public:
 
 	DrawMapSystem() {
 		if (!colorSwap.loadFromFile("defs/new/shaders/color_swap.frag", sf::Shader::Fragment))
-		{
-			// erreur...
-		}
+			std::cout << "ERROR: cannot load colorSwap shader" << std::endl;
 		if (!pixelation.loadFromFile("defs/new/shaders/pixelation.frag", sf::Shader::Fragment))
-		{
-			// erreur...
-		}
-
+			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
 	}
 
-	void draw(sf::RenderWindow &window, float dt) {
-		this->drawTileLayer(window, this->map->terrains, dt);
+	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+		this->drawTileLayer(window, this->map->terrains, clip, dt);
 		for (TileLayer &transitionLayer : this->map->transitions) {
-			this->drawTileLayer(window, transitionLayer, dt);
+			this->drawTileLayer(window, transitionLayer, clip, dt);
 		}
-		this->drawObjLayer(window, dt);
-		this->drawDebug(window, dt);
+		this->drawObjLayer(window, clip, dt);
+		this->drawDebug(window, clip, dt);
 
-		this->drawTileLayer(window, this->map->fogHidden, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		this->drawTileLayer(window, this->map->fog, dt, sf::Color(0x00, 0x00, 0x00));
+		this->drawTileLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
+		this->drawTileLayer(window, this->map->fog, clip, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
-	sf::IntRect viewClip(sf::RenderWindow &window) {
-		sf::View wview = window.getView();
-		sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
 
-		int mx = screenRect.left / 32.0;
-		int my = screenRect.top / 32.0;
-		int mw = mx + screenRect.width / 32.0;
-		int mh = my + screenRect.height / 32.0;
+	void drawMinimap(sf::RenderWindow &window, sf::RenderTexture &target, sf::IntRect clip, EntityID playerEnt) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
 
-		mx = mx < 0 ? 0 : mx;
-		my = my < 0 ? 0 : my;
-		mw = mw > this->map->width ? this->map->width : mw;
-		mh = mh > this->map->height ? this->map->height : mh;
+		target.clear(sf::Color::Black);
 
-		return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw - mx, mh - my));
+		for (int y = 0; y < this->map->height; ++y)
+		{
+			for (int x = 0; x < this->map->width; ++x)
+			{
+				FogState fogSt = player.fog.get(x, y);
+				if (fogSt != FogState::Unvisited) {
+					EntityID terrainEnt = this->map->terrains.get(x, y);
+					if (terrainEnt) {
+						sf::RectangleShape rectangle;
+						sf::Vector2f pos(x, y);
+						rectangle.setSize(sf::Vector2f(1, 1));
+						if (fogSt != FogState::Hidden) {
+							rectangle.setFillColor(sf::Color(0x63, 0x4d, 0x0a, 0xff));
+						} else {
+							rectangle.setFillColor(sf::Color(0x63, 0x4d, 0x0a, 0x7f));
+						}
+						rectangle.setPosition(pos);
+						target.draw(rectangle);
+					}
+
+					if (fogSt != FogState::Hidden) {
+						EntityID objEnt = this->map->objs.get(x, y);
+						if (objEnt) {
+							sf::RectangleShape rectangle;
+							sf::Vector2f pos(x, y);
+							rectangle.setSize(sf::Vector2f(1, 1));
+							rectangle.setFillColor(sf::Color(0xff, 0xff, 0xff, 0xff));
+							rectangle.setPosition(pos);
+							target.draw(rectangle);
+						}
+					}
+				}
+			}
+		}
+
+		// clip rectangle
+		sf::RectangleShape clipR;
+		sf::Vector2f clipPos(clip.left, clip.top);
+		clipR.setSize(sf::Vector2f(clip.width, clip.height));
+		clipR.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+		clipR.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0xff));
+		clipR.setOutlineThickness(1);
+		clipR.setPosition(clipPos);
+		target.draw(clipR);
+
+		// frame rectangle
+		sf::RectangleShape r;
+		sf::Vector2f rPos(1, 1);
+		r.setSize(sf::Vector2f(this->map->width-2, this->map->height-2));
+		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));
+		r.setOutlineThickness(1);
+		r.setPosition(rPos);
+		target.draw(r);
+
+		target.display();
 	}
 
-	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
-		sf::IntRect clip = this->viewClip(window);
-
-//		std::cout << "clip "<<clip.left<<"x"<<clip.top<<":"<<clip.width<<"x"<<clip.height<<std::endl;
-
+	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		for (int y = clip.top; y < clip.top + clip.height; ++y)
 		{
 			for (int x = clip.left; x < clip.left + clip.width; ++x)
@@ -85,9 +123,8 @@ public:
 		}
 	}
 
-	void updateObjsDrawList(sf::RenderWindow &window, float dt) {
-		sf::IntRect clip = this->viewClip(window);
-
+	// reduce object list to visible entities
+	void updateObjsDrawList(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 		this->entitiesDrawList.clear();
 		auto resView = this->vault->registry.persistent<Tile, Resource>();
 
@@ -127,8 +164,8 @@ public:
 		});
 	}
 
-	void drawObjLayer(sf::RenderWindow &window, float dt) {
-		this->updateObjsDrawList(window, dt);
+	void drawObjLayer(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+		this->updateObjsDrawList(window, clip, dt);
 
 		for (EntityID ent : this->entitiesDrawList) {
 			if (this->vault->registry.valid(ent)) { // DIRTY ?
@@ -218,14 +255,13 @@ public:
 		}
 	}
 
-	void drawDebug(sf::RenderWindow &window, float dt) {
-		sf::IntRect clip = this->viewClip(window);
-
-		// draw debug grid
+	// draw debug grid
+	void drawDebug(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 		for (int y = clip.top; y < clip.top + clip.height; ++y)
 		{
 			for (int x = clip.left; x < clip.left + clip.width; ++x)
 			{
+				// objects
 				if (this->map->objs.get(x, y)) {
 					sf::RectangleShape rectangle;
 
@@ -242,6 +278,7 @@ public:
 					window.draw(rectangle);
 				}
 
+				// resources
 				if (this->map->resources.get(x, y)) {
 					sf::RectangleShape rectangle;
 
