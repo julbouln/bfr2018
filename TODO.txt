@@ -10,9 +10,9 @@ Misc
 - vautour FX
 
 Improvements:
-- improve AI building placement
 - improve AI expedition destination
 - improve multi-agent pathfinding
+- improve multi-agent combat
 
 Game:
 - add end game conditions
@@ -22,7 +22,6 @@ Game:
 Interface:
 - finish gui
 - add settings
-- add minimap
 
 Sound:
-- add units state sounds
+- add projectile sounds

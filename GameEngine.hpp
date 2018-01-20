@@ -183,7 +183,6 @@ public:
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
-
 		if (playerTeam == "rebel") {
 			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
@@ -297,13 +296,13 @@ public:
 		if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
-			ImGui::ProgressBar((float)player.resources / (float)(this->map->width * this->map->height) * 4.0, ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.resources / this->resourcesVictory(), ImVec2(200.0f, 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(255, 0, 0, 255));
-			ImGui::ProgressBar((float)player.butchery / 1000.0, ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.butchery / this->butcheryVictory(), ImVec2(200.0f, 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::End();
@@ -480,6 +479,45 @@ public:
 		ImGui::PopFont();
 	}
 
+
+	float resourcesVictory() {
+		return (float)(this->map->width * this->map->height) / 4.0;
+	}
+
+	float butcheryVictory() {
+		return (float)(this->map->width * this->map->height) / 2.0;
+	}
+
+	bool checkVictoryConditions(EntityID playerEnt) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		if ((float)player.resources / this->resourcesVictory() >= 1.0) {
+			return true;
+		}
+		if ((float)player.butchery / this->butcheryVictory() >= 1.0) {
+			return true;
+		}
+
+		int ennemyObjs = 0;
+
+		auto view = this->vault->registry.view<Player>();
+		for (EntityID entity : view) {
+			if (entity != playerEnt) {
+				Player &otherPlayer = view.get(entity);
+				if (otherPlayer.team != player.team) {
+					for (auto o : otherPlayer.objsByType) {
+						ennemyObjs += o.second.size();
+					}
+				}
+
+			}
+		}
+
+		if (ennemyObjs == 0)
+			return true;
+
+		return false;
+	}
+
 	void updatePlayers(float dt) {
 		auto playerView = this->vault->registry.view<Player>();
 
@@ -526,6 +564,9 @@ public:
 				playerObjs += o.second.size();
 			}
 			std::cout << "Player: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
+			if (this->checkVictoryConditions(entity)) {
+				std::cout << "Player: " << entity << " WINS !" << std::endl;
+			}
 		}
 
 	}
@@ -584,6 +625,8 @@ public:
 			player.kills.clear();
 		}
 
+		this->updateMinimap();
+
 	}
 
 	void updateEveryFrame(float dt)
@@ -593,7 +636,10 @@ public:
 			this->markUpdateObjLayer = false;
 		}
 
-		this->tileAnim.update(dt);
+		// 30 fps
+		float animDt = 0.033/dt * 0.033;
+
+		this->tileAnim.update(animDt);
 		this->pathfinding.update(dt);
 	}
 
@@ -688,12 +734,22 @@ public:
 				this->game->window.draw(indice);
 		*/
 
-		drawMap.drawMinimap(this->game->window, minimapTarget, clip, this->currentPlayer);
+		sf::IntRect mClip = clip;
+		mClip.left = minimapRect.left + (this->gameView.getCenter().x / 32.0 - (this->width) / 32.0 / 2.0) * (96.0 / this->map->width);
+		mClip.top = minimapRect.top + (this->gameView.getCenter().y / 32.0 - (this->height) / 32.0 / 2.0) * (96.0 / this->map->height);
+		mClip.width = (int)((float)(this->width / 32.0) * (96.0 / this->map->width));
+		mClip.height = (int)((float)(this->height / 32.0) * (96.0 / this->map->height));
+
 		minimap.setPosition(sf::Vector2f(minimapRect.left, minimapRect.top));
 		minimap.setScale(sf::Vector2f(96.0 / this->map->width, 96.0 / this->map->height));
 		this->game->window.draw(minimap);
+		drawMap.drawMinimapClip(this->game->window, mClip);
 
 		this->updateFading();
+	}
+
+	void updateMinimap() {
+		drawMap.drawMinimap(this->minimapTarget, this->currentPlayer);
 	}
 
 	void setGameSpeed(float factor) {
@@ -707,6 +763,7 @@ public:
 	}
 
 	void update(float dt) {
+		float updateDt = dt;
 //		std::cout << "GameEngine: update " << dt << std::endl;
 		this->game->window.setView(this->gameView);
 
@@ -718,27 +775,28 @@ public:
 		if (this->currentTime < this->timePerTick) return;
 
 		this->ticks++;
+		updateDt = this->currentTime;
 		this->currentTime = 0.0;
 
 		if (this->ticks % 100 == 0) {
-			this->updateHundred(dt);
+			this->updateHundred(updateDt * 100);
 		}
 
 		if (this->ticks % 10 == 0) {
-			this->updateDecade(dt);
+			this->updateDecade(updateDt * 10);
 		}
 
 		if (this->action == Action::Building && this->currentBuild == 0) {
 			this->currentBuild = this->vault->factory.createBuilding(this->vault->registry, this->currentPlayer, this->currentBuildType, 8, 8, false);
 		}
 
-		this->updatePlayers(dt);
+		this->updatePlayers(updateDt);
 
-		this->combat.update(dt);
-		this->resources.update(dt);
-		this->mapLayers.update(dt);
+		this->combat.update(updateDt);
+		this->resources.update(updateDt);
+		this->mapLayers.update(updateDt);
 
-		this->mapLayers.updateFog(this->currentPlayer, dt);
+		this->mapLayers.updateFog(this->currentPlayer, updateDt);
 
 		// AI
 		auto playerView = this->vault->registry.view<Player>();
@@ -748,22 +806,32 @@ public:
 				player.aiTree.update();
 		}
 
-		this->updateSelected(dt);
+		this->updateSelected(updateDt);
+		this->updateMoveView(updateDt);
+	}
 
-		switch(this->moveView) {
-			case MoveView::DontMove:
+	void updateMoveView(float dt) {
+		sf::Vector2f center = this->gameView.getCenter();
+		float mov = 160.0 * dt;
+//		std::cout << "DT: " << dt << std::endl;
+		switch (this->moveView) {
+		case MoveView::DontMove:
 			break;
-			case MoveView::MoveWest:
-				this->gameView.move(sf::Vector2f{ -16.0, 0.0});
+		case MoveView::MoveWest:
+			if (center.x > 128)
+				this->gameView.move(sf::Vector2f{ -mov, 0.0});
 			break;
-			case MoveView::MoveEast:
-				this->gameView.move(sf::Vector2f{16.0, 0.0});
+		case MoveView::MoveEast:
+			if (center.x < this->map->width * 32 - 128)
+				this->gameView.move(sf::Vector2f{mov, 0.0});
 			break;
-			case MoveView::MoveNorth:
-				this->gameView.move(sf::Vector2f{ 0.0, -16.0});
+		case MoveView::MoveNorth:
+			if (center.y > 128)
+				this->gameView.move(sf::Vector2f{ 0.0, -mov});
 			break;
-			case MoveView::MoveSouth:
-				this->gameView.move(sf::Vector2f{0.0, 16.0});
+		case MoveView::MoveSouth:
+			if (center.y < this->map->height * 32 - 128)
+				this->gameView.move(sf::Vector2f{0.0, mov});
 			break;
 		}
 	}
@@ -777,17 +845,21 @@ public:
 
 		switch (event.type)
 		{
-
+		case sf::Event::KeyReleased:
+			this->moveView = MoveView::DontMove;
+			break;
 		case sf::Event::KeyPressed:
 		{
+			this->moveView = MoveView::DontMove;
+
 			if (event.key.code == sf::Keyboard::Left)
-				this->gameView.move(sf::Vector2f{ -16.0, 0.0});
+				this->moveView = MoveView::MoveWest;
 			if (event.key.code == sf::Keyboard::Right)
-				this->gameView.move(sf::Vector2f{16.0, 0.0});
+				this->moveView = MoveView::MoveEast;
 			if (event.key.code == sf::Keyboard::Up)
-				this->gameView.move(sf::Vector2f{0.0, -16.0});
+				this->moveView = MoveView::MoveNorth;
 			if (event.key.code == sf::Keyboard::Down)
-				this->gameView.move(sf::Vector2f{0.0, 16.0});
+				this->moveView = MoveView::MoveSouth;
 		}
 		break;
 		case sf::Event::MouseMoved:

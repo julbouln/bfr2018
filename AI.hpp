@@ -236,7 +236,7 @@ public:
 				if (player.fog.get(x, y) != FogState::Unvisited) {
 					tile.pos = sf::Vector2i(x, y);
 					bool intersect = false;
-					for (sf::Vector2i p : this->tileSurface(tile)) {
+					for (sf::Vector2i p : this->tileSurfaceExtended(tile,1)) {
 						if (this->map->objs.get(p.x, p.y)) {
 							intersect = true;
 						}
@@ -252,8 +252,15 @@ public:
 			}
 		}
 
+
 		if (buildPos.size() > 0) {
-			std::random_shuffle ( buildPos.begin(), buildPos.end() );
+	
+		std::sort( buildPos.begin( ), buildPos.end( ), [this, player ]( const auto & lhs, const auto & rhs )
+		{
+			return this->approxDistance(player.initialPos, lhs) < this->approxDistance(player.initialPos, rhs);
+		});
+
+//			std::random_shuffle ( buildPos.begin(), buildPos.end() );
 
 			obj.mapped = true;
 			tile.pos = buildPos.front();

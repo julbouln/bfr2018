@@ -29,7 +29,7 @@ public:
 	}
 
 
-	void drawMinimap(sf::RenderWindow &window, sf::RenderTexture &target, sf::IntRect clip, EntityID playerEnt) {
+	void drawMinimap(sf::RenderTexture &target, EntityID playerEnt) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 
 		target.clear(sf::Color::Black);
@@ -69,6 +69,20 @@ public:
 			}
 		}
 
+		// frame rectangle
+		sf::RectangleShape r;
+		sf::Vector2f rPos(1, 1);
+		r.setSize(sf::Vector2f(this->map->width - 2, this->map->height - 2));
+		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));
+		r.setOutlineThickness(1);
+		r.setPosition(rPos);
+		target.draw(r);
+
+		target.display();
+	}
+
+	void drawMinimapClip(sf::RenderWindow &window, sf::IntRect clip) {
 		// clip rectangle
 		sf::RectangleShape clipR;
 		sf::Vector2f clipPos(clip.left, clip.top);
@@ -77,19 +91,8 @@ public:
 		clipR.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0xff));
 		clipR.setOutlineThickness(1);
 		clipR.setPosition(clipPos);
-		target.draw(clipR);
+		window.draw(clipR);
 
-		// frame rectangle
-		sf::RectangleShape r;
-		sf::Vector2f rPos(1, 1);
-		r.setSize(sf::Vector2f(this->map->width-2, this->map->height-2));
-		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));
-		r.setOutlineThickness(1);
-		r.setPosition(rPos);
-		target.draw(r);
-
-		target.display();
 	}
 
 	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
@@ -125,6 +128,7 @@ public:
 
 	// reduce object list to visible entities
 	void updateObjsDrawList(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+
 		this->entitiesDrawList.clear();
 		auto resView = this->vault->registry.persistent<Tile, Resource>();
 
@@ -132,9 +136,11 @@ public:
 			Tile &tile = resView.get<Tile>(entity);
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
-				if (p.x >= clip.left && p.x <= clip.left + clip.width &&
-				        p.y >= clip.top && p.y <= clip.top + clip.height)
-					this->entitiesDrawList.push_back(entity);
+				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fog.get(p.x, p.y) == 0) {
+					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
+					        p.y >= clip.top && p.y <= clip.top + clip.height)
+						this->entitiesDrawList.push_back(entity);
+				}
 			}
 		}
 
@@ -144,9 +150,11 @@ public:
 			Tile &tile = view.get<Tile>(entity);
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
-				if (p.x >= clip.left && p.x <= clip.left + clip.width &&
-				        p.y >= clip.top && p.y <= clip.top + clip.height)
-					this->entitiesDrawList.push_back(entity);
+				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fog.get(p.x, p.y) == 0) {
+					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
+					        p.y >= clip.top && p.y <= clip.top + clip.height)
+						this->entitiesDrawList.push_back(entity);
+				}
 			}
 		}
 

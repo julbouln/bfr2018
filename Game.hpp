@@ -126,7 +126,7 @@ public:
 		this->width = width;
 		this->height = height;
 		this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
-		this->window.setFramerateLimit(60);
+		this->window.setFramerateLimit(30);
 
 		srand (time(NULL));
 
