@@ -75,7 +75,10 @@ struct Unit {
 };
 
 struct Building {
-	unsigned int buildTime;
+	float buildTime;
+	float maxBuildTime;
+	EntityID construction;
+	EntityID constructedBy;
 };
 
 enum class ResourceType {
@@ -110,4 +113,5 @@ struct Player {
 
 	BrainTree::BehaviorTree aiTree;
 
+	EntityID rootConstruction;
 };

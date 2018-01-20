@@ -22,6 +22,7 @@ enum class AITag {
 	THasFoundEnnemy,
 	TExplore,
 	TBuild,
+	TPlaceBuilt,
 	TPlant,
 	TTrain,
 	TSendExpedition
@@ -42,6 +43,7 @@ static std::map<std::string, AITag> aiTags =
 	{ "HasFoundEnnemy", AITag::THasFoundEnnemy},
 	{ "Explore", AITag::TExplore},
 	{ "Build", AITag::TBuild},
+	{ "PlaceBuilt", AITag::TPlaceBuilt},
 	{ "Plant", AITag::TPlant},
 	{ "Train", AITag::TTrain},
 	{ "SendExpedition", AITag::TSendExpedition},
@@ -225,63 +227,117 @@ public:
 	{
 		Player &player = vault->registry.get<Player>(entity);
 
-		EntityID buildingEnt = this->vault->factory.createBuilding(vault->registry, entity, name, 200, 200, false);
-		GameObject &obj = vault->registry.get<GameObject>(buildingEnt);
-		Tile &tile = vault->registry.get<Tile>(buildingEnt);
+		if (!player.rootConstruction)
+			player.rootConstruction = this->vault->factory.startBuilding(vault->registry, name, 0);
 
-		std::vector<sf::Vector2i> buildPos;
-		for (int x = 0; x < this->map->width; x++) {
-			for (int y = 0; y < this->map->height; y++) {
-//				std::cout << "FOG:" << (int)player.fog.get(x,y) << std::endl;
-				if (player.fog.get(x, y) != FogState::Unvisited) {
-					tile.pos = sf::Vector2i(x, y);
-					bool intersect = false;
-					for (sf::Vector2i p : this->tileSurfaceExtended(tile,1)) {
-						if (this->map->objs.get(p.x, p.y)) {
-							intersect = true;
-						}
+#ifdef AI_DEBUG
+//		std::cout << "AI: " << entity << " build " << name << " at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+#endif
+		return Node::Status::Success;
+	}
+
+private:
+	EntityID entity;
+	std::string name;
+};
+
+
+
+class PlaceBuilt : public BrainTree::Leaf, public GameSystem
+{
+public:
+	PlaceBuilt(BrainTree::Blackboard::Ptr board, EntityID entity) : Leaf(board), entity(entity) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+/*
+		std::vector<EntityID> constructed;
+		for (auto o : player.objsByType) {
+			for (EntityID entity : o.second) {
+				if (vault->registry.has<Building>(entity)) {
+					Building &building = vault->registry.get<Building>(entity);
+					if (building.construction) {
+						Building &buildingCons = vault->registry.get<Building>(building.construction);
+						if (buildingCons.buildTime == 0)
+							constructed.push_back(building.construction);
 					}
-
-					if (!this->map->bound( x - tile.size.x, y - tile.size.y) || !this->map->bound(x + tile.size.x, y + tile.size.y))
-						intersect = true;
-
-					if (!intersect)
-						buildPos.push_back(sf::Vector2i(x, y));
-
 				}
 			}
 		}
+*/
+
+//		if (constructed.size() > 0) {
+//			std::random_shuffle ( constructed.begin(), constructed.end() );
+
+		if(player.rootConstruction && vault->registry.get<Building>(player.rootConstruction).buildTime==0) {
+			EntityID buildingEnt = this->vault->factory.finishBuilding(vault->registry, player.rootConstruction, entity, 200, 200, false);
+
+			GameObject &obj = vault->registry.get<GameObject>(buildingEnt);
+			Tile &tile = vault->registry.get<Tile>(buildingEnt);
+
+			std::vector<sf::Vector2i> buildPos;
+			for (int x = 0; x < this->map->width; x++) {
+				for (int y = 0; y < this->map->height; y++) {
+//				std::cout << "FOG:" << (int)player.fog.get(x,y) << std::endl;
+					if (player.fog.get(x, y) != FogState::Unvisited) {
+						tile.pos = sf::Vector2i(x, y);
+						bool intersect = false;
+						for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
+							if (this->map->objs.get(p.x, p.y)) {
+								intersect = true;
+							}
+						}
+
+						if (!this->map->bound( x - tile.size.x, y - tile.size.y) || !this->map->bound(x + tile.size.x, y + tile.size.y))
+							intersect = true;
+
+						if (!intersect)
+							buildPos.push_back(sf::Vector2i(x, y));
+
+					}
+				}
+			}
 
 
-		if (buildPos.size() > 0) {
-	
-		std::sort( buildPos.begin( ), buildPos.end( ), [this, player ]( const auto & lhs, const auto & rhs )
-		{
-			return this->approxDistance(player.initialPos, lhs) < this->approxDistance(player.initialPos, rhs);
-		});
+			if (buildPos.size() > 0) {
+
+				std::sort( buildPos.begin( ), buildPos.end( ), [this, player ]( const auto & lhs, const auto & rhs )
+				{
+					return this->approxDistance(player.initialPos, lhs) < this->approxDistance(player.initialPos, rhs);
+				});
 
 //			std::random_shuffle ( buildPos.begin(), buildPos.end() );
 
-			obj.mapped = true;
-			tile.pos = buildPos.front();
-			tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+				obj.mapped = true;
+				tile.pos = buildPos.front();
+				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+				player.rootConstruction = 0;
 
 #ifdef AI_DEBUG
-			std::cout << "AI: " << entity << " build " << name << " at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
+				std::cout << "AI: " << entity << " build " << obj.name << " at " << buildPos.front().x << "x" << buildPos.front().y << std::endl;
 #endif
-			return Node::Status::Success;
+				return Node::Status::Success;
+			} else {
+#ifdef AI_DEBUG
+				std::cout << "AI: " << entity << " cannot build " << obj.name << std::endl;
+#endif
+//				this->vault->registry.destroy(buildingEnt);
+				this->vault->registry.remove<Tile>(buildingEnt);
+
+				return Node::Status::Failure;
+			}
 		} else {
 #ifdef AI_DEBUG
-			std::cout << "AI: " << entity << " cannot build " << name << std::endl;
+			std::cout << "AI: " << entity << " no building to place " << std::endl;
 #endif
-			this->vault->registry.destroy(buildingEnt);
 			return Node::Status::Failure;
 		}
 	}
 
 private:
 	EntityID entity;
-	std::string name;
 };
 
 class Plant : public BrainTree::Leaf, public GameSystem
@@ -497,6 +553,12 @@ public:
 		case AITag::TBuild: {
 			std::string name = element->Attribute("type");
 			auto node = std::make_shared<Build>(blackboard, entity, name);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
+		case AITag::TPlaceBuilt: {
+			auto node = std::make_shared<PlaceBuilt>(blackboard, entity);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;

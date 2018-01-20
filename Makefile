@@ -1,4 +1,4 @@
-CFLAGS = -std=c++14
+CFLAGS = -g -std=c++14
 INCLUDES = -I.
 OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o tinyxml2.o SimplexNoise.o bfr.o
 

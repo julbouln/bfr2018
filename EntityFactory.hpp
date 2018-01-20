@@ -129,11 +129,11 @@ public:
 		this->loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
 		this->loadTextureWithWhiteMask("selection", "medias/tiles/cadre_unit.png");
 
-		sndManager.loadSoundBuffer("combo","medias/misc/combo.wav");
-		sndManager.loadSoundBuffer("killer","medias/misc/killer.wav");
-		sndManager.loadSoundBuffer("megakill","medias/misc/megakill.wav");
-		sndManager.loadSoundBuffer("barbarian","medias/misc/barbarian.wav");
-		sndManager.loadSoundBuffer("butchery","medias/misc/butchery.wav");
+		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
+		sndManager.loadSoundBuffer("killer", "medias/misc/killer.wav");
+		sndManager.loadSoundBuffer("megakill", "medias/misc/megakill.wav");
+		sndManager.loadSoundBuffer("barbarian", "medias/misc/barbarian.wav");
+		sndManager.loadSoundBuffer("butchery", "medias/misc/butchery.wav");
 	}
 
 	void loadTerrains() {
@@ -475,7 +475,8 @@ public:
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
 
-		building.buildTime = root->FirstChildElement("build_time")->IntAttribute("value");
+		building.buildTime = (float)root->FirstChildElement("build_time")->IntAttribute("value");
+		building.maxBuildTime = building.buildTime;
 	}
 
 	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
@@ -558,39 +559,75 @@ public:
 	}
 
 	EntityID createBuilding(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y, bool built) {
-		EntityID entity = registry.create();
+		EntityID entity = this->startBuilding(registry, name, 0);
 #ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: create building " << entity << " " << name << " at " << x << "x" << y << std::endl;
 #endif
+		this->finishBuilding(registry, entity, player, x, y, built);
+
+		return entity;
+	}
+
+	EntityID startBuilding(entt::Registry<EntityID> &registry, std::string name, EntityID constructedBy) {
+		EntityID entity = registry.create();
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: start building " << entity << " " << name << " constructed by " << constructedBy << std::endl;
+#endif
+		Building building;
+		this->parseBuildingFromXml(name, building);
+		building.construction = 0;
+		building.constructedBy = constructedBy;
+
+		GameObject obj;
+		this->parseGameObjectFromXml(name, obj);
+		obj.player = 0;
+		obj.mapped = false;
+//		obj.life = 100;
+//		obj.maxLife = obj.life;
+
+		registry.assign<GameObject>(entity, obj);
+		registry.assign<Building>(entity, building);
+		return entity;
+	}
+
+	EntityID finishBuilding(entt::Registry<EntityID> &registry, EntityID entity, EntityID player, int x, int y, bool built) {
+		GameObject &obj = registry.get<GameObject>(entity);
+		obj.player = player;
+		obj.mapped = built;
+
 		Tile tile;
-		this->parseTileFromXml(name, tile, 8);
+		this->parseTileFromXml(obj.name, tile, 8);
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-		tile.sprite.setTexture(texManager.getRef(name));
+		tile.sprite.setTexture(texManager.getRef(obj.name));
 
 		tile.direction = North;
 		tile.state = "idle";
 		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
 
-		tile.centerRect = this->centerRects[name];
+		tile.centerRect = this->centerRects[obj.name];
 
-		GameObject obj;
-		this->parseGameObjectFromXml(name, obj);
-		obj.player = player;
-		obj.mapped = built;
 		obj.life = obj.life * (tile.size.x * tile.size.y) / 2;
 		obj.maxLife = obj.life;
 
-		Building building;
-		this->parseBuildingFromXml(name, building);
-
 		registry.assign<Tile>(entity, tile);
-		registry.assign<GameObject>(entity, obj);
-		registry.assign<Building>(entity, building);
 
 		return entity;
+	}
+
+	bool placeBuilding(entt::Registry<EntityID> &registry, EntityID entity) {
+		Building &building = registry.get<Building>(entity);
+		GameObject &obj = registry.get<GameObject>(entity);
+		obj.mapped = true;
+		if (building.constructedBy) {
+			Building &buildingBy = registry.get<Building>(building.constructedBy);
+			buildingBy.construction = 0;
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	std::string resourceTypeName( ResourceType type) {
@@ -725,6 +762,7 @@ public:
 		player.resources = 0;
 		player.butchery = 0.0;
 		player.enemyFound = false;
+		player.rootConstruction = 0;
 
 		if (team == "rebel")
 			player.resourceType = ResourceType::Nature;

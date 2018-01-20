@@ -311,6 +311,30 @@ public:
 
 	}
 
+	void constructionProgressGui(EntityID consEnt) {
+		if (consEnt && this->vault->registry.valid(consEnt)) {
+			Building &buildingCons = this->vault->registry.get<Building>(consEnt);
+			GameObject &objCons = this->vault->registry.get<GameObject>(consEnt);
+
+			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
+			ImGui::ProgressBar((buildingCons.maxBuildTime - buildingCons.buildTime) / buildingCons.maxBuildTime, ImVec2(200.0f, 0.0f), "");
+			ImGui::PopStyleColor(); ImGui::SameLine();
+
+			if (buildingCons.buildTime > 0) {
+				ImGui::Image(this->vault->factory.texManager.getRef(objCons.name + "_icon_building")); ImGui::SameLine();
+			} else {
+				if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
+				                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
+				                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built_down"))) {
+					std::cout << "built clicked " << std::endl;
+					this->action = Action::Building;
+					this->currentBuild = this->vault->factory.finishBuilding(this->vault->registry, consEnt, this->currentPlayer, 8, 8, false);
+				}
+				ImGui::SameLine();
+			}
+		}
+	}
+
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 
@@ -327,6 +351,12 @@ public:
 
 				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
 				GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
+
+				if (this->vault->registry.has<Building>(selectedObj)) {
+					Building &building = this->vault->registry.get<Building>(selectedObj);
+					this->constructionProgressGui(building.construction);
+				}
+
 				if (this->vault->registry.has<Unit>(selectedObj)) {
 					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
@@ -365,12 +395,20 @@ public:
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
 						                           this->vault->factory.texManager.getRef(node.type + "_icon"),
 						                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
-							std::cout << "build clicked " << node.type << std::endl;
+							std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
 							switch (node.comp) {
-							case TechComponent::Building:
-								this->action = Action::Building;
-								this->currentBuildType = node.type;
-								break;
+							case TechComponent::Building: {
+								Building &building = this->vault->registry.get<Building>(selectedObj);
+								if (!building.construction) {
+									EntityID newConsEnt = this->vault->factory.startBuilding(this->vault->registry, node.type, selectedObj);
+
+									// need to reload the parent building to assign construction
+									Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
+									pBuilding.construction = newConsEnt;
+									std::cout << "start build " << building.construction << std::endl;
+								}
+							}
+							break;
 							case TechComponent::Character:
 								if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
 									this->markUpdateObjLayer = true;
@@ -388,13 +426,16 @@ public:
 
 			} else {
 				if (this->selectedObjs.size() == 0) {
+
+					this->constructionProgressGui(player.rootConstruction);
+
 					TechNode *node = this->vault->factory.getTechRoot(player.team);
 					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
 					                           this->vault->factory.texManager.getRef(node->type + "_icon"),
 					                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
 						std::cout << "build clicked " << node->type << std::endl;
-						this->action = Action::Building;
-						this->currentBuildType = node->type;
+						if (!player.rootConstruction)
+							player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
 					}
 				}
 			}
@@ -637,7 +678,7 @@ public:
 		}
 
 		// 30 fps
-		float animDt = 0.033/dt * 0.033;
+		float animDt = 0.033 / dt * 0.033;
 
 		this->tileAnim.update(animDt);
 		this->pathfinding.update(dt);
@@ -762,6 +803,19 @@ public:
 		}
 	}
 
+	void updateConstructions(float dt) {
+		auto view = this->vault->registry.view<Building>();
+		for (EntityID entity : view) {
+			Building &building = view.get(entity);
+			if (building.buildTime > 0) {
+				std::cout << "update construction " << entity << " " << building.buildTime << std::endl;
+				building.buildTime -= dt * 10;
+				if (building.buildTime <= 0)
+					building.buildTime = 0.0;
+			}
+		}
+	}
+
 	void update(float dt) {
 		float updateDt = dt;
 //		std::cout << "GameEngine: update " << dt << std::endl;
@@ -786,11 +840,14 @@ public:
 			this->updateDecade(updateDt * 10);
 		}
 
-		if (this->action == Action::Building && this->currentBuild == 0) {
-			this->currentBuild = this->vault->factory.createBuilding(this->vault->registry, this->currentPlayer, this->currentBuildType, 8, 8, false);
-		}
+//		if (this->action == Action::Building && this->currentBuild == 0) {
+//			this->currentBuild = this->vault->factory.createBuilding(this->vault->registry, this->currentPlayer, this->currentBuildType, 8, 8, false);
+//		}
+
 
 		this->updatePlayers(updateDt);
+
+		this->updateConstructions(updateDt);
 
 		this->combat.update(updateDt);
 		this->resources.update(updateDt);
@@ -942,9 +999,11 @@ public:
 
 					if (this->action == Action::Building)
 					{
-						Building &building = this->vault->registry.get<Building>(this->currentBuild);
-						GameObject &obj = this->vault->registry.get<GameObject>(this->currentBuild);
-						obj.mapped = true;
+						if (!this->vault->factory.placeBuilding(this->vault->registry, this->currentBuild)) {
+							Player &player = this->vault->registry.get<Player>(this->currentPlayer);
+							player.rootConstruction = 0;
+						}
+
 						this->action = Action::None;
 						this->currentBuild = 0;
 					} else {
@@ -967,7 +1026,8 @@ public:
 			if (event.mouseButton.button == sf::Mouse::Right) {
 				if (this->action == Action::Building)
 				{
-					this->vault->registry.destroy(this->currentBuild);
+//					this->vault->registry.destroy(this->currentBuild);
+					this->vault->registry.remove<Tile>(this->currentBuild);
 					this->currentBuild = 0;
 					this->action = Action::None;
 					this->markUpdateObjLayer = true;

@@ -115,5 +115,9 @@
 			<SendExpedition type="guerrier_bud" per="50"/>
 		</RandomSelector>
 	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<PlaceBuilt/>
+	</Sequence>
 
 </AI>
