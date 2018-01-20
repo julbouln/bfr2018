@@ -27,6 +27,14 @@ enum class Action {
 	Building
 };
 
+enum class MoveView {
+	DontMove,
+	MoveWest,
+	MoveEast,
+	MoveNorth,
+	MoveSouth
+};
+
 class GameEngine : public GameSystem, public GameStage {
 public:
 	ResourcesSystem resources;
@@ -73,16 +81,20 @@ public:
 	int debugCorner;
 	int gameSpeed;
 
+	MoveView moveView;
+
 	GameEngine(Game *game) {
 		this->game = game;
 		this->init();
 		this->generate(64, 64, "rebel");
+		this->moveView = MoveView::DontMove;
 	}
 
 	GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		this->game = game;
 		this->init();
 		this->generate(mapWidth, mapHeight, playerTeam);
+		this->moveView = MoveView::DontMove;
 	}
 
 	~GameEngine() {
@@ -737,6 +749,23 @@ public:
 		}
 
 		this->updateSelected(dt);
+
+		switch(this->moveView) {
+			case MoveView::DontMove:
+			break;
+			case MoveView::MoveWest:
+				this->gameView.move(sf::Vector2f{ -16.0, 0.0});
+			break;
+			case MoveView::MoveEast:
+				this->gameView.move(sf::Vector2f{16.0, 0.0});
+			break;
+			case MoveView::MoveNorth:
+				this->gameView.move(sf::Vector2f{ 0.0, -16.0});
+			break;
+			case MoveView::MoveSouth:
+				this->gameView.move(sf::Vector2f{0.0, 16.0});
+			break;
+		}
 	}
 
 	void handleEvent(sf::Event &event) {
@@ -752,13 +781,13 @@ public:
 		case sf::Event::KeyPressed:
 		{
 			if (event.key.code == sf::Keyboard::Left)
-				gameView.move(sf::Vector2f{ -16.0, 0.0});
+				this->gameView.move(sf::Vector2f{ -16.0, 0.0});
 			if (event.key.code == sf::Keyboard::Right)
-				gameView.move(sf::Vector2f{16.0, 0.0});
+				this->gameView.move(sf::Vector2f{16.0, 0.0});
 			if (event.key.code == sf::Keyboard::Up)
-				gameView.move(sf::Vector2f{0.0, -16.0});
+				this->gameView.move(sf::Vector2f{0.0, -16.0});
 			if (event.key.code == sf::Keyboard::Down)
-				gameView.move(sf::Vector2f{0.0, 16.0});
+				this->gameView.move(sf::Vector2f{0.0, 16.0});
 		}
 		break;
 		case sf::Event::MouseMoved:
@@ -771,6 +800,18 @@ public:
 				tile.pos = sf::Vector2i(gameMapPos);
 				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 			}
+
+			this->moveView = MoveView::DontMove;
+
+			if (mousePos.x < 32)
+				this->moveView = MoveView::MoveWest;
+			if (mousePos.x > this->width - 32)
+				this->moveView = MoveView::MoveEast;
+			if (mousePos.y < 32)
+				this->moveView = MoveView::MoveNorth;
+			if (mousePos.y > this->height - 32)
+				this->moveView = MoveView::MoveSouth;
+
 		}
 		break;
 		case sf::Event::MouseButtonReleased:
