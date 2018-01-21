@@ -12,7 +12,7 @@
  <life value="4"/>
  <speed value="2"/>
  <view dist="5"/>
- <attack1 power="3"/>
+ <attack1 power="1"/>
  <attack2 power="3" dist="2"/>
 
  <select_sounds>

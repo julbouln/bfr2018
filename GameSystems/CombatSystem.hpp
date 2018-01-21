@@ -97,7 +97,7 @@ public:
 							} else {
 								if (this->vault->registry.has<Unit>(unit.destAttack)) {
 									Unit &destUnit = this->vault->registry.get<Unit>(unit.destAttack);
-									if (destTile.state == "idle") {
+									if (destTile.state == "idle" || destTile.state == "move") {
 										// if ennemy is idle, he will fight back
 										this->attack(destUnit, entity);
 

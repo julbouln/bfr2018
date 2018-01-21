@@ -59,12 +59,20 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 
 			if (obj.mapped) {
+				// delete resources under building
+				for (sf::Vector2i p : this->tileSurface(tile)) {
+					EntityID resEnt = this->map->resources.get(p.x,p.y);
+					if(resEnt && this->vault->registry.valid(resEnt)) {
+						this->vault->registry.destroy(resEnt);
+					}
+				}
+
 				for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
 					EntityID newEnt = 0;
 					if (obj.team == "rebel") {
-						newEnt = tiles["grass"][rand() % ALT_TILES];
+						newEnt = tiles["grass"][0];
 					} else {
-						newEnt = tiles["concrete"][rand() % ALT_TILES];
+						newEnt = tiles["concrete"][0];
 					}
 
 					if (this->altTerrains[this->map->terrains.get(p.x, p.y)] != this->altTerrains[newEnt]) {
@@ -87,9 +95,9 @@ public:
 			for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
 				EntityID newEnt = 0;
 				if (resource.type == ResourceType::Nature) {
-					newEnt = tiles["grass"][rand() % ALT_TILES];
+					newEnt = tiles["grass"][0];
 				} else {
-					newEnt = tiles["concrete"][rand() % ALT_TILES];
+					newEnt = tiles["concrete"][0];
 				}
 
 				if (this->altTerrains[this->map->terrains.get(p.x, p.y)] != this->altTerrains[newEnt]) {
@@ -462,7 +470,7 @@ public:
 
 				*/
 				this->map->terrains.set(x, y, t);
-
+/*
 				if (res > 0.6 && res < 0.65) {
 					float rnd = ((float) rand()) / (float) RAND_MAX;
 					if (rnd > 0.5) {
@@ -471,6 +479,7 @@ public:
 						this->vault->factory.plantResource(this->vault->registry, ResourceType::Pollution, x, y);
 					}
 				}
+				*/
 			}
 		}
 

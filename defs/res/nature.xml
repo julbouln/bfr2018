@@ -1,9 +1,8 @@
 <resources name="nature">
  <resource>
   <file path="medias/resources/nature1.png"/>
-  <decal_value w="1" h="1"/>
   <pixel_size w="64" h="98"/>
-  <case_size w="2" h="2" />
+  <case_size w="1" h="1" />
   <frames>
    <frame n="0"/>
   </frames>
@@ -58,7 +57,7 @@
   <file path="medias/resources/nature7.png"/>
   <decal_value w="1" h="3"/>
   <pixel_size w="64" h="128"/>
-  <case_size w="2" h="3" />
+  <case_size w="1" h="1" />
   <frames>
    <frame n="0"/>
   </frames>
@@ -68,7 +67,7 @@
   <file path="medias/resources/nature8.png"/>
   <decal_value w="1" h="1"/>
   <pixel_size w="64" h="128"/>
-  <case_size w="2" h="3" />
+  <case_size w="1" h="1" />
   <frames>
    <frame n="5"/>
    <frame n="6"/>
@@ -77,9 +76,8 @@
  </resource>
 <resource>
   <file path="medias/resources/nature9.png"/>
-  <decal_value w="1" h="1"/>
   <pixel_size w="32" h="60"/>
-  <case_size w="1" h="2" />
+  <case_size w="1" h="1" />
   <frames>
    <frame n="0"/>
   </frames>
@@ -87,9 +85,8 @@
  </resource>
 <resource>
   <file path="medias/resources/nature10.png"/>
-  <decal_value w="1" h="1"/>
   <pixel_size w="64" h="128"/>
-  <case_size w="2" h="3" />
+  <case_size w="1" h="1" />
 <frames>
    <frame n="0"/>
   </frames>
@@ -97,9 +94,8 @@
  </resource>
 <resource>
   <file path="medias/resources/nature11.png"/>
-  <decal_value w="1" h="1"/>
   <pixel_size w="64" h="128"/>
-  <case_size w="2" h="3" />
+  <case_size w="1" h="1" />
   <frames>
    <frame n="0"/>
   </frames>
@@ -107,9 +103,8 @@
  </resource>
 <resource>
   <file path="medias/resources/nature12.png"/>
-  <decal_value w="1" h="3"/>
   <pixel_size w="197" h="196"/>
-  <case_size w="5" h="3" />
+  <case_size w="3" h="1" />
   <frames>
    <frame n="3"/>
    <frame n="4"/>
@@ -119,6 +114,7 @@
   </frames>
   <refresh value="16"/>
  </resource>
+ <!--
 <resource>
   <file path="medias/resources/nature13.png"/>
   <decal_value w="1" h="1"/>
@@ -126,6 +122,7 @@
   <case_size w="3" h="2"/>
   <frames>
    <frame n="0"/>
+ -->
 <!--
    <frame n="1"/>
    <frame n="0"/>
@@ -141,9 +138,11 @@
    <frame n="8"/>
    <frame n="9"/>
 -->
+<!--
   </frames>
   <refresh value="3"/>
  </resource>
+-->
 <resource>
   <file path="medias/extra/resources/nature14.png"/>
   <pixel_size w="62" h="54"/>

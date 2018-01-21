@@ -13,7 +13,7 @@
  <speed value="1"/>
  <view dist="3"/>
  <attack1 power="4"/>
- <attack2 power="5" dist="2"/>
+ <attack2 power="7" dist="2"/>
 
  <states>
 

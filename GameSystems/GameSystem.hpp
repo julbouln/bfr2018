@@ -205,9 +205,12 @@ public:
 		Tile &tile = this->vault->registry.get<Tile>(entity);
 		for (sf::Vector2i p : this->tileAround(tile, 1)) {
 			float rnd = ((float) rand()) / (float) RAND_MAX;
-			if (rnd > 0.8) {
-				if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y))
-					this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
+			if (rnd > 0.85) {
+				if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y)) {
+//					std::cout << " seed "<<(int)type<< " at "<<p.x<<"x"<<p.y<<std::endl;
+					EntityID resEnt=this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
+					this->map->resources.set(p.x,p.y,resEnt);
+				}
 			}
 		}
 	}

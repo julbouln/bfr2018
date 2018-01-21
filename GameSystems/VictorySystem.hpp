@@ -45,7 +45,7 @@ public:
 	}
 
 	float resourcesVictory() {
-		return (float)(this->map->width * this->map->height) / 4.0;
+		return (float)(this->map->width * this->map->height) / 2.0;
 	}
 
 	float butcheryVictory() {

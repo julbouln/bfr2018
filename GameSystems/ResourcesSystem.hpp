@@ -15,7 +15,7 @@ public:
 			Tile &tile = view.get<Tile>(entity);
 			resource.grow += 0.1;
 
-			if (resource.grow > 10*(resource.level+1)) {
+			if (resource.grow > 10) {
 //				std::cout << "RESOURCE " << entity << " grow" << std::endl;
 				resource.grow = 0.0;
 
