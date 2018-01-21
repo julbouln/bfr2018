@@ -55,13 +55,13 @@ private:
     /* Array of animations */
     std::vector<Animation> animations;
 
-    /* Current time since the animation loop started */
-    float t;
 
     int currentAnim;
     int currentFrame;
 
 public:
+    /* Current time since the animation loop started */
+    float t;
     int l;
 
     int count() {return animations.size();};

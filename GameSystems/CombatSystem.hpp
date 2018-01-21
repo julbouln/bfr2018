@@ -136,6 +136,11 @@ public:
 			}
 
 			if (tile.state == "attack") {
+				if(tile.animHandlers["attack"].getCurrentFrame() == 0) {
+//					std::cout << "play sound at "<< (int)(tile.animHandlers["attack"].t * 1000)<< std::endl;
+					if(unit.attackSound.getStatus() != sf::Sound::Status::Playing)
+					unit.attackSound.play();
+				}
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
 					this->changeState(tile, "idle");
 					unit.destAttack = 0;

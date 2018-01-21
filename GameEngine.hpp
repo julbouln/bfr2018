@@ -205,12 +205,12 @@ public:
 		mapLayers.generate(mapWidth, mapHeight);
 
 		if (playerTeam == "rebel") {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 			this->centerMapView(sf::Vector2i(8, 8));
 		} else {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", false);
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 
 			this->centerMapView(sf::Vector2i(mapWidth - 8, mapHeight - 8));

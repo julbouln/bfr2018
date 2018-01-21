@@ -72,6 +72,8 @@ struct Unit {
 
 	sf::Sound sound;
 	std::map<std::string, int> soundActions;
+
+	sf::Sound attackSound;
 };
 
 struct Building {

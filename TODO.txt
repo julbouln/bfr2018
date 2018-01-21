@@ -1,10 +1,16 @@
+Bugs:
+- sometimes at start there is no fog and units can't be controlled
+
+Optimizations:
+- optimizes transitions (FOG in particular)
+
 Misc
 - add ruins & corpses
-- add random terrain tile (0,1 or 2)
 - add mouse cursors
 - add hit blood FX
 - vautour FX
 - add random player start positions
+- 1024x768 mode
 
 Improvements:
 - improve AI expedition destination

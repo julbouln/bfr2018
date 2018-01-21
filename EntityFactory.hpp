@@ -316,6 +316,16 @@ public:
 
 				}
 			}
+
+
+			tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
+			if (projEl) {
+				std::string prName = projEl->Attribute("name");
+				tinyxml2::XMLElement *sndEl = projEl->FirstChildElement("sounds")->FirstChildElement();
+				if (sndEl) {
+					sndManager.loadSoundBuffer(prName, sndEl->Attribute("path"));
+				}
+			}
 		}
 
 	}
@@ -471,6 +481,13 @@ public:
 				unit.soundActions[stName] = 0;
 			}
 		}
+
+		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
+		if (projEl) {
+				std::string prName = projEl->Attribute("name");
+				unit.attackSound.setBuffer(this->sndManager.getRef(prName));
+		}
+
 	}
 
 	void parseBuildingFromXml(std::string name, Building &building)
@@ -768,12 +785,12 @@ public:
 		player.enemyFound = false;
 		player.rootConstruction = 0;
 
-		player.stats["kills"]=0;
-		player.stats["combo"]=0;
-		player.stats["killer"]=0;
-		player.stats["megakill"]=0;
-		player.stats["barbarian"]=0;
-		player.stats["butchery"]=0;
+		player.stats["kills"] = 0;
+		player.stats["combo"] = 0;
+		player.stats["killer"] = 0;
+		player.stats["megakill"] = 0;
+		player.stats["barbarian"] = 0;
+		player.stats["butchery"] = 0;
 
 		if (team == "rebel")
 			player.resourceType = ResourceType::Nature;
