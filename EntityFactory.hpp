@@ -115,9 +115,11 @@ public:
 
 		this->loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
 		this->loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
+		this->loadButton("rebel_cancel", "medias/interface/buttons/annuler_rebelle.png");
 
 		this->loadButton("neonaz_move", "medias/interface/buttons/naz_move_button.png");
 		this->loadButton("neonaz_attack", "medias/interface/buttons/naz_attack_button.png");
+		this->loadButton("neonaz_cancel", "medias/interface/buttons/annuler_naz.png");
 
 		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
 		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");

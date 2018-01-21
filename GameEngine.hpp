@@ -403,40 +403,55 @@ public:
 
 				}
 
-				TechNode *pnode = this->vault->factory.getTechNode(player.team, obj.name);
-				if (pnode->children.size() > 0) {
-					int buts=0;
-					for (TechNode &node : pnode->children) {
-						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
-						                           this->vault->factory.texManager.getRef(node.type + "_icon"),
-						                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
-							std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
-							switch (node.comp) {
-							case TechComponent::Building: {
-								Building &building = this->vault->registry.get<Building>(selectedObj);
-								if (!building.construction) {
-									EntityID newConsEnt = this->vault->factory.startBuilding(this->vault->registry, node.type, selectedObj);
+				if (this->vault->registry.has<Building>(selectedObj)) {
 
-									// need to reload the parent building to assign construction
-									Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
-									pBuilding.construction = newConsEnt;
-									std::cout << "start build " << building.construction << std::endl;
+					Building &building = this->vault->registry.get<Building>(selectedObj);
+
+					TechNode *pnode = this->vault->factory.getTechNode(player.team, obj.name);
+					if (building.construction) {
+						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
+						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
+						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
+							this->vault->registry.destroy(building.construction);
+							building.construction = 0;						
+						}
+					} else {
+
+						if (pnode->children.size() > 0) {
+							int buts = 0;
+							for (TechNode &node : pnode->children) {
+								if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
+								                           this->vault->factory.texManager.getRef(node.type + "_icon"),
+								                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
+									std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
+									switch (node.comp) {
+									case TechComponent::Building: {
+//										Building &building = this->vault->registry.get<Building>(selectedObj);
+										if (!building.construction) {
+											EntityID newConsEnt = this->vault->factory.startBuilding(this->vault->registry, node.type, selectedObj);
+
+											// need to reload the parent building to assign construction
+											Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
+											pBuilding.construction = newConsEnt;
+											std::cout << "start build " << building.construction << std::endl;
+										}
+									}
+									break;
+									case TechComponent::Character:
+										if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
+											this->markUpdateObjLayer = true;
+										}
+										break;
+									case TechComponent::Resource:
+										this->seedResources(player.resourceType, selectedObj);
+										break;
+									}
 								}
-							}
-							break;
-							case TechComponent::Character:
-								if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
-									this->markUpdateObjLayer = true;
-								}
-								break;
-							case TechComponent::Resource:
-								this->seedResources(player.resourceType, selectedObj);
-								break;
+								if (buts % 3 != 2)
+									ImGui::SameLine();
+								buts++;
 							}
 						}
-						if(buts % 3 != 2)
-							ImGui::SameLine();
-						buts++;
 					}
 				}
 				ImGui::Columns(1);
@@ -451,13 +466,23 @@ public:
 					ImGui::NextColumn();
 					ImGui::SetColumnWidth(-1, uiRWidth);
 
-					TechNode *node = this->vault->factory.getTechRoot(player.team);
-					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
-					                           this->vault->factory.texManager.getRef(node->type + "_icon"),
-					                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
-						std::cout << "build clicked " << node->type << std::endl;
-						if (!player.rootConstruction)
-							player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
+					if (player.rootConstruction) {
+						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
+						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
+						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
+
+							this->vault->registry.destroy(player.rootConstruction);
+							player.rootConstruction = 0;
+						}
+					} else {
+						TechNode *node = this->vault->factory.getTechRoot(player.team);
+						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
+						                           this->vault->factory.texManager.getRef(node->type + "_icon"),
+						                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
+							std::cout << "build clicked " << node->type << std::endl;
+							if (!player.rootConstruction)
+								player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
+						}
 					}
 					ImGui::Columns(1);
 				}
