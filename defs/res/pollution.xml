@@ -93,4 +93,32 @@
   <refresh value="6"/>
  </resource>
 -->
+<resource>
+  <file path="medias/extra/resources/pollution10.png"/>
+  <pixel_size w="106" h="89"/>
+  <case_size w="3" h="3" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/extra/resources/pollution11.png"/>
+  <pixel_size w="106" h="89"/>
+  <case_size w="3" h="3" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/extra/resources/pollution12.png"/>
+  <pixel_size w="106" h="89"/>
+  <case_size w="3" h="3" />
+ <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+
 </resources>

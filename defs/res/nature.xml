@@ -144,17 +144,22 @@
   </frames>
   <refresh value="3"/>
  </resource>
-
-
-
-
-
-
-
-
-
-
-
-
-
+<resource>
+  <file path="medias/extra/resources/nature14.png"/>
+  <pixel_size w="62" h="54"/>
+  <case_size w="2" h="1" />
+  <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
+<resource>
+  <file path="medias/extra/resources/nature15.png"/>
+  <pixel_size w="47" h="58"/>
+  <case_size w="1" h="1" />
+  <frames>
+   <frame n="0"/>
+  </frames>
+  <refresh value="0"/>
+ </resource>
 </resources>
