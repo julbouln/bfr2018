@@ -18,8 +18,10 @@
 #include "GameSystems/MapLayersSystem.hpp"
 #include "GameSystems/DrawMapSystem.hpp"
 #include "GameSystems/ResourcesSystem.hpp"
+#include "GameSystems/ConstructionSystem.hpp"
 #include "GameSystems/PathfindingSystem.hpp"
 #include "GameSystems/CombatSystem.hpp"
+#include "GameSystems/VictorySystem.hpp"
 
 #include "AI.hpp"
 
@@ -43,8 +45,10 @@ public:
 	TileAnimSystem tileAnim;
 	DrawMapSystem drawMap;
 	MapLayersSystem mapLayers;
+	ConstructionSystem construction;
 	PathfindingSystem pathfinding;
 	CombatSystem combat;
+	VictorySystem victory;
 	AI ai;
 
 	sf::Sprite iface;
@@ -154,10 +158,14 @@ public:
 		drawMap.map = this->map;
 		mapLayers.setVault(vault);
 		mapLayers.map = this->map;
+		construction.setVault(vault);
+		construction.map = this->map;
 		pathfinding.setVault(vault);
 		pathfinding.map = this->map;
 		combat.setVault(vault);
 		combat.map = this->map;
+		victory.setVault(vault);
+		victory.map = this->map;
 
 		ai.setVault(vault);
 		ai.map = this->map;
@@ -170,7 +178,6 @@ public:
 		scoreBonusText.setFont(font);
 		scoreBonusText.setCharacterSize(48);
 		scoreBonusText.setColor(sf::Color::White);
-
 	}
 
 	void initView() {
@@ -186,7 +193,6 @@ public:
 		sf::Vector2f centre(position.x * 32, position.y * 32);
 		this->gameView.setCenter(centre);
 	}
-
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		mapLayers.initTiles();
@@ -204,7 +210,6 @@ public:
 
 			this->centerMapView(sf::Vector2i(mapWidth - 8, mapHeight - 8));
 		}
-
 
 		auto view = this->vault->registry.view<Player>();
 		for (EntityID entity : view) {
@@ -251,7 +256,6 @@ public:
 			player.fog.width = mapWidth;
 			player.fog.height = mapHeight;
 			player.fog.fill();
-
 		}
 
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
@@ -282,7 +286,6 @@ public:
 			ImGui::End();
 		}
 		ImGui::PopStyleColor();
-
 	}
 
 	void gameStateGui() {
@@ -297,19 +300,18 @@ public:
 		if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
-			ImGui::ProgressBar((float)player.resources / this->resourcesVictory(), ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.resources / victory.resourcesVictory(), ImVec2(200.0f, 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(255, 0, 0, 255));
-			ImGui::ProgressBar((float)player.butchery / this->butcheryVictory(), ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.butchery / victory.butcheryVictory(), ImVec2(200.0f, 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::End();
 		}
 		ImGui::PopStyleColor();
-
 	}
 
 	void constructionProgressGui(EntityID consEnt) {
@@ -524,45 +526,6 @@ public:
 		ImGui::PopFont();
 	}
 
-
-	float resourcesVictory() {
-		return (float)(this->map->width * this->map->height) / 4.0;
-	}
-
-	float butcheryVictory() {
-		return (float)(this->map->width * this->map->height) / 2.0;
-	}
-
-	bool checkVictoryConditions(EntityID playerEnt) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-		if ((float)player.resources / this->resourcesVictory() >= 1.0) {
-			return true;
-		}
-		if ((float)player.butchery / this->butcheryVictory() >= 1.0) {
-			return true;
-		}
-
-		int ennemyObjs = 0;
-
-		auto view = this->vault->registry.view<Player>();
-		for (EntityID entity : view) {
-			if (entity != playerEnt) {
-				Player &otherPlayer = view.get(entity);
-				if (otherPlayer.team != player.team) {
-					for (auto o : otherPlayer.objsByType) {
-						ennemyObjs += o.second.size();
-					}
-				}
-
-			}
-		}
-
-		if (ennemyObjs == 0)
-			return true;
-
-		return false;
-	}
-
 	void updatePlayers(float dt) {
 		auto playerView = this->vault->registry.view<Player>();
 
@@ -604,12 +567,14 @@ public:
 		auto playerView = this->vault->registry.view<Player>();
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
+
 			int playerObjs = 0;
 			for (auto o : player.objsByType) {
 				playerObjs += o.second.size();
 			}
-			std::cout << "Player: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
-			if (this->checkVictoryConditions(entity)) {
+			std::cout << "Player stats: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
+
+			if (victory.checkVictoryConditions(entity)) {
 				std::cout << "Player: " << entity << " WINS !" << std::endl;
 				GameOver *go = (GameOver *)this->game->getStage("game_over");
 
@@ -626,47 +591,15 @@ public:
 
 			}
 		}
-
 	}
 
 	void updateDecade(float dt) {
+		victory.updateStats(dt);
+
 		auto playerView = this->vault->registry.view<Player>();
 
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-//			std::cout << "Player "<<entity<< " "<<player.team<<" kills "<<player.kills.size() << std::endl;
-
-			player.butchery += pow(player.kills.size(), 2);
-
-			switch (player.kills.size()) {
-			case 0:
-				break;
-			case 1:
-				break;
-			case 2:
-				std::cout << "! COMBO " << player.team <<  std::endl;
-				player.stats["combo"] = player.stats["combo"] + 1;
-				break;
-			case 3:
-				std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
-				player.stats["killer"] = player.stats["killer"] + 1;
-				break;
-			case 4:
-				std::cout << "! MEGAKILL " << player.team << std::endl;
-				player.stats["megakill"] = player.stats["megakill"] + 1;
-				break;
-			case 5:
-				std::cout << "! BARBARIAN " << player.team << std::endl;
-				player.stats["barbarian"] = player.stats["barbarian"] + 1;
-				break;
-			default:
-				std::cout << "! BUTCHERY " << player.team << std::endl;
-				player.stats["butchery"] = player.stats["butchery"] + 1;
-				break;
-			}
-
-			player.stats["kills"] = player.stats["kills"] + player.kills.size();
-
 			if (entity == this->currentPlayer) {
 
 				switch (player.kills.size()) {
@@ -702,17 +635,13 @@ public:
 					this->scoreBonusText.setString("BUTCHERY");
 					this->playSound(scoreSound, "butchery");
 					break;
-
 				}
-
 			}
-
-
+			// FIMXE: not sure we should clean that there
 			player.kills.clear();
 		}
 
 		this->updateMinimap();
-
 	}
 
 	void updateEveryFrame(float dt)
@@ -722,10 +651,7 @@ public:
 			this->markUpdateObjLayer = false;
 		}
 
-		// 30 fps
-		float animDt = 0.033 / dt * 0.033;
-
-		this->tileAnim.update(animDt);
+		this->tileAnim.update(dt);
 		this->pathfinding.update(dt);
 	}
 
@@ -760,16 +686,6 @@ public:
 				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
 				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
 
-				/*				sf::RectangleShape rectangle;
-
-								rectangle.setSize(sf::Vector2f(tile.psize));
-								rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-								rectangle.setOutlineColor(sf::Color::Blue);
-								rectangle.setOutlineThickness(2);
-								rectangle.setPosition(pos);
-
-								this->game->window.draw(rectangle);
-				*/
 				sf::Sprite selected(this->vault->factory.getTex("selected"));
 				selected.setTextureRect(sf::IntRect(0, 0, 7, 7));
 				selected.setPosition(pos);
@@ -789,7 +705,6 @@ public:
 
 			}
 		}
-
 
 		if (this->action == Action::Selecting) {
 			sf::RectangleShape rectangle;
@@ -836,7 +751,6 @@ public:
 			this->game->window.draw(scoreBonusText);
 		}
 
-
 		/*
 				indice_bg.setPosition(sf::Vector2f((this->width - indice_bg.getTexture()->getSize().x)/2.0, 0));
 				indice_bg.setScale(this->width / 800.0, this->height / 600.0);
@@ -877,18 +791,6 @@ public:
 		}
 	}
 
-	void updateConstructions(float dt) {
-		auto view = this->vault->registry.view<Building>();
-		for (EntityID entity : view) {
-			Building &building = view.get(entity);
-			if (building.buildTime > 0) {
-//				std::cout << "update construction " << entity << " " << building.buildTime << std::endl;
-				building.buildTime -= dt;
-				if (building.buildTime <= 0)
-					building.buildTime = 0.0;
-			}
-		}
-	}
 
 	void update(float dt) {
 		float updateDt = dt;
@@ -916,7 +818,7 @@ public:
 
 		this->updatePlayers(updateDt);
 
-		this->updateConstructions(updateDt);
+		this->construction.update(updateDt);
 
 		this->combat.update(updateDt);
 		this->resources.update(updateDt);
@@ -1009,7 +911,6 @@ public:
 				this->moveView = MoveView::MoveNorth;
 			if (mousePos.y > this->height - 32)
 				this->moveView = MoveView::MoveSouth;
-
 		}
 		break;
 		case sf::Event::MouseButtonReleased:
@@ -1060,13 +961,10 @@ public:
 		{
 			if (event.mouseButton.button == sf::Mouse::Left) {
 				if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-//					sf::IntRect mRect = sf::IntRect(this->minimapRect);
 					sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
-
 					std::cout << "minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
 					this->centerMapView(sf::Vector2i(mPos));
 				} else {
-
 					if (this->action == Action::Building)
 					{
 						if (this->canBuild(this->currentPlayer, this->currentBuild).size() == 0) {
@@ -1144,7 +1042,6 @@ public:
 			}
 		}
 		break;
-
 		}
 	}
 };
