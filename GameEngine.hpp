@@ -104,6 +104,8 @@ public:
 	}
 
 	~GameEngine() {
+		// FIXME: registry must actually resides in GameEngine instead of game
+		this->vault->registry.reset();
 		delete this->map;
 	}
 
@@ -205,7 +207,7 @@ public:
 
 			this->centerMapView(sf::Vector2i(8, 8));
 		} else {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", false);
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 
 			this->centerMapView(sf::Vector2i(mapWidth - 8, mapHeight - 8));

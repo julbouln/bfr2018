@@ -125,6 +125,9 @@ public:
 			}
 
 			if (this->game->isRegisteredStage("game")) {
+				std::cout << "clear game"<<std::endl;
+				GameEngine *engine = (GameEngine *)this->game->getStage("game");
+				delete engine;
 				this->game->unregisterStage("game");
 			}
 

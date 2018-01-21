@@ -36,7 +36,7 @@ public:
 	}
 
 	void unregisterStage(std::string name) {
-		delete this->registeredStages[name];
+//		delete this->registeredStages[name];
 		this->registeredStages.erase(name);
 	}
 
