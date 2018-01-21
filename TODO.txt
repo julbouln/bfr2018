@@ -13,7 +13,6 @@ Improvements:
 - improve multi-agent combat
 
 Game:
-- add end game conditions
 - projectile
 - special FX
 

@@ -475,6 +475,7 @@ public:
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
 
+//		building.buildTime = 10;
 		building.buildTime = (float)root->FirstChildElement("build_time")->IntAttribute("value");
 		building.maxBuildTime = building.buildTime;
 	}
@@ -582,8 +583,8 @@ public:
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = 0;
 		obj.mapped = false;
-//		obj.life = 100;
-//		obj.maxLife = obj.life;
+		obj.life = obj.life * 4;
+		obj.maxLife = obj.life;
 
 		registry.assign<GameObject>(entity, obj);
 		registry.assign<Building>(entity, building);
@@ -609,8 +610,8 @@ public:
 
 		tile.centerRect = this->centerRects[obj.name];
 
-		obj.life = obj.life * (tile.size.x * tile.size.y) / 2;
-		obj.maxLife = obj.life;
+//		obj.life = obj.life * (tile.size.x * tile.size.y) / 2;
+//		obj.maxLife = obj.life;
 
 		registry.assign<Tile>(entity, tile);
 
@@ -763,6 +764,13 @@ public:
 		player.butchery = 0.0;
 		player.enemyFound = false;
 		player.rootConstruction = 0;
+
+		player.stats["kills"]=0;
+		player.stats["combo"]=0;
+		player.stats["killer"]=0;
+		player.stats["megakill"]=0;
+		player.stats["barbarian"]=0;
+		player.stats["butchery"]=0;
 
 		if (team == "rebel")
 			player.resourceType = ResourceType::Nature;

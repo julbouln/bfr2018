@@ -5,7 +5,7 @@
 
  <file path="medias/buildings/neonazs/artillerie/pics/artillerie.png"/>
  <icon path="medias/buildings/neonazs/artillerie/pics/artillerie-icon.png"/>
- <build_time value="100"/>
+ <build_time value="10"/>
  <pixel_size w="256" h="230"/>
  <decal_value x="0" y="1"/>
  <case_size w="6" h="4"/>

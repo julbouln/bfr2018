@@ -3,6 +3,8 @@
 #include "Game.hpp"
 
 #include "GameStage.hpp"
+#include "GameOver.hpp"
+
 #include "System.hpp"
 #include "Map.hpp"
 
@@ -129,7 +131,15 @@ public:
 	}
 
 	void fadeOutCallback() {
-		this->game->pushRegisteredStage("play_menu");
+		switch (this->nextStage)
+		{
+		case 1:
+			this->game->pushRegisteredStage("play_menu");
+			break;
+		case 2:
+			this->game->pushRegisteredStage("game_over");
+			break;
+		}
 	}
 
 	void setVaults(GameVault *vault) {
@@ -204,42 +214,16 @@ public:
 
 			if (player.team == "rebel")
 			{
-
 				player.initialPos = sf::Vector2i(10, 10);
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
-
-				/*
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 11);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 10, 12);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 10);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 11);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 11, 12);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 10);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 11);
-								this->vault->factory.createUnit(this->vault->registry, entity, "zork", 12, 12);
-								*/
 
 				if (player.ai) {
 					ai.rebelAI.parse(player.team, player.aiTree, entity);
 				}
-
-//				factory.createUnit(registry, entity, "lance_pepino", 10, 12);
-
 			} else {
 				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
-				/*
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 11);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 15, 12);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 11);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 12);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 10);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 11);
-								this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 17, 12);
-				*/
 
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
-//				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", 16, 10);
 
 				if (player.ai) {
 					ai.nazAI.parse(player.team, player.aiTree, entity);
@@ -463,6 +447,8 @@ public:
 			ImGui::Text("FPS: %.2f", 1 / dt);
 			ImGui::Text("Total Entities: %d", (int)this->vault->registry.size());
 			ImGui::Text("Drawn Entities: %d", (int)drawMap.entitiesDrawList.size());
+			ImGui::Checkbox("Debug layer", &drawMap.showDebugLayer);
+
 
 			ImGui::Text("Speed"); ImGui::SameLine();
 			ImGui::RadioButton("0", &gameSpeed, 0); ImGui::SameLine();
@@ -607,6 +593,19 @@ public:
 			std::cout << "Player: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
 			if (this->checkVictoryConditions(entity)) {
 				std::cout << "Player: " << entity << " WINS !" << std::endl;
+				GameOver *go = (GameOver *)this->game->getStage("game_over");
+
+				if (entity == this->currentPlayer) {
+					go->win = true;
+				} else {
+					go->win = false;
+				}
+
+				go->player = player;
+
+				nextStage = 2;
+				fadeOut();
+
 			}
 		}
 
@@ -621,7 +620,37 @@ public:
 
 			player.butchery += pow(player.kills.size(), 2);
 
+			switch (player.kills.size()) {
+			case 0:
+				break;
+			case 1:
+				break;
+			case 2:
+				std::cout << "! COMBO " << player.team <<  std::endl;
+				player.stats["combo"] = player.stats["combo"] + 1;
+				break;
+			case 3:
+				std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
+				player.stats["killer"] = player.stats["killer"] + 1;
+				break;
+			case 4:
+				std::cout << "! MEGAKILL " << player.team << std::endl;
+				player.stats["megakill"] = player.stats["megakill"] + 1;
+				break;
+			case 5:
+				std::cout << "! BARBARIAN " << player.team << std::endl;
+				player.stats["barbarian"] = player.stats["barbarian"] + 1;
+				break;
+			default:
+				std::cout << "! BUTCHERY " << player.team << std::endl;
+				player.stats["butchery"] = player.stats["butchery"] + 1;
+				break;
+			}
+
+			player.stats["kills"] = player.stats["kills"] + player.kills.size();
+
 			if (entity == this->currentPlayer) {
+
 				switch (player.kills.size()) {
 				case 0:
 					this->scoreBonus = false;
@@ -631,38 +660,35 @@ public:
 					// normal
 					break;
 				case 2:
-					std::cout << "! COMBO " << player.team <<  std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("COMBO");
-					this->playSound(scoreSound, "combo");
 					break;
 				case 3:
-					std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("SERIAL KILLER");
 					this->playSound(scoreSound, "killer");
 					break;
 				case 4:
-					std::cout << "! MEGAKILL " << player.team << std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("MEGAKILL");
 					this->playSound(scoreSound, "megakill");
 					break;
 				case 5:
-					std::cout << "! BARBARIAN " << player.team << std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("BARBARIAN");
 					this->playSound(scoreSound, "barbarian");
 					break;
 				default: // >= 6
-					std::cout << "! BUTCHERY " << player.team << std::endl;
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("BUTCHERY");
 					this->playSound(scoreSound, "butchery");
 					break;
 
 				}
+
 			}
+
+
 			player.kills.clear();
 		}
 
@@ -808,8 +834,8 @@ public:
 		for (EntityID entity : view) {
 			Building &building = view.get(entity);
 			if (building.buildTime > 0) {
-				std::cout << "update construction " << entity << " " << building.buildTime << std::endl;
-				building.buildTime -= dt * 10;
+//				std::cout << "update construction " << entity << " " << building.buildTime << std::endl;
+				building.buildTime -= dt;
 				if (building.buildTime <= 0)
 					building.buildTime = 0.0;
 			}

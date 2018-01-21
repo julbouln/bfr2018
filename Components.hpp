@@ -114,4 +114,7 @@ struct Player {
 	BrainTree::BehaviorTree aiTree;
 
 	EntityID rootConstruction;
+
+	// stats
+	std::map<std::string, int> stats;
 };
