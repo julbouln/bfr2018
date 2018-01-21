@@ -121,11 +121,15 @@ public:
 	}
 
 
-	Game(unsigned int width, unsigned int height)
+	Game(unsigned int width, unsigned int height, bool fullscreen)
 	{
 		this->width = width;
 		this->height = height;
-		this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+		if(fullscreen)
+			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018", sf::Style::Fullscreen);
+		else
+			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+
 		this->window.setFramerateLimit(30);
 
 		srand (time(NULL));

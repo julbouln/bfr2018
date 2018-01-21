@@ -6,7 +6,7 @@
 
 int main()
 {
-	Game game(800,600);
+	Game game(800,600,false);
 
 	game.registerStage("main_menu", new MainMenu(&game));
 	game.registerStage("play_menu", new PlayMenu(&game));

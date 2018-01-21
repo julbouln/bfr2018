@@ -680,6 +680,7 @@ public:
 				case 2:
 					this->scoreBonus = true;
 					this->scoreBonusText.setString("COMBO");
+					this->playSound(scoreSound, "combo");
 					break;
 				case 3:
 					this->scoreBonus = true;
