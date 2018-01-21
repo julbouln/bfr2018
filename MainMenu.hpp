@@ -82,6 +82,5 @@ public:
 			this->game->pushRegisteredStage("play_menu");
 			break;
 		}
-
 	}
 };

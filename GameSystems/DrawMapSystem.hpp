@@ -33,7 +33,6 @@ public:
 		this->drawTileLayer(window, this->map->fog, clip, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
-
 	void drawMinimap(sf::RenderTexture &target, EntityID playerEnt) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 
@@ -97,7 +96,6 @@ public:
 		clipR.setOutlineThickness(1);
 		clipR.setPosition(clipPos);
 		window.draw(clipR);
-
 	}
 
 	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
@@ -105,7 +103,6 @@ public:
 		{
 			for (int x = clip.left; x < clip.left + clip.width; ++x)
 			{
-//				std::cout << x<<"x"<<y<< " ";
 				EntityID ent = layer.get(x, y);
 				if (ent) {
 					Tile &tile = this->vault->registry.get<Tile>(ent);

@@ -252,7 +252,6 @@ public:
 				}
 			}
 
-
 			player.fog.width = mapWidth;
 			player.fog.height = mapHeight;
 			player.fog.fill();
@@ -340,16 +339,22 @@ public:
 
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
+		float uiX = 258.0f;
+		float uiHeight = 134.0f;
+		float uiWidth = 500.0f;
+		float uiLWidth = 300.0f;
+		float uiRWidth = 200.0f;
 
-		float rightDist = 120.0f;
-		float bottomDist = 60.0f;
-		ImVec2 window_pos = ImVec2(ImGui::GetIO().DisplaySize.x - rightDist, ImGui::GetIO().DisplaySize.y - bottomDist);
-		ImVec2 window_pos_pivot = ImVec2(1.0f, 1.0f);
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+		ImVec2 window_pos = ImVec2(uiX, ImGui::GetIO().DisplaySize.y - uiHeight);
+//		ImVec2 window_pos_pivot = ImVec2(1.0f, 1.0f);
+		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(uiWidth, uiHeight), ImGuiCond_Always);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
-		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			if (this->selectedObjs.size() == 1) {
+				ImGui::Columns(2, NULL, false);
+				ImGui::SetColumnWidth(-1, uiLWidth);
 				EntityID selectedObj = this->selectedObjs[0];
 
 				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
@@ -370,8 +375,14 @@ public:
 					ImGui::Text("AE: %d", unit.attack2.power);
 					ImGui::Text("DE: %d", unit.attack2.distance);
 					ImGui::EndGroup();
+				}
 
-					ImGui::SameLine();
+				ImGui::NextColumn();
+				ImGui::SetColumnWidth(-1, uiRWidth);
+
+
+				if (this->vault->registry.has<Unit>(selectedObj)) {
+					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
 					ImGui::BeginGroup();
 					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
@@ -394,6 +405,7 @@ public:
 
 				TechNode *pnode = this->vault->factory.getTechNode(player.team, obj.name);
 				if (pnode->children.size() > 0) {
+					int buts=0;
 					for (TechNode &node : pnode->children) {
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
 						                           this->vault->factory.texManager.getRef(node.type + "_icon"),
@@ -422,15 +434,22 @@ public:
 								break;
 							}
 						}
-						ImGui::SameLine();
+						if(buts % 3 != 2)
+							ImGui::SameLine();
+						buts++;
 					}
 				}
+				ImGui::Columns(1);
 
 
 			} else {
 				if (this->selectedObjs.size() == 0) {
+					ImGui::Columns(2, NULL, false);
+					ImGui::SetColumnWidth(-1, uiLWidth);
 
 					this->constructionProgressGui(player.rootConstruction);
+					ImGui::NextColumn();
+					ImGui::SetColumnWidth(-1, uiRWidth);
 
 					TechNode *node = this->vault->factory.getTechRoot(player.team);
 					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
@@ -440,8 +459,10 @@ public:
 						if (!player.rootConstruction)
 							player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
 					}
+					ImGui::Columns(1);
 				}
 			}
+
 			ImGui::End();
 
 		}
@@ -702,7 +723,6 @@ public:
 				selected.setTextureRect(sf::IntRect(0, 21, 7, 7));
 				selected.setPosition(sf::Vector2f(pos.x, pos.y + tile.psize.y - 7));
 				this->game->window.draw(selected);
-
 			}
 		}
 

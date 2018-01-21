@@ -8,8 +8,6 @@
 
 class PathfindingSystem : public GameSystem {
 public:
-
-
 	void updatePathfindingLayer(float dt) {
 		this->map->pathfinding.clear();
 		auto buildingView = this->vault->registry.persistent<Tile, Building>();

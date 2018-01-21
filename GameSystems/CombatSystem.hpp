@@ -152,9 +152,5 @@ public:
 				this->vault->registry.destroy(entity);
 			}
 		}
-
-
-
 	}
-
 };
