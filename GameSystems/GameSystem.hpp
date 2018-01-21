@@ -27,6 +27,17 @@ public:
 		return surface;
 	}
 
+	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) {
+		std::vector<sf::Vector2i> surface;
+		for (int w = -dist; w < dist+1; w++) {
+			for (int h = -dist; h < dist+1; h++) {
+				sf::Vector2i p(pos.x+w,pos.y+h);
+				if (this->map->bound(p.x, p.y))
+					surface.push_back(p);
+			}
+		}
+		return surface;
+	}
 
 	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) {
 		std::vector<sf::Vector2i> surface;

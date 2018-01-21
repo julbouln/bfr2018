@@ -897,7 +897,7 @@ public:
 		this->resources.update(updateDt);
 		this->mapLayers.update(updateDt);
 
-		this->mapLayers.updateFog(this->currentPlayer, updateDt);
+		this->mapLayers.updateFogLayer(this->currentPlayer, updateDt);
 
 		// AI
 		auto playerView = this->vault->registry.view<Player>();

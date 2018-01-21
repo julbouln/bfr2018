@@ -2,6 +2,21 @@
 
 #include "GameSystem.hpp"
 
+//#define TRANSITIONS_DEBUG
+
+struct CompareVector2i
+{
+	bool operator()(sf::Vector2i a, sf::Vector2i b) const
+	{
+		if (a.x < b.x)
+			return true;
+		else if (b.x < a.x)
+			return false;
+		else
+			return a.y < b.y;
+	}
+};
+
 class MapLayersSystem : public GameSystem {
 	std::map<std::string, std::vector<EntityID>> tiles;
 
@@ -17,6 +32,11 @@ class MapLayersSystem : public GameSystem {
 
 	std::vector<EntityID> fogTransitions2;
 	std::vector<EntityID> debugTransitions;
+
+	// transitions calculation optimization
+	// maintain a list of position to update instead of updating every transitions
+	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
+	std::set<sf::Vector2i, CompareVector2i> markUpdateFogTransitions;
 
 public:
 	void update(float dt) {
@@ -36,11 +56,18 @@ public:
 
 			if (obj.mapped) {
 				for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
+					EntityID newEnt = 0;
 					if (obj.team == "rebel") {
-						this->map->terrains.set(p.x, p.y, tiles["grass"][0]);
+						newEnt = tiles["grass"][0];
 					} else {
-						this->map->terrains.set(p.x, p.y, tiles["concrete"][0]);
+						newEnt = tiles["concrete"][0];
 					}
+
+					if (this->map->terrains.get(p.x, p.y) != newEnt)
+						for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
+							this->markUpdateTerrainTransitions.insert(sp);
+
+					this->map->terrains.set(p.x, p.y, newEnt);
 				}
 			}
 		}
@@ -52,11 +79,18 @@ public:
 			Resource &resource = resView.get<Resource>(entity);
 
 			for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
+				EntityID newEnt = 0;
 				if (resource.type == ResourceType::Nature) {
-					this->map->terrains.set(p.x, p.y, tiles["grass"][0]);
+					newEnt = tiles["grass"][0];
 				} else {
-					this->map->terrains.set(p.x, p.y, tiles["concrete"][0]);
+					newEnt = tiles["concrete"][0];
 				}
+
+				if (this->map->terrains.get(p.x, p.y) != newEnt)
+					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
+						this->markUpdateTerrainTransitions.insert(sp);
+
+				this->map->terrains.set(p.x, p.y, newEnt);
 			}
 
 		}
@@ -87,16 +121,16 @@ public:
 			}
 		}
 
-/*
-		auto unitView = this->vault->registry.persistent<Tile, Unit>();
+		/*
+				auto unitView = this->vault->registry.persistent<Tile, Unit>();
 
-		for (EntityID entity : unitView) {
-			Tile &tile = unitView.get<Tile>(entity);
-			Unit &unit = unitView.get<Unit>(entity);
+				for (EntityID entity : unitView) {
+					Tile &tile = unitView.get<Tile>(entity);
+					Unit &unit = unitView.get<Unit>(entity);
 
-			this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity);
-		}
-		*/
+					this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity);
+				}
+				*/
 	}
 
 	void updatePlayersFog(float dt) {
@@ -128,37 +162,59 @@ public:
 
 	}
 
-	void updateFog(EntityID playerEnt, float dt) {
+	void updateFogLayer(EntityID playerEnt, float dt) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 
-		// draw debug grid
 		for (int y = 0; y < this->map->height; ++y)
 		{
 			for (int x = 0; x < this->map->width; ++x)
 			{
+				sf::Vector2i p = sf::Vector2i(x, y);
 				FogState st = player.fog.get(x, y);
+				bool markUpdate = false;
+				EntityID newEnt = 0;
 
 				if (st == FogState::Unvisited) {
-					this->map->fog.set(x, y, fogTransitions[0]);
+					newEnt = fogTransitions[0];
 				} else {
-					this->map->fog.set(x, y, 0);
+					newEnt = 0;
+				}
+				if (this->map->fog.get(x, y) != newEnt) {
+					markUpdate = true;
 				}
 
+				this->map->fog.set(x, y, newEnt);
+
 				if (st == FogState::Hidden) {
-					this->map->fogHidden.set(x, y, fogTransitions[0]);
+					newEnt = fogTransitions[0];
 				} else {
-					this->map->fogHidden.set(x, y, 0);
+					newEnt = 0;
+				}
+
+				if (this->map->fogHidden.get(x, y) != newEnt) {
+//					std::cout << "FOG was "<<this->map->fogHidden.get(x, y)<<" now "<<newEnt<<std::endl;
+					markUpdate = true;
+				}
+
+				this->map->fogHidden.set(x, y, newEnt);
+
+				if (markUpdate) {
+					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
+						this->markUpdateFogTransitions.insert(sp);
 				}
 			}
 		}
-		for (int y = 0; y < this->map->height; ++y)
-		{
-			for (int x = 0; x < this->map->width; ++x)
-			{
-				this->updateFogTransition(this->map->fog, x, y);
-				this->updateFogTransition(this->map->fogHidden, x, y);
-			}
+
+#ifdef TRANSITIONS_DEBUG
+		std::cout << "Transitions: update " << this->markUpdateFogTransitions.size() << " FOG transitions" << std::endl;
+#endif
+
+		for (sf::Vector2i p : this->markUpdateFogTransitions) {
+			this->updateFogTransition(this->map->fog, p.x, p.y);
+			this->updateFogTransition(this->map->fogHidden, p.x, p.y);
 		}
+
+		this->markUpdateFogTransitions.clear();
 	}
 
 // Terrains/Transitions
@@ -305,11 +361,11 @@ public:
 		int bitmask = this->pairTransitionBitmask(this->map->terrains, grassEnt, concreteEnt, x, y);
 
 		bitmask = this->updateTransition(bitmask, this->map->transitions[0], concreteEnt, concreteTransitions, terrainTransitionsMapping, x, y);
-		if(!bitmask) {
+		if (!bitmask) {
 			this->map->transitions[0].set(x, y, 0);
 		}
 	}
-	
+
 
 	void updateSandWaterTransition(int x, int y) {
 		EntityID sandEnt = tiles["sand"][0];
@@ -317,7 +373,7 @@ public:
 		int bitmask = this->pairTransitionBitmask(this->map->terrains, sandEnt, waterEnt, x, y);
 
 		bitmask = this->updateTransition(bitmask, this->map->transitions[1], waterEnt, waterTransitions, terrainTransitionsMapping, x, y);
-		if(!bitmask) {
+		if (!bitmask) {
 			this->map->transitions[1].set(x, y, 0);
 		}
 	}
@@ -327,26 +383,39 @@ public:
 		EntityID dirtEnt = tiles["dirt"][0];
 		int bitmask = this->voidTransitionBitmask(this->map->terrains, dirtEnt, x, y);
 		bitmask = this->updateTransition(bitmask, this->map->transitions[2], dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
-		if(!bitmask) {
+		if (!bitmask) {
 			this->map->transitions[2].set(x, y, 0);
 		}
 	}
 
-	void updateFogTransition(TileLayer &layer, int x, int y) {
-		EntityID fogEnt = fogTransitions[0];
-		int bitmask = this->voidTransitionBitmask(layer, fogEnt, x, y);
-		this->updateTransition(bitmask, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
-	}
-
-	void updateTransitions() {
+	void updateAllTransitions() {
 		for (int x = 0; x < this->map->width; x++) {
 			for (int y = 0; y < this->map->height; y++) {
-
 				this->updateDirtTransition(x, y);
 				this->updateGrassConcreteTransition(x, y);
 				this->updateSandWaterTransition(x, y);
 			}
 		}
+	}
+
+	void updateTransitions() {
+#ifdef TRANSITIONS_DEBUG
+		std::cout << "Transitions: update " << this->markUpdateTerrainTransitions.size() << " terrain transitions" << std::endl;
+#endif
+
+		for (sf::Vector2i p : this->markUpdateTerrainTransitions) {
+			this->updateDirtTransition(p.x, p.y);
+			this->updateGrassConcreteTransition(p.x, p.y);
+			this->updateSandWaterTransition(p.x, p.y);
+		}
+		this->markUpdateTerrainTransitions.clear();
+	}
+
+	// FOG transition
+	void updateFogTransition(TileLayer &layer, int x, int y) {
+		EntityID fogEnt = fogTransitions[0];
+		int bitmask = this->voidTransitionBitmask(layer, fogEnt, x, y);
+		this->updateTransition(bitmask, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
 	}
 
 	void generate(unsigned int width, unsigned int height) {
@@ -389,7 +458,7 @@ public:
 			}
 		}
 
-
+		this->updateAllTransitions();
 	}
 
 };
