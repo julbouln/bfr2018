@@ -9,11 +9,15 @@ public:
 
 	std::vector<EntityID> entitiesDrawList;
 
+	bool showDebugLayer;
+
 	DrawMapSystem() {
 		if (!colorSwap.loadFromFile("defs/new/shaders/color_swap.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load colorSwap shader" << std::endl;
 		if (!pixelation.loadFromFile("defs/new/shaders/pixelation.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
+
+		this->showDebugLayer = false;
 	}
 
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
@@ -22,7 +26,8 @@ public:
 			this->drawTileLayer(window, transitionLayer, clip, dt);
 		}
 		this->drawObjLayer(window, clip, dt);
-		this->drawDebug(window, clip, dt);
+		if(showDebugLayer)
+			this->drawDebug(window, clip, dt);
 
 		this->drawTileLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
 		this->drawTileLayer(window, this->map->fog, clip, dt, sf::Color(0x00, 0x00, 0x00));

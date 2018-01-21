@@ -9,7 +9,6 @@ Misc
 
 Improvements:
 - improve AI expedition destination
-- improve multi-agent pathfinding
 - improve multi-agent combat
 
 Game:

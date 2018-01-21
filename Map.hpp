@@ -151,14 +151,13 @@ public:
 
 	std::vector<TileLayer> transitions;
 
-//	TileLayer transitions;
-//	TileLayer terrainTransitions;
-
 	TileLayer fogHidden;
 	TileLayer fog;
 
 	ObjLayer objs;
 	ObjLayer resources;
+
+	ObjLayer pathfinding;
 
 	Map() {
 	}
@@ -178,6 +177,8 @@ public:
 		this->fogHidden.setSize(width, height);
 		this->fog.setSize(width, height);
 
+		this->pathfinding.setSize(width, height);
+
 		this->width = width;
 		this->height = height;
 	}
@@ -195,7 +196,7 @@ public:
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 //			std::cout << "PATHFINDING "<< x << "x" << y << " " << objs.entitiesGrid[x + width * y] << std::endl;
-			if (objs.entitiesGrid[x + width * y] == 0)
+			if (pathfinding.entitiesGrid[x + width * y] == 0)
 				return true;
 		}
 		return false;

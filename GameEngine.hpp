@@ -212,24 +212,41 @@ public:
 
 			player.colorIdx = rand() % 12;
 
+/*
 			if (player.team == "rebel")
 			{
 				player.initialPos = sf::Vector2i(10, 10);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
 
-				if (player.ai) {
-					ai.rebelAI.parse(player.team, player.aiTree, entity);
+				for (int x = 0; x < 3; x++) {
+					for (int y = 0; y < 3; y++) {
+						this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8 + x, 8 + y);
+
+					}
 				}
 			} else {
 				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
-
 				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
-
-				if (player.ai) {
-					ai.nazAI.parse(player.team, player.aiTree, entity);
-				}
 			}
+*/
+			
+						if (player.team == "rebel")
+						{
+							player.initialPos = sf::Vector2i(10, 10);
+							this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
 
+							if (player.ai) {
+								ai.rebelAI.parse(player.team, player.aiTree, entity);
+							}
+						} else {
+							player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
+
+							this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+
+							if (player.ai) {
+								ai.nazAI.parse(player.team, player.aiTree, entity);
+							}
+						}
+			
 
 			player.fog.width = mapWidth;
 			player.fog.height = mapHeight;
@@ -467,6 +484,7 @@ public:
 					if (this->vault->registry.valid(selectedObj)) {
 						GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
 						Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+						ImGui::Text("ID: %d", selectedObj);
 						ImGui::Text("Name: %s", obj.name.c_str());
 						ImGui::Text("Team: %s", obj.team.c_str());
 						ImGui::Text("Case position: %dx%d", tile.pos.x, tile.pos.y);

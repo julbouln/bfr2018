@@ -87,6 +87,7 @@ public:
 			}
 		}
 
+/*
 		auto unitView = this->vault->registry.persistent<Tile, Unit>();
 
 		for (EntityID entity : unitView) {
@@ -95,6 +96,7 @@ public:
 
 			this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity);
 		}
+		*/
 	}
 
 	void updatePlayersFog(float dt) {
