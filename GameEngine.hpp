@@ -89,6 +89,8 @@ public:
 
 	MoveView moveView;
 
+	bool showDebugWindow;
+
 	GameEngine(Game *game) {
 		this->game = game;
 		this->init();
@@ -129,6 +131,7 @@ public:
 		this->debugCorner = 1;
 		this->gameSpeed = 1;
 
+		this->showDebugWindow = false;
 	}
 
 	void reset() {
@@ -415,7 +418,7 @@ public:
 						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
 						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
 							this->vault->registry.destroy(building.construction);
-							building.construction = 0;						
+							building.construction = 0;
 						}
 					} else {
 
@@ -784,7 +787,8 @@ public:
 		iface.setPosition(sf::Vector2f(0, 0));
 		iface.setScale(this->width / 800.0, this->height / 600.0);
 		this->game->window.draw(iface);
-		this->debugGui(dt);
+		if(this->showDebugWindow) 
+			this->debugGui(dt);
 		this->menuGui();
 		this->gameStateGui();
 		this->actionGui();
@@ -935,6 +939,13 @@ public:
 				this->moveView = MoveView::MoveNorth;
 			if (event.key.code == sf::Keyboard::Down)
 				this->moveView = MoveView::MoveSouth;
+			if (event.key.code == sf::Keyboard::Tab) {
+				if (this->showDebugWindow)
+					this->showDebugWindow = false;
+				else
+					this->showDebugWindow = true;
+
+			}
 		}
 		break;
 		case sf::Event::MouseMoved:
