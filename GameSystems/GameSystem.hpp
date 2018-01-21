@@ -29,9 +29,9 @@ public:
 
 	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) {
 		std::vector<sf::Vector2i> surface;
-		for (int w = -dist; w < dist+1; w++) {
-			for (int h = -dist; h < dist+1; h++) {
-				sf::Vector2i p(pos.x+w,pos.y+h);
+		for (int w = -dist; w < dist + 1; w++) {
+			for (int h = -dist; h < dist + 1; h++) {
+				sf::Vector2i p(pos.x + w, pos.y + h);
 				if (this->map->bound(p.x, p.y))
 					surface.push_back(p);
 			}
@@ -88,31 +88,6 @@ public:
 		return nearest;
 	}
 
-	sf::Vector2i nearestTileAround2(sf::Vector2i src, Tile &tile, int dist) {
-		sf::Vector2i nearest(1024, 1024);
-
-		for (int w = -dist; w < tile.size.x + dist; w++) {
-			for (int h = -dist; h < tile.size.y + dist; h++) {
-				if (w <= -1 || h <= -1 || w >= tile.size.x || h >= tile.size.y) {
-					sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-					if (this->map->bound(p.x, p.y))
-					{
-						if (this->approxDistance(src, p) < this->approxDistance(src, nearest))
-							nearest = p;
-					}
-				}
-			}
-		}
-
-		/*
-				if(nearest.x==1024 && nearest.y==1024) {
-					std::cout << "BUG: no free nearest position " << std::endl;
-					nearest=tile.pos;
-				}
-		*/
-		return nearest;
-	}
-
 	sf::Vector2i firstFreePosition(sf::Vector2i src) {
 		sf::Vector2i fp;
 		int dist = 1;
@@ -142,6 +117,23 @@ public:
 				return destEnt;
 		}
 		return 0;
+	}
+
+	std::vector<sf::Vector2i> canBuild(EntityID playerEnt, EntityID entity) {
+		Tile &tile = this->vault->registry.get<Tile>(entity);
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		std::vector<sf::Vector2i> restrictedPos;
+
+		for (sf::Vector2i p : this->tileSurface(tile)) {
+			EntityID pEnt = this->map->objs.get(p.x, p.y);
+			if ((pEnt && pEnt!=entity) || player.fog.get(p.x,p.y)==FogState::Unvisited)
+			{
+//				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
+				restrictedPos.push_back(p);
+			}
+		}
+
+		return restrictedPos;
 	}
 
 	bool canSpendResources(EntityID playerEnt, ResourceType type, int val) {

@@ -127,7 +127,8 @@ public:
 		this->loadButton("menu_button", "medias/interface/buttons/menu_button.png");
 
 		this->loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
-		this->loadTextureWithWhiteMask("selection", "medias/tiles/cadre_unit.png");
+		this->loadTextureWithWhiteMask("selected", "medias/tiles/cadre_unit.png");
+		this->loadTextureWithWhiteMask("forbid", "medias/misc/forbide.png");
 
 		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
 		sndManager.loadSoundBuffer("killer", "medias/misc/killer.wav");

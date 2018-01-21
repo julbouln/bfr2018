@@ -194,7 +194,7 @@ public:
 		mapLayers.generate(mapWidth, mapHeight);
 
 		if (playerTeam == "rebel") {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 			this->centerMapView(sf::Vector2i(8, 8));
@@ -212,41 +212,41 @@ public:
 
 			player.colorIdx = rand() % 12;
 
-/*
-			if (player.team == "rebel")
-			{
-				player.initialPos = sf::Vector2i(10, 10);
-
-				for (int x = 0; x < 3; x++) {
-					for (int y = 0; y < 3; y++) {
-						this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8 + x, 8 + y);
-
-					}
-				}
-			} else {
-				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
-			}
-*/
-			
+			/*
 						if (player.team == "rebel")
 						{
 							player.initialPos = sf::Vector2i(10, 10);
-							this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
 
-							if (player.ai) {
-								ai.rebelAI.parse(player.team, player.aiTree, entity);
+							for (int x = 0; x < 3; x++) {
+								for (int y = 0; y < 3; y++) {
+									this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8 + x, 8 + y);
+
+								}
 							}
 						} else {
 							player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
-
 							this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
-
-							if (player.ai) {
-								ai.nazAI.parse(player.team, player.aiTree, entity);
-							}
 						}
-			
+			*/
+
+			if (player.team == "rebel")
+			{
+				player.initialPos = sf::Vector2i(10, 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
+
+				if (player.ai) {
+					ai.rebelAI.parse(player.team, player.aiTree, entity);
+				}
+			} else {
+				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
+
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+
+				if (player.ai) {
+					ai.nazAI.parse(player.team, player.aiTree, entity);
+				}
+			}
+
 
 			player.fog.width = mapWidth;
 			player.fog.height = mapHeight;
@@ -754,20 +754,38 @@ public:
 			//if (this->vault->registry.valid(selectedObj))
 			{
 				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
-				sf::RectangleShape rectangle;
 
 				sf::Vector2f pos;
 				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
 				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
 
+				/*				sf::RectangleShape rectangle;
 
-				rectangle.setSize(sf::Vector2f(tile.psize));
-				rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-				rectangle.setOutlineColor(sf::Color::Blue);
-				rectangle.setOutlineThickness(2);
-				rectangle.setPosition(pos);
+								rectangle.setSize(sf::Vector2f(tile.psize));
+								rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+								rectangle.setOutlineColor(sf::Color::Blue);
+								rectangle.setOutlineThickness(2);
+								rectangle.setPosition(pos);
 
-				this->game->window.draw(rectangle);
+								this->game->window.draw(rectangle);
+				*/
+				sf::Sprite selected(this->vault->factory.getTex("selected"));
+				selected.setTextureRect(sf::IntRect(0, 0, 7, 7));
+				selected.setPosition(pos);
+				this->game->window.draw(selected);
+
+				selected.setTextureRect(sf::IntRect(0, 7, 7, 7));
+				selected.setPosition(sf::Vector2f(pos.x + tile.psize.x - 7, pos.y));
+				this->game->window.draw(selected);
+
+				selected.setTextureRect(sf::IntRect(0, 14, 7, 7));
+				selected.setPosition(sf::Vector2f(pos.x + tile.psize.x - 7, pos.y + tile.psize.y - 7));
+				this->game->window.draw(selected);
+
+				selected.setTextureRect(sf::IntRect(0, 21, 7, 7));
+				selected.setPosition(sf::Vector2f(pos.x, pos.y + tile.psize.y - 7));
+				this->game->window.draw(selected);
+
 			}
 		}
 
@@ -786,6 +804,17 @@ public:
 			this->game->window.draw(rectangle);
 		}
 
+		if (this->currentBuild) {
+//			Tile &tile = this->vault->registry.get<Tile>(this->currentBuild);
+			std::vector<sf::Vector2i> restricted = this->canBuild(this->currentPlayer, this->currentBuild);
+			sf::Sprite forbid(this->vault->factory.getTex("forbid"));
+			forbid.setTextureRect(sf::IntRect(0, 0, 20, 20));
+			for (sf::Vector2i p : restricted) {
+				sf::Vector2f sp(p.x * 32, p.y * 32);
+				forbid.setPosition(sp);
+				this->game->window.draw(forbid);
+			}
+		}
 
 		this->game->window.setView(this->guiView);
 
@@ -883,11 +912,6 @@ public:
 		if (this->ticks % 10 == 0) {
 			this->updateDecade(updateDt * 10);
 		}
-
-//		if (this->action == Action::Building && this->currentBuild == 0) {
-//			this->currentBuild = this->vault->factory.createBuilding(this->vault->registry, this->currentPlayer, this->currentBuildType, 8, 8, false);
-//		}
-
 
 		this->updatePlayers(updateDt);
 
@@ -992,40 +1016,41 @@ public:
 			if (event.mouseButton.button == sf::Mouse::Left) {
 				if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
 				} else {
+					if (this->action == Action::Selecting) {
+						this->selectionEnd = gamePos;
+						sf::FloatRect selectRect(this->selectionStart, this->selectionEnd - this->selectionStart);
+						if (selectRect.width < 0) {
+							selectRect.left = selectRect.left + selectRect.width;
+							selectRect.width = -selectRect.width;
+						}
+						if (selectRect.height < 0) {
+							selectRect.top = selectRect.top + selectRect.height;
+							selectRect.height = -selectRect.height;
+						}
 
-					this->selectionEnd = gamePos;
-					sf::FloatRect selectRect(this->selectionStart, this->selectionEnd - this->selectionStart);
-					if (selectRect.width < 0) {
-						selectRect.left = selectRect.left + selectRect.width;
-						selectRect.width = -selectRect.width;
-					}
-					if (selectRect.height < 0) {
-						selectRect.top = selectRect.top + selectRect.height;
-						selectRect.height = -selectRect.height;
-					}
-
-					for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
-						for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
-							if (this->map->bound(x, y)) {
-								EntityID ent = this->map->objs.get(x, y);
-								if (ent) {
-									if (this->vault->registry.has<Unit>(ent)) {
-										Unit &unit = this->vault->registry.get<Unit>(ent);
-										GameObject &obj = this->vault->registry.get<GameObject>(ent);
-										if (obj.player == this->currentPlayer) {
-											this->playRandomUnitSound(obj, unit, "select");
-											this->selectedObjs.push_back(ent);
+						for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
+							for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
+								if (this->map->bound(x, y)) {
+									EntityID ent = this->map->objs.get(x, y);
+									if (ent) {
+										if (this->vault->registry.has<Unit>(ent)) {
+											Unit &unit = this->vault->registry.get<Unit>(ent);
+											GameObject &obj = this->vault->registry.get<GameObject>(ent);
+											if (obj.player == this->currentPlayer) {
+												this->playRandomUnitSound(obj, unit, "select");
+												this->selectedObjs.push_back(ent);
+											}
 										}
 									}
 								}
 							}
 						}
-					}
 
-					std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
-					this->selectionStart = sf::Vector2f(0, 0);
-					this->selectionEnd = sf::Vector2f(0, 0);
-					this->action = Action::None;
+						std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
+						this->selectionStart = sf::Vector2f(0, 0);
+						this->selectionEnd = sf::Vector2f(0, 0);
+						this->action = Action::None;
+					}
 				}
 			}
 		}
@@ -1043,13 +1068,16 @@ public:
 
 					if (this->action == Action::Building)
 					{
-						if (!this->vault->factory.placeBuilding(this->vault->registry, this->currentBuild)) {
-							Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-							player.rootConstruction = 0;
-						}
+						if (this->canBuild(this->currentPlayer, this->currentBuild).size() == 0) {
+							std::cout << "CAN BUILD !" << std::endl;
+							if (!this->vault->factory.placeBuilding(this->vault->registry, this->currentBuild)) {
+								Player &player = this->vault->registry.get<Player>(this->currentPlayer);
+								player.rootConstruction = 0;
+							}
 
-						this->action = Action::None;
-						this->currentBuild = 0;
+							this->action = Action::None;
+							this->currentBuild = 0;
+						}
 					} else {
 						this->action = Action::Selecting;
 						std::cout << "START SELECTION" << std::endl;
@@ -1070,12 +1098,10 @@ public:
 			if (event.mouseButton.button == sf::Mouse::Right) {
 				if (this->action == Action::Building)
 				{
-//					this->vault->registry.destroy(this->currentBuild);
 					this->vault->registry.remove<Tile>(this->currentBuild);
 					this->currentBuild = 0;
 					this->action = Action::None;
 					this->markUpdateObjLayer = true;
-
 				} else {
 					if (this->selectedObjs.size() > 0) {
 						double squareD = sqrt((double)this->selectedObjs.size());

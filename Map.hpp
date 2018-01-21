@@ -188,7 +188,6 @@ public:
 			return true;
 		else
 			return false;
-
 	}
 
 	inline bool operator()(unsigned x, unsigned y) const
