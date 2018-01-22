@@ -10,18 +10,22 @@ Misc
 - add mouse cursors
 - add hit blood FX
 - vautour FX
-- add random player start positions
+- add some decors
 
 Improvements:
 - improve AI expedition destination
 - improve multi-agent combat
+- restrict building position to visible fog
 
 Game:
+- add random player start positions
+- add building damage level
+- add building destroy explosion FX + sound
 - projectile
-- special FX
+- add resource trap + explosion FX
 
 Interface:
-- finish gui
+- finish gui (naz alignement)
 - add settings
 
 Sound:

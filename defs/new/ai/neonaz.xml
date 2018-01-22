@@ -12,6 +12,7 @@
 		<HasLessObjectsTypeThan type="labo" qty="2"/>
 		<Build type="labo"/>		
 	</Sequence>
+	<!--
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
@@ -27,6 +28,7 @@
 		<HasMoreResourcesThan amount="95"/>
 		<Build type="labo"/>		
 	</Sequence>
+-->
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>

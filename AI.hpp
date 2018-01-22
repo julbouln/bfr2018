@@ -281,7 +281,7 @@ public:
 			for (int x = 0; x < this->map->width; x++) {
 				for (int y = 0; y < this->map->height; y++) {
 //				std::cout << "FOG:" << (int)player.fog.get(x,y) << std::endl;
-					if (player.fog.get(x, y) != FogState::Unvisited) {
+					if (player.fog.get(x, y) == FogState::InSight) {
 						tile.pos = sf::Vector2i(x, y);
 						bool intersect = false;
 						for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {

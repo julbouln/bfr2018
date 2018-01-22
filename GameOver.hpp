@@ -2,6 +2,7 @@
 
 #include "Game.hpp"
 #include "GameStage.hpp"
+#include "GameEngine.hpp"
 
 class GameOver : public GameStage {
 public:
@@ -23,20 +24,20 @@ public:
 		{
 			ImVec2 sz(192, 64);
 
-			if(this->win) {
+			if (this->win) {
 				ImGui::Text("Victory !");
 			} else {
 				ImGui::Text("Defeat !");
 			}
 			ImGui::Separator();
 
-			ImGui::Text("Resources score: %d",player.resources);
-			ImGui::Text("Kills: %d",player.stats["kills"]);
-			ImGui::Text("Combo: %d",player.stats["combo"]);
-			ImGui::Text("Serial killer: %d",player.stats["killer"]);
-			ImGui::Text("Megakill: %d",player.stats["megakill"]);
-			ImGui::Text("Barbarian: %d",player.stats["barbarian"]);
-			ImGui::Text("Butchery: %d",player.stats["butchery"]);
+			ImGui::Text("Resources score: %d", player.resources);
+			ImGui::Text("Kills: %d", player.stats["kills"]);
+			ImGui::Text("Combo: %d", player.stats["combo"]);
+			ImGui::Text("Serial killer: %d", player.stats["killer"]);
+			ImGui::Text("Megakill: %d", player.stats["megakill"]);
+			ImGui::Text("Barbarian: %d", player.stats["barbarian"]);
+			ImGui::Text("Butchery: %d", player.stats["butchery"]);
 			ImGui::Text("Combat score: %d", player.butchery);
 
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(0, 0, 0, 255) );
@@ -50,7 +51,7 @@ public:
 
 			ImGui::End();
 		}
-			ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
 
 		this->guiPopStyles();
 
@@ -80,6 +81,11 @@ public:
 	void reset() {
 		this->fadeIn();
 		this->nextStage = 0;
+
+//		GameEngine *engine = (GameEngine *)this->game->getStage("game");
+//		delete engine;
+//		this->game->unregisterStage("game");
+
 	}
 
 	void fadeOutCallback() {

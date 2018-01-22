@@ -145,9 +145,10 @@ public:
 		case 1:
 			this->game->pushRegisteredStage("play_menu");
 			break;
-		case 2:
+		case 2: {
 			this->game->pushRegisteredStage("game_over");
-			break;
+		}
+		break;
 		}
 	}
 
@@ -594,9 +595,9 @@ public:
 			player.objsByType.clear();
 		}
 
-		auto objView = this->vault->registry.view<GameObject>();
+		auto objView = this->vault->registry.view<Tile, GameObject>();
 		for (EntityID entity : objView) {
-			GameObject &obj = objView.get(entity);
+			GameObject &obj = objView.get<GameObject>(entity);
 
 			if (obj.player)
 			{
@@ -860,11 +861,17 @@ public:
 			if (obj.life == 0 && tile.animHandlers[tile.state].l >= 1) {
 				if (this->vault->registry.has<Unit>(entity)) {
 					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse", 0);
-					std::cout << " set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
+//					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
 				}
 				if (this->vault->registry.has<Building>(entity)) {
+					Building &building = this->vault->registry.get<Building>(entity);
 					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
+					if (building.construction) {
+						// destroy currently building cons
+						this->vault->registry.destroy(building.construction);
+					}
+
 				}
 
 				this->vault->registry.destroy(entity);
@@ -949,9 +956,11 @@ public:
 	}
 
 	void clearSelection() {
-		this->selectionStart = sf::Vector2f(0, 0);
-		this->selectionEnd = sf::Vector2f(0, 0);
-		this->action = Action::None;
+		if (this->action == Action::Selecting) {
+			this->selectionStart = sf::Vector2f(0, 0);
+			this->selectionEnd = sf::Vector2f(0, 0);
+			this->action = Action::None;
+		}
 	}
 
 	void orderSelected(sf::Vector2f destpos) {
@@ -1085,7 +1094,7 @@ public:
 								}
 							}
 
-							std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
+//							std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
 							this->clearSelection();
 						}
 					}
@@ -1116,16 +1125,18 @@ public:
 							}
 						} else {
 							this->action = Action::Selecting;
-							std::cout << "START SELECTION" << std::endl;
+//							std::cout << "START SELECTION" << std::endl;
 							this->selectionStart = gamePos;
 
 							this->selectedObjs.clear();
-							EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
+							if (this->map->bound(gameMapPos.x, gameMapPos.y)) {
+								EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
 
-							if (entity && this->vault->registry.has<Building>(entity)) {
-								GameObject &obj = this->vault->registry.get<GameObject>(entity);
-								if (obj.player == this->currentPlayer)
-									this->selectedObjs.push_back(entity);
+								if (entity && this->vault->registry.has<Building>(entity)) {
+									GameObject &obj = this->vault->registry.get<GameObject>(entity);
+									if (obj.player == this->currentPlayer)
+										this->selectedObjs.push_back(entity);
+								}
 							}
 						}
 					}

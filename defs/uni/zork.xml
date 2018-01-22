@@ -19,6 +19,11 @@
  <attack1 power="3"/>
  <attack2 power="0" dist="0"/>
 
+ <projectile name="hit">
+    <sounds>
+	  <file path="medias/extra/sounds/hit01.wav"/>
+	</sounds>
+</projectile>
  <select_sounds>
   <sound  path="medias/units/rebels/zork/sounds/zo_selec01.wav"/>
   <sound  path="medias/units/rebels/zork/sounds/zo_selec02.wav"/>

@@ -4,7 +4,7 @@
 #include "System.hpp"
 #include "Map.hpp"
 
-#define GAME_SYSTEM_DEBUG
+//#define GAME_SYSTEM_DEBUG
 
 class GameSystem : public System {
 public:
@@ -126,7 +126,7 @@ public:
 
 		for (sf::Vector2i p : this->tileSurface(tile)) {
 			EntityID pEnt = this->map->objs.get(p.x, p.y);
-			if ((pEnt && pEnt!=entity) || player.fog.get(p.x,p.y)==FogState::Unvisited)
+			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited)
 			{
 //				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
 				restrictedPos.push_back(p);
@@ -202,34 +202,42 @@ public:
 // action
 
 	void seedResources(ResourceType type, EntityID entity) {
-		Tile &tile = this->vault->registry.get<Tile>(entity);
-		for (sf::Vector2i p : this->tileAround(tile, 1)) {
-			float rnd = ((float) rand()) / (float) RAND_MAX;
-			if (rnd > 0.85) {
-				if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y)) {
+		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
+			Tile &tile = this->vault->registry.get<Tile>(entity);
+			for (sf::Vector2i p : this->tileAround(tile, 1)) {
+				float rnd = ((float) rand()) / (float) RAND_MAX;
+				if (rnd > 0.85) {
+					if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y)) {
 //					std::cout << " seed "<<(int)type<< " at "<<p.x<<"x"<<p.y<<std::endl;
-					EntityID resEnt=this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
-					this->map->resources.set(p.x,p.y,resEnt);
+						EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
+						this->map->resources.set(p.x, p.y, resEnt);
+					}
 				}
 			}
+		} else {
+			std::cout << "BUG: seedResources entity " << entity << " invalid or does not has Tile" << std::endl;
 		}
 	}
 
 	bool trainUnit(std::string type, EntityID playerEnt, EntityID entity ) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-		Tile &tile = this->vault->registry.get<Tile>(entity);
+		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
+			Player &player = this->vault->registry.get<Player>(playerEnt);
+			Tile &tile = this->vault->registry.get<Tile>(entity);
 
-		if (this->canSpendResources(playerEnt, player.resourceType, 10)) {
-			for (sf::Vector2i p : this->tileAround(tile, 1)) {
-				if (!this->map->objs.get(p.x, p.y)) {
-					EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
-					this->spendResources(playerEnt, player.resourceType, 2 * this->objTypeLife(type));
+			if (this->canSpendResources(playerEnt, player.resourceType, 10)) {
+				for (sf::Vector2i p : this->tileAround(tile, 1)) {
+					if (!this->map->objs.get(p.x, p.y)) {
+						EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
+						this->spendResources(playerEnt, player.resourceType, 2 * this->objTypeLife(type));
 #ifdef GAME_SYSTEM_DEBUG
-					std::cout << "GameSystem: train " << type << std::endl;
+						std::cout << "GameSystem: train " << type << std::endl;
 #endif
-					return true;
+						return true;
+					}
 				}
 			}
+		} else {
+			std::cout << "BUG: trainUnit entity " << entity << " invalid or does not has Tile" << std::endl;
 		}
 		return false;
 	}
