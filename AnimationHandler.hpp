@@ -88,7 +88,6 @@ public:
     }
 
     void set(int frame) {
-        this->currentFrame = frame;
         /* Set the sprite to the new frame */
         sf::IntRect rect = this->frameSize;
         rect.left = rect.width * this->currentAnim;
@@ -128,6 +127,8 @@ public:
                 /* Adjust for looping */
                 if (anim.repeat)
                     frame %= anim.getLength();
+
+                this->currentFrame = frame;
 
                 if (frame < anim.getLength()) {
                     frame = anim.getFrame(frame);

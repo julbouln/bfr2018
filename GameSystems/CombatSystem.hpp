@@ -67,7 +67,7 @@ public:
 //					unit.destAttack = 0;
 					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 					unit.destAttackPos = dpos;
-						this->goTo(unit, dpos);
+					this->goTo(unit, dpos);
 				} else {
 
 					if (inRange) {
@@ -76,13 +76,17 @@ public:
 //					std::cout << "CombatSystem: "<<entity <<" arrived at target, fight "<<unit.destAttack<<std::endl;
 							sf::Vector2i distDiff = (destTile.pos - tile.pos);
 							// use attack2 if in correct range
-							if(dist > 1 && (abs(distDiff.x)==dist || abs(distDiff.y)==dist)) {
-//								std::cout << "CombatSystem: " << entity << " " <<obj.name << " use attack2 on "<<unit.destAttack << " "<<destObj.name << std::endl; 
+							if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
+//								std::cout << "CombatSystem: " << entity << " " <<obj.name << " use attack2 on "<<unit.destAttack << " "<<destObj.name << std::endl;
 								attackPower = unit.attack2.power;
 							}
 							unit.destpos = tile.pos;
 							unit.destAttackPos = tile.pos;
-							destObj.life -= (attackPower * dt);
+							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
+								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
+//								std::cout << obj.name << " ANIM LEN "<<frCnt<<std::endl;
+								destObj.life -= (float)attackPower/100.0 * frCnt;
+							}
 							if (destObj.life <= 0) {
 								destObj.life = 0;
 								if (destTile.state != "die") {
@@ -143,10 +147,10 @@ public:
 			}
 
 			if (tile.state == "attack") {
-				if(tile.animHandlers["attack"].getCurrentFrame() == 0) {
-//					std::cout << "play sound at "<< (int)(tile.animHandlers["attack"].t * 1000)<< std::endl;
-					if(unit.attackSound.getStatus() != sf::Sound::Status::Playing)
-					unit.attackSound.play();
+				if (tile.animHandlers["attack"].getCurrentFrame() == 1) {
+//					std::cout << "play sound at "<< tile.animHandlers["attack"].getCurrentFrame()<< std::endl;
+					if (unit.attackSound.getStatus() != sf::Sound::Status::Playing)
+						unit.attackSound.play();
 				}
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
 					this->changeState(tile, "idle");

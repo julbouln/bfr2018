@@ -441,8 +441,10 @@ public:
 
 				Animation anim(frames, 0.1f * refresh);
 
-				if (stateNm == "die")
+				if (stateNm == "die") {
 					anim.repeat = false;
+					anim.duration = (0.1f * refresh)/4.0;
+				}
 
 				animHandler.addAnim(anim);
 			}
