@@ -3,9 +3,6 @@ Bugs:
 - after creating a new game, die tile seems wrong
 - sometimes program hang (registry)
 
-Optimizations:
-- optimizes transitions (FOG in particular)
-
 Misc
 - add mouse cursors
 - add hit blood FX

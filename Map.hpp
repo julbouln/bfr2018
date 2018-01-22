@@ -152,7 +152,10 @@ public:
 	std::vector<TileLayer> transitions;
 
 	TileLayer fogHidden;
-	TileLayer fog;
+	TileLayer fogUnvisited;
+
+	TileLayer fogHiddenTransitions;
+	TileLayer fogUnvisitedTransitions;
 
 	ObjLayer objs;
 	ObjLayer resources;
@@ -177,7 +180,10 @@ public:
 		this->objs.setSize(width, height);
 		this->resources.setSize(width, height);
 		this->fogHidden.setSize(width, height);
-		this->fog.setSize(width, height);
+		this->fogUnvisited.setSize(width, height);
+
+		this->fogHiddenTransitions.setSize(width, height);
+		this->fogUnvisitedTransitions.setSize(width, height);
 
 		this->corpses.setSize(width, height);
 

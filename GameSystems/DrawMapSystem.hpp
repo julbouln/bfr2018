@@ -33,7 +33,9 @@ public:
 			this->drawDebug(window, clip, dt);
 
 		this->drawTileLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		this->drawTileLayer(window, this->map->fog, clip, dt, sf::Color(0x00, 0x00, 0x00));
+		this->drawTileLayer(window, this->map->fogUnvisited, clip, dt, sf::Color(0x00, 0x00, 0x00));
+		this->drawTileLayer(window, this->map->fogHiddenTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
+		this->drawTileLayer(window, this->map->fogUnvisitedTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
 	void drawMinimap(sf::RenderTexture &target, EntityID playerEnt) {
@@ -141,7 +143,7 @@ public:
 			Tile &tile = resView.get<Tile>(entity);
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
-				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fog.get(p.x, p.y) == 0) {
+				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
 					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
 					        p.y >= clip.top && p.y <= clip.top + clip.height)
 						this->entitiesDrawList.push_back(entity);
@@ -155,7 +157,7 @@ public:
 			Tile &tile = view.get<Tile>(entity);
 
 			for (sf::Vector2i p : this->tileSurface(tile)) {
-				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fog.get(p.x, p.y) == 0) {
+				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
 					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
 					        p.y >= clip.top && p.y <= clip.top + clip.height)
 						this->entitiesDrawList.push_back(entity);

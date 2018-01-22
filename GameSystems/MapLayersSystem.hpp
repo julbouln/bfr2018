@@ -36,6 +36,7 @@ class MapLayersSystem : public GameSystem {
 
 	// transitions calculation optimization
 	// maintain a list of position to update instead of updating every transitions
+
 	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
 	std::set<sf::Vector2i, CompareVector2i> markUpdateFogTransitions;
 
@@ -194,11 +195,12 @@ public:
 					newEnt = 0;
 				}
 
-				if (this->map->fog.get(x, y) != newEnt) {
+				if (this->map->fogUnvisited.get(x, y) != newEnt)
+				{
 					markUpdate = true;
 				}
 
-				this->map->fog.set(x, y, newEnt);
+				this->map->fogUnvisited.set(x, y, newEnt);
 
 				if (st == FogState::Hidden) {
 					newEnt = fogTransitions[0];
@@ -207,11 +209,10 @@ public:
 				}
 
 				if (this->map->fogHidden.get(x, y) != newEnt) {
-//					std::cout << "FOG was "<<this->map->fogHidden.get(x, y)<<" now "<<newEnt<<std::endl;
 					markUpdate = true;
 				}
 
-				this->map->fogHidden.set(x, y, newEnt);
+					this->map->fogHidden.set(x, y, newEnt);
 
 				if (markUpdate) {
 					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
@@ -225,8 +226,8 @@ public:
 #endif
 
 		for (sf::Vector2i p : this->markUpdateFogTransitions) {
-			this->updateFogTransition(this->map->fog, p.x, p.y);
-			this->updateFogTransition(this->map->fogHidden, p.x, p.y);
+			this->updateFogHiddenTransition(p.x, p.y);
+			this->updateFogUnvisitedTransition(p.x, p.y);
 		}
 
 		this->markUpdateFogTransitions.clear();
@@ -316,6 +317,7 @@ public:
 		for (int i = 0; i < 256; i++) {
 			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
 		}
+
 	}
 
 	void initCorpse(std::string name) {
@@ -513,10 +515,23 @@ public:
 	}
 
 	// FOG transition
-	void updateFogTransition(TileLayer &layer, int x, int y) {
+
+	void updateFogUnvisitedTransition(int x, int y) {
 		EntityID fogEnt = fogTransitions[0];
-		int bitmask = this->voidTransitionBitmask(layer, fogEnt, x, y);
-		this->updateTransition(bitmask, layer, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
+		int bitmask = this->voidTransitionBitmask(this->map->fogUnvisited, fogEnt, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->fogUnvisitedTransitions, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
+		if (!bitmask) {
+			this->map->fogUnvisitedTransitions.set(x, y, 0);
+		}
+	}
+
+	void updateFogHiddenTransition(int x, int y) {
+		EntityID fogEnt = fogTransitions[0];
+		int bitmask = this->voidTransitionBitmask(this->map->fogHidden, fogEnt, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->fogHiddenTransitions, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
+		if (!bitmask) {
+			this->map->fogHiddenTransitions.set(x, y, 0);
+		}
 	}
 
 	void generate(unsigned int width, unsigned int height) {
