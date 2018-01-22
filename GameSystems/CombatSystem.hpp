@@ -149,13 +149,5 @@ public:
 			}
 		}
 
-		auto objView = this->vault->registry.persistent<Tile, GameObject>();
-		for (EntityID entity : objView) {
-			Tile &tile = objView.get<Tile>(entity);
-			GameObject &obj = objView.get<GameObject>(entity);
-			if (obj.life == 0 && tile.animHandlers[tile.state].l >= 1) {
-				this->vault->registry.destroy(entity);
-			}
-		}
 	}
 };

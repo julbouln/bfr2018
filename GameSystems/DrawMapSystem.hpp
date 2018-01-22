@@ -25,8 +25,11 @@ public:
 		for (TileLayer &transitionLayer : this->map->transitions) {
 			this->drawTileLayer(window, transitionLayer, clip, dt);
 		}
+
+		this->drawTileLayer(window, this->map->corpses, clip, dt);
+
 		this->drawObjLayer(window, clip, dt);
-		if(showDebugLayer)
+		if (showDebugLayer)
 			this->drawDebug(window, clip, dt);
 
 		this->drawTileLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
@@ -108,10 +111,10 @@ public:
 					Tile &tile = this->vault->registry.get<Tile>(ent);
 
 					sf::Vector2f pos;
-					pos.x = tile.ppos.x;
-					pos.y = tile.ppos.y;
-					pos.x = x * 32;
-					pos.y = y * 32;
+					pos.x = x * 32 - (tile.centerRect.left + tile.centerRect.width / 2) + 16;
+					pos.y = y * 32 - (tile.centerRect.top + tile.centerRect.height / 2) + 16;
+//					pos.x = x * 32;
+//					pos.y = y * 32;
 
 					tile.sprite.setPosition(pos);
 					tile.sprite.setColor(colorVariant);

@@ -32,7 +32,6 @@ class MapLayersSystem : public GameSystem {
 
 	std::map<int, int> fogTransitionsMapping;
 
-	std::vector<EntityID> fogTransitions2;
 	std::vector<EntityID> debugTransitions;
 
 	// transitions calculation optimization
@@ -61,8 +60,8 @@ public:
 			if (obj.mapped) {
 				// delete resources under building
 				for (sf::Vector2i p : this->tileSurface(tile)) {
-					EntityID resEnt = this->map->resources.get(p.x,p.y);
-					if(resEnt && this->vault->registry.valid(resEnt)) {
+					EntityID resEnt = this->map->resources.get(p.x, p.y);
+					if (resEnt && this->vault->registry.valid(resEnt)) {
 						this->vault->registry.destroy(resEnt);
 					}
 				}
@@ -194,7 +193,7 @@ public:
 				} else {
 					newEnt = 0;
 				}
-				
+
 				if (this->map->fog.get(x, y) != newEnt) {
 					markUpdate = true;
 				}
@@ -233,9 +232,13 @@ public:
 		this->markUpdateFogTransitions.clear();
 	}
 
+	EntityID getTile(std::string name, int n) {
+		return tiles[name][n];
+	}
+
 // Terrains/Transitions
 
-	std::vector<EntityID> initTile(std::string name) {
+	std::vector<EntityID> initTerrain(std::string name) {
 		std::vector<EntityID> tileVariants;
 		EntityID origTerrain = this->vault->factory.createTerrain(this->vault->registry, name, 0);
 		tileVariants.push_back(origTerrain);
@@ -249,17 +252,17 @@ public:
 		return tileVariants;
 	}
 
-	EntityID randTile(std::string name) {
+	EntityID randTerrain(std::string name) {
 		int rnd = rand() % ALT_TILES;
 		return tiles[name][rnd];
 	}
 
-	void initTiles() {
-		tiles["sand"] = this->initTile("sand");
-		tiles["water"] = this->initTile("water");
-		tiles["grass"] = this->initTile("grass");
-		tiles["dirt"] = this->initTile("dirt");
-		tiles["concrete"] = this->initTile("concrete");
+	void initTerrains() {
+		tiles["sand"] = this->initTerrain("sand");
+		tiles["water"] = this->initTerrain("water");
+		tiles["grass"] = this->initTerrain("grass");
+		tiles["dirt"] = this->initTerrain("dirt");
+		tiles["concrete"] = this->initTerrain("concrete");
 	}
 
 	void initTransitions() {
@@ -313,6 +316,80 @@ public:
 		for (int i = 0; i < 256; i++) {
 			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
 		}
+	}
+
+	void initCorpse(std::string name) {
+		Tile tile;
+		this->vault->factory.parseTileFromXml(name, tile, 8);
+
+
+		tile.pos = sf::Vector2i(0, 0);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+		tile.sprite.setTexture(this->vault->factory.getTex(name));
+
+		tile.state = "die";
+
+		AnimationHandler &dieAnim = tile.animHandlers["die"];
+
+		dieAnim.changeAnim(0);
+		int frame = dieAnim.getAnim().getFrame(dieAnim.getAnim().getLength() - 1);
+//		std::cout << "CORPSE frame "<<name << " "<<frame<<std::endl;
+		dieAnim.set(frame);
+
+		tile.sprite.setTextureRect(dieAnim.bounds); // texture need to be updated
+
+		tile.centerRect = this->vault->factory.getCenterRect(name);
+
+		std::vector<EntityID> tvec;
+		tvec.push_back(this->vault->registry.create());
+		this->vault->registry.assign<Tile>(tvec.front(), tile);
+		tiles[name + "_corpse"] = tvec;
+	}
+
+	void initCorpses() {
+		for (TechNode *node : this->vault->factory.getTechNodes("rebel")) {
+			if (node->comp == TechComponent::Character) {
+				this->initCorpse(node->type);
+			}
+		}
+		for (TechNode *node : this->vault->factory.getTechNodes("neonaz")) {
+			if (node->comp == TechComponent::Character) {
+				this->initCorpse(node->type);
+			}
+		}
+
+		Tile ruinTile;
+		ruinTile.pos = sf::Vector2i(0, 0);
+		ruinTile.ppos = sf::Vector2f(ruinTile.pos) * (float)32.0;
+
+		ruinTile.sprite.setTexture(this->vault->factory.getTex("ruin"));
+
+		ruinTile.centerRect = this->vault->factory.getCenterRect("ruin");
+
+		Animation staticAnim({0});
+
+		AnimationHandler idleHandler;
+
+		idleHandler.frameSize = sf::IntRect(0, 0, 192, 128);
+
+		idleHandler.addAnim(staticAnim);
+
+		idleHandler.changeAnim(0);
+		idleHandler.set(0);
+
+		ruinTile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
+
+		ruinTile.animHandlers["idle"] = idleHandler;
+
+		ruinTile.direction = North;
+		ruinTile.state = "idle";
+
+		std::vector<EntityID> tvec;
+		tvec.push_back(this->vault->registry.create());
+		this->vault->registry.assign<Tile>(tvec.front(), ruinTile);
+		tiles["ruin"] = tvec;
+
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
@@ -470,16 +547,16 @@ public:
 
 				*/
 				this->map->terrains.set(x, y, t);
-/*
-				if (res > 0.6 && res < 0.65) {
-					float rnd = ((float) rand()) / (float) RAND_MAX;
-					if (rnd > 0.5) {
-						this->vault->factory.plantResource(this->vault->registry, ResourceType::Nature, x, y);
-					} else {
-						this->vault->factory.plantResource(this->vault->registry, ResourceType::Pollution, x, y);
-					}
-				}
-				*/
+				/*
+								if (res > 0.6 && res < 0.65) {
+									float rnd = ((float) rand()) / (float) RAND_MAX;
+									if (rnd > 0.5) {
+										this->vault->factory.plantResource(this->vault->registry, ResourceType::Nature, x, y);
+									} else {
+										this->vault->factory.plantResource(this->vault->registry, ResourceType::Pollution, x, y);
+									}
+								}
+								*/
 			}
 		}
 

@@ -200,8 +200,9 @@ public:
 	}
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
-		mapLayers.initTiles();
+		mapLayers.initTerrains();
 		mapLayers.initTransitions();
+		mapLayers.initCorpses();
 		mapLayers.generate(mapWidth, mapHeight);
 
 		if (playerTeam == "rebel") {
@@ -842,6 +843,28 @@ public:
 		}
 	}
 
+	void destroyObjs(float dt) {
+
+		auto objView = this->vault->registry.persistent<Tile, GameObject>();
+		for (EntityID entity : objView) {
+			Tile &tile = objView.get<Tile>(entity);
+			GameObject &obj = objView.get<GameObject>(entity);
+			if (obj.life == 0 && tile.animHandlers[tile.state].l >= 1) {
+				if(this->vault->registry.has<Unit>(entity)) {
+					EntityID corpseEnt = mapLayers.getTile(obj.name+"_corpse",0);
+					std::cout << " set corpse " << obj.name+"_corpse" << " " << corpseEnt << " at "<<tile.pos.x<< " "<<tile.pos.y << std::endl;
+					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
+				}
+				if(this->vault->registry.has<Building>(entity)) {
+					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin",0));
+				}
+
+				this->vault->registry.destroy(entity);
+			}
+		}
+
+	}
+
 
 	void update(float dt) {
 		float updateDt = dt;
@@ -872,6 +895,8 @@ public:
 		this->construction.update(updateDt);
 
 		this->combat.update(updateDt);
+		this->destroyObjs(updateDt);
+
 		this->resources.update(updateDt);
 		this->mapLayers.update(updateDt);
 

@@ -14,6 +14,7 @@ public:
     AnimationType type;
     std::vector<int> frames;
     float duration;
+    bool repeat;
 
     Animation(std::initializer_list<int> frames, float duration) {
         for (auto i = frames.begin(); i != frames.end(); i++)
@@ -21,13 +22,19 @@ public:
 
         this->duration = duration;
         this->type = AnimationType::Timer;
+        this->repeat = true;
     }
 
+
+    Animation(std::initializer_list<int> frames, float duration, bool repeat) : Animation(frames, duration) {
+        this->repeat = repeat;
+    }
 
     Animation(std::vector<int> frames, float duration) {
         this->frames = frames;
         this->duration = duration;
         this->type = AnimationType::Timer;
+        this->repeat = true;
     }
 
     Animation(std::initializer_list<int> frames) {
@@ -35,10 +42,12 @@ public:
             this->frames.push_back(*i);
 
         this->type = AnimationType::Static;
+        this->repeat = true;
     }
 
     Animation(std::vector<int> frames) {
         this->type = AnimationType::Static;
+        this->repeat = true;
     }
 
     int getFrame(int frame) {
@@ -87,38 +96,62 @@ public:
         this->bounds = rect;
     }
 
+    Animation &getAnim() {
+        return this->animations[this->currentAnim];
+    }
+
     /* Update the current frame of animation. dt is the time since
      * the update was last called (i.e. the time for one frame to be
      * executed) */
     void update(const float dt) {
         if (currentAnim >= this->animations.size() || currentAnim < 0) return;
 
-        if (this->animations[currentAnim].type == AnimationType::Timer) {
+        Animation &anim = this->animations[currentAnim];
 
-            float duration = this->animations[currentAnim].duration;
+        if (anim.type == AnimationType::Timer) {
+//            if (!anim.repeat && this->currentFrame == anim.getLength() - 1) {
+//                if(this->currentFrame > 0)
+//                    std::cout << "DO NOT REPEAT "<<this->currentFrame<<std::endl;
+//                this->l = 1;
+            //          } else {
+
+
+            float duration = anim.duration;
 
             /* Check if the animation has progessed to a new frame and if so
              * change to the next frame */
             if (int((t + dt) / duration) > int(t / duration))
             {
                 /* Calculate the frame number */
-                int frame = int((t + dt) / duration);
+                int frame = int(round((t + dt) / duration));
 
                 /* Adjust for looping */
-                frame %= this->animations[currentAnim].getLength();
-                frame = this->animations[currentAnim].getFrame(frame);
+                if (anim.repeat)
+                    frame %= anim.getLength();
 
-                this->set(frame);
+                if (frame < anim.getLength()) {
+                    frame = anim.getFrame(frame);
+
+                    this->set(frame);
+                }
+
             }
 
             /* Increment the time elapsed */
             this->t += dt;
             /* Adjust for looping */
-            if (this->t > duration * this->animations[currentAnim].getLength())
-            {
-                this->t = 0.0f;
-                this->l++;
+            if (anim.repeat) {
+                if (this->t > duration * anim.getLength())
+                {
+                    this->t = 0.0f;
+                    this->l++;
+                }
+            } else {
+                if(this->t > duration * anim.getLength()) {
+                    this->l = 1;
+                }
             }
+//            }
         }
 
         return;
@@ -137,7 +170,7 @@ public:
         sf::IntRect rect = this->frameSize;
 
         rect.left = rect.width * animID;
-        rect.top = rect.height * currentFrame;
+        rect.top = rect.height * this->currentFrame;
 
         this->bounds = rect;
         this->t = 0.0;

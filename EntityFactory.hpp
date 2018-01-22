@@ -132,6 +132,8 @@ public:
 		this->loadTextureWithWhiteMask("selected", "medias/tiles/cadre_unit.png");
 		this->loadTextureWithWhiteMask("forbid", "medias/misc/forbide.png");
 
+		this->loadTextureWithWhiteMask("ruin", "medias/misc/ruine.png");
+
 		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
 		sndManager.loadSoundBuffer("killer", "medias/misc/killer.wav");
 		sndManager.loadSoundBuffer("megakill", "medias/misc/megakill.wav");
@@ -183,24 +185,43 @@ public:
 		techTrees["neonaz"] = this->loadTechTree("defs/tech/neonaz.xml");
 	}
 
-	TechNode *recGetTechNode(TechNode *node, std::string type) {
+	TechNode *recGetTechNodeByName(TechNode *node, std::string type) {
 		if (node->type == type)
 			return node;
 		else
 			for (TechNode &child : node->children) {
-				TechNode *cnode = recGetTechNode(&child, type);
+				TechNode *cnode = recGetTechNodeByName(&child, type);
 				if (cnode)
 					return cnode;
 			}
 		return nullptr;
 	}
 
+	std::vector<TechNode *> recGetTechNodes(TechNode *node, std::vector<TechNode *> currentNodes) {
+		std::vector<TechNode *>nodes = currentNodes;
+		for (TechNode &child : node->children) {
+			nodes.push_back(&child);
+			nodes = recGetTechNodes(&child, nodes);
+		}
+		return nodes;
+	}
+
+	std::vector<TechNode *> getTechNodes(std::string team) {
+		std::vector<TechNode *> nodes;
+		nodes = this->recGetTechNodes(&techTrees[team], nodes);
+		return nodes;
+	}
+
 	TechNode *getTechNode(std::string team, std::string type) {
-		return this->recGetTechNode(&this->techTrees[team], type);
+		return this->recGetTechNodeByName(&this->techTrees[team], type);
 	}
 
 	TechNode *getTechRoot(std::string team) {
 		return &this->techTrees[team];
+	}
+
+	sf::IntRect getCenterRect(std::string name) {
+		return this->centerRects[name];
 	}
 
 	void getSpecialPix(std::string name, sf::Image &image, int width, int height) {
@@ -381,7 +402,7 @@ public:
 		return playerColors[key.r << 16 + key.g << 8 + key.b][idx];
 	}
 
-	void parseTileFromXml(std::string name,  Tile &tile, int directions) {
+	void parseTileFromXml(std::string name, Tile &tile, int directions) {
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
 		tinyxml2::XMLElement * sizeEl = root->FirstChildElement("case_size");
@@ -395,9 +416,9 @@ public:
 		tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
 
 		for (tinyxml2::XMLElement *stateEl : statesEl) {
-			std::string state = stateEl->Attribute("name");
+			std::string stateNm = stateEl->Attribute("name");
 			int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
-//			std::cout << "STATE " << state << std::endl;
+//			std::cout << "STATE " << stateNm << std::endl;
 
 			AnimationHandler animHandler;
 
@@ -420,11 +441,14 @@ public:
 
 				Animation anim(frames, 0.1f * refresh);
 
+				if (stateNm == "die")
+					anim.repeat = false;
+
 				animHandler.addAnim(anim);
 			}
 			animHandler.update(0.0f);
 
-			tile.animHandlers[state] = animHandler;
+			tile.animHandlers[stateNm] = animHandler;
 
 		}
 
@@ -484,8 +508,8 @@ public:
 
 		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
 		if (projEl) {
-				std::string prName = projEl->Attribute("name");
-				unit.attackSound.setBuffer(this->sndManager.getRef(prName));
+			std::string prName = projEl->Attribute("name");
+			unit.attackSound.setBuffer(this->sndManager.getRef(prName));
 		}
 
 	}
@@ -515,6 +539,8 @@ public:
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 		tile.sprite.setTexture(texManager.getRef(name));
+
+		tile.centerRect = sf::IntRect(0,0,32,32);
 
 		Animation staticAnim({0, 1, 2});
 

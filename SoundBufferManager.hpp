@@ -16,7 +16,7 @@ public:
 
     void loadSoundBuffer(std::string name, const std::string& filename)
     {
-        std::cout << "SoundBufferManager: load " << name << " " << filename << std::endl;
+//        std::cout << "SoundBufferManager: load " << name << " " << filename << std::endl;
         /* Load the texture */
         sf::SoundBuffer buf;
         buf.loadFromFile(filename);

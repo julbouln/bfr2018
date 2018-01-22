@@ -157,6 +157,8 @@ public:
 	ObjLayer objs;
 	ObjLayer resources;
 
+	TileLayer corpses;
+
 	ObjLayer pathfinding;
 
 	Map() {
@@ -176,6 +178,8 @@ public:
 		this->resources.setSize(width, height);
 		this->fogHidden.setSize(width, height);
 		this->fog.setSize(width, height);
+
+		this->corpses.setSize(width, height);
 
 		this->pathfinding.setSize(width, height);
 

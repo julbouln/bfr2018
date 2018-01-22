@@ -5,7 +5,6 @@ Optimizations:
 - optimizes transitions (FOG in particular)
 
 Misc
-- add ruins & corpses
 - add mouse cursors
 - add hit blood FX
 - vautour FX
