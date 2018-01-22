@@ -97,12 +97,53 @@
 		<HasLessObjectsTypeThan type="guerrier_bud" qty="50"/>
 		<Train type="guerrier_bud"/>
 	</Sequence>
+
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>	
+		<HasLessObjectsTypeThan type="squat" qty="1"/>
+		<HasMoreResourcesThan amount="100"/>
+		<Build type="squat"/>	
+	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="squat" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="abdel" qty="5"/>
+		<Train type="abdel"/>
+	</Sequence>
+
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="festival" qty="1"/>
+		</Inverter>	
+		<HasLessObjectsTypeThan type="raffinerie_bud" qty="1"/>
+		<HasMoreResourcesThan amount="100"/>
+		<Build type="raffinerie_bud"/>	
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="raffinerie_bud" qty="1"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="100"/>
+		<HasLessObjectsTypeThan type="guerrier_bud_powerhead" qty="5"/>
+		<Train type="guerrier_bud_powerhead"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="taverne" qty="1"/>
+		</Inverter>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>
-		</Selector>
+		</Selector>		
 		<Explore type="zork"/>
 	</Sequence>
 	<Sequence>
@@ -113,6 +154,8 @@
 			<SendExpedition type="punkette" per="50"/>
 			<SendExpedition type="lance_pepino" per="50"/>
 			<SendExpedition type="guerrier_bud" per="50"/>
+			<SendExpedition type="abdel" per="50"/>
+			<SendExpedition type="guerrier_bud_powerhead" per="50"/>
 		</RandomSelector>
 	</Sequence>
 	<Sequence>

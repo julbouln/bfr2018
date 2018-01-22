@@ -72,10 +72,17 @@ public:
 
 					if (inRange) {
 						if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+							int attackPower = unit.attack1.power;
 //					std::cout << "CombatSystem: "<<entity <<" arrived at target, fight "<<unit.destAttack<<std::endl;
+							sf::Vector2i distDiff = (destTile.pos - tile.pos);
+							// use attack2 if in correct range
+							if(dist > 1 && (abs(distDiff.x)==dist || abs(distDiff.y)==dist)) {
+//								std::cout << "CombatSystem: " << entity << " " <<obj.name << " use attack2 on "<<unit.destAttack << " "<<destObj.name << std::endl; 
+								attackPower = unit.attack2.power;
+							}
 							unit.destpos = tile.pos;
 							unit.destAttackPos = tile.pos;
-							destObj.life -= (unit.attack1.power * dt);
+							destObj.life -= (attackPower * dt);
 							if (destObj.life <= 0) {
 								destObj.life = 0;
 								if (destTile.state != "die") {

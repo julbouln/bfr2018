@@ -15,6 +15,21 @@
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
+			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+		</Inverter>
+		<Inverter>
+			<HasLessObjectsTypeThan type="labo" qty="1"/>
+		</Inverter>
+		<HasLessObjectsTypeThan type="labo" qty="4"/>
+		<Inverter>
+			<HasMoreResourcesThan amount="200"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="95"/>
+		<Build type="labo"/>		
+	</Sequence>
+	<Sequence>
+		<Probability frac="10" per="1"/>
+		<Inverter>
 			<HasLessObjectsTypeThan type="labo" qty="1"/>
 		</Inverter>	
 		<Inverter>
@@ -147,6 +162,9 @@
 
 	<Sequence>
 		<Probability frac="10" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
+		</Inverter>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>
