@@ -1,5 +1,7 @@
 Bugs:
 - sometimes at start there is no fog and units can't be controlled
+- after creating a new game, die tile seems wrong
+- sometimes program hang (registry)
 
 Optimizations:
 - optimizes transitions (FOG in particular)
@@ -9,7 +11,6 @@ Misc
 - add hit blood FX
 - vautour FX
 - add random player start positions
-- 1024x768 mode
 
 Improvements:
 - improve AI expedition destination

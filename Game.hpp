@@ -21,7 +21,7 @@ class Game {
 public:
 	std::stack<Stage*> stages;
 
-	std::map<std::string,Stage*>registeredStages;
+	std::map<std::string, Stage*>registeredStages;
 
 	unsigned int width, height;
 
@@ -32,7 +32,7 @@ public:
 	sf::RenderWindow window;
 
 	void registerStage(std::string name, Stage *stage) {
-		this->registeredStages[name]=stage;
+		this->registeredStages[name] = stage;
 	}
 
 	void unregisterStage(std::string name) {
@@ -104,9 +104,7 @@ public:
 				if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 					window.close();
 
-				if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */
-					peekStage()->handleEvent(event);
-				}
+				peekStage()->handleEvent(event);
 			}
 
 			peekStage()->update(dt);
@@ -125,7 +123,7 @@ public:
 	{
 		this->width = width;
 		this->height = height;
-		if(fullscreen)
+		if (fullscreen)
 			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018", sf::Style::Fullscreen);
 		else
 			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");

@@ -199,6 +199,14 @@ public:
 		this->gameView.setCenter(centre);
 	}
 
+	// scale for other resolutions than 800x600
+	float scaleX() {
+		return this->width / 800.0;
+	}
+	float scaleY() {
+		return this->height / 600.0;
+	}
+
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		mapLayers.initTerrains();
 		mapLayers.initTransitions();
@@ -273,7 +281,7 @@ public:
 
 		// 128,512
 		// TODO: convert to window dimension relative coord
-		minimapRect = sf::FloatRect(128 - 96 / 2, 520 - 96 / 2, 96, 96);
+		minimapRect = sf::FloatRect(this->scaleX() * (128 - 96 / 2), this->scaleY() * (520 - 96 / 2), 96, 96);
 	}
 
 	void menuGui() {
@@ -295,8 +303,8 @@ public:
 
 	void gameStateGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-		float leftDist = 192.0f;
-		float topDist = 8.0f;
+		float leftDist = 192.0f * this->scaleX();
+		float topDist = 8.0f * this->scaleY();
 
 		ImVec2 window_pos = ImVec2(leftDist, topDist);
 		ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
@@ -305,13 +313,13 @@ public:
 		if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
-			ImGui::ProgressBar((float)player.resources / victory.resourcesVictory(), ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.resources / victory.resourcesVictory(), ImVec2(200.0f * this->scaleX(), 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::SameLine();
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(255, 0, 0, 255));
-			ImGui::ProgressBar((float)player.butchery / victory.butcheryVictory(), ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((float)player.butchery / victory.butcheryVictory(), ImVec2(200.0f * this->scaleX(), 0.0f), "");
 			ImGui::PopStyleColor();
 
 			ImGui::End();
@@ -325,7 +333,7 @@ public:
 			GameObject &objCons = this->vault->registry.get<GameObject>(consEnt);
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
-			ImGui::ProgressBar((buildingCons.maxBuildTime - buildingCons.buildTime) / buildingCons.maxBuildTime, ImVec2(200.0f, 0.0f), "");
+			ImGui::ProgressBar((buildingCons.maxBuildTime - buildingCons.buildTime) / buildingCons.maxBuildTime, ImVec2(200.0f * this->scaleX(), 0.0f), "");
 			ImGui::PopStyleColor(); ImGui::SameLine();
 
 			if (buildingCons.buildTime > 0) {
@@ -345,11 +353,11 @@ public:
 
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-		float uiX = 258.0f;
-		float uiHeight = 134.0f;
-		float uiWidth = 500.0f;
-		float uiLWidth = 300.0f;
-		float uiRWidth = 200.0f;
+		float uiX = 258.0f * this->scaleX();
+		float uiHeight = 134.0f * this->scaleY();
+		float uiWidth = 500.0f * this->scaleX();
+		float uiLWidth = 300.0f * this->scaleX();
+		float uiRWidth = 200.0f * this->scaleX();
 
 		ImVec2 window_pos = ImVec2(uiX, ImGui::GetIO().DisplaySize.y - uiHeight);
 //		ImVec2 window_pos_pivot = ImVec2(1.0f, 1.0f);
@@ -786,9 +794,9 @@ public:
 		this->game->window.setView(this->guiView);
 
 		iface.setPosition(sf::Vector2f(0, 0));
-		iface.setScale(this->width / 800.0, this->height / 600.0);
+		iface.setScale(this->scaleX(), this->scaleY());
 		this->game->window.draw(iface);
-		if(this->showDebugWindow) 
+		if (this->showDebugWindow)
 			this->debugGui(dt);
 		this->menuGui();
 		this->gameStateGui();
@@ -850,13 +858,13 @@ public:
 			Tile &tile = objView.get<Tile>(entity);
 			GameObject &obj = objView.get<GameObject>(entity);
 			if (obj.life == 0 && tile.animHandlers[tile.state].l >= 1) {
-				if(this->vault->registry.has<Unit>(entity)) {
-					EntityID corpseEnt = mapLayers.getTile(obj.name+"_corpse",0);
-					std::cout << " set corpse " << obj.name+"_corpse" << " " << corpseEnt << " at "<<tile.pos.x<< " "<<tile.pos.y << std::endl;
+				if (this->vault->registry.has<Unit>(entity)) {
+					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse", 0);
+					std::cout << " set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
 				}
-				if(this->vault->registry.has<Building>(entity)) {
-					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin",0));
+				if (this->vault->registry.has<Building>(entity)) {
+					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
 				}
 
 				this->vault->registry.destroy(entity);
@@ -940,191 +948,211 @@ public:
 		}
 	}
 
+	void clearSelection() {
+		this->selectionStart = sf::Vector2f(0, 0);
+		this->selectionEnd = sf::Vector2f(0, 0);
+		this->action = Action::None;
+	}
+
+	void orderSelected(sf::Vector2f destpos) {
+		if (this->selectedObjs.size() > 0) {
+			double squareD = sqrt((double)this->selectedObjs.size());
+			int square = ceil(squareD);
+			int curObj = 0;
+
+			EntityID destEnt = this->ennemyAtPosition(this->currentPlayer, destpos.x, destpos.y);
+
+			if (destEnt) {
+				while (curObj < this->selectedObjs.size()) {
+					EntityID selectedObj = this->selectedObjs[curObj];
+					if (this->vault->registry.has<Unit>(selectedObj)) {
+						this->playRandomUnitSound(selectedObj, "attack");
+						this->attack(selectedObj, destEnt);
+					}
+					curObj++;
+				}
+			} else {
+				for (int x = 0; x < square; x++) {
+					for (int y = 0; y < square; y++) {
+						if (curObj < this->selectedObjs.size()) {
+							EntityID selectedObj = this->selectedObjs[curObj];
+							if (this->vault->registry.has<Unit>(selectedObj)) {
+								this->goTo(selectedObj, sf::Vector2i(destpos.x + x, destpos.y + y));
+								this->playRandomUnitSound(selectedObj, "move");
+
+								Unit &unit = this->vault->registry.get<Unit>(selectedObj);
+								unit.destAttack = 0;
+							}
+							curObj++;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void handleEvent(sf::Event &event) {
-		sf::Vector2i mousePos = sf::Mouse::getPosition(this->game->window);
-		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(mousePos, this->gameView));
-		sf::Vector2f gameMapPos = gamePos;
-		gameMapPos.x /= 32.0;
-		gameMapPos.y /= 32.0;
+		ImGuiIO& io = ImGui::GetIO();
 
-		switch (event.type)
-		{
-		case sf::Event::KeyReleased:
-			this->moveView = MoveView::DontMove;
-			break;
-		case sf::Event::KeyPressed:
-		{
-			this->moveView = MoveView::DontMove;
+		if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */
+			sf::Vector2i mousePos = sf::Mouse::getPosition(this->game->window);
+			sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(mousePos, this->gameView));
+			sf::Vector2f gameMapPos = gamePos;
+			gameMapPos.x /= 32.0;
+			gameMapPos.y /= 32.0;
 
-			if (event.key.code == sf::Keyboard::Left)
-				this->moveView = MoveView::MoveWest;
-			if (event.key.code == sf::Keyboard::Right)
-				this->moveView = MoveView::MoveEast;
-			if (event.key.code == sf::Keyboard::Up)
-				this->moveView = MoveView::MoveNorth;
-			if (event.key.code == sf::Keyboard::Down)
-				this->moveView = MoveView::MoveSouth;
-			if (event.key.code == sf::Keyboard::Tab) {
-				if (this->showDebugWindow)
-					this->showDebugWindow = false;
-				else
-					this->showDebugWindow = true;
-
-			}
-		}
-		break;
-		case sf::Event::MouseMoved:
-		{
-			this->selectionEnd = gamePos;
-
-			if (this->action == Action::Building)
+			switch (event.type)
 			{
-				Tile &tile = this->vault->registry.get<Tile>(this->currentBuild);
-				tile.pos = sf::Vector2i(gameMapPos);
-				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+			case sf::Event::KeyReleased:
+				this->moveView = MoveView::DontMove;
+				break;
+			case sf::Event::KeyPressed:
+			{
+				this->moveView = MoveView::DontMove;
+
+				if (event.key.code == sf::Keyboard::Left)
+					this->moveView = MoveView::MoveWest;
+				if (event.key.code == sf::Keyboard::Right)
+					this->moveView = MoveView::MoveEast;
+				if (event.key.code == sf::Keyboard::Up)
+					this->moveView = MoveView::MoveNorth;
+				if (event.key.code == sf::Keyboard::Down)
+					this->moveView = MoveView::MoveSouth;
+				if (event.key.code == sf::Keyboard::Tab) {
+					if (this->showDebugWindow)
+						this->showDebugWindow = false;
+					else
+						this->showDebugWindow = true;
+				}
 			}
+			break;
+			case sf::Event::MouseMoved:
+			{
+				this->selectionEnd = gamePos;
 
-			this->moveView = MoveView::DontMove;
+				if (this->action == Action::Building)
+				{
+					Tile &tile = this->vault->registry.get<Tile>(this->currentBuild);
+					tile.pos = sf::Vector2i(gameMapPos);
+					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+				}
 
-			if (mousePos.x < 32)
-				this->moveView = MoveView::MoveWest;
-			if (mousePos.x > this->width - 32)
-				this->moveView = MoveView::MoveEast;
-			if (mousePos.y < 32)
-				this->moveView = MoveView::MoveNorth;
-			if (mousePos.y > this->height - 32)
-				this->moveView = MoveView::MoveSouth;
-		}
-		break;
-		case sf::Event::MouseButtonReleased:
-		{
-			if (event.mouseButton.button == sf::Mouse::Left) {
-				if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-				} else {
-					if (this->action == Action::Selecting) {
-						this->selectionEnd = gamePos;
-						sf::FloatRect selectRect(this->selectionStart, this->selectionEnd - this->selectionStart);
-						if (selectRect.width < 0) {
-							selectRect.left = selectRect.left + selectRect.width;
-							selectRect.width = -selectRect.width;
-						}
-						if (selectRect.height < 0) {
-							selectRect.top = selectRect.top + selectRect.height;
-							selectRect.height = -selectRect.height;
-						}
+				this->moveView = MoveView::DontMove;
 
-						for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
-							for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
-								if (this->map->bound(x, y)) {
-									EntityID ent = this->map->objs.get(x, y);
-									if (ent) {
-										if (this->vault->registry.has<Unit>(ent)) {
-											Unit &unit = this->vault->registry.get<Unit>(ent);
-											GameObject &obj = this->vault->registry.get<GameObject>(ent);
-											if (obj.player == this->currentPlayer) {
-												this->playRandomUnitSound(obj, unit, "select");
-												this->selectedObjs.push_back(ent);
+				if (mousePos.x < 32)
+					this->moveView = MoveView::MoveWest;
+				if (mousePos.x > this->width - 32)
+					this->moveView = MoveView::MoveEast;
+				if (mousePos.y < 32)
+					this->moveView = MoveView::MoveNorth;
+				if (mousePos.y > this->height - 32)
+					this->moveView = MoveView::MoveSouth;
+			}
+			break;
+			case sf::Event::MouseButtonReleased:
+			{
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
+						this->clearSelection();
+					} else {
+						if (this->action == Action::Selecting) {
+							this->selectionEnd = gamePos;
+							sf::FloatRect selectRect(this->selectionStart, this->selectionEnd - this->selectionStart);
+							if (selectRect.width < 0) {
+								selectRect.left = selectRect.left + selectRect.width;
+								selectRect.width = -selectRect.width;
+							}
+							if (selectRect.height < 0) {
+								selectRect.top = selectRect.top + selectRect.height;
+								selectRect.height = -selectRect.height;
+							}
+
+							for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
+								for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
+									if (this->map->bound(x, y)) {
+										EntityID ent = this->map->objs.get(x, y);
+										if (ent) {
+											if (this->vault->registry.has<Unit>(ent)) {
+												Unit &unit = this->vault->registry.get<Unit>(ent);
+												GameObject &obj = this->vault->registry.get<GameObject>(ent);
+												if (obj.player == this->currentPlayer) {
+													this->playRandomUnitSound(obj, unit, "select");
+													this->selectedObjs.push_back(ent);
+												}
 											}
 										}
 									}
 								}
 							}
-						}
 
-						std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
-						this->selectionStart = sf::Vector2f(0, 0);
-						this->selectionEnd = sf::Vector2f(0, 0);
-						this->action = Action::None;
+							std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
+							this->clearSelection();
+						}
 					}
 				}
 			}
-		}
-		break;
-		case sf::Event::MouseButtonPressed:
-		{
-			if (event.mouseButton.button == sf::Mouse::Left) {
-				if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-					sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
-					std::cout << "minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
-					this->centerMapView(sf::Vector2i(mPos));
-				} else {
+			break;
+			case sf::Event::MouseButtonPressed:
+			{
+				if (event.mouseButton.button == sf::Mouse::Left) {
+					// left click on minimap
+					if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
+						sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
+						std::cout << "minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
+						this->centerMapView(sf::Vector2i(mPos));
+						this->clearSelection();
+					} else {
+						if (this->action == Action::Building)
+						{
+							if (this->canBuild(this->currentPlayer, this->currentBuild).size() == 0) {
+								std::cout << "CAN BUILD !" << std::endl;
+								if (!this->vault->factory.placeBuilding(this->vault->registry, this->currentBuild)) {
+									Player &player = this->vault->registry.get<Player>(this->currentPlayer);
+									player.rootConstruction = 0;
+								}
+
+								this->action = Action::None;
+								this->currentBuild = 0;
+							}
+						} else {
+							this->action = Action::Selecting;
+							std::cout << "START SELECTION" << std::endl;
+							this->selectionStart = gamePos;
+
+							this->selectedObjs.clear();
+							EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
+
+							if (entity && this->vault->registry.has<Building>(entity)) {
+								GameObject &obj = this->vault->registry.get<GameObject>(entity);
+								if (obj.player == this->currentPlayer)
+									this->selectedObjs.push_back(entity);
+							}
+						}
+					}
+				}
+
+				if (event.mouseButton.button == sf::Mouse::Right) {
 					if (this->action == Action::Building)
 					{
-						if (this->canBuild(this->currentPlayer, this->currentBuild).size() == 0) {
-							std::cout << "CAN BUILD !" << std::endl;
-							if (!this->vault->factory.placeBuilding(this->vault->registry, this->currentBuild)) {
-								Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-								player.rootConstruction = 0;
-							}
-
-							this->action = Action::None;
-							this->currentBuild = 0;
-						}
+						this->vault->registry.remove<Tile>(this->currentBuild);
+						this->currentBuild = 0;
+						this->action = Action::None;
+						this->markUpdateObjLayer = true;
 					} else {
-						this->action = Action::Selecting;
-						std::cout << "START SELECTION" << std::endl;
-						this->selectionStart = gamePos;
-
-						this->selectedObjs.clear();
-						EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
-
-						if (entity && this->vault->registry.has<Building>(entity)) {
-							GameObject &obj = this->vault->registry.get<GameObject>(entity);
-							if (obj.player == this->currentPlayer)
-								this->selectedObjs.push_back(entity);
-						}
-					}
-				}
-			}
-
-			if (event.mouseButton.button == sf::Mouse::Right) {
-				if (this->action == Action::Building)
-				{
-					this->vault->registry.remove<Tile>(this->currentBuild);
-					this->currentBuild = 0;
-					this->action = Action::None;
-					this->markUpdateObjLayer = true;
-				} else {
-					if (this->selectedObjs.size() > 0) {
-						double squareD = sqrt((double)this->selectedObjs.size());
-						int square = ceil(squareD);
-						int curObj = 0;
-
-						EntityID destEnt = this->ennemyAtPosition(this->currentPlayer, gameMapPos.x, gameMapPos.y);
-
-						if (destEnt) {
-							while (curObj < this->selectedObjs.size()) {
-								EntityID selectedObj = this->selectedObjs[curObj];
-								if (this->vault->registry.has<Unit>(selectedObj)) {
-									this->playRandomUnitSound(selectedObj, "attack");
-									this->attack(selectedObj, destEnt);
-								}
-								curObj++;
-							}
-
+						// right click on minimap
+						if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
+							sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
+							this->orderSelected(mPos);
 						} else {
-
-							for (int x = 0; x < square; x++) {
-								for (int y = 0; y < square; y++) {
-									if (curObj < this->selectedObjs.size()) {
-										EntityID selectedObj = this->selectedObjs[curObj];
-										if (this->vault->registry.has<Unit>(selectedObj)) {
-											this->goTo(selectedObj, sf::Vector2i(gameMapPos.x + x, gameMapPos.y + y));
-											this->playRandomUnitSound(selectedObj, "move");
-
-											Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-											unit.destAttack = 0;
-										}
-										curObj++;
-									}
-								}
-							}
+							this->orderSelected(gameMapPos);
 						}
 					}
 				}
 			}
-		}
-		break;
+			break;
+			}
+		} else {
+			this->clearSelection();
 		}
 	}
 };
