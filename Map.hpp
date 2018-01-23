@@ -87,12 +87,6 @@ public:
 		entitiesGrid[this->index(x, y)] = 0;
 	}
 
-	void move(int fromX, int fromY, int toX, int toY) {
-		EntityID ent = this->get(fromX, fromY);
-		this->set(toX, toY, ent);
-		this->del(fromX, fromY);
-	}
-
 };
 
 enum class FogState {
@@ -164,6 +158,8 @@ public:
 
 	TileLayer corpses;
 
+	ObjLayer staticBuildable;
+
 	ObjLayer staticPathfinding;
 	ObjLayer pathfinding;
 
@@ -173,9 +169,9 @@ public:
 	void setSize(unsigned int width, unsigned int height) {
 		this->terrains.setSize(width, height);
 
-		for(int i=0;i<3;i++) {
+		for (int i = 0; i < 3; i++) {
 			TileLayer layer;
-			layer.setSize(width,height);
+			layer.setSize(width, height);
 			this->transitions.push_back(layer);
 		}
 //		this->transitions.setSize(width, height);
@@ -189,6 +185,8 @@ public:
 		this->fogUnvisitedTransitions.setSize(width, height);
 
 		this->corpses.setSize(width, height);
+
+		this->staticBuildable.setSize(width, height);
 
 		this->staticPathfinding.setSize(width, height);
 		this->pathfinding.setSize(width, height);

@@ -181,7 +181,7 @@ public:
 							projTile.direction = this->getDirection(projTile.pos, destTile.pos);
 							proj.speed = 3.0;
 
-							proj.positions = this->lineTrajectory(projTile.ppos.x, projTile.ppos.y, destTile.ppos.x, destTile.ppos.y);
+							proj.positions = this->lineTrajectory(tile.ppos.x, tile.ppos.y, destTile.ppos.x, destTile.ppos.y);
 							proj.curPosition = 0;
 
 							projTile.animHandlers["fx"].reset();

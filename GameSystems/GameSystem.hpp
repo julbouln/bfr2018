@@ -126,7 +126,7 @@ public:
 
 		for (sf::Vector2i p : this->tileSurface(tile)) {
 			EntityID pEnt = this->map->objs.get(p.x, p.y);
-			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticPathfinding.get(p.x,p.y) == 0)
+			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticBuildable.get(p.x,p.y) == 0)
 			{
 //				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
 				restrictedPos.push_back(p);
@@ -263,7 +263,7 @@ public:
 			for (sf::Vector2i p : this->tileAround(tile, 1)) {
 				float rnd = ((float) rand()) / (float) RAND_MAX;
 				if (rnd > 0.85) {
-					if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y)) {
+					if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y) && this->map->staticBuildable.get(p.x,p.y)==0) {
 //					std::cout << " seed "<<(int)type<< " at "<<p.x<<"x"<<p.y<<std::endl;
 						EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
 						this->map->resources.set(p.x, p.y, resEnt);

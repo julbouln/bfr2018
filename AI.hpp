@@ -285,7 +285,7 @@ public:
 						tile.pos = sf::Vector2i(x, y);
 						bool intersect = false;
 						for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
-							if (this->map->objs.get(p.x, p.y) || this->map->staticPathfinding.get(p.x,p.y)!=0) {
+							if (this->map->objs.get(p.x, p.y) || this->map->staticBuildable.get(p.x,p.y)!=0) {
 								intersect = true;
 							}
 						}

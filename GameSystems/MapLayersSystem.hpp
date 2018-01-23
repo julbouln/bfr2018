@@ -79,7 +79,8 @@ public:
 						for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
 							this->markUpdateTerrainTransitions.insert(sp);
 
-						this->map->terrains.set(p.x, p.y, newEnt);
+						if (this->map->staticBuildable.get(p.x, p.y) == 0)
+							this->map->terrains.set(p.x, p.y, newEnt);
 					}
 
 				}
@@ -103,7 +104,9 @@ public:
 				if (this->altTerrains[this->map->terrains.get(p.x, p.y)] != this->altTerrains[newEnt]) {
 					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
 						this->markUpdateTerrainTransitions.insert(sp);
-					this->map->terrains.set(p.x, p.y, newEnt);
+
+					if (this->map->staticBuildable.get(p.x, p.y) == 0)
+						this->map->terrains.set(p.x, p.y, newEnt);
 				}
 
 			}
@@ -568,11 +571,14 @@ public:
 				EntityID t;
 
 				t = tiles["dirt"][rand() % ALT_TILES];
-				if (res < -0.3)
+				if (res < -0.3) {
 					t = tiles["sand"][rand() % ALT_TILES];
+					this->map->staticBuildable.set(x, y, t);
+				}
 				if (res < -0.5) {
 					t = tiles["water"][rand() % ALT_TILES];
-					this->map->staticPathfinding.set(x,y,t);
+					this->map->staticBuildable.set(x, y, t);
+					this->map->staticPathfinding.set(x, y, t);
 				}
 				/*
 								if (res > -0.4) {
