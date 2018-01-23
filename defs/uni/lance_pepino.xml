@@ -32,7 +32,7 @@
      <frame n="0"/>
      <frame n="1"/>
     </frames>  
-    <refresh value="1"/>  
+    <refresh value="6"/>  
     <sounds>
      <sound  path="medias/projectiles/pepino.wav"/>   
     </sounds>

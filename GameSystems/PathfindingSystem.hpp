@@ -122,36 +122,7 @@ public:
 					//if (tile.state == "move")
 					{
 						float speed = (float)unit.speed / 2.0;
-						switch (tile.direction) {
-						case North:
-							tile.ppos.y -= speed;
-							break;
-						case NorthEast:
-							tile.ppos.x += speed;
-							tile.ppos.y -= speed;
-							break;
-						case East:
-							tile.ppos.x += speed;
-							break;
-						case SouthEast:
-							tile.ppos.x += speed;
-							tile.ppos.y += speed;
-							break;
-						case South:
-							tile.ppos.y += speed;
-							break;
-						case NorthWest:
-							tile.ppos.x -= speed;
-							tile.ppos.y -= speed;
-							break;
-						case West:
-							tile.ppos.x -= speed;
-							break;
-						case SouthWest:
-							tile.ppos.x -= speed;
-							tile.ppos.y += speed;
-							break;
-						}
+						tile.ppos += this->dirMovement(tile.direction, speed);
 
 					}
 

@@ -173,11 +173,37 @@ public:
 //						std::cout << "CombatSystem: show projectile "<<projEnt<<std::endl;
 						Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
 
-						proj.show = true;
-						projTile.pos = tile.pos;
-						projTile.ppos = tile.ppos;
+						if (!proj.show) {
+							proj.show = true;
+							projTile.pos = tile.pos;
+							projTile.ppos = tile.ppos;
 
-						projTile.direction = this->getDirection(projTile.pos, destTile.pos);
+							projTile.direction = this->getDirection(projTile.pos, destTile.pos);
+							proj.speed = 3.0;
+
+							proj.positions = this->lineTrajectory(projTile.ppos.x, projTile.ppos.y, destTile.ppos.x, destTile.ppos.y);
+							proj.curPosition = 0;
+
+							projTile.animHandlers["fx"].reset();
+							projTile.animHandlers["fx"].set(0);
+
+//							std::cout << "Trajectory: " << entity << " " << points.size() << std::endl;
+//							for (sf::Vector2f p : points) {
+//								std::cout << "Trajectory point: " << entity << " " << p.x << "x" << p.y << std::endl;
+//							}
+						} else {
+							sf::Vector2i pos(tile.ppos.x / 32, tile.ppos.y / 32);
+							projTile.pos = pos;
+
+							if (projTile.pos == destTile.pos) {
+								proj.speed = 0.0;
+								proj.show = false;
+								projTile.pos = tile.pos;
+								projTile.ppos = tile.ppos;
+								proj.curPosition = 0;
+
+							}
+						}
 					}
 
 				}
@@ -188,6 +214,7 @@ public:
 					EntityID projEnt = obj.effects["projectile"];
 					MapEffect &proj = this->vault->registry.get<MapEffect>(projEnt);
 					proj.show = false;
+					proj.speed = 0.0;
 				}
 			}
 		}
@@ -224,5 +251,30 @@ public:
 		}
 
 
+	}
+
+	void updateProjectiles(float dt) {
+		auto fxView = this->vault->registry.persistent<Tile, MapEffect>();
+		for (EntityID entity : fxView) {
+			Tile &projTile = fxView.get<Tile>(entity);
+			MapEffect &proj = fxView.get<MapEffect>(entity);
+			if (proj.show) {
+				if (proj.positions.size() > 0) {
+					if (proj.curPosition < proj.positions.size()) {
+						projTile.ppos = proj.positions[proj.curPosition];
+						proj.curPosition += proj.speed;
+					} else {
+						projTile.ppos = proj.positions[0];
+						proj.curPosition = 0;
+													projTile.animHandlers["fx"].reset();
+							projTile.animHandlers["fx"].set(0);
+
+
+					}
+//					std::cout << "Projectile: " << entity << " " << proj.curPosition << "/"<<proj.positions.size()<< " "<< projTile.ppos.x << "x" << projTile.ppos.y << " " << projTile.pos.x << "x" << projTile.pos.y << std::endl;
+				}
+//				projTile.ppos += this->dirMovement(projTile.direction, effect.speed);
+			}
+		}
 	}
 };

@@ -881,7 +881,7 @@ public:
 
 		MapEffect effect;
 		effect.show = false;
-		effect.movement = sf::Vector2f(0, 0);
+		effect.speed = 0.0;
 		effect.sound.setBuffer(sndManager.getRef(name));
 
 		tile.centerRect = centerRect;

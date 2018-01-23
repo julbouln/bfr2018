@@ -714,6 +714,8 @@ public:
 
 		this->tileAnim.update(dt);
 		this->pathfinding.update(dt);
+
+		this->combat.updateProjectiles(dt);
 	}
 
 	sf::IntRect viewClip() {

@@ -18,12 +18,8 @@ Game:
 - add random player start positions
 - add building damage level
 - add building destroy explosion FX + sound
-- projectile
 - add resource trap + explosion FX
 
 Interface:
 - finish gui (naz alignement)
 - add settings
-
-Sound:
-- add projectile sounds

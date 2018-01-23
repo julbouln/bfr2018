@@ -136,6 +136,61 @@ public:
 		return restrictedPos;
 	}
 
+	sf::Vector2f dirMovement(int direction, float speed) {
+		sf::Vector2f mov(0.0, 0.0);
+		switch (direction) {
+		case North:
+			mov.y -= speed;
+			break;
+		case NorthEast:
+			mov.x += speed;
+			mov.y -= speed;
+			break;
+		case East:
+			mov.x += speed;
+			break;
+		case SouthEast:
+			mov.x += speed;
+			mov.y += speed;
+			break;
+		case South:
+			mov.y += speed;
+			break;
+		case NorthWest:
+			mov.x -= speed;
+			mov.y -= speed;
+			break;
+		case West:
+			mov.x -= speed;
+			break;
+		case SouthWest:
+			mov.x -= speed;
+			mov.y += speed;
+			break;
+		default:
+			break;
+		}
+		return mov;
+	}
+
+
+	std::vector<sf::Vector2f> lineTrajectory( int x0, int y0, int x1, int y1)
+	{
+		std::vector<sf::Vector2f> points;
+		float dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+		float dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+		float err = (dx > dy ? dx : -dy) / 2, e2;
+
+		for (;;) {
+			points.push_back(sf::Vector2f(x0, y0));
+			if (x0 == x1 && y0 == y1) break;
+			e2 = err;
+			if (e2 > -dx) { err -= dy; x0 += sx; }
+			if (e2 < dy) { err += dx; y0 += sy; }
+		}
+		return points;
+	}
+
 	bool canSpendResources(EntityID playerEnt, ResourceType type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		if (player.resources > val)

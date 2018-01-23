@@ -39,7 +39,9 @@ struct Attack {
 
 struct MapEffect {
 	bool show;
-	sf::Vector2f movement;
+	float speed;
+	std::vector<sf::Vector2f>positions;
+	int curPosition;
 	sf::Sound sound;
 };
 

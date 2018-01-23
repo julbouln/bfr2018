@@ -205,7 +205,25 @@ public:
 		{
 			Tile &lht = vault->registry.get<Tile>(lhs);
 			Tile &rht = vault->registry.get<Tile>(rhs);
-			return (lht.z < rht.z) && (lht.ppos.y + (lht.centerRect.top + lht.centerRect.height) / 2 < rht.ppos.y + (rht.centerRect.top + rht.centerRect.height) / 2);
+			if(lht.z < rht.z) {
+				return true;
+			} else {
+				if(lht.z == rht.z) {
+					int ly = lht.ppos.y + (lht.centerRect.top + lht.centerRect.height) / 2;
+					int ry = rht.ppos.y + (rht.centerRect.top + rht.centerRect.height) / 2;
+					if( ly < ry) {
+						return true;
+					} else {
+						if(ly == ry) {
+							int lx = lht.ppos.x + (lht.centerRect.left + lht.centerRect.width) / 2;
+							int rx = rht.ppos.x + (rht.centerRect.left + rht.centerRect.width) / 2;
+							return (lx < rx);
+						}
+					}
+
+				}
+			}
+			return false;
 		});
 	}
 
