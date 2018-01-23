@@ -16,12 +16,6 @@
 
 
  <projectile name="none">
-  <file path="none"/>
-    <pixel_size w="32" h="32"/>
-    <frames>
-     <frame n="0"/>
-    </frames>  
-    <refresh value="1"/>  
     <sounds>
      <sound  path="medias/projectiles/mitraille.wav"/>   
     </sounds>

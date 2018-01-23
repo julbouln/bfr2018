@@ -155,7 +155,8 @@ public:
 			Resource &resource = view.get(entity);
 			if (resource.type == type && resource.level > 0) {
 				spended -= resource.level;
-				this->vault->registry.destroy(entity);
+				this->vault->factory.destroyEntity(this->vault->registry, entity);
+
 				if (spended <= 0)
 					return;
 			}

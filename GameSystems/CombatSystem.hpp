@@ -6,7 +6,7 @@ class CombatSystem : public GameSystem {
 public:
 	void update(float dt) {
 
-		// if an ennemy is in sight, then attack
+		// pass 1, if an ennemy is in sight, then attack
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
@@ -37,9 +37,11 @@ public:
 				}
 
 			}
+
 		}
 
 //		auto view = this->vault->registry.persistent<Tile, Unit>();
+		// pass 2, calculate combat
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			Unit &unit = view.get<Unit>(entity);
@@ -52,9 +54,6 @@ public:
 				Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.destAttack);
 
-//				float curDist = this->approxDistance(tile.pos, destTile.pos);
-//				std::cout << "CombatSystem: "<<entity<< " "<<curDist<<"/"<<dist << " from target "<<unit.destAttack<<std::endl;
-
 				bool inRange = false;
 				for (sf::Vector2i p : this->tileAround(destTile, dist)) {
 					if (tile.pos == p)
@@ -63,8 +62,6 @@ public:
 
 				if (!inRange && tile.pos == unit.destAttackPos && tile.pos == unit.nextpos) {
 //					std::cout << "CombatSystem: " << entity << " arrived but enemy is not in range anymore, wait a bit" << std::endl;
-//					tile.state = "idle";
-//					unit.destAttack = 0;
 					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 					unit.destAttackPos = dpos;
 					this->goTo(unit, dpos);
@@ -85,7 +82,7 @@ public:
 							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
 								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
 //								std::cout << obj.name << " ANIM LEN "<<frCnt<<std::endl;
-								destObj.life -= (float)attackPower/100.0 * frCnt;
+								destObj.life -= (float)attackPower / 100.0 * frCnt;
 							}
 							if (destObj.life <= 0) {
 								destObj.life = 0;
@@ -127,7 +124,6 @@ public:
 //					std::cout << "CombatSystem: "<<entity <<" target out of range, go to "<<dpos.x<<"x"<<dpos.y<<std::endl;
 						unit.destAttackPos = dpos;
 						this->goTo(unit, dpos);
-//					std::cout << "GO ATTACK " << entity << " " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 					}
 				}
 			} else {
@@ -135,30 +131,98 @@ public:
 			}
 		}
 
+		// pass 3
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 
 			if (obj.life == 0) {
+				// unit died, destroy after playing anim
+				if (tile.state == "die" && tile.animHandlers[tile.state].l >= 1) {
+					obj.destroy = true;
+				}
+
 				this->changeState(tile, "die");
 				unit.destAttack = 0;
 				unit.destpos = tile.pos;
 			}
 
 			if (tile.state == "attack") {
+				// play sound at frame 1
 				if (tile.animHandlers["attack"].getCurrentFrame() == 1) {
 //					std::cout << "play sound at "<< tile.animHandlers["attack"].getCurrentFrame()<< std::endl;
 					if (unit.attackSound.getStatus() != sf::Sound::Status::Playing)
 						unit.attackSound.play();
 				}
+
+				// attacked obj does not exists anymore, stop attacking
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
 					this->changeState(tile, "idle");
 					unit.destAttack = 0;
 					unit.destpos = tile.pos;
 				}
+
+
+				// projectile effect
+				if (obj.effects.count("projectile") > 0) {
+					EntityID projEnt = obj.effects["projectile"];
+					MapEffect &proj = this->vault->registry.get<MapEffect>(projEnt);
+					Tile &projTile = this->vault->registry.get<Tile>(projEnt);
+					if (unit.destAttack) {
+//						std::cout << "CombatSystem: show projectile "<<projEnt<<std::endl;
+						Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
+
+						proj.show = true;
+						projTile.pos = tile.pos;
+						projTile.ppos = tile.ppos;
+
+						projTile.direction = this->getDirection(projTile.pos, destTile.pos);
+					}
+
+				}
+
+
+			} else {
+				if (obj.effects.count("projectile") > 0) {
+					EntityID projEnt = obj.effects["projectile"];
+					MapEffect &proj = this->vault->registry.get<MapEffect>(projEnt);
+					proj.show = false;
+				}
 			}
 		}
+
+		auto buldingView = this->vault->registry.persistent<Tile, GameObject, Building>();
+		for (EntityID entity : buldingView) {
+			Tile &tile = buldingView.get<Tile>(entity);
+			Building &building = buldingView.get<Building>(entity);
+			GameObject &obj = buldingView.get<GameObject>(entity);
+
+			if (obj.life == 0) {
+				EntityID explosionEnt = obj.effects["explosion"];
+				MapEffect &explosion = this->vault->registry.get<MapEffect>(explosionEnt);
+				Tile &explosionTile = this->vault->registry.get<Tile>(explosionEnt);
+
+				if (!explosion.show) {
+					std::cout << "CombatSystem: " << entity << " destroyed, show explosion anim" << std::endl;
+					explosion.show = true;
+					explosionTile.pos = tile.pos;
+					explosionTile.ppos = tile.ppos;
+					explosionTile.animHandlers["fx"].reset();
+					explosionTile.animHandlers["fx"].changeAnim(0);
+					explosionTile.animHandlers["fx"].set(0);
+					explosion.sound.play();
+				}
+//					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["fx"].l<<std::endl;
+
+				if (explosionTile.animHandlers["fx"].l >= 1) {
+					obj.destroy = true;
+				}
+
+			}
+
+		}
+
 
 	}
 };

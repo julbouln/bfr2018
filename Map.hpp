@@ -160,6 +160,8 @@ public:
 	ObjLayer objs;
 	ObjLayer resources;
 
+	ObjLayer effects;
+
 	TileLayer corpses;
 
 	ObjLayer pathfinding;

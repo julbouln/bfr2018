@@ -19,6 +19,8 @@ struct Tile {
 
 	sf::Vector2i offset; // offset
 
+	int z;
+
 	sf::IntRect centerRect;
 
 	sf::Sprite sprite;
@@ -34,16 +36,25 @@ struct Attack {
 	unsigned int distance;
 };
 
+
+struct MapEffect {
+	bool show;
+	sf::Vector2f movement;
+	sf::Sound sound;
+};
+
 // unit or building
 struct GameObject {
 	float life;
 	float maxLife;
 	unsigned int view;
 	bool mapped;
+	bool destroy;
 
 	std::string name;
 	std::string team;
 	EntityID player;
+	std::map<std::string, EntityID> effects;
 };
 
 enum {
@@ -58,7 +69,6 @@ enum {
 };
 
 struct Unit {
-	unsigned int direction;
 	unsigned int speed;
 	Attack attack1;
 	Attack attack2;

@@ -137,6 +137,8 @@ public:
 	void updateObjsDrawList(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 
 		this->entitiesDrawList.clear();
+
+		// resources draw list
 		auto resView = this->vault->registry.persistent<Tile, Resource>();
 
 		for (EntityID entity : resView) {
@@ -151,6 +153,8 @@ public:
 			}
 		}
 
+
+		// game objects draw list
 		auto view = this->vault->registry.persistent<Tile, GameObject>();
 
 		for (EntityID entity : view) {
@@ -165,17 +169,43 @@ public:
 			}
 		}
 
+		// effects draw list
+		auto fxView = this->vault->registry.persistent<Tile, MapEffect>();
+		for (EntityID entity : fxView) {
+			Tile &tile = fxView.get<Tile>(entity);
+			MapEffect &effect = fxView.get<MapEffect>(entity);
+			if (effect.show) {
+				for (sf::Vector2i p : this->tileSurface(tile)) {
+					if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
+						if (p.x >= clip.left && p.x <= clip.left + clip.width &&
+						        p.y >= clip.top && p.y <= clip.top + clip.height)
+							this->entitiesDrawList.push_back(entity);
+					}
+				}
+			}
+		}
+
 		// sort by EntityID and uniq
 		std::sort(this->entitiesDrawList.begin(), this->entitiesDrawList.end());
 		auto last = std::unique(this->entitiesDrawList.begin(), this->entitiesDrawList.end());
 		this->entitiesDrawList.erase(last, this->entitiesDrawList.end());
 
+
+		// remove if invalid
+		/*
+		this->entitiesDrawList.erase(std::remove_if(
+		                                 this->entitiesDrawList.begin(), this->entitiesDrawList.end(),
+		[this](const EntityID & ent) {
+			return (ent==0 || !vault->registry.valid(ent) || !vault->registry.has<Tile>(ent));
+		}), this->entitiesDrawList.end());
+*/
+
 		// sort by position
-		std::sort( this->entitiesDrawList.begin( ), this->entitiesDrawList.end( ), [this ]( const auto & lhs, const auto & rhs )
+		std::sort( this->entitiesDrawList.begin( ), this->entitiesDrawList.end(), [this ]( const auto & lhs, const auto & rhs )
 		{
 			Tile &lht = vault->registry.get<Tile>(lhs);
 			Tile &rht = vault->registry.get<Tile>(rhs);
-			return (lht.ppos.y + (lht.centerRect.top + lht.centerRect.height) / 2 < rht.ppos.y + (rht.centerRect.top + rht.centerRect.height) / 2);
+			return (lht.z < rht.z) && (lht.ppos.y + (lht.centerRect.top + lht.centerRect.height) / 2 < rht.ppos.y + (rht.centerRect.top + rht.centerRect.height) / 2);
 		});
 	}
 

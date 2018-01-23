@@ -427,7 +427,7 @@ public:
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
 						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
 						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
-							this->vault->registry.destroy(building.construction);
+							this->vault->factory.destroyEntity(this->vault->registry, building.construction);
 							building.construction = 0;
 						}
 					} else {
@@ -486,7 +486,7 @@ public:
 						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
 						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
 
-							this->vault->registry.destroy(player.rootConstruction);
+							this->vault->factory.destroyEntity(this->vault->registry, player.rootConstruction);
 							player.rootConstruction = 0;
 						}
 					} else {
@@ -858,7 +858,8 @@ public:
 		for (EntityID entity : objView) {
 			Tile &tile = objView.get<Tile>(entity);
 			GameObject &obj = objView.get<GameObject>(entity);
-			if (obj.life == 0 && tile.animHandlers[tile.state].l >= 1) {
+
+			if (obj.destroy) {
 				if (this->vault->registry.has<Unit>(entity)) {
 					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse", 0);
 //					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
@@ -869,12 +870,20 @@ public:
 					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
 					if (building.construction) {
 						// destroy currently building cons
-						this->vault->registry.destroy(building.construction);
+						this->vault->factory.destroyEntity(this->vault->registry, building.construction);
 					}
-
 				}
 
-				this->vault->registry.destroy(entity);
+				// destroy effects too
+				if (obj.effects.size() > 0) {
+					for (auto o : obj.effects) {
+						this->vault->factory.destroyEntity(this->vault->registry, o.second);
+
+					}
+					obj.effects.clear();
+				}
+
+				this->vault->factory.destroyEntity(this->vault->registry, entity);
 			}
 		}
 

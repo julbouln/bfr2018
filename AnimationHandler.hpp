@@ -69,6 +69,11 @@ private:
     int currentFrame;
 
 public:
+    /* Current section of the texture that should be displayed */
+    sf::IntRect bounds;
+
+    /* Pixel dimensions of each individual frame */
+    sf::IntRect frameSize;
     /* Current time since the animation loop started */
     float t;
     int l;
@@ -148,7 +153,7 @@ public:
                     this->l++;
                 }
             } else {
-                if(this->t > duration * anim.getLength()) {
+                if (this->t > duration * anim.getLength()) {
                     this->l = 1;
                 }
             }
@@ -180,28 +185,22 @@ public:
         return;
     }
 
-    /* Current section of the texture that should be displayed */
-    sf::IntRect bounds;
-
-    /* Pixel dimensions of each individual frame */
-    sf::IntRect frameSize;
-
-    /* Constructor */
-    AnimationHandler()
-    {
+    void reset() {
         this->t = 0.0f;
         this->currentFrame = 0;
         this->currentAnim = -1;
         this->l = 0;
     }
+
+    /* Constructor */
+    AnimationHandler()
+    {
+        this->reset();
+    }
     AnimationHandler(const sf::IntRect& frameSize)
     {
         this->frameSize = frameSize;
-
-        this->t = 0.0f;
-        this->currentFrame = 0;
-        this->currentAnim = -1;
-        this->l = 0;
+        this->reset();
     }
 };
 

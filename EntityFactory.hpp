@@ -8,7 +8,7 @@
 #include "tixml2ex.h"
 
 //#define TECH_TREE_DEBUG
-//#define FACTORY_DEBUG
+#define FACTORY_DEBUG
 
 enum class TechComponent {
 	Building,
@@ -133,6 +133,10 @@ public:
 		this->loadTextureWithWhiteMask("forbid", "medias/misc/forbide.png");
 
 		this->loadTextureWithWhiteMask("ruin", "medias/misc/ruine.png");
+
+		this->loadTextureWithWhiteMask("explosion", "medias/misc/explosion.png");
+		sndManager.loadSoundBuffer("explosion", "medias/misc/explosion.wav");
+		this->loadTextureWithWhiteMask("blood", "medias/misc/blood.png");
 
 		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
 		sndManager.loadSoundBuffer("killer", "medias/misc/killer.wav");
@@ -259,7 +263,7 @@ public:
 	}
 
 	// init unit texture with mirroring
-	void initUnitTexture(std::string name, std::string imgPath) {
+	void initDirTexture(std::string name, std::string imgPath) {
 		sf::Image image, outImage;
 
 		image.loadFromFile(imgPath);
@@ -292,6 +296,7 @@ public:
 		}
 
 		outImage.createMaskFromColor(sf::Color::White);
+		std::cout << "EntityFactory: init dir texture " << name << " " << columnWidth << "x" << height << std::endl;
 		texManager.loadTexture(name, outImage, sf::IntRect{0, 0, columnWidth * 8, height});
 	}
 
@@ -304,15 +309,14 @@ public:
 
 			tinyxml2::XMLElement *root = doc->RootElement();
 			std::string imgPath = root->FirstChildElement("file")->Attribute("path");
-			this->initUnitTexture(name, imgPath);
+			this->initDirTexture(name, imgPath);
 
 			this->loadButton(name + "_icon", root->FirstChildElement("icon")->Attribute("path"));
 
 			texManager.loadTexture(name + "_face", root->FirstChildElement("face")->Attribute("path"));
 			tinyxml2::XMLElement *speEl = root->FirstChildElement("spe");
 			if (speEl)
-				texManager.loadTexture(name + "_spe", speEl->Attribute("path"));
-
+				this->loadTextureWithWhiteMask(name + "_spe", speEl->Attribute("path"));
 
 			tinyxml2::XMLElement * selSnds = root->FirstChildElement("select_sounds");
 			if (selSnds) {
@@ -334,14 +338,17 @@ public:
 						sndManager.loadSoundBuffer(name + "_" + stName + "_" + std::to_string(i), sndEl->Attribute("path"));
 						i++;
 					}
-
 				}
 			}
-
 
 			tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
 			if (projEl) {
 				std::string prName = projEl->Attribute("name");
+				tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
+
+				if (fileEl)
+					this->initDirTexture(prName, fileEl->Attribute("path"));
+
 				tinyxml2::XMLElement *sndEl = projEl->FirstChildElement("sounds")->FirstChildElement();
 				if (sndEl) {
 					sndManager.loadSoundBuffer(prName, sndEl->Attribute("path"));
@@ -402,6 +409,25 @@ public:
 		return playerColors[key.r << 16 + key.g << 8 + key.b][idx];
 	}
 
+	Animation parseAnim(tinyxml2::XMLElement *stateEl, int pixFrame) {
+		int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
+		tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
+
+		std::vector<int> frames;
+		for (tinyxml2::XMLElement *frameEl : framesEl) {
+			int frame = frameEl->IntAttribute("n");
+//					std::cout << "ADD FRAME " << frame << std::endl;
+			if (pixFrame == -1 || frame < pixFrame)
+				frames.push_back(frame);
+			else
+				std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
+		}
+
+		Animation anim(frames, 0.1f * refresh);
+
+		return anim;
+	}
+
 	void parseTileFromXml(std::string name, Tile &tile, int directions) {
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
@@ -427,23 +453,25 @@ public:
 			int pixFrame = texManager.getRef(name).getSize().y / tile.psize.y;
 
 			for (int i = 0; i < directions; i++) {
-				tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
+				Animation anim = this->parseAnim(stateEl, pixFrame);
+				/*
+								tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
 
-				std::vector<int> frames;
-				for (tinyxml2::XMLElement *frameEl : framesEl) {
-					int frame = frameEl->IntAttribute("n");
-//					std::cout << "ADD FRAME " << frame << std::endl;
-					if (frame < pixFrame)
-						frames.push_back(frame);
-					else
-						std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
-				}
+								std::vector<int> frames;
+								for (tinyxml2::XMLElement *frameEl : framesEl) {
+									int frame = frameEl->IntAttribute("n");
+				//					std::cout << "ADD FRAME " << frame << std::endl;
+									if (frame < pixFrame)
+										frames.push_back(frame);
+									else
+										std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
+								}
 
-				Animation anim(frames, 0.1f * refresh);
-
+								Animation anim(frames, 0.1f * refresh);
+				*/
 				if (stateNm == "die") {
 					anim.repeat = false;
-					anim.duration = (0.1f * refresh)/4.0;
+					anim.duration = (0.1f * refresh) / 4.0;
 				}
 
 				animHandler.addAnim(anim);
@@ -510,6 +538,9 @@ public:
 
 		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
 		if (projEl) {
+			tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
+
+
 			std::string prName = projEl->Attribute("name");
 			unit.attackSound.setBuffer(this->sndManager.getRef(prName));
 		}
@@ -526,6 +557,16 @@ public:
 		building.maxBuildTime = building.buildTime;
 	}
 
+// Creator
+
+	void destroyEntity(entt::Registry<EntityID> &registry, EntityID entity) {
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: destroy " << entity << std::endl;
+#endif
+		registry.destroy(entity);
+	}
+
+// Terrain
 	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
 		EntityID entity = registry.create();
 
@@ -539,10 +580,11 @@ public:
 
 		tile.pos = sf::Vector2i(0, 0);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = 0;
 
 		tile.sprite.setTexture(texManager.getRef(name));
 
-		tile.centerRect = sf::IntRect(0,0,32,32);
+		tile.centerRect = sf::IntRect(0, 0, 32, 32);
 
 		Animation staticAnim({0, 1, 2});
 
@@ -566,6 +608,7 @@ public:
 		return entity;
 	}
 
+// Unit
 #define UNIT_FRAME_COUNT 10
 
 	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y) {
@@ -578,6 +621,7 @@ public:
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = 0;
 
 		tile.sprite.setTexture(texManager.getRef(name));
 
@@ -589,8 +633,10 @@ public:
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
+		this->addProjectileFromXml(registry, name, obj );
 		obj.player = player;
 		obj.mapped = true;
+		obj.destroy = false;
 
 		Unit unit;
 		this->parseUnitFromXml(name, unit);
@@ -607,16 +653,7 @@ public:
 		return entity;
 	}
 
-	EntityID createBuilding(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y, bool built) {
-		EntityID entity = this->startBuilding(registry, name, 0);
-#ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: create building " << entity << " " << name << " at " << x << "x" << y << std::endl;
-#endif
-		this->finishBuilding(registry, entity, player, x, y, built);
-
-		return entity;
-	}
-
+// Building
 	EntityID startBuilding(entt::Registry<EntityID> &registry, std::string name, EntityID constructedBy) {
 		EntityID entity = registry.create();
 #ifdef FACTORY_DEBUG
@@ -631,6 +668,7 @@ public:
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = 0;
 		obj.mapped = false;
+		obj.destroy = false;
 		obj.life = obj.life * 4;
 		obj.maxLife = obj.life;
 
@@ -643,12 +681,14 @@ public:
 		GameObject &obj = registry.get<GameObject>(entity);
 		obj.player = player;
 		obj.mapped = built;
+		obj.effects["explosion"] = this->createExplosionEffect(registry);
 
 		Tile tile;
 		this->parseTileFromXml(obj.name, tile, 8);
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = 0;
 
 		tile.sprite.setTexture(texManager.getRef(obj.name));
 
@@ -679,6 +719,7 @@ public:
 		}
 	}
 
+// Resource
 	std::string resourceTypeName( ResourceType type) {
 		switch (type) {
 		case ResourceType::Nature:
@@ -699,6 +740,7 @@ public:
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
 		tile.size = sf::Vector2i{1, 1};
+		tile.z = 0;
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -771,6 +813,7 @@ public:
 //		std::cout << "growedResource: " << rnd << " " << rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = oldTile.z;
 
 		tile.sprite.setTexture(texManager.getRef(rname));
 
@@ -798,6 +841,83 @@ public:
 		return entity;
 	}
 
+	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name,
+	                         int w, int h, sf::IntRect centerRect, std::initializer_list<int> frames, float duration, int directions, int z) {
+		Animation anim(frames, duration);
+		return this->createMapEffect(registry, name, w, h, centerRect, anim, directions, z);
+	}
+
+	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name,
+	                         int w, int h, sf::IntRect centerRect, Animation anim, int directions, int z) {
+		EntityID entity = registry.create();
+
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create map effect " << entity << " " << name << " " << w << "x" << h << " " << directions << std::endl;
+#endif
+		Tile tile;
+
+		tile.size = sf::Vector2i(1, 1);
+		tile.psize = sf::Vector2f(w, h);
+		tile.pos = sf::Vector2i(0, 0);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = z;
+
+		tile.sprite.setTexture(texManager.getRef(name));
+
+		tile.direction = North;
+		tile.state = "fx";
+
+		AnimationHandler fxAnim;
+		fxAnim.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+
+		for (int i = 0; i < directions; i++) {
+			fxAnim.addAnim(anim);
+		}
+		fxAnim.changeAnim(0);
+		fxAnim.set(0);
+		tile.sprite.setTextureRect(fxAnim.bounds); // texture need to be updated
+
+		tile.animHandlers["fx"] = fxAnim;
+
+		MapEffect effect;
+		effect.show = false;
+		effect.movement = sf::Vector2f(0, 0);
+		effect.sound.setBuffer(sndManager.getRef(name));
+
+		tile.centerRect = centerRect;
+		registry.assign<Tile>(entity, tile);
+		registry.assign<MapEffect>(entity, effect);
+
+		return entity;
+	}
+
+	EntityID createExplosionEffect(entt::Registry<EntityID> &registry) {
+		return this->createMapEffect(registry, "explosion", 288, 280, sf::IntRect(128, 238, 32, 32), {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, 0.1, 1, 0);
+	}
+
+	void addProjectileFromXml(entt::Registry<EntityID> &registry, std::string name, GameObject &obj) {
+		tinyxml2::XMLDocument *doc = this->docs[name];
+		tinyxml2::XMLElement *root = doc->RootElement();
+
+		// projectile effect
+		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
+		if (projEl) {
+			tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
+			if (fileEl) {
+				std::string prName = projEl->Attribute("name");
+				tinyxml2::XMLElement * psizeEl = projEl->FirstChildElement("pixel_size");
+				Animation anim = this->parseAnim(projEl, -1);
+				EntityID projEnt = this->createMapEffect(registry, prName, psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h"), sf::IntRect(0, 0, 32, 32), anim, 8, 1);
+
+#ifdef FACTORY_DEBUG
+				std::cout << "EntityFactory: add projectile " << projEnt << " to " << name << std::endl;
+#endif
+				obj.effects["projectile"] = projEnt;
+			}
+		}
+	}
+
+// Player
 	EntityID createPlayer(entt::Registry<EntityID> &registry, std::string team, bool ai) {
 		EntityID entity = registry.create();
 

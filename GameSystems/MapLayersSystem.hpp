@@ -324,9 +324,9 @@ public:
 		Tile tile;
 		this->vault->factory.parseTileFromXml(name, tile, 8);
 
-
 		tile.pos = sf::Vector2i(0, 0);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = 0;
 
 		tile.sprite.setTexture(this->vault->factory.getTex(name));
 
