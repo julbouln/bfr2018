@@ -1,6 +1,5 @@
 Bugs:
 - sometimes at start there is no fog and units can't be controlled
-- after creating a new game, die tile seems wrong
 - sometimes program hang (registry)
 
 Misc
@@ -15,9 +14,7 @@ Improvements:
 - restrict building position to visible fog
 
 Game:
-- add random player start positions
 - add building damage level
-- add building destroy explosion FX + sound
 - add resource trap + explosion FX
 
 Interface:

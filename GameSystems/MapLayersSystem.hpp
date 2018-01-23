@@ -71,7 +71,7 @@ public:
 					EntityID newEnt = 0;
 					if (obj.team == "rebel") {
 						newEnt = tiles["grass"][0];
-					} else {
+					} else if (obj.team == "neonaz") {
 						newEnt = tiles["concrete"][0];
 					}
 
@@ -150,9 +150,9 @@ public:
 
 	void updatePlayersFog(float dt) {
 		auto playerView = this->vault->registry.view<Player>();
+
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-
 			for (int x = 0; x < this->map->width; x++) {
 				for (int y = 0; y < this->map->height; y++) {
 					if (player.fog.get(x, y) == FogState::InSight)
@@ -179,6 +179,25 @@ public:
 
 	void updateFogLayer(EntityID playerEnt, float dt) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
+
+		if (player.team == "neutral") {
+			auto playerView = this->vault->registry.view<Player>();
+			for (EntityID entity : playerView) {
+				if (entity != playerEnt) {
+					Player &otherPlayer = playerView.get(entity);
+					for (int x = 0; x < this->map->width; x++) {
+						for (int y = 0; y < this->map->height; y++) {
+							if (player.fog.get(x, y) == FogState::Hidden && otherPlayer.fog.get(x, y) != FogState::Unvisited) {
+								player.fog.set(x, y, otherPlayer.fog.get(x, y));
+							}
+							if (player.fog.get(x, y) == FogState::Unvisited) {
+								player.fog.set(x, y, otherPlayer.fog.get(x, y));
+							}
+						}
+					}
+				}
+			}
+		}
 
 		for (int y = 0; y < this->map->height; ++y)
 		{
@@ -212,7 +231,7 @@ public:
 					markUpdate = true;
 				}
 
-					this->map->fogHidden.set(x, y, newEnt);
+				this->map->fogHidden.set(x, y, newEnt);
 
 				if (markUpdate) {
 					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))

@@ -942,43 +942,31 @@ public:
 
 		if (team == "rebel")
 			player.resourceType = ResourceType::Nature;
-		else
+		else if(team == "neonaz")
 			player.resourceType = ResourceType::Pollution;
 
 		registry.assign<Player>(entity, player);
 		return entity;
 	}
 
+	void loadManifest(std::string filename) {
+		tinyxml2::XMLDocument doc;
+		doc.LoadFile(filename.c_str());
+
+		for (tinyxml2::XMLElement *childEl : doc.RootElement()) {
+			std::string name = childEl->Name();
+
+			if(name == "unit") {
+				unitFiles.push_back(childEl->Attribute("path"));
+			} else if(name=="building") {
+				buildingFiles.push_back(childEl->Attribute("path"));
+			}
+		}
+	}
+
 	void load() {
-		unitFiles.push_back("defs/uni/patrouilleur.xml");
-		unitFiles.push_back("defs/uni/punkette.xml");
-		unitFiles.push_back("defs/uni/guerrier_bud.xml");
-		unitFiles.push_back("defs/uni/brad_lab.xml");
-		unitFiles.push_back("defs/uni/guerrier_bud_powerhead.xml");
-		unitFiles.push_back("defs/uni/lance_pepino.xml");
-		unitFiles.push_back("defs/uni/zork.xml");
-		unitFiles.push_back("defs/uni/super_guerrier.xml");
-		unitFiles.push_back("defs/uni/abdel.xml");
-		unitFiles.push_back("defs/uni/grosnaz.xml");
-		unitFiles.push_back("defs/uni/bazooka.xml");
-		unitFiles.push_back("defs/uni/lance_missille.xml");
-		unitFiles.push_back("defs/uni/mitrailleur.xml");
-
-		unitFiles.push_back("defs/uni/punk.xml");
-
-		buildingFiles.push_back("defs/bui/artillerie.xml");
-		buildingFiles.push_back("defs/bui/caserne.xml");
-		buildingFiles.push_back("defs/bui/ferme.xml");
-		buildingFiles.push_back("defs/bui/festival.xml");
-		buildingFiles.push_back("defs/bui/gymnaz.xml");
-		buildingFiles.push_back("defs/bui/labo.xml");
-		buildingFiles.push_back("defs/bui/mirador.xml");
-		buildingFiles.push_back("defs/bui/raffinerie_bud.xml");
-		buildingFiles.push_back("defs/bui/squat.xml");
-		buildingFiles.push_back("defs/bui/taverne.xml");
-		buildingFiles.push_back("defs/bui/tourelle.xml");
-		buildingFiles.push_back("defs/bui/usine_vehicule.xml");
-
+		this->loadManifest("defs/manifest.xml");
+		
 		this->loadTerrains();
 		this->loadUnits();
 		this->loadBuildings();

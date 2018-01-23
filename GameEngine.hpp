@@ -61,6 +61,8 @@ public:
 
 	std::vector<EntityID> selectedObjs;
 
+	EntityID emptyEntity;
+
 	EntityID currentBuild;
 	std::string currentBuildType;
 
@@ -106,6 +108,7 @@ public:
 	}
 
 	~GameEngine() {
+		this->setGameSpeed(1.0);
 		// FIXME: registry must actually resides in GameEngine instead of game
 		this->vault->registry.reset();
 		delete this->map;
@@ -153,6 +156,7 @@ public:
 	}
 
 	void setVaults(GameVault *vault) {
+		emptyEntity = vault->registry.create();
 
 		this->setVault(vault);
 		// init systems
@@ -214,53 +218,60 @@ public:
 		mapLayers.initCorpses();
 		mapLayers.generate(mapWidth, mapHeight);
 
+		std::vector<int> colorIndices;
+		for (int i = 0; i < 12; i++ ) {
+			colorIndices.push_back(i);
+		}
+		std::random_shuffle ( colorIndices.begin(), colorIndices.end() );
+
+		std::vector<sf::Vector2i> initialPositions;
+		initialPositions.push_back(sf::Vector2i(10, 10));
+		initialPositions.push_back(sf::Vector2i(10, mapHeight - 10));
+		initialPositions.push_back(sf::Vector2i(mapHeight - 10, 10));
+		initialPositions.push_back(sf::Vector2i(mapWidth - 10, mapHeight - 10));
+		std::random_shuffle ( initialPositions.begin(), initialPositions.end() );
+
 		if (playerTeam == "rebel") {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 			this->centerMapView(sf::Vector2i(8, 8));
-		} else {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
+		} else if (playerTeam == "neonaz") {
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", false);
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+		} else {
+			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neutral", false);
+			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
-			this->centerMapView(sf::Vector2i(mapWidth - 8, mapHeight - 8));
+//			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+//			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
+
+			this->centerMapView(sf::Vector2i(mapWidth / 2, mapHeight / 2));
 		}
 
 		auto view = this->vault->registry.view<Player>();
 		for (EntityID entity : view) {
 			Player &player = view.get(entity);
 
-			player.colorIdx = rand() % 12;
-
-			/*
-						if (player.team == "rebel")
-						{
-							player.initialPos = sf::Vector2i(10, 10);
-
-							for (int x = 0; x < 3; x++) {
-								for (int y = 0; y < 3; y++) {
-									this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8 + x, 8 + y);
-
-								}
-							}
-						} else {
-							player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
-							this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
-						}
-			*/
+			player.colorIdx = colorIndices.back();
+			colorIndices.pop_back();
 
 			if (player.team == "rebel")
 			{
-				player.initialPos = sf::Vector2i(10, 10);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", 8, 8);
+				player.initialPos = initialPositions.back();
+				initialPositions.pop_back();
+
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x, player.initialPos.y);
 
 				if (player.ai) {
 					ai.rebelAI.parse(player.team, player.aiTree, entity);
 				}
-			} else {
-				player.initialPos = sf::Vector2i(mapWidth - 8, mapHeight - 8);
+			} else if (player.team == "neonaz") {
+				player.initialPos = initialPositions.back();
+				initialPositions.pop_back();
 
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", mapWidth - 10, mapHeight - 10);
+				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", player.initialPos.x, player.initialPos.y);
 
 				if (player.ai) {
 					ai.nazAI.parse(player.team, player.aiTree, entity);
@@ -273,9 +284,14 @@ public:
 		}
 
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-		iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
-		indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
-		indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
+		if (player.team != "neutral") {
+			this->centerMapView(player.initialPos);
+
+			iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
+			indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
+			indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
+
+		}
 
 		minimapTarget.create(this->map->width, this->map->height);
 		minimap.setTexture(minimapTarget.getTexture());
@@ -354,159 +370,161 @@ public:
 
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
-		float uiX = 258.0f * this->scaleX();
-		float uiHeight = 134.0f * this->scaleY();
-		float uiWidth = 500.0f * this->scaleX();
-		float uiLWidth = 300.0f * this->scaleX();
-		float uiRWidth = 200.0f * this->scaleX();
+		if (player.team != "neutral") {
+			float uiX = 258.0f * this->scaleX();
+			float uiHeight = 134.0f * this->scaleY();
+			float uiWidth = 500.0f * this->scaleX();
+			float uiLWidth = 300.0f * this->scaleX();
+			float uiRWidth = 200.0f * this->scaleX();
 
-		ImVec2 window_pos = ImVec2(uiX, ImGui::GetIO().DisplaySize.y - uiHeight);
+			ImVec2 window_pos = ImVec2(uiX, ImGui::GetIO().DisplaySize.y - uiHeight);
 //		ImVec2 window_pos_pivot = ImVec2(1.0f, 1.0f);
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
-		ImGui::SetNextWindowSize(ImVec2(uiWidth, uiHeight), ImGuiCond_Always);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
-		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
-		{
-			if (this->selectedObjs.size() == 1) {
-				ImGui::Columns(2, NULL, false);
-				ImGui::SetColumnWidth(-1, uiLWidth);
-				EntityID selectedObj = this->selectedObjs[0];
-
-				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
-				GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
-
-				if (this->vault->registry.has<Building>(selectedObj)) {
-					Building &building = this->vault->registry.get<Building>(selectedObj);
-					this->constructionProgressGui(building.construction);
-				}
-
-				if (this->vault->registry.has<Unit>(selectedObj)) {
-					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-
-					ImGui::BeginGroup();
-					ImGui::Text("PV: %d", (int)obj.life);
-					ImGui::Text("AC: %d", unit.attack1.power);
-					ImGui::Text("DC: %d", unit.attack1.distance);
-					ImGui::Text("AE: %d", unit.attack2.power);
-					ImGui::Text("DE: %d", unit.attack2.distance);
-					ImGui::EndGroup();
-				}
-
-				ImGui::NextColumn();
-				ImGui::SetColumnWidth(-1, uiRWidth);
-
-
-				if (this->vault->registry.has<Unit>(selectedObj)) {
-					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-
-					ImGui::BeginGroup();
-					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
-					                           this->vault->factory.texManager.getRef(player.team + "_move"),
-					                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
-						std::cout << "move clicked " << std::endl;
-
-					}
-
-					ImGui::SameLine();
-					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_attack"),
-					                           this->vault->factory.texManager.getRef(player.team + "_attack"),
-					                           this->vault->factory.texManager.getRef(player.team + "_attack_down"))) {
-						std::cout << "attack clicked " << std::endl;
-
-					}
-					ImGui::EndGroup();
-
-				}
-
-				if (this->vault->registry.has<Building>(selectedObj)) {
-
-					Building &building = this->vault->registry.get<Building>(selectedObj);
-
-					TechNode *pnode = this->vault->factory.getTechNode(player.team, obj.name);
-					if (building.construction) {
-						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
-						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
-						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
-							this->vault->factory.destroyEntity(this->vault->registry, building.construction);
-							building.construction = 0;
-						}
-					} else {
-
-						if (pnode->children.size() > 0) {
-							int buts = 0;
-							for (TechNode &node : pnode->children) {
-								if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
-								                           this->vault->factory.texManager.getRef(node.type + "_icon"),
-								                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
-									std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
-									switch (node.comp) {
-									case TechComponent::Building: {
-//										Building &building = this->vault->registry.get<Building>(selectedObj);
-										if (!building.construction) {
-											EntityID newConsEnt = this->vault->factory.startBuilding(this->vault->registry, node.type, selectedObj);
-
-											// need to reload the parent building to assign construction
-											Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
-											pBuilding.construction = newConsEnt;
-											std::cout << "start build " << building.construction << std::endl;
-										}
-									}
-									break;
-									case TechComponent::Character:
-										if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
-											this->markUpdateObjLayer = true;
-										}
-										break;
-									case TechComponent::Resource:
-										this->seedResources(player.resourceType, selectedObj);
-										break;
-									}
-								}
-								if (buts % 3 != 2)
-									ImGui::SameLine();
-								buts++;
-							}
-						}
-					}
-				}
-				ImGui::Columns(1);
-
-
-			} else {
-				if (this->selectedObjs.size() == 0) {
+			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+			ImGui::SetNextWindowSize(ImVec2(uiWidth, uiHeight), ImGuiCond_Always);
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+			if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+			{
+				if (this->selectedObjs.size() == 1) {
 					ImGui::Columns(2, NULL, false);
 					ImGui::SetColumnWidth(-1, uiLWidth);
+					EntityID selectedObj = this->selectedObjs[0];
 
-					this->constructionProgressGui(player.rootConstruction);
+					Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+					GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
+
+					if (this->vault->registry.has<Building>(selectedObj)) {
+						Building &building = this->vault->registry.get<Building>(selectedObj);
+						this->constructionProgressGui(building.construction);
+					}
+
+					if (this->vault->registry.has<Unit>(selectedObj)) {
+						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
+
+						ImGui::BeginGroup();
+						ImGui::Text("PV: %d", (int)obj.life);
+						ImGui::Text("AC: %d", unit.attack1.power);
+						ImGui::Text("DC: %d", unit.attack1.distance);
+						ImGui::Text("AE: %d", unit.attack2.power);
+						ImGui::Text("DE: %d", unit.attack2.distance);
+						ImGui::EndGroup();
+					}
+
 					ImGui::NextColumn();
 					ImGui::SetColumnWidth(-1, uiRWidth);
 
-					if (player.rootConstruction) {
-						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
-						                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
-						                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
 
-							this->vault->factory.destroyEntity(this->vault->registry, player.rootConstruction);
-							player.rootConstruction = 0;
+					if (this->vault->registry.has<Unit>(selectedObj)) {
+						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
+
+						ImGui::BeginGroup();
+						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
+						                           this->vault->factory.texManager.getRef(player.team + "_move"),
+						                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
+							std::cout << "move clicked " << std::endl;
+
 						}
-					} else {
-						TechNode *node = this->vault->factory.getTechRoot(player.team);
-						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
-						                           this->vault->factory.texManager.getRef(node->type + "_icon"),
-						                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
-							std::cout << "build clicked " << node->type << std::endl;
-							if (!player.rootConstruction)
-								player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
+
+						ImGui::SameLine();
+						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_attack"),
+						                           this->vault->factory.texManager.getRef(player.team + "_attack"),
+						                           this->vault->factory.texManager.getRef(player.team + "_attack_down"))) {
+							std::cout << "attack clicked " << std::endl;
+
+						}
+						ImGui::EndGroup();
+
+					}
+
+					if (this->vault->registry.has<Building>(selectedObj)) {
+
+						Building &building = this->vault->registry.get<Building>(selectedObj);
+
+						TechNode *pnode = this->vault->factory.getTechNode(player.team, obj.name);
+						if (building.construction) {
+							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
+							                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
+							                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
+								this->vault->factory.destroyEntity(this->vault->registry, building.construction);
+								building.construction = 0;
+							}
+						} else {
+
+							if (pnode->children.size() > 0) {
+								int buts = 0;
+								for (TechNode &node : pnode->children) {
+									if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
+									                           this->vault->factory.texManager.getRef(node.type + "_icon"),
+									                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
+										std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
+										switch (node.comp) {
+										case TechComponent::Building: {
+//										Building &building = this->vault->registry.get<Building>(selectedObj);
+											if (!building.construction) {
+												EntityID newConsEnt = this->vault->factory.startBuilding(this->vault->registry, node.type, selectedObj);
+
+												// need to reload the parent building to assign construction
+												Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
+												pBuilding.construction = newConsEnt;
+												std::cout << "start build " << building.construction << std::endl;
+											}
+										}
+										break;
+										case TechComponent::Character:
+											if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
+												this->markUpdateObjLayer = true;
+											}
+											break;
+										case TechComponent::Resource:
+											this->seedResources(player.resourceType, selectedObj);
+											break;
+										}
+									}
+									if (buts % 3 != 2)
+										ImGui::SameLine();
+									buts++;
+								}
+							}
 						}
 					}
 					ImGui::Columns(1);
+
+
+				} else {
+					if (this->selectedObjs.size() == 0) {
+						ImGui::Columns(2, NULL, false);
+						ImGui::SetColumnWidth(-1, uiLWidth);
+
+						this->constructionProgressGui(player.rootConstruction);
+						ImGui::NextColumn();
+						ImGui::SetColumnWidth(-1, uiRWidth);
+
+						if (player.rootConstruction) {
+							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
+							                           this->vault->factory.texManager.getRef(player.team + "_cancel"),
+							                           this->vault->factory.texManager.getRef(player.team + "_cancel_down"))) {
+
+								this->vault->factory.destroyEntity(this->vault->registry, player.rootConstruction);
+								player.rootConstruction = 0;
+							}
+						} else {
+							TechNode *node = this->vault->factory.getTechRoot(player.team);
+							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
+							                           this->vault->factory.texManager.getRef(node->type + "_icon"),
+							                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
+								std::cout << "build clicked " << node->type << std::endl;
+								if (!player.rootConstruction)
+									player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
+							}
+						}
+						ImGui::Columns(1);
+					}
 				}
+
+				ImGui::End();
+
 			}
-
-			ImGui::End();
-
+			ImGui::PopStyleColor();
 		}
-		ImGui::PopStyleColor();
 	}
 
 

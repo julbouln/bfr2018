@@ -27,8 +27,6 @@ public:
 
 	GameVault vault;
 
-	EntityID emptyEntity;
-
 	sf::RenderWindow window;
 
 	void registerStage(std::string name, Stage *stage) {
@@ -145,7 +143,6 @@ public:
 		window.clear(sf::Color::Black);
 		window.display();
 
-		emptyEntity = vault.registry.create();
 		vault.factory.load();
 	}
 

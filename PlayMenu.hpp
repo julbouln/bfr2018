@@ -28,7 +28,8 @@ public:
 
 			ImGui::Text("Team"); ImGui::SameLine();
 			ImGui::RadioButton("Rebel", &team, 0); ImGui::SameLine();
-			ImGui::RadioButton("Neonaz", &team, 1);
+			ImGui::RadioButton("Neonaz", &team, 1); ImGui::SameLine();
+			ImGui::RadioButton("Spectator", &team, 2);
 
 			const char* mapSizes[] = { "Small", "Medium", "Large" };
 			ImGui::Text("Map size"); ImGui::SameLine();
@@ -107,6 +108,9 @@ public:
 			case 1:
 				playerTeam = "neonaz";
 				break;
+			case 2:
+				playerTeam = "neutral";
+				break;
 			}
 
 			switch (mapSize) {
@@ -125,7 +129,7 @@ public:
 			}
 
 			if (this->game->isRegisteredStage("game")) {
-				std::cout << "clear game"<<std::endl;
+				std::cout << "clear game" << std::endl;
 				GameEngine *engine = (GameEngine *)this->game->getStage("game");
 				delete engine;
 				this->game->unregisterStage("game");

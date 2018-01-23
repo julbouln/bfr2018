@@ -52,7 +52,7 @@ public:
 			Player &player = playerView.get(entity);
 			if (player.team == "rebel")
 				player.resources = natureResources;
-			else
+			else if(player.team == "neonaz")
 				player.resources = pollutionResources;
 		}
 	}

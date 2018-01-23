@@ -1,0 +1,29 @@
+<manifest>
+	<unit path="defs/uni/patrouilleur.xml"/>
+	<unit path="defs/uni/punkette.xml"/>
+	<unit path="defs/uni/guerrier_bud.xml"/>
+	<unit path="defs/uni/brad_lab.xml"/>
+	<unit path="defs/uni/guerrier_bud_powerhead.xml"/>
+	<unit path="defs/uni/lance_pepino.xml"/>
+	<unit path="defs/uni/zork.xml"/>
+	<unit path="defs/uni/super_guerrier.xml"/>
+	<unit path="defs/uni/abdel.xml"/>
+	<unit path="defs/uni/grosnaz.xml"/>
+	<unit path="defs/uni/bazooka.xml"/>
+	<unit path="defs/uni/lance_missille.xml"/>
+	<unit path="defs/uni/mitrailleur.xml"/>
+	<unit path="defs/uni/punk.xml"/>
+	
+	<building path="defs/bui/artillerie.xml"/>
+	<building path="defs/bui/caserne.xml"/>
+	<building path="defs/bui/ferme.xml"/>
+	<building path="defs/bui/festival.xml"/>
+	<building path="defs/bui/gymnaz.xml"/>
+	<building path="defs/bui/labo.xml"/>
+	<building path="defs/bui/mirador.xml"/>
+	<building path="defs/bui/raffinerie_bud.xml"/>
+	<building path="defs/bui/squat.xml"/>
+	<building path="defs/bui/taverne.xml"/>
+	<building path="defs/bui/tourelle.xml"/>
+	<building path="defs/bui/usine_vehicule.xml"/>
+</manifest>
