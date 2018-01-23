@@ -6,6 +6,7 @@ class DrawMapSystem : public GameSystem {
 public:
 	sf::Shader colorSwap;
 	sf::Shader pixelation;
+	sf::Shader outline;
 
 	std::vector<EntityID> entitiesDrawList;
 
@@ -15,6 +16,8 @@ public:
 		if (!colorSwap.loadFromFile("defs/new/shaders/color_swap.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load colorSwap shader" << std::endl;
 		if (!pixelation.loadFromFile("defs/new/shaders/pixelation.frag", sf::Shader::Fragment))
+			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
+		if (!outline.loadFromFile("defs/new/shaders/outline.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
 
 		this->showDebugLayer = false;

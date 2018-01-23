@@ -570,8 +570,10 @@ public:
 				t = tiles["dirt"][rand() % ALT_TILES];
 				if (res < -0.3)
 					t = tiles["sand"][rand() % ALT_TILES];
-				if (res < -0.5)
+				if (res < -0.5) {
 					t = tiles["water"][rand() % ALT_TILES];
+					this->map->staticPathfinding.set(x,y,t);
+				}
 				/*
 								if (res > -0.4) {
 									t = tiles["dirt"][0];

@@ -8,7 +8,7 @@
 #include "tixml2ex.h"
 
 //#define TECH_TREE_DEBUG
-#define FACTORY_DEBUG
+//#define FACTORY_DEBUG
 
 enum class TechComponent {
 	Building,
@@ -48,6 +48,7 @@ public:
 };
 
 class EntityFactory {
+	bool loaded;
 
 	std::map<std::string, tinyxml2::XMLDocument *> docs;
 
@@ -100,9 +101,12 @@ public:
 
 	}
 
-	void loadMisc() {
+	void loadInitial() {
+		this->loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
 
-		this->loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/intro_bg-bot.png");
+	}
+
+	void loadMisc() {
 
 		this->loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
 		this->loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
@@ -296,7 +300,9 @@ public:
 		}
 
 		outImage.createMaskFromColor(sf::Color::White);
+#ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: init dir texture " << name << " " << columnWidth << "x" << height << std::endl;
+#endif
 		texManager.loadTexture(name, outImage, sf::IntRect{0, 0, columnWidth * 8, height});
 	}
 
@@ -942,7 +948,7 @@ public:
 
 		if (team == "rebel")
 			player.resourceType = ResourceType::Nature;
-		else if(team == "neonaz")
+		else if (team == "neonaz")
 			player.resourceType = ResourceType::Pollution;
 
 		registry.assign<Player>(entity, player);
@@ -956,32 +962,35 @@ public:
 		for (tinyxml2::XMLElement *childEl : doc.RootElement()) {
 			std::string name = childEl->Name();
 
-			if(name == "unit") {
+			if (name == "unit") {
 				unitFiles.push_back(childEl->Attribute("path"));
-			} else if(name=="building") {
+			} else if (name == "building") {
 				buildingFiles.push_back(childEl->Attribute("path"));
 			}
 		}
 	}
 
 	void load() {
-		this->loadManifest("defs/manifest.xml");
-		
-		this->loadTerrains();
-		this->loadUnits();
-		this->loadBuildings();
+		if (!this->loaded) {
+			this->loadManifest("defs/manifest.xml");
 
-		this->loadResources("defs/res/nature.xml");
-		this->loadResources("defs/res/pollution.xml");
+			this->loadTerrains();
+			this->loadUnits();
+			this->loadBuildings();
 
-		this->loadPlayerColors("defs/unit_color.xml");
+			this->loadResources("defs/res/nature.xml");
+			this->loadResources("defs/res/pollution.xml");
 
-		this->loadMisc();
-		this->loadTechTrees();
+			this->loadPlayerColors("defs/unit_color.xml");
+
+			this->loadMisc();
+			this->loadTechTrees();
+			this->loaded = true;
+		}
 	}
 
 	EntityFactory() {
-
+		this->loaded = false;
 	}
 
 };

@@ -164,6 +164,7 @@ public:
 
 	TileLayer corpses;
 
+	ObjLayer staticPathfinding;
 	ObjLayer pathfinding;
 
 	Map() {
@@ -189,6 +190,7 @@ public:
 
 		this->corpses.setSize(width, height);
 
+		this->staticPathfinding.setSize(width, height);
 		this->pathfinding.setSize(width, height);
 
 		this->width = width;
@@ -202,12 +204,13 @@ public:
 			return false;
 	}
 
+	// pathfinding blocking method
 	inline bool operator()(unsigned x, unsigned y) const
 	{
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 //			std::cout << "PATHFINDING "<< x << "x" << y << " " << objs.entitiesGrid[x + width * y] << std::endl;
-			if (pathfinding.entitiesGrid[x + width * y] == 0)
+			if (staticPathfinding.entitiesGrid[x + width * y] == 0 && pathfinding.entitiesGrid[x + width * y] == 0)
 				return true;
 		}
 		return false;

@@ -143,7 +143,7 @@ public:
 		window.clear(sf::Color::Black);
 		window.display();
 
-		vault.factory.load();
+		vault.factory.loadInitial();
 	}
 
 

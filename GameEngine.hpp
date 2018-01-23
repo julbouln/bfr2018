@@ -25,6 +25,8 @@
 
 #include "AI.hpp"
 
+#define ZOOMLEVEL_ENABLE
+
 enum class Action {
 	None,
 	Selecting,
@@ -76,8 +78,6 @@ public:
 	unsigned long ticks;
 	bool markUpdateObjLayer;
 
-	sf::Font font;
-
 	bool scoreBonus;
 	sf::Text scoreBonusText;
 	sf::Sound scoreSound;
@@ -93,18 +93,24 @@ public:
 
 	bool showDebugWindow;
 
+	float zoomLevel;
+
 	GameEngine(Game *game) {
 		this->game = game;
+		font.loadFromFile("medias/fonts/samos.ttf");
 		this->init();
 		this->generate(64, 64, "rebel");
 		this->moveView = MoveView::DontMove;
+		this->zoomLevel = 1.0;
 	}
 
 	GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		this->game = game;
+		font.loadFromFile("medias/fonts/samos.ttf");
 		this->init();
 		this->generate(mapWidth, mapHeight, playerTeam);
 		this->moveView = MoveView::DontMove;
+		this->zoomLevel = 1.0;
 	}
 
 	~GameEngine() {
@@ -127,7 +133,28 @@ public:
 		this->setSize(this->game->width, this->game->height);
 		this->setVaults(&(this->game->vault));
 
+		text.setFont(font);
+		text.setCharacterSize(48);
+		text.setColor(sf::Color::White);
+
 		this->initView();
+
+		std::cout << "GameEngine: loading ..." << std::endl;
+
+		// show loading screen
+		this->game->window.clear(sf::Color::Black);
+		this->text.setString("LOADING");
+		sf::FloatRect textRect = this->text.getLocalBounds();
+		text.setOrigin(textRect.left + textRect.width / 2.0f,
+		               textRect.top  + textRect.height / 2.0f);
+		text.setPosition(sf::Vector2f(this->width / 2, this->height / 2));
+		this->game->window.draw(this->text);
+		this->game->window.display();
+
+		this->vault->factory.load();
+		std::cout << "GameEngine: loaded !" << std::endl;
+
+//		this->game->window.clear(sf::Color::Black);
 
 		this->initEffects();
 		this->fadeIn();
@@ -184,7 +211,6 @@ public:
 		ai.nazAI.setVault(this->vault);
 		ai.nazAI.map = this->map;
 
-		font.loadFromFile("medias/fonts/samos.ttf");
 		scoreBonusText.setFont(font);
 		scoreBonusText.setCharacterSize(48);
 		scoreBonusText.setColor(sf::Color::White);
@@ -210,6 +236,9 @@ public:
 	}
 	float scaleY() {
 		return this->height / 600.0;
+	}
+	float minimapSize() {
+		return 96.0 * this->scaleX();
 	}
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
@@ -298,7 +327,7 @@ public:
 
 		// 128,512
 		// TODO: convert to window dimension relative coord
-		minimapRect = sf::FloatRect(this->scaleX() * (128 - 96 / 2), this->scaleY() * (520 - 96 / 2), 96, 96);
+		minimapRect = sf::FloatRect(this->scaleX() * 128 - (this->minimapSize() / 2), this->scaleY() * 520 - (this->minimapSize() / 2), this->minimapSize(), this->minimapSize());
 	}
 
 	void menuGui() {
@@ -381,6 +410,7 @@ public:
 //		ImVec2 window_pos_pivot = ImVec2(1.0f, 1.0f);
 			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
 			ImGui::SetNextWindowSize(ImVec2(uiWidth, uiHeight), ImGuiCond_Always);
+			this->guiPushStyles();
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 			if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
@@ -524,6 +554,7 @@ public:
 
 			}
 			ImGui::PopStyleColor();
+			this->guiPopStyles();
 		}
 	}
 
@@ -845,13 +876,13 @@ public:
 		*/
 
 		sf::IntRect mClip = clip;
-		mClip.left = minimapRect.left + (this->gameView.getCenter().x / 32.0 - (this->width) / 32.0 / 2.0) * (96.0 / this->map->width);
-		mClip.top = minimapRect.top + (this->gameView.getCenter().y / 32.0 - (this->height) / 32.0 / 2.0) * (96.0 / this->map->height);
-		mClip.width = (int)((float)(this->width / 32.0) * (96.0 / this->map->width));
-		mClip.height = (int)((float)(this->height / 32.0) * (96.0 / this->map->height));
+		mClip.left = (minimapRect.left + (this->gameView.getCenter().x / 32.0 - (this->width) / 32.0 / 2.0) * (this->minimapSize() / this->map->width));
+		mClip.top = (minimapRect.top + (this->gameView.getCenter().y / 32.0 - (this->height) / 32.0 / 2.0) * (this->minimapSize() / this->map->height));
+		mClip.width = (int)((float)(this->width / 32.0) * (this->minimapSize() / this->map->width));
+		mClip.height = (int)((float)(this->height / 32.0) * (this->minimapSize() / this->map->height));
 
 		minimap.setPosition(sf::Vector2f(minimapRect.left, minimapRect.top));
-		minimap.setScale(sf::Vector2f(96.0 / this->map->width, 96.0 / this->map->height));
+		minimap.setScale(sf::Vector2f(this->minimapSize() / this->map->width, this->minimapSize() / this->map->height));
 		this->game->window.draw(minimap);
 		drawMap.drawMinimapClip(this->game->window, mClip);
 
@@ -1135,7 +1166,7 @@ public:
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					// left click on minimap
 					if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-						sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
+						sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (this->minimapSize() / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (this->minimapSize() / this->map->width));
 						std::cout << "minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
 						this->centerMapView(sf::Vector2i(mPos));
 						this->clearSelection();
@@ -1181,13 +1212,40 @@ public:
 					} else {
 						// right click on minimap
 						if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-							sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (96.0 / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (96.0 / this->map->width));
+							sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (this->minimapSize() / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (this->minimapSize() / this->map->width));
 							this->orderSelected(mPos);
 						} else {
 							this->orderSelected(gameMapPos);
 						}
 					}
 				}
+			}
+			break;
+			/* Zoom the view */
+			case sf::Event::MouseWheelMoved:
+			{
+#ifdef ZOOMLEVEL_ENABLE
+				float zoom = 2.0;
+
+				if (event.mouseWheel.delta < 0)
+				{
+					this->zoomLevel *= zoom;
+					if (this->zoomLevel < 8.0) {
+						this->gameView.zoom(zoom);
+					}
+					else
+						this->zoomLevel = 4.0;
+				}
+				else
+				{
+					this->zoomLevel *= 1.0 / zoom;
+					if (this->zoomLevel > 0.5) {
+						this->gameView.zoom(1.0 / zoom);
+					}
+					else
+						this->zoomLevel = 1.0;
+				}
+#endif
 			}
 			break;
 			}

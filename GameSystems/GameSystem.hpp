@@ -126,7 +126,7 @@ public:
 
 		for (sf::Vector2i p : this->tileSurface(tile)) {
 			EntityID pEnt = this->map->objs.get(p.x, p.y);
-			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited)
+			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticPathfinding.get(p.x,p.y) == 0)
 			{
 //				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
 				restrictedPos.push_back(p);

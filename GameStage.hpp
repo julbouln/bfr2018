@@ -17,6 +17,14 @@ public:
 
 	int nextStage;
 
+	sf::Font font;
+
+	sf::Text text;
+
+	GameStage() {
+		
+	}
+
 	void setSize(unsigned int width, unsigned int height) {
 		this->width = width;
 		this->height = height;
@@ -65,11 +73,14 @@ public:
 
 	void guiPushStyles() {
 //		this->setStyle();
-		
+
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)ImColor(141, 98, 42, 255));
+
 		ImGui::PushStyleColor(ImGuiCol_Border, (ImVec4)ImColor(96, 76, 29, 255));
+		ImGui::PushStyleColor(ImGuiCol_BorderShadow, (ImVec4)ImColor(96, 76, 29, 255));
 		ImGui::PushStyleColor(ImGuiCol_FrameBg, (ImVec4)ImColor(153, 106, 56, 255));
 		ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, (ImVec4)ImColor(171, 119, 62, 255));
 		ImGui::PushStyleColor(ImGuiCol_FrameBgActive, (ImVec4)ImColor(141, 98, 42, 255));
@@ -84,11 +95,11 @@ public:
 		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, (ImVec4)ImColor(171, 119, 62, 255));
 		ImGui::PushStyleColor(ImGuiCol_HeaderActive, (ImVec4)ImColor(141, 98, 42, 255));
 
-		
+
 	}
 
 	void guiPopStyles() {
-		ImGui::PopStyleColor(11);
+		ImGui::PopStyleColor(13);
 		ImGui::PopStyleVar(2);
 	}
 
