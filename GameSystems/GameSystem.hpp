@@ -250,8 +250,10 @@ public:
 	void playRandomUnitSound(GameObject &obj, Unit &unit, std::string state) {
 		if (unit.soundActions[state] > 0) {
 			int rnd = rand() % unit.soundActions[state];
-			unit.sound.setBuffer(this->vault->factory.getSndBuf(obj.name + "_" + state + "_" + std::to_string(rnd)));
-			unit.sound.play();
+			std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
+//			unit.sound.setBuffer(this->vault->factory.getSndBuf(obj.name + "_" + state + "_" + std::to_string(rnd)));
+//			unit.sound.play();
+			this->map->sounds.push(SoundPlay{sname, 1, sf::Vector2i{0,0}});
 		}
 	}
 

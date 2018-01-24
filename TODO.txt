@@ -1,7 +1,3 @@
-Bugs:
-- sometimes at start there is no fog and units can't be controlled
-- sometimes program hang (registry)
-
 Misc
 - add mouse cursors
 - add hit blood FX

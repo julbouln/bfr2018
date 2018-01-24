@@ -150,12 +150,15 @@ public:
 
 			if (tile.state == "attack") {
 				// play sound at frame 1
-				if (tile.animHandlers["attack"].getCurrentFrame() == 1) {
-//					std::cout << "play sound at "<< tile.animHandlers["attack"].getCurrentFrame()<< std::endl;
-					if (unit.attackSound.getStatus() != sf::Sound::Status::Playing)
-						unit.attackSound.play();
-				}
+//				std::cout << "CombatSystem: " << entity << " attack frame " << tile.animHandlers["attack"].getCurrentFrame() << " " << tile.animHandlers["attack"].t << std::endl;
 
+				tile.animHandlers["attack"].changeFrameCallback = [this, &unit, &tile](int frame) { 
+					if (frame == 1) {
+					//	std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl; 
+						if(map->sounds.size() < 255)
+							map->sounds.push(SoundPlay{unit.attackSound, 1, tile.pos});
+					}};
+					
 				// attacked obj does not exists anymore, stop attacking
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
 					this->changeState(tile, "idle");
@@ -238,7 +241,8 @@ public:
 					explosionTile.animHandlers["fx"].reset();
 					explosionTile.animHandlers["fx"].changeAnim(0);
 					explosionTile.animHandlers["fx"].set(0);
-					explosion.sound.play();
+					this->map->sounds.push(SoundPlay{explosion.sound, 1, explosionTile.pos});
+//					explosion.sound.play();
 				}
 //					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["fx"].l<<std::endl;
 
@@ -266,8 +270,8 @@ public:
 					} else {
 						projTile.ppos = proj.positions[0];
 						proj.curPosition = 0;
-													projTile.animHandlers["fx"].reset();
-							projTile.animHandlers["fx"].set(0);
+						projTile.animHandlers["fx"].reset();
+						projTile.animHandlers["fx"].set(0);
 
 
 					}

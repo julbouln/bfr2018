@@ -28,7 +28,6 @@ struct Tile {
 
     std::string state;
     unsigned int direction;
-
 };
 
 struct Attack {
@@ -42,7 +41,7 @@ struct MapEffect {
 	float speed;
 	std::vector<sf::Vector2f>positions;
 	int curPosition;
-	sf::Sound sound;
+	std::string sound;
 };
 
 // unit or building
@@ -82,10 +81,10 @@ struct Unit {
 	sf::Vector2i nextpos;
 	unsigned int nopath;
 
-	sf::Sound sound;
+	std::string sound;
 	std::map<std::string, int> soundActions;
 
-	sf::Sound attackSound;
+	std::string attackSound;
 };
 
 struct Building {
@@ -132,3 +131,4 @@ struct Player {
 	// stats
 	std::map<std::string, int> stats;
 };
+

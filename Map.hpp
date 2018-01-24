@@ -1,55 +1,17 @@
 #pragma once
 
+#include <queue>
+#include <vector>
 
-class TileLayer {
-	std::vector<EntityID> entitiesGrid;
-public:
-	unsigned int width;
-	unsigned int height;
-	TileLayer() {}
-
-	TileLayer(unsigned int width, unsigned int height) : width(width), height(height)  {
-		this->fill();
-	}
-
-	void setSize(unsigned int w, unsigned int h) {
-		this->width = w;
-		this->height = h;
-		this->fill();
-	}
-
-	void fill()
-	{
-		entitiesGrid.clear();
-		while (entitiesGrid.size() < width * height) {
-			entitiesGrid.push_back(0);
-		}
-	}
-
-	int index(int x, int y) const { return x + width * y; }
-
-	EntityID get(int x, int y) {
-		return entitiesGrid[this->index(x, y)];
-	}
-
-	void set(int x, int y, EntityID ent) {
-		entitiesGrid[this->index(x, y)] = ent;
-	}
-
-	void del(int x, int y) {
-		entitiesGrid[this->index(x, y)] = 0;
-	}
-};
-
-class ObjLayer {
+class Layer {
 public:
 	std::vector<EntityID> entitiesGrid;
 
 	unsigned int width;
 	unsigned int height;
-	ObjLayer() {}
+	Layer() {}
 
-	ObjLayer(unsigned int width, unsigned int height) : width(width), height(height)  {
+	Layer(unsigned int width, unsigned int height) : width(width), height(height)  {
 		this->fill();
 	}
 
@@ -135,33 +97,51 @@ public:
 
 };
 
+struct SoundPlay {
+	std::string name;
+	int priority;
+	sf::Vector2i pos;
+};
+
+class SoundPlayCompare
+{
+public:
+	bool operator() (SoundPlay &l, SoundPlay &r)
+	{
+		return l.priority < r.priority;
+	}
+};
+
+
 class Map {
 public:
 
 	unsigned int width;
 	unsigned int height;
 
-	TileLayer terrains;
+	Layer terrains;
 
-	std::vector<TileLayer> transitions;
+	std::vector<Layer> transitions;
 
-	TileLayer fogHidden;
-	TileLayer fogUnvisited;
+	Layer fogHidden;
+	Layer fogUnvisited;
 
-	TileLayer fogHiddenTransitions;
-	TileLayer fogUnvisitedTransitions;
+	Layer fogHiddenTransitions;
+	Layer fogUnvisitedTransitions;
 
-	ObjLayer objs;
-	ObjLayer resources;
+	Layer objs;
+	Layer resources;
 
-	ObjLayer effects;
+	Layer effects;
 
-	TileLayer corpses;
+	Layer corpses;
 
-	ObjLayer staticBuildable;
+	Layer staticBuildable;
 
-	ObjLayer staticPathfinding;
-	ObjLayer pathfinding;
+	Layer staticPathfinding;
+	Layer pathfinding;
+
+	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
 
 	Map() {
 	}
@@ -170,7 +150,7 @@ public:
 		this->terrains.setSize(width, height);
 
 		for (int i = 0; i < 3; i++) {
-			TileLayer layer;
+			Layer layer;
 			layer.setSize(width, height);
 			this->transitions.push_back(layer);
 		}

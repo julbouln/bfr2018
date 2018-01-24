@@ -44,12 +44,12 @@ class MapLayersSystem : public GameSystem {
 
 public:
 	void update(float dt) {
-		this->updateTileLayer(dt);
+		this->updateLayer(dt);
 		this->updateObjsLayer(dt);
 		this->updatePlayersFog(dt);
 	}
 
-	void updateTileLayer(float dt) {
+	void updateLayer(float dt) {
 		auto view = this->vault->registry.persistent<Tile, Building, GameObject>();
 
 		// update terrain with building
@@ -417,7 +417,7 @@ public:
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
-	int transitionBitmask(TileLayer &layer, EntityID ent, int x, int y) {
+	int transitionBitmask(Layer &layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (this->map->bound(x, y - 1))
 			bitmask += 1 * ((this->altTerrains[layer.get(x, y - 1)] == ent) ? 1 : 0);
@@ -440,7 +440,7 @@ public:
 		return bitmask;
 	}
 
-	int voidTransitionBitmask(TileLayer &layer, EntityID ent, int x, int y) {
+	int voidTransitionBitmask(Layer &layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (this->altTerrains[layer.get(x, y)] != ent) {
 			bitmask = this->transitionBitmask(layer, ent, x, y);
@@ -448,7 +448,7 @@ public:
 		return bitmask;
 	}
 
-	int pairTransitionBitmask(TileLayer &layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
+	int pairTransitionBitmask(Layer &layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
 		int bitmask = 0;
 		if (this->altTerrains[layer.get(x, y)] == srcEnt) {
 			bitmask = this->transitionBitmask(layer, dstEnt, x, y);
@@ -456,7 +456,7 @@ public:
 		return bitmask;
 	}
 
-	int updateTransition(int bitmask, TileLayer &outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
+	int updateTransition(int bitmask, Layer &outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
 		if (bitmask) {
 			if (bitmask & 0xf) {
 				if (mapping.count(bitmask & 0xf) > 0) {

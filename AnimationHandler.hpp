@@ -77,6 +77,9 @@ public:
     /* Current time since the animation loop started */
     float t;
     int l;
+    bool newFrame;
+
+    std::function<void(int)> changeFrameCallback;
 
     int count() {return animations.size();};
 
@@ -119,6 +122,7 @@ public:
 //                this->l = 1;
             //          } else {
 
+            this->newFrame = false;
 
             float duration = anim.duration;
 
@@ -132,6 +136,11 @@ public:
                 /* Adjust for looping */
                 if (anim.repeat)
                     frame %= anim.getLength();
+
+                if (frame != this->currentFrame) {
+                    this->newFrame = true;
+                    this->changeFrameCallback(frame);
+                }
 
                 this->currentFrame = frame;
 
@@ -190,6 +199,8 @@ public:
         this->currentFrame = 0;
         this->currentAnim = -1;
         this->l = 0;
+        this->newFrame = false;
+        this->changeFrameCallback = [](int frame) {};
     }
 
     /* Constructor */

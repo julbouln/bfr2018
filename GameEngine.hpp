@@ -22,6 +22,7 @@
 #include "GameSystems/PathfindingSystem.hpp"
 #include "GameSystems/CombatSystem.hpp"
 #include "GameSystems/VictorySystem.hpp"
+#include "GameSystems/SoundSystem.hpp"
 
 #include "AI.hpp"
 
@@ -51,6 +52,8 @@ public:
 	PathfindingSystem pathfinding;
 	CombatSystem combat;
 	VictorySystem victory;
+	SoundSystem sound;
+
 	AI ai;
 
 	sf::Sprite iface;
@@ -76,7 +79,7 @@ public:
 	float timePerTick;
 	float currentTime;
 	unsigned long ticks;
-	bool markUpdateObjLayer;
+	bool markUpdateLayer;
 
 	bool scoreBonus;
 	sf::Text scoreBonusText;
@@ -123,9 +126,10 @@ public:
 	void init() {
 		this->action = Action::None;
 		this->timePerTick = 0.1;
+		this->currentTime = 0.0;
 		this->ticks = 0;
 		this->currentBuild = 0;
-		this->markUpdateObjLayer = false;
+		this->markUpdateLayer = false;
 
 		this->currentPlayer = 0;
 		this->map = new Map();
@@ -203,6 +207,8 @@ public:
 		combat.map = this->map;
 		victory.setVault(vault);
 		victory.map = this->map;
+		sound.setVault(vault);
+		sound.map = this->map;
 
 		ai.setVault(vault);
 		ai.map = this->map;
@@ -501,7 +507,7 @@ public:
 										break;
 										case TechComponent::Character:
 											if (this->trainUnit(node.type, this->currentPlayer, selectedObj)) {
-												this->markUpdateObjLayer = true;
+												this->markUpdateLayer = true;
 											}
 											break;
 										case TechComponent::Resource:
@@ -756,15 +762,19 @@ public:
 
 	void updateEveryFrame(float dt)
 	{
-		if (this->markUpdateObjLayer) {
+		if (this->markUpdateLayer) {
 			this->mapLayers.updateObjsLayer(0);
-			this->markUpdateObjLayer = false;
+			this->markUpdateLayer = false;
 		}
 
 		this->tileAnim.update(dt);
 		this->pathfinding.update(dt);
 
 		this->combat.updateProjectiles(dt);
+
+		this->sound.update(dt);
+		this->sound.cleanPlaying(dt);
+
 	}
 
 	sf::IntRect viewClip() {
@@ -951,6 +961,7 @@ public:
 		this->updateEveryFrame(dt);
 
 		this->currentTime += dt;
+
 		if (this->currentTime < this->timePerTick) return;
 
 		this->ticks++;
@@ -987,6 +998,11 @@ public:
 
 		this->updateSelected(updateDt);
 		this->updateMoveView(updateDt);
+
+		sf::Vector2f viewPos = this->gameView.getCenter();
+//		std::cout << "GameEngine: set listener position to " << viewPos.x / 32.0 << "x" << viewPos.y / 32.0 << std::endl;
+		sf::Listener::setPosition(viewPos.x / 32.0, 0.f, viewPos.y / 32.0);
+
 	}
 
 	void updateMoveView(float dt) {
@@ -1208,7 +1224,7 @@ public:
 						this->vault->registry.remove<Tile>(this->currentBuild);
 						this->currentBuild = 0;
 						this->action = Action::None;
-						this->markUpdateObjLayer = true;
+						this->markUpdateLayer = true;
 					} else {
 						// right click on minimap
 						if (this->minimapRect.contains(sf::Vector2f(mousePos))) {

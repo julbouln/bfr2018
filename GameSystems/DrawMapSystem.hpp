@@ -24,21 +24,21 @@ public:
 	}
 
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
-		this->drawTileLayer(window, this->map->terrains, clip, dt);
-		for (TileLayer &transitionLayer : this->map->transitions) {
-			this->drawTileLayer(window, transitionLayer, clip, dt);
+		this->drawLayer(window, this->map->terrains, clip, dt);
+		for (Layer &transitionLayer : this->map->transitions) {
+			this->drawLayer(window, transitionLayer, clip, dt);
 		}
 
-		this->drawTileLayer(window, this->map->corpses, clip, dt);
+		this->drawLayer(window, this->map->corpses, clip, dt);
 
-		this->drawObjLayer(window, clip, dt);
+		this->drawLayer(window, clip, dt);
 		if (showDebugLayer)
 			this->drawDebug(window, clip, dt);
 
-		this->drawTileLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		this->drawTileLayer(window, this->map->fogUnvisited, clip, dt, sf::Color(0x00, 0x00, 0x00));
-		this->drawTileLayer(window, this->map->fogHiddenTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		this->drawTileLayer(window, this->map->fogUnvisitedTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00));
+		this->drawLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
+		this->drawLayer(window, this->map->fogUnvisited, clip, dt, sf::Color(0x00, 0x00, 0x00));
+		this->drawLayer(window, this->map->fogHiddenTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
+		this->drawLayer(window, this->map->fogUnvisitedTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
 	void drawMinimap(sf::RenderTexture &target, EntityID playerEnt) {
@@ -106,7 +106,7 @@ public:
 		window.draw(clipR);
 	}
 
-	void drawTileLayer(sf::RenderWindow &window, TileLayer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
+	void drawLayer(sf::RenderWindow &window, Layer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		for (int y = clip.top; y < clip.top + clip.height; ++y)
 		{
 			for (int x = clip.left; x < clip.left + clip.width; ++x)
@@ -230,7 +230,7 @@ public:
 		});
 	}
 
-	void drawObjLayer(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+	void drawLayer(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 		this->updateObjsDrawList(window, clip, dt);
 
 		for (EntityID ent : this->entitiesDrawList) {

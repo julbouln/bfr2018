@@ -548,7 +548,8 @@ public:
 
 
 			std::string prName = projEl->Attribute("name");
-			unit.attackSound.setBuffer(this->sndManager.getRef(prName));
+			unit.attackSound = prName;
+//			unit.attackSound.setBuffer(this->sndManager.getRef(prName));
 		}
 
 	}
@@ -888,7 +889,8 @@ public:
 		MapEffect effect;
 		effect.show = false;
 		effect.speed = 0.0;
-		effect.sound.setBuffer(sndManager.getRef(name));
+		effect.sound = name;
+//		effect.sound.setBuffer(sndManager.getRef(name));
 
 		tile.centerRect = centerRect;
 		registry.assign<Tile>(entity, tile);
