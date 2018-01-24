@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Config.hpp"
+
 #include "GameVault.hpp"
 #include "System.hpp"
 #include "Map.hpp"
@@ -128,7 +130,7 @@ public:
 
 		for (sf::Vector2i p : this->tileSurface(tile)) {
 			EntityID pEnt = this->map->objs.get(p.x, p.y);
-			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticBuildable.get(p.x,p.y) == 0)
+			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticBuildable.get(p.x,p.y) != 0)
 			{
 //				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
 				restrictedPos.push_back(p);

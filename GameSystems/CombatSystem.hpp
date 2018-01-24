@@ -40,7 +40,6 @@ public:
 
 		}
 
-//		auto view = this->vault->registry.persistent<Tile, Unit>();
 		// pass 2, calculate combat
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
@@ -61,7 +60,9 @@ public:
 				}
 
 				if (!inRange && tile.pos == unit.destAttackPos && tile.pos == unit.nextpos) {
-//					std::cout << "CombatSystem: " << entity << " arrived but enemy is not in range anymore, wait a bit" << std::endl;
+#ifdef COMBAT_DEBUG
+					std::cout << "CombatSystem: " << entity << " arrived but enemy is not in range anymore, wait a bit" << std::endl;
+#endif
 					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 					unit.destAttackPos = dpos;
 					this->goTo(unit, dpos);
@@ -70,18 +71,22 @@ public:
 					if (inRange) {
 						if (tile.pos == unit.nextpos) { // unit must be arrived at a position
 							int attackPower = unit.attack1.power;
-//					std::cout << "CombatSystem: "<<entity <<" arrived at target, fight "<<unit.destAttack<<std::endl;
+
+#ifdef COMBAT_DEBUG
+							std::cout << "CombatSystem: "<<entity <<" arrived at target, fight "<<unit.destAttack<<std::endl;
+#endif
 							sf::Vector2i distDiff = (destTile.pos - tile.pos);
 							// use attack2 if in correct range
 							if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
-//								std::cout << "CombatSystem: " << entity << " " <<obj.name << " use attack2 on "<<unit.destAttack << " "<<destObj.name << std::endl;
+#ifdef COMBAT_DEBUG
+								std::cout << "CombatSystem: " << entity << " " <<obj.name << " use attack2 on "<<unit.destAttack << " "<<destObj.name << std::endl;
+#endif
 								attackPower = unit.attack2.power;
 							}
 							unit.destpos = tile.pos;
 							unit.destAttackPos = tile.pos;
 							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
 								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
-//								std::cout << obj.name << " ANIM LEN "<<frCnt<<std::endl;
 								destObj.life -= (float)attackPower / 100.0 * frCnt;
 							}
 							if (destObj.life <= 0) {
@@ -121,7 +126,9 @@ public:
 						}
 					} else {
 						sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
-//					std::cout << "CombatSystem: "<<entity <<" target out of range, go to "<<dpos.x<<"x"<<dpos.y<<std::endl;
+#ifdef COMBAT_DEBUG
+					std::cout << "CombatSystem: "<<entity <<" target out of range, go to "<<dpos.x<<"x"<<dpos.y<<std::endl;
+#endif
 						unit.destAttackPos = dpos;
 						this->goTo(unit, dpos);
 					}
@@ -150,14 +157,14 @@ public:
 
 			if (tile.state == "attack") {
 				// play sound at frame 1
-//				std::cout << "CombatSystem: " << entity << " attack frame " << tile.animHandlers["attack"].getCurrentFrame() << " " << tile.animHandlers["attack"].t << std::endl;
-
 				tile.animHandlers["attack"].changeFrameCallback = [this, entity](int frame) {
 					if (vault->registry.valid(entity)) {
 						Unit &unit = vault->registry.get<Unit>(entity);
 						Tile &tile = vault->registry.get<Tile>(entity);
 						if (frame == 1) {
-							//	std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
+#ifdef COMBAT_DEBUG
+							std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
+#endif
 							if (map->sounds.size() < 255)
 								map->sounds.push(SoundPlay{unit.attackSound, 1, tile.pos});
 						}
@@ -239,7 +246,9 @@ public:
 				Tile &explosionTile = this->vault->registry.get<Tile>(explosionEnt);
 
 				if (!explosion.show) {
+#ifdef COMBAT_DEBUG
 					std::cout << "CombatSystem: " << entity << " destroyed, show explosion anim" << std::endl;
+#endif
 					explosion.show = true;
 					explosionTile.pos = tile.pos;
 					explosionTile.ppos = tile.ppos;

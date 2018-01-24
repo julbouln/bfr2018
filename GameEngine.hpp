@@ -26,8 +26,6 @@
 
 #include "AI.hpp"
 
-#define ZOOMLEVEL_ENABLE
-
 enum class Action {
 	None,
 	Selecting,
@@ -143,7 +141,9 @@ public:
 
 		this->initView();
 
+#ifdef GAME_ENGINE_DEBUG
 		std::cout << "GameEngine: loading ..." << std::endl;
+#endif
 
 		// show loading screen
 		this->game->window.clear(sf::Color::Black);
@@ -156,7 +156,10 @@ public:
 		this->game->window.display();
 
 		this->vault->factory.load();
+
+#ifdef GAME_ENGINE_DEBUG
 		std::cout << "GameEngine: loaded !" << std::endl;
+#endif
 
 //		this->game->window.clear(sf::Color::Black);
 
@@ -361,7 +364,7 @@ public:
 		ImVec2 window_pos = ImVec2(leftDist, topDist);
 		ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+//		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 		if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
@@ -376,7 +379,7 @@ public:
 
 			ImGui::End();
 		}
-		ImGui::PopStyleColor();
+//		ImGui::PopStyleColor();
 	}
 
 	void constructionProgressGui(EntityID consEnt) {
@@ -394,7 +397,7 @@ public:
 				if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
 				                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
 				                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built_down"))) {
-					std::cout << "built clicked " << std::endl;
+//					std::cout << "built clicked " << std::endl;
 					this->action = Action::Building;
 					this->currentBuild = this->vault->factory.finishBuilding(this->vault->registry, consEnt, this->currentPlayer, 8, 8, false);
 				}
@@ -456,7 +459,7 @@ public:
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
 						                           this->vault->factory.texManager.getRef(player.team + "_move"),
 						                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
-							std::cout << "move clicked " << std::endl;
+//							std::cout << "move clicked " << std::endl;
 
 						}
 
@@ -464,7 +467,7 @@ public:
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_attack"),
 						                           this->vault->factory.texManager.getRef(player.team + "_attack"),
 						                           this->vault->factory.texManager.getRef(player.team + "_attack_down"))) {
-							std::cout << "attack clicked " << std::endl;
+//							std::cout << "attack clicked " << std::endl;
 
 						}
 						ImGui::EndGroup();
@@ -491,7 +494,7 @@ public:
 									if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
 									                           this->vault->factory.texManager.getRef(node.type + "_icon"),
 									                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
-										std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
+//										std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
 										switch (node.comp) {
 										case TechComponent::Building: {
 //										Building &building = this->vault->registry.get<Building>(selectedObj);
@@ -501,7 +504,7 @@ public:
 												// need to reload the parent building to assign construction
 												Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
 												pBuilding.construction = newConsEnt;
-												std::cout << "start build " << building.construction << std::endl;
+//												std::cout << "start build " << building.construction << std::endl;
 											}
 										}
 										break;
@@ -547,7 +550,7 @@ public:
 							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
 							                           this->vault->factory.texManager.getRef(node->type + "_icon"),
 							                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
-								std::cout << "build clicked " << node->type << std::endl;
+//								std::cout << "build clicked " << node->type << std::endl;
 								if (!player.rootConstruction)
 									player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
 							}
@@ -688,10 +691,13 @@ public:
 			for (auto o : player.objsByType) {
 				playerObjs += o.second.size();
 			}
+#ifdef GAME_ENGINE_DEBUG
 			std::cout << "Player stats: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
-
+#endif
 			if (victory.checkVictoryConditions(entity)) {
+#ifdef GAME_ENGINE_DEBUG
 				std::cout << "Player: " << entity << " WINS !" << std::endl;
+#endif
 				GameOver *go = (GameOver *)this->game->getStage("game_over");
 
 				if (entity == this->currentPlayer) {
@@ -1183,14 +1189,15 @@ public:
 					// left click on minimap
 					if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
 						sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (this->minimapSize() / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (this->minimapSize() / this->map->width));
-						std::cout << "minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
+#ifdef GAME_ENGINE_DEBUG
+						std::cout << "GameEngine: minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
+#endif
 						this->centerMapView(sf::Vector2i(mPos));
 						this->clearSelection();
 					} else {
 						if (this->action == Action::Building)
 						{
 							if (this->canBuild(this->currentPlayer, this->currentBuild).size() == 0) {
-								std::cout << "CAN BUILD !" << std::endl;
 								if (!this->vault->factory.placeBuilding(this->vault->registry, this->currentBuild)) {
 									Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 									player.rootConstruction = 0;

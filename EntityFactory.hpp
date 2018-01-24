@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Config.hpp"
+
 #include "Components.hpp"
 #include "TextureManager.hpp"
 #include "SoundBufferManager.hpp"
 
 #include "tinyxml2.h"
 #include "tixml2ex.h"
-
-//#define TECH_TREE_DEBUG
-//#define FACTORY_DEBUG
 
 enum class TechComponent {
 	Building,

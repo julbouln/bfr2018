@@ -1,0 +1,16 @@
+Battle For Rashitoul 2018 editions
+
+Dependencies:
+- STL
+- SFML : https://www.sfml-dev.org (zlib/png)
+- OpenGL/glut
+
+Included third-party:
+- entt : https://github.com/skypjack/entt (MIT)
+- imgui : https://github.com/ocornut/imgui (MIT)
+- imgui-sfml : https://github.com/eliasdaler/imgui-sfml (MIT)
+- JPS : https://github.com/fgenesis/jps (Public domain)
+- SimplexNoise : https://github.com/SRombauts/SimplexNoise (MIT)
+- tinyxml2 : https://github.com/leethomason/tinyxml2 (zlib)
+- tinyxml2-ex : https://github.com/stanthomas/tinyxml2-ex (MIT)
+- argagg : https://github.com/vietjtnguyen/argagg (MIT)

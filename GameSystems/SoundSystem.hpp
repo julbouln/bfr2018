@@ -2,8 +2,6 @@
 
 #include "GameSystem.hpp"
 
-//#define SOUND_SYSTEM_DEBUG
-
 class SoundSystem : public GameSystem {
 	std::list<sf::Sound> playing;
 public:

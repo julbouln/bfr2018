@@ -2,8 +2,6 @@
 
 #include "GameSystem.hpp"
 
-//#define TRANSITIONS_DEBUG
-
 #define ALT_TILES 3
 
 struct CompareVector2i

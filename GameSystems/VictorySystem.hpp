@@ -19,23 +19,33 @@ public:
 			case 1:
 				break;
 			case 2:
-				std::cout << "! COMBO " << player.team <<  std::endl;
+#ifdef VICTORY_DEBUG
+				std::cout << "VictorySystem: COMBO " << player.team <<  std::endl;
+#endif
 				player.stats["combo"] = player.stats["combo"] + 1;
 				break;
 			case 3:
-				std::cout << "! SERIAL-KILLER " << player.team <<  std::endl;
+#ifdef VICTORY_DEBUG
+				std::cout << "VictorySystem: SERIAL-KILLER " << player.team <<  std::endl;
+#endif
 				player.stats["killer"] = player.stats["killer"] + 1;
 				break;
 			case 4:
-				std::cout << "! MEGAKILL " << player.team << std::endl;
+#ifdef VICTORY_DEBUG
+				std::cout << "VictorySystem: MEGAKILL " << player.team << std::endl;
+#endif
 				player.stats["megakill"] = player.stats["megakill"] + 1;
 				break;
 			case 5:
-				std::cout << "! BARBARIAN " << player.team << std::endl;
+#ifdef VICTORY_DEBUG
+				std::cout << "VictorySystem: BARBARIAN " << player.team << std::endl;
+#endif
 				player.stats["barbarian"] = player.stats["barbarian"] + 1;
 				break;
 			default:
-				std::cout << "! BUTCHERY " << player.team << std::endl;
+#ifdef VICTORY_DEBUG
+				std::cout << "VictorySystem: BUTCHERY " << player.team << std::endl;
+#endif
 				player.stats["butchery"] = player.stats["butchery"] + 1;
 				break;
 			}

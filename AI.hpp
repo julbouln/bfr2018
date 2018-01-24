@@ -6,8 +6,6 @@
 #include "GameSystems/GameSystem.hpp"
 #include "BrainTree/BrainTree.h"
 
-//#define AI_DEBUG
-
 enum class AITag {
 	TSelector,
 	TRandomSelector,
