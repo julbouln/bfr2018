@@ -152,13 +152,18 @@ public:
 				// play sound at frame 1
 //				std::cout << "CombatSystem: " << entity << " attack frame " << tile.animHandlers["attack"].getCurrentFrame() << " " << tile.animHandlers["attack"].t << std::endl;
 
-				tile.animHandlers["attack"].changeFrameCallback = [this, &unit, &tile](int frame) { 
-					if (frame == 1) {
-					//	std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl; 
-						if(map->sounds.size() < 255)
-							map->sounds.push(SoundPlay{unit.attackSound, 1, tile.pos});
-					}};
-					
+				tile.animHandlers["attack"].changeFrameCallback = [this, entity](int frame) {
+					if (vault->registry.valid(entity)) {
+						Unit &unit = vault->registry.get<Unit>(entity);
+						Tile &tile = vault->registry.get<Tile>(entity);
+						if (frame == 1) {
+							//	std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
+							if (map->sounds.size() < 255)
+								map->sounds.push(SoundPlay{unit.attackSound, 1, tile.pos});
+						}
+					}
+				};
+
 				// attacked obj does not exists anymore, stop attacking
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
 					this->changeState(tile, "idle");

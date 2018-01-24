@@ -118,8 +118,6 @@ public:
 					sf::Vector2f pos;
 					pos.x = x * 32 - (tile.centerRect.left + tile.centerRect.width / 2) + 16;
 					pos.y = y * 32 - (tile.centerRect.top + tile.centerRect.height / 2) + 16;
-//					pos.x = x * 32;
-//					pos.y = y * 32;
 
 					tile.sprite.setPosition(pos);
 					tile.sprite.setColor(colorVariant);

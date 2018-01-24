@@ -24,6 +24,7 @@ class MapLayersSystem : public GameSystem {
 
 	std::vector<EntityID> dirtTransitions;
 	std::vector<EntityID> waterTransitions;
+	std::vector<EntityID> sandTransitions;
 	std::vector<EntityID> concreteTransitions;
 
 	std::map<int, int> terrainTransitionsMapping;
@@ -289,31 +290,68 @@ public:
 	}
 
 	void initTransitions() {
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 32; i++) {
 			dirtTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "dirt_transition", i));
-		}
-
-		for (int i = 0; i < 20; i++) {
 			waterTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "water_transition", i));
-		}
-
-		for (int i = 0; i < 20; i++) {
+			sandTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "sand_transition", i));
 			concreteTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "concrete_transition", i));
 		}
+		/*
+				terrainTransitionsMapping[1] = 2;
+				terrainTransitionsMapping[2] = 0;
+				terrainTransitionsMapping[3] = 4;
+				terrainTransitionsMapping[4] = 1;
+				terrainTransitionsMapping[5] = 6;
+				terrainTransitionsMapping[8] = 3;
+				terrainTransitionsMapping[10] = 7;
+				terrainTransitionsMapping[12] = 5;
 
-		terrainTransitionsMapping[1] = 2;
-		terrainTransitionsMapping[2] = 0;
-		terrainTransitionsMapping[3] = 4;
-		terrainTransitionsMapping[4] = 1;
-		terrainTransitionsMapping[5] = 6;
-		terrainTransitionsMapping[8] = 3;
-		terrainTransitionsMapping[10] = 7;
-		terrainTransitionsMapping[12] = 5;
+				terrainTransitionsMapping[0x10] = 12;
+				terrainTransitionsMapping[0x20] = 13;
+				terrainTransitionsMapping[0x40] = 15;
+				terrainTransitionsMapping[0x80] = 14;
+		*/
 
-		terrainTransitionsMapping[0x10] = 12;
-		terrainTransitionsMapping[0x20] = 13;
-		terrainTransitionsMapping[0x40] = 15;
-		terrainTransitionsMapping[0x80] = 14;
+		terrainTransitionsMapping[1] = 1;
+		terrainTransitionsMapping[2] = 2;
+		terrainTransitionsMapping[3] = 3;
+		terrainTransitionsMapping[4] = 4;
+		terrainTransitionsMapping[5] = 5;
+		terrainTransitionsMapping[8] = 8;
+		terrainTransitionsMapping[10] = 10;
+		terrainTransitionsMapping[12] = 12;
+
+		terrainTransitionsMapping[0x10] = 16 + 1;
+		terrainTransitionsMapping[0x20] = 16 + 2;
+		terrainTransitionsMapping[0x40] = 16 + 4;
+		terrainTransitionsMapping[0x80] = 16 + 8;
+
+		// auto generated
+		terrainTransitionsMapping[6] = 6;
+		terrainTransitionsMapping[7] = 7;
+		terrainTransitionsMapping[9] = 9;
+		terrainTransitionsMapping[11] = 11;
+		terrainTransitionsMapping[13] = 13;
+		terrainTransitionsMapping[14] = 14;
+		terrainTransitionsMapping[15] = 15;
+
+		terrainTransitionsMapping[0x30] = 16+3;
+		terrainTransitionsMapping[0x50] = 16+5;
+
+		terrainTransitionsMapping[0xa0] = 16+10;
+		terrainTransitionsMapping[0xc0] = 16+12;
+		terrainTransitionsMapping[0xd0] = 16+13;
+		terrainTransitionsMapping[0xe0] = 16+14;
+		terrainTransitionsMapping[0xf0] = 16+15;
+
+//		terrainTransitionsMapping[6] = 16; // = 2+4
+		// 7 2+4+1
+//		terrainTransitionsMapping[9] = 17; // = 1+8
+		// 11 1+8+2
+		// 13 1+8+4
+		// 14 2+4+8
+		// 15 2+4+1+8
+
 
 		for (int i = 0; i < 13; i++) {
 			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
@@ -503,13 +541,34 @@ public:
 		}
 	}
 
+	void updateGrassSandTransition(int x, int y) {
+		EntityID grassEnt = tiles["grass"][0];
+		EntityID sandEnt = tiles["sand"][0];
+		int bitmask = this->pairTransitionBitmask(this->map->terrains, grassEnt, sandEnt, x, y);
+
+		bitmask = this->updateTransition(bitmask, this->map->transitions[2], grassEnt, sandTransitions, terrainTransitionsMapping, x, y);
+		if (!bitmask) {
+			this->map->transitions[2].set(x, y, 0);
+		}
+	}
+
+	void updateConcreteSandTransition(int x, int y) {
+		EntityID concEnt = tiles["concrete"][0];
+		EntityID sandEnt = tiles["sand"][0];
+		int bitmask = this->pairTransitionBitmask(this->map->terrains, concEnt, sandEnt, x, y);
+
+		bitmask = this->updateTransition(bitmask, this->map->transitions[3], sandEnt, sandTransitions, terrainTransitionsMapping, x, y);
+		if (!bitmask) {
+			this->map->transitions[3].set(x, y, 0);
+		}
+	}
 
 	void updateDirtTransition(int x, int y) {
 		EntityID dirtEnt = tiles["dirt"][0];
 		int bitmask = this->voidTransitionBitmask(this->map->terrains, dirtEnt, x, y);
-		bitmask = this->updateTransition(bitmask, this->map->transitions[2], dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->transitions[4], dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->transitions[2].set(x, y, 0);
+			this->map->transitions[4].set(x, y, 0);
 		}
 	}
 
@@ -519,6 +578,8 @@ public:
 				this->updateDirtTransition(x, y);
 				this->updateGrassConcreteTransition(x, y);
 				this->updateSandWaterTransition(x, y);
+				this->updateGrassSandTransition(x, y);
+				this->updateConcreteSandTransition(x, y);
 			}
 		}
 	}
@@ -532,6 +593,8 @@ public:
 			this->updateDirtTransition(p.x, p.y);
 			this->updateGrassConcreteTransition(p.x, p.y);
 			this->updateSandWaterTransition(p.x, p.y);
+			this->updateGrassSandTransition(p.x, p.y);
+			this->updateConcreteSandTransition(p.x, p.y);
 		}
 		this->markUpdateTerrainTransitions.clear();
 	}

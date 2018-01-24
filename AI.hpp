@@ -177,7 +177,7 @@ private:
 class Explore : public BrainTree::Leaf, public GameSystem
 {
 public:
-	Explore(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name) : Leaf(board), entity(entity), name(name) {}
+	Explore(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name, int maxDist) : Leaf(board), entity(entity), name(name), maxDist(maxDist) {}
 
 	Status update() override
 	{
@@ -190,11 +190,11 @@ public:
 
 			if (this->vault->registry.valid(explorer)) {
 				Tile &exTile = this->vault->registry.get<Tile>(explorer);
+				sf::Vector2i explorePos = this->getRandExplorationPos(exTile);
 
-				sf::Vector2i explorePos =  sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
 				int cnt = 0;
-				while (player.fog.get(explorePos.x, explorePos.y) != FogState::Unvisited && cnt < 32) {
-					explorePos = sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
+				while ((!this->map->bound(explorePos.x, explorePos.y) || player.fog.get(explorePos.x, explorePos.y) != FogState::Unvisited) && cnt < 32) {
+					explorePos = this->getRandExplorationPos(exTile);
 					cnt++;
 				}
 
@@ -215,6 +215,18 @@ public:
 private:
 	EntityID entity;
 	std::string name;
+	int maxDist;
+
+	sf::Vector2i getRandExplorationPos(Tile &tile) {
+		sf::Vector2i explorePos;
+
+		if (this->maxDist == -1)
+			explorePos =  sf::Vector2i(rand() % this->map->width, rand() % this->map->height);
+		else
+			explorePos = sf::Vector2i(tile.pos.x + (rand() % (this->maxDist * 2)) - this->maxDist, tile.pos.y + (rand() % (this->maxDist * 2)) - this->maxDist);
+
+		return explorePos;
+	}
 
 };
 
@@ -252,26 +264,7 @@ public:
 	{
 		Player &player = vault->registry.get<Player>(entity);
 
-/*
-		std::vector<EntityID> constructed;
-		for (auto o : player.objsByType) {
-			for (EntityID entity : o.second) {
-				if (vault->registry.has<Building>(entity)) {
-					Building &building = vault->registry.get<Building>(entity);
-					if (building.construction) {
-						Building &buildingCons = vault->registry.get<Building>(building.construction);
-						if (buildingCons.buildTime == 0)
-							constructed.push_back(building.construction);
-					}
-				}
-			}
-		}
-*/
-
-//		if (constructed.size() > 0) {
-//			std::random_shuffle ( constructed.begin(), constructed.end() );
-
-		if(player.rootConstruction && vault->registry.get<Building>(player.rootConstruction).buildTime==0) {
+		if (player.rootConstruction && vault->registry.get<Building>(player.rootConstruction).buildTime == 0) {
 			EntityID buildingEnt = this->vault->factory.finishBuilding(vault->registry, player.rootConstruction, entity, 200, 200, false);
 
 			GameObject &obj = vault->registry.get<GameObject>(buildingEnt);
@@ -285,7 +278,7 @@ public:
 						tile.pos = sf::Vector2i(x, y);
 						bool intersect = false;
 						for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
-							if (this->map->objs.get(p.x, p.y) || this->map->staticBuildable.get(p.x,p.y)!=0) {
+							if (this->map->objs.get(p.x, p.y) || this->map->staticBuildable.get(p.x, p.y) != 0) {
 								intersect = true;
 							}
 						}
@@ -332,7 +325,7 @@ public:
 #ifdef AI_DEBUG
 			std::cout << "AI: " << entity << " no building to place " << std::endl;
 #endif
-			return Node::Status::Failure;
+			return Node::Status::Success;
 		}
 	}
 
@@ -579,7 +572,12 @@ public:
 		}
 		case AITag::TExplore: {
 			std::string name = element->Attribute("type");
-			auto node = std::make_shared<Explore>(blackboard, entity, name);
+			int maxDist = -1;
+
+			if (element->Attribute("maxDist"))
+				maxDist = element->IntAttribute("maxDist");
+
+			auto node = std::make_shared<Explore>(blackboard, entity, name, maxDist);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;

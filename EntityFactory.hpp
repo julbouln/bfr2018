@@ -149,6 +149,64 @@ public:
 		sndManager.loadSoundBuffer("butchery", "medias/misc/butchery.wav");
 	}
 
+	void autoTransition(sf::Image &img) {
+		for (int col = 0; col < 5; col++) {
+			img.copy(img, col*32, 6*32, sf::IntRect(col*32, 2*32, 32, 32), true);
+			img.copy(img, col*32, 6*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+
+			img.copy(img, col*32, 7*32, sf::IntRect(col*32, 1*32, 32, 32), true);
+			img.copy(img, col*32, 7*32, sf::IntRect(col*32, 2*32, 32, 32), true);
+			img.copy(img, col*32, 7*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+
+			img.copy(img, col*32, 9*32, sf::IntRect(col*32, 1*32, 32, 32), true);
+			img.copy(img, col*32, 9*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+
+			img.copy(img, col*32, 11*32, sf::IntRect(col*32, 1*32, 32, 32), true);
+			img.copy(img, col*32, 11*32, sf::IntRect(col*32, 2*32, 32, 32), true);
+			img.copy(img, col*32, 11*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+
+			img.copy(img, col*32, 13*32, sf::IntRect(col*32, 1*32, 32, 32), true);
+			img.copy(img, col*32, 13*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+			img.copy(img, col*32, 13*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+
+			img.copy(img, col*32, 14*32, sf::IntRect(col*32, 2*32, 32, 32), true);
+			img.copy(img, col*32, 14*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+			img.copy(img, col*32, 14*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+
+			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 1*32, 32, 32), true);
+			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 2*32, 32, 32), true);
+			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+
+
+			img.copy(img, col*32, (16+3)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
+			img.copy(img, col*32, (16+3)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
+
+			img.copy(img, col*32, (16+5)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
+			img.copy(img, col*32, (16+5)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
+
+			img.copy(img, col*32, (16+10)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
+			img.copy(img, col*32, (16+10)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+
+			img.copy(img, col*32, (16+12)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
+			img.copy(img, col*32, (16+12)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+
+			img.copy(img, col*32, (16+13)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
+			img.copy(img, col*32, (16+13)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
+			img.copy(img, col*32, (16+13)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+
+			img.copy(img, col*32, (16+14)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
+			img.copy(img, col*32, (16+14)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
+			img.copy(img, col*32, (16+14)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+
+			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
+			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
+			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
+			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+
+		}
+	}
+
 	void loadTerrains() {
 		sf::Image terrains;
 		terrains.loadFromFile("medias/tiles/terrains.png");
@@ -162,10 +220,12 @@ public:
 		transitions.loadFromFile("medias/new/transitions.png");
 		transitions.createMaskFromColor(sf::Color::White);
 
-		texManager.loadTexture("sand_transition", transitions, sf::IntRect{0, 0, 32, 640});
-		texManager.loadTexture("water_transition", transitions, sf::IntRect{32, 0, 32, 640});
-		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 640});
-		texManager.loadTexture("concrete_transition", transitions, sf::IntRect{128, 0, 32, 640});
+		this->autoTransition(transitions);
+
+		texManager.loadTexture("sand_transition", transitions, sf::IntRect{0, 0, 32, 1024});
+		texManager.loadTexture("water_transition", transitions, sf::IntRect{32, 0, 32, 1024});
+		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 1024});
+		texManager.loadTexture("concrete_transition", transitions, sf::IntRect{128, 0, 32, 1024});
 
 
 //		sf::Image fogTransitions;
@@ -303,7 +363,7 @@ public:
 #ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: init dir texture " << name << " " << columnWidth << "x" << height << std::endl;
 #endif
-		texManager.loadTexture(name, outImage, sf::IntRect{0, 0, columnWidth * 8, height});
+		texManager.loadTexture(name, outImage, sf::IntRect {0, 0, columnWidth * 8, height});
 	}
 
 	void loadUnits() {

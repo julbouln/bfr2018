@@ -35,9 +35,9 @@ public:
 		}
 	}
 
-	int index(int x, int y) const { return x + width * y; }
+	inline int index(int x, int y) const { return x + width * y; }
 
-	EntityID get(int x, int y) {
+	EntityID get(int x, int y) const {
 		return entitiesGrid[this->index(x, y)];
 	}
 
@@ -149,7 +149,7 @@ public:
 	void setSize(unsigned int width, unsigned int height) {
 		this->terrains.setSize(width, height);
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 			Layer layer;
 			layer.setSize(width, height);
 			this->transitions.push_back(layer);

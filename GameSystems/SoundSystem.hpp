@@ -8,6 +8,8 @@ class SoundSystem : public GameSystem {
 	std::list<sf::Sound> playing;
 public:
 	void update(float dt) {
+		float pitch = 0.033 / dt;
+
 #ifdef SOUND_SYSTEM_DEBUG
 		if (this->map->sounds.size() > 0)
 			std::cout << "SoundSystem: will play " << this->map->sounds.size() << std::endl;
@@ -25,6 +27,7 @@ public:
 
 				sound.setPosition(sndp.pos.x, 0.f, sndp.pos.y);
 				sound.setMinDistance(16.f);
+				sound.setPitch(pitch);
 
 				this->playing.push_back(sound);
 				this->playing.back().play();

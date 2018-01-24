@@ -10,7 +10,7 @@
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
 		<HasLessObjectsTypeThan type="labo" qty="2"/>
-		<Build type="labo"/>		
+		<Build type="labo"/>
 	</Sequence>
 	<!--
 	<Sequence>
@@ -188,6 +188,11 @@
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
-		<PlaceBuilt/>
+		<Sequence>
+			<Inverter>
+				<PlaceBuilt/>
+			</Inverter>
+			<Explore type="brad_lab" maxDist="8"/>
+		</Sequence>
 	</Sequence>
 </AI>

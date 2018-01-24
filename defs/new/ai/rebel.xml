@@ -160,7 +160,12 @@
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
-		<PlaceBuilt/>
+		<Sequence>
+			<Inverter>
+				<PlaceBuilt/>
+			</Inverter>
+			<Explore type="zork" maxDist="8"/>
+		</Sequence>
 	</Sequence>
 
 </AI>
