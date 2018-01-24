@@ -150,6 +150,7 @@ public:
 	}
 
 	void autoTransition(sf::Image &img) {
+		// TODO: use an XML to let modifiying PNG for better transitions
 		for (int col = 0; col < 5; col++) {
 			img.copy(img, col*32, 6*32, sf::IntRect(col*32, 2*32, 32, 32), true);
 			img.copy(img, col*32, 6*32, sf::IntRect(col*32, 4*32, 32, 32), true);
@@ -178,7 +179,6 @@ public:
 			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 4*32, 32, 32), true);
 			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 8*32, 32, 32), true);
 
-
 			img.copy(img, col*32, (16+3)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
 			img.copy(img, col*32, (16+3)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
 
@@ -203,7 +203,6 @@ public:
 			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
 			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
 			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
-
 		}
 	}
 
@@ -485,8 +484,10 @@ public:
 //					std::cout << "ADD FRAME " << frame << std::endl;
 			if (pixFrame == -1 || frame < pixFrame)
 				frames.push_back(frame);
+#ifdef BUG_DEBUG
 			else
 				std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
+#endif
 		}
 
 		Animation anim(frames, 0.1f * refresh);

@@ -82,9 +82,11 @@ public:
 				}
 			}
 		}
+#ifdef BUG_DEBUG
 		if (nearest.x == 1024 && nearest.y == 1024) {
 			std::cout << "BUG: no nearest pos around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 		}
+#endif
 		return nearest;
 	}
 
@@ -273,7 +275,9 @@ public:
 				}
 			}
 		} else {
+#ifdef BUG_DEBUG
 			std::cout << "BUG: seedResources entity " << entity << " invalid or does not has Tile" << std::endl;
+#endif
 		}
 	}
 
@@ -295,7 +299,9 @@ public:
 				}
 			}
 		} else {
+#ifdef BUG_DEBUG
 			std::cout << "BUG: trainUnit entity " << entity << " invalid or does not has Tile" << std::endl;
+#endif
 		}
 		return false;
 	}

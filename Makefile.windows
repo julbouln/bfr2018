@@ -1,0 +1,16 @@
+CXX=x86_64-w64-mingw32-g++
+LD=x86_64-w64-mingw32-ld
+CFLAGS = -O2 -std=c++14 -I../mingw/SFML-2.4.2/include -DSFML_STATIC 
+INCLUDES = -I.
+OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o tinyxml2.o SimplexNoise.o bfr.o
+
+%.o: %.cpp
+	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+all: $(OBJS)
+	$(CXX) $(OBJS) $(CFLAGS) -o bfr.exe -L../mingw/SFML-2.4.2/lib -static-libstdc++ -static-libgcc -lsfml-graphics-s -lsfml-audio-s -lsfml-window-s -lsfml-system-s -lopengl32 -lwinmm -lgdi32 -lglu32 -lopenal32 -lvorbisenc -lFLAC -ljpeg -lfreetype -lvorbisfile -lvorbis -logg
+
+clean:
+	rm -fr gui/*.o
+	rm -fr *.o
+	rm bfr.exe

@@ -1,3 +1,7 @@
+Refactor:
+- add FontManager
+- manage custom medias & defs path
+
 Misc
 - add mouse cursors
 - add hit blood FX

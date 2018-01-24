@@ -3,10 +3,10 @@ INCLUDES = -I.
 OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o tinyxml2.o SimplexNoise.o bfr.o
 
 %.o: %.cpp
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 all: $(OBJS)
-	g++ $(OBJS) $(CFLAGS) -o bfr -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
+	$(CXX) $(OBJS) $(CFLAGS) -o bfr -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
 
 clean:
 	rm -fr gui/*.o
