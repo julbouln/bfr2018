@@ -13,3 +13,4 @@
 //#define BUG_DEBUG
 
 #define ZOOMLEVEL_ENABLE
+#define SHADER_ENABLE

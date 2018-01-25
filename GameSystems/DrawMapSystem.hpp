@@ -13,13 +13,14 @@ public:
 	bool showDebugLayer;
 
 	DrawMapSystem() {
+#ifdef SHADER_ENABLE
 		if (!colorSwap.loadFromFile("defs/new/shaders/color_swap.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load colorSwap shader" << std::endl;
 		if (!pixelation.loadFromFile("defs/new/shaders/pixelation.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
 		if (!outline.loadFromFile("defs/new/shaders/outline.frag", sf::Shader::Fragment))
 			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
-
+#endif
 		this->showDebugLayer = false;
 	}
 
@@ -262,6 +263,7 @@ public:
 					GameObject &obj = this->vault->registry.get<GameObject>(ent);
 					Player &player = this->vault->registry.get<Player>(obj.player);
 
+#ifdef SHADER_ENABLE
 					sf::Color col1 = sf::Color(3, 255, 205);
 					sf::Color col2 = sf::Color(0, 235, 188);
 					sf::Color replace1 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
@@ -274,6 +276,9 @@ public:
 					colorSwap.setParameter("replace2", replace2);
 
 					window.draw(tile.sprite, &colorSwap);
+#else
+					window.draw(tile.sprite);
+#endif
 				} else {
 					window.draw(tile.sprite);
 
