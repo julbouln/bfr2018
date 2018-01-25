@@ -284,8 +284,8 @@ public:
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
-//			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
-//			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
+			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 			this->centerMapView(sf::Vector2i(mapWidth / 2, mapHeight / 2));
 		}

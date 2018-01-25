@@ -31,7 +31,7 @@ public:
 			ImGui::RadioButton("Neonaz", &team, 1); ImGui::SameLine();
 			ImGui::RadioButton("Spectator", &team, 2);
 
-			const char* mapSizes[] = { "Small", "Medium", "Large" };
+			const char* mapSizes[] = { "Small", "Medium", "Large", "Huge" };
 			ImGui::Text("Map size"); ImGui::SameLine();
 			ImGui::Combo("", &mapSize, mapSizes, IM_ARRAYSIZE(mapSizes));   // Combo using proper array. You can also pass a callback to retrieve array value, no need to create/copy an array just for that.
 
@@ -125,6 +125,10 @@ public:
 			case 2:
 				mapWidth = 128;
 				mapHeight = 128;
+				break;
+			case 3:
+				mapWidth = 256;
+				mapHeight = 256;
 				break;
 			}
 

@@ -85,10 +85,15 @@ public:
 							}
 							unit.destpos = tile.pos;
 							unit.destAttackPos = tile.pos;
-							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
-								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
-								destObj.life -= (float)attackPower / 100.0 * frCnt;
-							}
+//							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
+//								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
+								float damage = (float)attackPower / 100.0;
+#ifdef COMBAT_DEBUG
+							std::cout << "CombatSystem: "<<entity << " "<< obj.name << " inflige " << damage << " to "<<unit.destAttack<<std::endl;
+#endif
+								destObj.life -= damage;
+
+//							}
 							if (destObj.life <= 0) {
 								destObj.life = 0;
 								if (destTile.state != "die") {

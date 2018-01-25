@@ -1,20 +1,20 @@
 <AI team="neonaz">
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="25" per="1"/>
 		<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		<Build type="gymnaz"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
 		<HasLessObjectsTypeThan type="labo" qty="2"/>
 		<Build type="labo"/>
 	</Sequence>
-	<!--
+	
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="100" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
@@ -26,9 +26,11 @@
 			<HasMoreResourcesThan amount="200"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="95"/>
+		<HasLessObjectsTypeThan type="patrouilleur" qty="15"/>
+		<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		<Build type="labo"/>		
 	</Sequence>
--->
+
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
@@ -40,7 +42,7 @@
 		<Plant type="pollution"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
@@ -52,7 +54,7 @@
 		<Build type="caserne"/>	
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
@@ -61,7 +63,7 @@
 		<Train type="brad_lab"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
@@ -70,7 +72,7 @@
 		<Train type="patrouilleur"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="100" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
@@ -79,7 +81,7 @@
 		<Train type="patrouilleur"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
@@ -88,7 +90,7 @@
 		<Train type="mitrailleur"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="100" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
@@ -97,7 +99,7 @@
 		<Train type="mitrailleur"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
@@ -106,7 +108,7 @@
 		<Train type="bazooka"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="100" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
@@ -125,7 +127,7 @@
 		<Build type="usine_vehicule"/>	
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="usine_vehicule" qty="1"/>
 		</Inverter>
@@ -144,7 +146,7 @@
 		<Build type="artillerie"/>	
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="artillerie" qty="1"/>
 		</Inverter>
@@ -153,7 +155,7 @@
 		<Train type="lance_missille"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="artillerie" qty="1"/>
 		</Inverter>
@@ -163,7 +165,7 @@
 	</Sequence>
 
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="25" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan type="gymnaz" qty="1"/>
 		</Inverter>
@@ -174,7 +176,7 @@
 		<Explore type="brad_lab"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="25" per="1"/>
 		<HasFoundEnemy/>
 		<RandomSelector>
 			<SendExpedition type="brad_lab" per="50"/>

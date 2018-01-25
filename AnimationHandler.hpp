@@ -131,7 +131,7 @@ public:
             if (int((t + dt) / duration) > int(t / duration))
             {
                 /* Calculate the frame number */
-                int frame = int(round((t + dt) / duration));
+                int frame = int((t + dt) / duration);
 
                 /* Adjust for looping */
                 if (anim.repeat)

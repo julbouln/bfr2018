@@ -960,7 +960,7 @@ public:
 	}
 
 	EntityID createExplosionEffect(entt::Registry<EntityID> &registry) {
-		return this->createMapEffect(registry, "explosion", 288, 280, sf::IntRect(128, 238, 32, 32), {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, 0.1, 1, 0);
+		return this->createMapEffect(registry, "explosion", 288, 280, sf::IntRect(128, 238, 32, 32), {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, 0.1, 1, 1);
 	}
 
 	void addProjectileFromXml(entt::Registry<EntityID> &registry, std::string name, GameObject &obj) {
