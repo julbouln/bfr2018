@@ -11,7 +11,7 @@
  <case_size w="1" h="1"/>
  <life value="5"/>
  <speed value="3"/>
- <view dist="3"/>
+ <view dist="4"/>
  <attack1 power="3"/>
  <attack2 power="4" dist="4"/>
 

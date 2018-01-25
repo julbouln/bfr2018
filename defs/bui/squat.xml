@@ -4,7 +4,7 @@
 
  <file path="medias/buildings/rebels/squat/pics/squat.png"/>
  <icon path="medias/buildings/rebels/squat/pics/squat-icon.png"/>
- <build_time value="5"/>
+ <build_time value="7"/>
  <pixel_size w="256" h="224"/>
  <decal_value x="0" y="3"/>
  <case_size w="8" h="4"/>
