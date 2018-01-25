@@ -1,12 +1,16 @@
-Refactor:
-- add FontManager
-- manage custom medias & defs path
+Bug:
+- last map line is not always displayed
+- unit looking for each other fight sometimes stuck together
 
 Misc
 - add mouse cursors
+- add projectile explosion
+- add resource harvesting anim/effect ?
+- add sound to all units attack
 - add hit blood FX
 - vautour FX
 - add some decors
+- add intro & credits
 
 Improvements:
 - improve AI expedition destination
@@ -14,9 +18,13 @@ Improvements:
 - restrict building position to visible fog
 
 Game:
-- add building damage level
+- add building damage level sprites
 - add resource trap + explosion FX
 
 Interface:
 - finish gui (naz alignement)
 - add settings
+
+Refactor:
+- add FontManager
+- manage custom medias & defs path

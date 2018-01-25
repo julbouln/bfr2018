@@ -120,6 +120,7 @@ public:
 	unsigned int height;
 
 	Layer terrains;
+	Layer terrainsForTransitions;
 
 	std::vector<Layer> transitions;
 
@@ -154,8 +155,7 @@ public:
 			layer.setSize(width, height);
 			this->transitions.push_back(layer);
 		}
-//		this->transitions.setSize(width, height);
-//		this->terrainTransitions.setSize(width, height);
+		this->terrainsForTransitions.setSize(width, height);
 		this->objs.setSize(width, height);
 		this->resources.setSize(width, height);
 		this->fogHidden.setSize(width, height);

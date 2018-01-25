@@ -12,6 +12,12 @@ class GameSystem : public System {
 public:
 	Map *map;
 
+	sf::Vector2f tileDrawPosition(Tile &tile) {
+		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32,
+		                    tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32
+		                   );
+	}
+
 	sf::Vector2i tilePosition(Tile &tile, sf::Vector2i p) {
 		return sf::Vector2i(tile.pos.x + (p.x - tile.size.x / 2) + tile.offset.x,
 		                    tile.pos.y + (p.y - tile.size.y / 2) + tile.offset.y);
@@ -19,8 +25,8 @@ public:
 
 	std::vector<sf::Vector2i> tileSurface(Tile &tile) {
 		std::vector<sf::Vector2i> surface;
-		for (int w = 0; w < tile.size.x; w++) {
-			for (int h = 0; h < tile.size.y; h++) {
+		for (int w = 0; w < tile.size.x; ++w) {
+			for (int h = 0; h < tile.size.y; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
 				if (this->map->bound(p.x, p.y))
 					surface.push_back(p);
@@ -31,8 +37,8 @@ public:
 
 	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) {
 		std::vector<sf::Vector2i> surface;
-		for (int w = -dist; w < dist + 1; w++) {
-			for (int h = -dist; h < dist + 1; h++) {
+		for (int w = -dist; w < dist + 1; ++w) {
+			for (int h = -dist; h < dist + 1; ++h) {
 				sf::Vector2i p(pos.x + w, pos.y + h);
 				if (this->map->bound(p.x, p.y))
 					surface.push_back(p);
@@ -43,8 +49,8 @@ public:
 
 	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) {
 		std::vector<sf::Vector2i> surface;
-		for (int w = -dist; w < tile.size.x + dist; w++) {
-			for (int h = -dist; h < tile.size.y + dist; h++) {
+		for (int w = -dist; w < tile.size.x + dist; ++w) {
+			for (int h = -dist; h < tile.size.y + dist; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
 				if (this->map->bound(p.x, p.y))
 					surface.push_back(p);
@@ -55,8 +61,8 @@ public:
 
 	std::vector<sf::Vector2i> tileAround(Tile &tile, int dist) {
 		std::vector<sf::Vector2i> surface;
-		for (int w = -dist; w < tile.size.x + dist; w++) {
-			for (int h = -dist; h < tile.size.y + dist; h++) {
+		for (int w = -dist; w < tile.size.x + dist; ++w) {
+			for (int h = -dist; h < tile.size.y + dist; ++h) {
 				if (w <= -dist || h <= -dist || w >= tile.size.x || h >= tile.size.y) {
 					sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
 					if (this->map->bound(p.x, p.y))
@@ -69,7 +75,7 @@ public:
 
 	sf::Vector2i nearestTileAround(sf::Vector2i src, Tile &tile, int dist) {
 		sf::Vector2i nearest(1024, 1024);
-		for (sf::Vector2i p : this->tileAround(tile, dist)) {
+		for (sf::Vector2i const &p : this->tileAround(tile, dist)) {
 //			float mod = 1.0;
 //			if (this->map->objs.get(p.x, p.y)) {
 //				mod = 2.0;
@@ -96,8 +102,8 @@ public:
 		sf::Vector2i fp;
 		int dist = 1;
 		while (dist < 16) {
-			for (int w = -dist; w < dist + 1; w++) {
-				for (int h = -dist; h < dist + 1; h++) {
+			for (int w = -dist; w < dist + 1; ++w) {
+				for (int h = -dist; h < dist + 1; ++h) {
 					if (w == -dist || h == -dist || w == dist || h == dist) {
 						int x = w + src.x;
 						int y = h + src.y;
@@ -130,7 +136,7 @@ public:
 
 		for (sf::Vector2i p : this->tileSurface(tile)) {
 			EntityID pEnt = this->map->objs.get(p.x, p.y);
-			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticBuildable.get(p.x,p.y) != 0)
+			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticBuildable.get(p.x, p.y) != 0)
 			{
 //				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
 				restrictedPos.push_back(p);
@@ -257,7 +263,7 @@ public:
 			std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
 //			unit.sound.setBuffer(this->vault->factory.getSndBuf(obj.name + "_" + state + "_" + std::to_string(rnd)));
 //			unit.sound.play();
-			this->map->sounds.push(SoundPlay{sname, 1, sf::Vector2i{0,0}});
+			this->map->sounds.push(SoundPlay{sname, 1, sf::Vector2i{0, 0}});
 		}
 	}
 
@@ -266,10 +272,10 @@ public:
 	void seedResources(ResourceType type, EntityID entity) {
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Tile &tile = this->vault->registry.get<Tile>(entity);
-			for (sf::Vector2i p : this->tileAround(tile, 1)) {
+			for (sf::Vector2i const &p : this->tileAround(tile, 1)) {
 				float rnd = ((float) rand()) / (float) RAND_MAX;
 				if (rnd > 0.85) {
-					if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y) && this->map->staticBuildable.get(p.x,p.y)==0) {
+					if (!this->map->resources.get(p.x, p.y) && !this->map->objs.get(p.x, p.y) && this->map->staticBuildable.get(p.x, p.y) == 0) {
 //					std::cout << " seed "<<(int)type<< " at "<<p.x<<"x"<<p.y<<std::endl;
 						EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
 						this->map->resources.set(p.x, p.y, resEnt);
@@ -289,7 +295,7 @@ public:
 			Tile &tile = this->vault->registry.get<Tile>(entity);
 
 			if (this->canSpendResources(playerEnt, player.resourceType, 10)) {
-				for (sf::Vector2i p : this->tileAround(tile, 1)) {
+				for (sf::Vector2i const &p : this->tileAround(tile, 1)) {
 					if (!this->map->objs.get(p.x, p.y)) {
 						EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
 						this->spendResources(playerEnt, player.resourceType, 2 * this->objTypeLife(type));

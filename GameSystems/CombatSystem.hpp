@@ -14,7 +14,7 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			if (!unit.destAttack) {
 				std::vector<EntityID>targets;
-				for (sf::Vector2i p : this->tileSurfaceExtended(tile, obj.view)) {
+				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
 					if (pEnt) {
 						if (this->vault->registry.has<GameObject>(pEnt)) {
@@ -54,7 +54,7 @@ public:
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.destAttack);
 
 				bool inRange = false;
-				for (sf::Vector2i p : this->tileAround(destTile, dist)) {
+				for (sf::Vector2i const &p : this->tileAround(destTile, dist)) {
 					if (tile.pos == p)
 						inRange = true;
 				}

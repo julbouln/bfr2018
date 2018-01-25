@@ -304,7 +304,7 @@ public:
 #endif
 					if (found == 0) {
 						pix1 = sf::Vector2i(x, y);
-					} else {
+					} else if(found == 1) {
 						pix2 = sf::Vector2i(x, y);
 						sf::IntRect centerRect(pix1, pix2 - pix1);
 #ifdef FACTORY_DEBUG
@@ -880,7 +880,7 @@ public:
 //		std::cout << "growedResource: " << rnd << " " << rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = oldTile.z;
+		tile.z = 0;
 
 		tile.sprite.setTexture(texManager.getRef(rname));
 

@@ -31,7 +31,7 @@ public:
 
 		this->drawLayer(window, this->map->corpses, clip, dt);
 
-		this->drawLayer(window, clip, dt);
+		this->drawObjLayer(window, clip, dt);
 		if (showDebugLayer)
 			this->drawDebug(window, clip, dt);
 
@@ -145,7 +145,7 @@ public:
 		for (EntityID entity : resView) {
 			Tile &tile = resView.get<Tile>(entity);
 
-			for (sf::Vector2i p : this->tileSurface(tile)) {
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
 					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
 					        p.y >= clip.top && p.y <= clip.top + clip.height)
@@ -161,7 +161,7 @@ public:
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 
-			for (sf::Vector2i p : this->tileSurface(tile)) {
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
 					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
 					        p.y >= clip.top && p.y <= clip.top + clip.height)
@@ -176,7 +176,7 @@ public:
 			Tile &tile = fxView.get<Tile>(entity);
 			MapEffect &effect = fxView.get<MapEffect>(entity);
 			if (effect.show) {
-				for (sf::Vector2i p : this->tileSurface(tile)) {
+				for (sf::Vector2i const &p : this->tileSurface(tile)) {
 					if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
 						if (p.x >= clip.left && p.x <= clip.left + clip.width &&
 						        p.y >= clip.top && p.y <= clip.top + clip.height)
@@ -193,42 +193,48 @@ public:
 
 
 		// remove if invalid
-		/*
+		
 		this->entitiesDrawList.erase(std::remove_if(
 		                                 this->entitiesDrawList.begin(), this->entitiesDrawList.end(),
 		[this](const EntityID & ent) {
 			return (ent==0 || !vault->registry.valid(ent) || !vault->registry.has<Tile>(ent));
 		}), this->entitiesDrawList.end());
-		*/
+		
 
 		// sort by position
 		std::sort( this->entitiesDrawList.begin( ), this->entitiesDrawList.end(), [this ]( const auto & lhs, const auto & rhs )
 		{
 			Tile &lht = vault->registry.get<Tile>(lhs);
 			Tile &rht = vault->registry.get<Tile>(rhs);
+			sf::Vector2f lp = this->tileDrawPosition(lht);
+			sf::Vector2f rp = this->tileDrawPosition(rht);
 			if (lht.z < rht.z) {
 				return true;
 			} else {
 				if (lht.z == rht.z) {
-					int ly = lht.ppos.y + (lht.centerRect.top + lht.centerRect.height) / 2;
-					int ry = rht.ppos.y + (rht.centerRect.top + rht.centerRect.height) / 2;
-					if ( ly < ry) {
+					int ly = lp.y + lht.centerRect.top + lht.centerRect.height / 2;
+					int ry = rp.y + rht.centerRect.top + rht.centerRect.height / 2;
+					if (ly < ry) {
 						return true;
 					} else {
 						if (ly == ry) {
-							int lx = lht.ppos.x + (lht.centerRect.left + lht.centerRect.width) / 2;
-							int rx = rht.ppos.x + (rht.centerRect.left + rht.centerRect.width) / 2;
-							return (lx < rx);
+							int lx = lp.x + lht.centerRect.left + lht.centerRect.width / 2;
+							int rx = rp.x + rht.centerRect.left + rht.centerRect.width / 2;
+								return (lht.psize.y < rht.psize.y);
+							if(lx < rx) {
+								return true;
+							} else {
+								return (lht.psize.y < rht.psize.y);
+							}
 						}
 					}
-
 				}
 			}
 			return false;
 		});
 	}
 
-	void drawLayer(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+	void drawObjLayer(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 		this->updateObjsDrawList(window, clip, dt);
 
 		for (EntityID ent : this->entitiesDrawList) {
@@ -248,10 +254,7 @@ public:
 					window.draw(shadow);
 				}
 
-				sf::Vector2f pos;
-
-				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
-				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
+				sf::Vector2f pos = this->tileDrawPosition(tile);
 
 				tile.sprite.setPosition(pos);
 

@@ -15,7 +15,7 @@ public:
 		for (EntityID entity : buildingView) {
 			Tile &tile = buildingView.get<Tile>(entity);
 
-			for (sf::Vector2i p : this->tileSurface(tile)) {
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				this->map->pathfinding.set(p.x, p.y, entity);
 			}
 		}
@@ -35,7 +35,7 @@ public:
 	bool checkAround(EntityID entity, sf::Vector2i npos) {
 		Tile &tile = this->vault->registry.get<Tile>(entity);
 
-		for (sf::Vector2i p : this->tileSurfaceExtended(tile, 2)) {
+		for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 2)) {
 			EntityID other = this->map->objs.get(p.x, p.y);
 			if (other && other!=entity) {
 				if (this->vault->registry.has<Unit>(other)) {

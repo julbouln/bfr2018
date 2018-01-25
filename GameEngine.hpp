@@ -92,6 +92,7 @@ public:
 
 	MoveView moveView;
 
+	EntityID selectedDebugObj;
 	bool showDebugWindow;
 
 	float zoomLevel;
@@ -165,10 +166,11 @@ public:
 
 		this->initEffects();
 		this->fadeIn();
-		this->debugCorner = 1;
 		this->gameSpeed = 1;
 
+		this->debugCorner = 1;
 		this->showDebugWindow = false;
+		this->selectedDebugObj = 0;
 	}
 
 	void reset() {
@@ -596,34 +598,47 @@ public:
 
 			this->setGameSpeed(gameSpeed);
 
-			if (this->selectedObjs.size() > 0)
-			{
-				if (this->selectedObjs.size() > 1) {
-					ImGui::Text("Selected entities: %d", (int)this->selectedObjs.size());
-				} else {
-					EntityID selectedObj = this->selectedObjs.front();
-					if (this->vault->registry.valid(selectedObj)) {
+			if (this->selectedDebugObj) {
+				EntityID selectedObj = this->selectedDebugObj;
+				if (this->vault->registry.valid(selectedObj)) {
+					Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+					ImGui::Text("ID: %d", selectedObj);
+					ImGui::Text("Case position: %dx%d", tile.pos.x, tile.pos.y);
+					ImGui::Text("Case size: %dx%d", tile.size.x, tile.size.y);
+					ImGui::Text("Pixel position: %.2fx%.2f", tile.ppos.x, tile.ppos.y);
+					ImGui::Text("Pixel size: %.2fx%.2f", tile.psize.x, tile.psize.y);
+					ImGui::Text("Offset: %dx%d", tile.offset.x, tile.offset.y);
+					ImGui::Text("Z: %d", tile.z);
+					ImGui::Text("Center: %dx%d:%dx%d", tile.centerRect.left, tile.centerRect.top, tile.centerRect.width, tile.centerRect.height);
+					ImGui::Text("Direction: %d", tile.direction);
+					ImGui::Text("State: %s", tile.state.c_str());
+					ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
+					ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentAnim());
+
+					if (this->vault->registry.has<GameObject>(selectedObj)) {
 						GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
-						Tile &tile = this->vault->registry.get<Tile>(selectedObj);
-						ImGui::Text("ID: %d", selectedObj);
+						ImGui::Separator();
+						ImGui::Text("GameObject: ");
 						ImGui::Text("Name: %s", obj.name.c_str());
 						ImGui::Text("Team: %s", obj.team.c_str());
-						ImGui::Text("Case position: %dx%d", tile.pos.x, tile.pos.y);
-						ImGui::Text("Case size: %dx%d", tile.size.x, tile.size.y);
-						ImGui::Text("Pixel position: %.2fx%.2f", tile.ppos.x, tile.ppos.y);
-						ImGui::Text("Pixel size: %.2fx%.2f", tile.psize.x, tile.psize.y);
-						ImGui::Text("Direction: %d", tile.direction);
-						ImGui::Text("State: %s", tile.state.c_str());
-						ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
-						ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentAnim());
 						ImGui::Text("Life: %f", obj.life);
-						if (this->vault->registry.has<Unit>(selectedObj)) {
-							Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-							ImGui::Text("Next pos: %dx%d", unit.nextpos.x, unit.nextpos.y);
-							ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
-							ImGui::Text("Dest attack: %d", (int)unit.destAttack);
-						}
 					}
+					if (this->vault->registry.has<Unit>(selectedObj)) {
+						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
+						ImGui::Separator();
+						ImGui::Text("Unit: ");
+						ImGui::Text("Next pos: %dx%d", unit.nextpos.x, unit.nextpos.y);
+						ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
+						ImGui::Text("Dest attack: %d", (int)unit.destAttack);
+					}
+					if (this->vault->registry.has<Resource>(selectedObj)) {
+						Resource &resource = this->vault->registry.get<Resource>(selectedObj);
+						ImGui::Separator();
+						ImGui::Text("Resource: ");
+						ImGui::Text("Level: %d\n", resource.level);
+						ImGui::Text("Grow: %.2f\n", resource.grow);
+					}
+
 				}
 			}
 
@@ -833,6 +848,66 @@ public:
 			}
 		}
 
+		if (this->showDebugWindow && this->selectedDebugObj) {
+			if (this->vault->registry.valid(this->selectedDebugObj)) {
+				Tile &tile = this->vault->registry.get<Tile>(this->selectedDebugObj);
+
+				// draw surface case
+				for (sf::Vector2i const &p : this->tileSurface(tile)) {
+					sf::RectangleShape srect;
+
+					sf::Vector2f pos;
+					pos.x = p.x * 32;
+					pos.y = p.y * 32;
+
+					srect.setSize(sf::Vector2f(32, 32));
+					srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					srect.setOutlineColor(sf::Color(0x00, 0xFF, 0xFF, 0xFF));
+					srect.setOutlineThickness(2);
+					srect.setPosition(pos);
+
+					this->game->window.draw(srect);
+				}
+
+				// draw tile case
+				sf::RectangleShape trect;
+				sf::Vector2f pos;
+				pos.x = tile.pos.x * 32;
+				pos.y = tile.pos.y * 32;
+				trect.setSize(sf::Vector2f(32, 32));
+				trect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				trect.setOutlineColor(sf::Color::Blue);
+				trect.setOutlineThickness(2);
+				trect.setPosition(pos);
+				this->game->window.draw(trect);
+
+				// draw pixel rect
+				sf::RectangleShape drect;
+				sf::Vector2f dpos = this->tileDrawPosition(tile);
+				drect.setSize(tile.psize);
+				drect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				drect.setOutlineColor(sf::Color(0xff, 0xb6, 0xc1, 0xff));
+				drect.setOutlineThickness(2);
+				drect.setPosition(dpos);
+				this->game->window.draw(drect);
+
+				// draw center rect
+				sf::RectangleShape crect;
+				sf::Vector2f cpos;
+				cpos.x = dpos.x + tile.centerRect.left;
+				cpos.y = dpos.y + tile.centerRect.top;
+				crect.setSize(sf::Vector2f(tile.centerRect.width, tile.centerRect.height));
+				crect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				crect.setOutlineColor(sf::Color(255, 36, 196));
+				crect.setOutlineThickness(2);
+				crect.setPosition(cpos);
+				this->game->window.draw(crect);
+			} else {
+				this->selectedDebugObj = 0;
+			}
+
+		}
+
 		if (this->action == Action::Selecting) {
 			sf::RectangleShape rectangle;
 
@@ -852,7 +927,7 @@ public:
 			std::vector<sf::Vector2i> restricted = this->canBuild(this->currentPlayer, this->currentBuild);
 			sf::Sprite forbid(this->vault->factory.getTex("forbid"));
 			forbid.setTextureRect(sf::IntRect(0, 0, 20, 20));
-			for (sf::Vector2i p : restricted) {
+			for (sf::Vector2i const &p : restricted) {
 				sf::Vector2f sp(p.x * 32, p.y * 32);
 				forbid.setPosition(sp);
 				this->game->window.draw(forbid);
@@ -1220,6 +1295,10 @@ public:
 									if (obj.player == this->currentPlayer)
 										this->selectedObjs.push_back(entity);
 								}
+
+								this->selectedDebugObj = entity;
+								if (!this->selectedDebugObj)
+									this->selectedDebugObj = this->map->resources.get(gameMapPos.x, gameMapPos.y);
 							}
 						}
 					}
@@ -1241,6 +1320,8 @@ public:
 							this->orderSelected(gameMapPos);
 						}
 					}
+
+					this->selectedDebugObj = 0;
 				}
 			}
 			break;

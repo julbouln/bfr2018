@@ -28,8 +28,7 @@ int main(int argc, char *argv[])
 			{	"height", {"-y", "--height"},
 				"screen height", 1
 			},
-			{
-				"version", {"-v", "--version"},
+			{	"version", {"-v", "--version"},
 				"version", 0
 			}
 		}};

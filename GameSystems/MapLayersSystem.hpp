@@ -59,14 +59,14 @@ public:
 
 			if (obj.mapped) {
 				// delete resources under building
-				for (sf::Vector2i p : this->tileSurface(tile)) {
+				for (sf::Vector2i const &p : this->tileSurface(tile)) {
 					EntityID resEnt = this->map->resources.get(p.x, p.y);
 					if (resEnt && this->vault->registry.valid(resEnt)) {
 						this->vault->registry.destroy(resEnt);
 					}
 				}
 
-				for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
+				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 1)) {
 					EntityID newEnt = 0;
 					if (obj.team == "rebel") {
 						newEnt = tiles["grass"][0];
@@ -74,12 +74,14 @@ public:
 						newEnt = tiles["concrete"][0];
 					}
 
-					if (this->altTerrains[this->map->terrains.get(p.x, p.y)] != this->altTerrains[newEnt]) {
-						for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
+					if (this->map->terrainsForTransitions.get(p.x, p.y) != newEnt) {
+						for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1))
 							this->markUpdateTerrainTransitions.insert(sp);
 
-						if (this->map->staticBuildable.get(p.x, p.y) == 0)
+						if (this->map->staticBuildable.get(p.x, p.y) == 0) {
 							this->map->terrains.set(p.x, p.y, newEnt);
+							this->map->terrainsForTransitions.set(p.x, p.y, newEnt);
+						}
 					}
 
 				}
@@ -92,7 +94,7 @@ public:
 			Tile &tile = resView.get<Tile>(entity);
 			Resource &resource = resView.get<Resource>(entity);
 
-			for (sf::Vector2i p : this->tileSurfaceExtended(tile, 1)) {
+			for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 1)) {
 				EntityID newEnt = 0;
 				if (resource.type == ResourceType::Nature) {
 					newEnt = tiles["grass"][0];
@@ -100,12 +102,14 @@ public:
 					newEnt = tiles["concrete"][0];
 				}
 
-				if (this->altTerrains[this->map->terrains.get(p.x, p.y)] != this->altTerrains[newEnt]) {
-					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
+				if (this->map->terrainsForTransitions.get(p.x, p.y) != newEnt) {
+					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1))
 						this->markUpdateTerrainTransitions.insert(sp);
 
-					if (this->map->staticBuildable.get(p.x, p.y) == 0)
+					if (this->map->staticBuildable.get(p.x, p.y) == 0) {
 						this->map->terrains.set(p.x, p.y, newEnt);
+						this->map->terrainsForTransitions.set(p.x, p.y, newEnt);
+					}
 				}
 
 			}
@@ -122,7 +126,7 @@ public:
 		for (EntityID entity : resView) {
 			Tile &tile = resView.get<Tile>(entity);
 
-			for (sf::Vector2i p : this->tileSurface(tile)) {
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				this->map->resources.set(p.x, p.y, entity);
 			}
 		}
@@ -133,7 +137,7 @@ public:
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 
-			for (sf::Vector2i p : this->tileSurface(tile)) {
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				this->map->objs.set(p.x, p.y, entity);
 			}
 		}
@@ -170,7 +174,7 @@ public:
 			Player &player = this->vault->registry.get<Player>(obj.player);
 
 			if (obj.mapped) {
-				for (sf::Vector2i p : this->tileSurfaceExtended(tile, obj.view)) {
+				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					player.fog.set(p.x, p.y, FogState::InSight);
 				}
 			}
@@ -187,8 +191,8 @@ public:
 			for (EntityID entity : playerView) {
 				if (entity != playerEnt) {
 					Player &otherPlayer = playerView.get(entity);
-					for (int x = 0; x < this->map->width; x++) {
-						for (int y = 0; y < this->map->height; y++) {
+					for (int x = 0; x < this->map->width; ++x) {
+						for (int y = 0; y < this->map->height; ++y) {
 							if (player.fog.get(x, y) == FogState::Hidden && otherPlayer.fog.get(x, y) != FogState::Unvisited) {
 								player.fog.set(x, y, otherPlayer.fog.get(x, y));
 							}
@@ -236,7 +240,7 @@ public:
 				this->map->fogHidden.set(x, y, newEnt);
 
 				if (markUpdate) {
-					for (sf::Vector2i sp : this->vectorSurfaceExtended(p, 1))
+					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1))
 						this->markUpdateFogTransitions.insert(sp);
 				}
 			}
@@ -246,7 +250,7 @@ public:
 		std::cout << "Transitions: update " << this->markUpdateFogTransitions.size() << " FOG transitions" << std::endl;
 #endif
 
-		for (sf::Vector2i p : this->markUpdateFogTransitions) {
+		for (sf::Vector2i const &p : this->markUpdateFogTransitions) {
 			this->updateFogHiddenTransition(p.x, p.y);
 			this->updateFogUnvisitedTransition(p.x, p.y);
 		}
@@ -333,14 +337,14 @@ public:
 		terrainTransitionsMapping[14] = 14;
 		terrainTransitionsMapping[15] = 15;
 
-		terrainTransitionsMapping[0x30] = 16+3;
-		terrainTransitionsMapping[0x50] = 16+5;
+		terrainTransitionsMapping[0x30] = 16 + 3;
+		terrainTransitionsMapping[0x50] = 16 + 5;
 
-		terrainTransitionsMapping[0xa0] = 16+10;
-		terrainTransitionsMapping[0xc0] = 16+12;
-		terrainTransitionsMapping[0xd0] = 16+13;
-		terrainTransitionsMapping[0xe0] = 16+14;
-		terrainTransitionsMapping[0xf0] = 16+15;
+		terrainTransitionsMapping[0xa0] = 16 + 10;
+		terrainTransitionsMapping[0xc0] = 16 + 12;
+		terrainTransitionsMapping[0xd0] = 16 + 13;
+		terrainTransitionsMapping[0xe0] = 16 + 14;
+		terrainTransitionsMapping[0xf0] = 16 + 15;
 
 //		terrainTransitionsMapping[6] = 16; // = 2+4
 		// 7 2+4+1
@@ -456,29 +460,29 @@ public:
 	int transitionBitmask(Layer &layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (this->map->bound(x, y - 1))
-			bitmask += 1 * ((this->altTerrains[layer.get(x, y - 1)] == ent) ? 1 : 0);
+			bitmask += 1 * ((layer.get(x, y - 1) == ent) ? 1 : 0);
 		if (this->map->bound(x - 1, y))
-			bitmask += 2 * ((this->altTerrains[layer.get(x - 1, y)] == ent) ? 1 : 0);
+			bitmask += 2 * ((layer.get(x - 1, y) == ent) ? 1 : 0);
 		if (this->map->bound(x + 1, y))
-			bitmask += 4 * ((this->altTerrains[layer.get(x + 1, y)] == ent) ? 1 : 0);
+			bitmask += 4 * ((layer.get(x + 1, y) == ent) ? 1 : 0);
 		if (this->map->bound(x, y + 1))
-			bitmask += 8 * ((this->altTerrains[layer.get(x, y + 1)] == ent) ? 1 : 0);
+			bitmask += 8 * ((layer.get(x, y + 1) == ent) ? 1 : 0);
 
 		if (this->map->bound(x - 1, y - 1))
-			bitmask += 16 * ((this->altTerrains[layer.get(x - 1, y - 1)] == ent) ? 1 : 0);
+			bitmask += 16 * ((layer.get(x - 1, y - 1) == ent) ? 1 : 0);
 		if (this->map->bound(x + 1, y - 1))
-			bitmask += 32 * ((this->altTerrains[layer.get(x + 1, y - 1)] == ent) ? 1 : 0);
+			bitmask += 32 * ((layer.get(x + 1, y - 1) == ent) ? 1 : 0);
 		if (this->map->bound(x - 1, y + 1))
-			bitmask += 64 * ((this->altTerrains[layer.get(x - 1, y + 1)] == ent) ? 1 : 0);
+			bitmask += 64 * ((layer.get(x - 1, y + 1) == ent) ? 1 : 0);
 		if (this->map->bound(x + 1, y + 1))
-			bitmask += 128 * ((this->altTerrains[layer.get(x + 1, y + 1)] == ent) ? 1 : 0);
+			bitmask += 128 * ((layer.get(x + 1, y + 1) == ent) ? 1 : 0);
 
 		return bitmask;
 	}
 
 	int voidTransitionBitmask(Layer &layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
-		if (this->altTerrains[layer.get(x, y)] != ent) {
+		if (layer.get(x, y) != ent) {
 			bitmask = this->transitionBitmask(layer, ent, x, y);
 		}
 		return bitmask;
@@ -486,7 +490,7 @@ public:
 
 	int pairTransitionBitmask(Layer &layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
 		int bitmask = 0;
-		if (this->altTerrains[layer.get(x, y)] == srcEnt) {
+		if (layer.get(x, y) == srcEnt) {
 			bitmask = this->transitionBitmask(layer, dstEnt, x, y);
 		}
 		return bitmask;
@@ -519,7 +523,7 @@ public:
 	void updateGrassConcreteTransition(int x, int y) {
 		EntityID grassEnt = tiles["grass"][0];
 		EntityID concreteEnt = tiles["concrete"][0];
-		int bitmask = this->pairTransitionBitmask(this->map->terrains, grassEnt, concreteEnt, x, y);
+		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, grassEnt, concreteEnt, x, y);
 
 		bitmask = this->updateTransition(bitmask, this->map->transitions[0], concreteEnt, concreteTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
@@ -531,7 +535,7 @@ public:
 	void updateSandWaterTransition(int x, int y) {
 		EntityID sandEnt = tiles["sand"][0];
 		EntityID waterEnt = tiles["water"][0];
-		int bitmask = this->pairTransitionBitmask(this->map->terrains, sandEnt, waterEnt, x, y);
+		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, sandEnt, waterEnt, x, y);
 
 		bitmask = this->updateTransition(bitmask, this->map->transitions[1], waterEnt, waterTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
@@ -542,7 +546,7 @@ public:
 	void updateGrassSandTransition(int x, int y) {
 		EntityID grassEnt = tiles["grass"][0];
 		EntityID sandEnt = tiles["sand"][0];
-		int bitmask = this->pairTransitionBitmask(this->map->terrains, grassEnt, sandEnt, x, y);
+		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, grassEnt, sandEnt, x, y);
 
 		bitmask = this->updateTransition(bitmask, this->map->transitions[2], grassEnt, sandTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
@@ -553,7 +557,7 @@ public:
 	void updateConcreteSandTransition(int x, int y) {
 		EntityID concEnt = tiles["concrete"][0];
 		EntityID sandEnt = tiles["sand"][0];
-		int bitmask = this->pairTransitionBitmask(this->map->terrains, concEnt, sandEnt, x, y);
+		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, concEnt, sandEnt, x, y);
 
 		bitmask = this->updateTransition(bitmask, this->map->transitions[3], sandEnt, sandTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
@@ -563,7 +567,7 @@ public:
 
 	void updateDirtTransition(int x, int y) {
 		EntityID dirtEnt = tiles["dirt"][0];
-		int bitmask = this->voidTransitionBitmask(this->map->terrains, dirtEnt, x, y);
+		int bitmask = this->voidTransitionBitmask(this->map->terrainsForTransitions, dirtEnt, x, y);
 		bitmask = this->updateTransition(bitmask, this->map->transitions[4], dirtEnt, dirtTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
 			this->map->transitions[4].set(x, y, 0);
@@ -587,7 +591,7 @@ public:
 		std::cout << "Transitions: update " << this->markUpdateTerrainTransitions.size() << " terrain transitions" << std::endl;
 #endif
 
-		for (sf::Vector2i p : this->markUpdateTerrainTransitions) {
+		for (sf::Vector2i const &p : this->markUpdateTerrainTransitions) {
 			this->updateDirtTransition(p.x, p.y);
 			this->updateGrassConcreteTransition(p.x, p.y);
 			this->updateSandWaterTransition(p.x, p.y);
@@ -632,14 +636,19 @@ public:
 				EntityID t;
 
 				t = tiles["dirt"][rand() % ALT_TILES];
+				this->map->terrainsForTransitions.set(x, y, tiles["dirt"][0]);
+
 				if (res < -0.3) {
 					t = tiles["sand"][rand() % ALT_TILES];
 					this->map->staticBuildable.set(x, y, t);
+					this->map->terrainsForTransitions.set(x, y, tiles["sand"][0]);
 				}
 				if (res < -0.5) {
 					t = tiles["water"][rand() % ALT_TILES];
+
 					this->map->staticBuildable.set(x, y, t);
 					this->map->staticPathfinding.set(x, y, t);
+					this->map->terrainsForTransitions.set(x, y, tiles["water"][0]);
 				}
 				/*
 								if (res > -0.4) {
