@@ -396,9 +396,8 @@ public:
 
 		AnimationHandler &dieAnim = tile.animHandlers["die"];
 
-		dieAnim.changeAnim(0);
+		dieAnim.changeColumn(0);
 		int frame = dieAnim.getAnim().getFrame(dieAnim.getAnim().getLength() - 1);
-//		std::cout << "CORPSE frame "<<name << " "<<frame<<std::endl;
 		dieAnim.getAnim().repeat = false;
 		dieAnim.set(frame);
 
@@ -440,7 +439,7 @@ public:
 
 		idleHandler.addAnim(staticAnim);
 
-		idleHandler.changeAnim(0);
+		idleHandler.changeColumn(0);
 		idleHandler.set(0);
 
 		ruinTile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated

@@ -1,12 +1,12 @@
 Bug:
 - last map line is not always displayed
 - unit looking for each other fight sometimes stuck together
+- effects, corpses and ruins are not correctely positionned
 
 Misc
 - add mouse cursors
 - add projectile explosion
 - add resource harvesting anim/effect ?
-- add sound to all units attack
 - add hit blood FX
 - vautour FX
 - add some decors

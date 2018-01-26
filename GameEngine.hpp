@@ -613,7 +613,7 @@ public:
 					ImGui::Text("Direction: %d", tile.direction);
 					ImGui::Text("State: %s", tile.state.c_str());
 					ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
-					ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentAnim());
+					ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentColumn());
 
 					if (this->vault->registry.has<GameObject>(selectedObj)) {
 						GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);

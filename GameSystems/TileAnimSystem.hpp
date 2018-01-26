@@ -14,7 +14,7 @@ public:
 			AnimationHandler &currentAnim = tile.animHandlers[tile.state];
 
 			/* Change the sprite to reflect the tile variant */
-			currentAnim.changeAnim(tile.direction);
+			currentAnim.changeColumn(tile.direction);
 
 			/* Update the animation */
 			currentAnim.update(realDt);

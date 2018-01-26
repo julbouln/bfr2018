@@ -239,7 +239,7 @@ public:
 		tile.state = state;
 		/*		AnimationHandler &currentAnim = tile.animHandlers[tile.state];
 
-				currentAnim.changeAnim(tile.direction);
+				currentAnim.changeColumn(tile.direction);
 				currentAnim.update(0);
 				tile.sprite.setTextureRect(currentAnim.bounds);
 				*/

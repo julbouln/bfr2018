@@ -65,7 +65,7 @@ private:
     std::vector<Animation> animations;
 
 
-    int currentAnim;
+    int currentColumn;
     int currentFrame;
 
 public:
@@ -86,8 +86,8 @@ public:
     int getCurrentFrame() {
         return currentFrame;
     }
-    int getCurrentAnim() {
-        return currentAnim;
+    int getCurrentColumn() {
+        return currentColumn;
     }
     /* Add a new animation */
     void addAnim(Animation anim) {
@@ -98,29 +98,24 @@ public:
     void set(int frame) {
         /* Set the sprite to the new frame */
         sf::IntRect rect = this->frameSize;
-        rect.left = rect.width * this->currentAnim;
+        rect.left = rect.width * this->currentColumn;
         rect.top = rect.height * frame;
         this->bounds = rect;
     }
 
     Animation &getAnim() {
-        return this->animations[this->currentAnim];
+        return this->animations[this->currentColumn];
     }
 
     /* Update the current frame of animation. dt is the time since
      * the update was last called (i.e. the time for one frame to be
      * executed) */
     void update(const float dt) {
-        if (currentAnim >= this->animations.size() || currentAnim < 0) return;
+        if (currentColumn < 0 || currentColumn >= this->animations.size()) return;
 
-        Animation &anim = this->animations[currentAnim];
+        Animation &anim = this->animations[currentColumn];
 
         if (anim.type == AnimationType::Timer) {
-//            if (!anim.repeat && this->currentFrame == anim.getLength() - 1) {
-//                if(this->currentFrame > 0)
-//                    std::cout << "DO NOT REPEAT "<<this->currentFrame<<std::endl;
-//                this->l = 1;
-            //          } else {
 
             this->newFrame = false;
 
@@ -166,25 +161,24 @@ public:
                     this->l = 1;
                 }
             }
-//            }
         }
 
         return;
     }
 
     /* Change the animation, resetting t in the process */
-    void changeAnim(unsigned int animID) {
+    void changeColumn(unsigned int col) {
         /* Do not change the animation if the animation is currently active or
         * the new animation does not exist */
-        if (this->currentAnim == animID || animID >= this->animations.size() ||
-                animID < 0) return;
+        if (this->currentColumn == col || col < 0 || col >= this->animations.size()) return;
 
         /* Set the current animation */
-        this->currentAnim = animID;
+        this->currentColumn = col;
+
         /* Update the animation bounds */
         sf::IntRect rect = this->frameSize;
 
-        rect.left = rect.width * animID;
+        rect.left = rect.width * this->currentColumn;
         rect.top = rect.height * this->currentFrame;
 
         this->bounds = rect;
@@ -197,7 +191,7 @@ public:
     void reset() {
         this->t = 0.0f;
         this->currentFrame = 0;
-        this->currentAnim = -1;
+        this->currentColumn = -1;
         this->l = 0;
         this->newFrame = false;
         this->changeFrameCallback = [](int frame) {};

@@ -354,7 +354,7 @@ public:
 
 		idleHandler.addAnim(staticAnim);
 
-		idleHandler.changeAnim(0);
+		idleHandler.changeColumn(0);
 		idleHandler.set(variant);
 
 		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
@@ -598,7 +598,7 @@ public:
 		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
 
 		idleHandler.addAnim(staticAnim);
-		idleHandler.changeAnim(0);
+		idleHandler.changeColumn(0);
 		idleHandler.set(0);
 
 		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
@@ -636,7 +636,7 @@ public:
 
 		AnimationHandler &fxAnim = tile.animHandlers["fx"];
 
-		fxAnim.changeAnim(0);
+		fxAnim.changeColumn(0);
 		fxAnim.set(0);
 		tile.sprite.setTextureRect(fxAnim.bounds); // texture need to be updated
 
@@ -700,8 +700,8 @@ public:
 
 			texLoader.parse(sdoc->RootElement());
 			sndLoader.parse(sdoc->RootElement());
-
 		}
+		
 		std::cout << "EntityFactory: manifest loaded " << filename << std::endl;
 	}
 

@@ -73,13 +73,13 @@ public:
 							int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: "<<entity <<" arrived at target, fight "<<unit.destAttack<<std::endl;
+							std::cout << "CombatSystem: " << entity << " arrived at target, fight " << unit.destAttack << std::endl;
 #endif
 							sf::Vector2i distDiff = (destTile.pos - tile.pos);
 							// use attack2 if in correct range
 							if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
 #ifdef COMBAT_DEBUG
-								std::cout << "CombatSystem: " << entity << " " <<obj.name << " use attack2 on "<<unit.destAttack << " "<<destObj.name << std::endl;
+								std::cout << "CombatSystem: " << entity << " " << obj.name << " use attack2 on " << unit.destAttack << " " << destObj.name << std::endl;
 #endif
 								attackPower = unit.attack2.power;
 							}
@@ -87,11 +87,11 @@ public:
 							unit.destAttackPos = tile.pos;
 //							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
 //								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
-								float damage = (float)attackPower / 100.0;
+							float damage = (float)attackPower / 100.0;
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: "<<entity << " "<< obj.name << " inflige " << damage << " to "<<unit.destAttack<<std::endl;
+							std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.destAttack << std::endl;
 #endif
-								destObj.life -= damage;
+							destObj.life -= damage;
 
 //							}
 							if (destObj.life <= 0) {
@@ -100,8 +100,12 @@ public:
 									Player &player = this->vault->registry.get<Player>(obj.player);
 									player.kills.insert(unit.destAttack);
 								}
-								if (this->vault->registry.has<Unit>(unit.destAttack))
+								if (this->vault->registry.has<Unit>(unit.destAttack)) {
 									destTile.state = "die";
+									AnimationHandler &dieAnim = destTile.animHandlers["die"];
+									dieAnim.getAnim().repeat = false;
+								}
+
 
 							} else {
 								tile.direction = this->getDirection(tile.pos, destTile.pos);
@@ -132,7 +136,7 @@ public:
 					} else {
 						sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 #ifdef COMBAT_DEBUG
-					std::cout << "CombatSystem: "<<entity <<" target out of range, go to "<<dpos.x<<"x"<<dpos.y<<std::endl;
+						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
 #endif
 						unit.destAttackPos = dpos;
 						this->goTo(unit, dpos);
@@ -254,7 +258,7 @@ public:
 					explosionTile.pos = tile.pos;
 					explosionTile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 					explosionTile.animHandlers["fx"].reset();
-					explosionTile.animHandlers["fx"].changeAnim(0);
+					explosionTile.animHandlers["fx"].changeColumn(0);
 					explosionTile.animHandlers["fx"].set(0);
 					this->map->sounds.push(SoundPlay{explosion.sound, 1, explosionTile.pos});
 				}
