@@ -18,12 +18,12 @@ public:
 
     void loadSoundBuffer(std::string name, const std::string& filename)
     {
-#ifdef MANAGER_DEBUG
-        std::cout << "SoundBufferManager: load " << name << " from file " << filename << std::endl;
-#endif
         /* Load the texture */
         if (this->buffers.count(name) == 0) {
             sf::SoundBuffer buf;
+#ifdef MANAGER_DEBUG
+        std::cout << "SoundBufferManager: load " << name << " from file " << filename << std::endl;
+#endif
             buf.loadFromFile(filename);
 
             /* Add it to the list of textures */

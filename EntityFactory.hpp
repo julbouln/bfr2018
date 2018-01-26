@@ -81,8 +81,10 @@ public:
 	void loadInitial() {
 		texLoader.loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
 
-		texLoader.parseFile("defs/new/uni/zork.xml");
-		sndLoader.parseFile("defs/new/uni/zork.xml");
+//		texLoader.parseFile("defs/new/uni/zork.xml");
+//		sndLoader.parseFile("defs/new/uni/zork.xml");
+
+		this->loadManifest2("defs/new/manifest.xml");
 	}
 
 	void loadMisc() {
@@ -131,57 +133,57 @@ public:
 	void autoTransition(sf::Image &img) {
 		// TODO: use an XML to let modifiying PNG for better transitions
 		for (int col = 0; col < 5; col++) {
-			img.copy(img, col*32, 6*32, sf::IntRect(col*32, 2*32, 32, 32), true);
-			img.copy(img, col*32, 6*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+			img.copy(img, col * 32, 6 * 32, sf::IntRect(col * 32, 2 * 32, 32, 32), true);
+			img.copy(img, col * 32, 6 * 32, sf::IntRect(col * 32, 4 * 32, 32, 32), true);
 
-			img.copy(img, col*32, 7*32, sf::IntRect(col*32, 1*32, 32, 32), true);
-			img.copy(img, col*32, 7*32, sf::IntRect(col*32, 2*32, 32, 32), true);
-			img.copy(img, col*32, 7*32, sf::IntRect(col*32, 4*32, 32, 32), true);
+			img.copy(img, col * 32, 7 * 32, sf::IntRect(col * 32, 1 * 32, 32, 32), true);
+			img.copy(img, col * 32, 7 * 32, sf::IntRect(col * 32, 2 * 32, 32, 32), true);
+			img.copy(img, col * 32, 7 * 32, sf::IntRect(col * 32, 4 * 32, 32, 32), true);
 
-			img.copy(img, col*32, 9*32, sf::IntRect(col*32, 1*32, 32, 32), true);
-			img.copy(img, col*32, 9*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+			img.copy(img, col * 32, 9 * 32, sf::IntRect(col * 32, 1 * 32, 32, 32), true);
+			img.copy(img, col * 32, 9 * 32, sf::IntRect(col * 32, 8 * 32, 32, 32), true);
 
-			img.copy(img, col*32, 11*32, sf::IntRect(col*32, 1*32, 32, 32), true);
-			img.copy(img, col*32, 11*32, sf::IntRect(col*32, 2*32, 32, 32), true);
-			img.copy(img, col*32, 11*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+			img.copy(img, col * 32, 11 * 32, sf::IntRect(col * 32, 1 * 32, 32, 32), true);
+			img.copy(img, col * 32, 11 * 32, sf::IntRect(col * 32, 2 * 32, 32, 32), true);
+			img.copy(img, col * 32, 11 * 32, sf::IntRect(col * 32, 8 * 32, 32, 32), true);
 
-			img.copy(img, col*32, 13*32, sf::IntRect(col*32, 1*32, 32, 32), true);
-			img.copy(img, col*32, 13*32, sf::IntRect(col*32, 4*32, 32, 32), true);
-			img.copy(img, col*32, 13*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+			img.copy(img, col * 32, 13 * 32, sf::IntRect(col * 32, 1 * 32, 32, 32), true);
+			img.copy(img, col * 32, 13 * 32, sf::IntRect(col * 32, 4 * 32, 32, 32), true);
+			img.copy(img, col * 32, 13 * 32, sf::IntRect(col * 32, 8 * 32, 32, 32), true);
 
-			img.copy(img, col*32, 14*32, sf::IntRect(col*32, 2*32, 32, 32), true);
-			img.copy(img, col*32, 14*32, sf::IntRect(col*32, 4*32, 32, 32), true);
-			img.copy(img, col*32, 14*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+			img.copy(img, col * 32, 14 * 32, sf::IntRect(col * 32, 2 * 32, 32, 32), true);
+			img.copy(img, col * 32, 14 * 32, sf::IntRect(col * 32, 4 * 32, 32, 32), true);
+			img.copy(img, col * 32, 14 * 32, sf::IntRect(col * 32, 8 * 32, 32, 32), true);
 
-			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 1*32, 32, 32), true);
-			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 2*32, 32, 32), true);
-			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 4*32, 32, 32), true);
-			img.copy(img, col*32, 15*32, sf::IntRect(col*32, 8*32, 32, 32), true);
+			img.copy(img, col * 32, 15 * 32, sf::IntRect(col * 32, 1 * 32, 32, 32), true);
+			img.copy(img, col * 32, 15 * 32, sf::IntRect(col * 32, 2 * 32, 32, 32), true);
+			img.copy(img, col * 32, 15 * 32, sf::IntRect(col * 32, 4 * 32, 32, 32), true);
+			img.copy(img, col * 32, 15 * 32, sf::IntRect(col * 32, 8 * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+3)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
-			img.copy(img, col*32, (16+3)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 3) * 32, sf::IntRect(col * 32, (16 + 1) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 3) * 32, sf::IntRect(col * 32, (16 + 2) * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+5)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
-			img.copy(img, col*32, (16+5)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 5) * 32, sf::IntRect(col * 32, (16 + 1) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 5) * 32, sf::IntRect(col * 32, (16 + 4) * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+10)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
-			img.copy(img, col*32, (16+10)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 10) * 32, sf::IntRect(col * 32, (16 + 2) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 10) * 32, sf::IntRect(col * 32, (16 + 8) * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+12)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
-			img.copy(img, col*32, (16+12)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 12) * 32, sf::IntRect(col * 32, (16 + 4) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 12) * 32, sf::IntRect(col * 32, (16 + 8) * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+13)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
-			img.copy(img, col*32, (16+13)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
-			img.copy(img, col*32, (16+13)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 13) * 32, sf::IntRect(col * 32, (16 + 1) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 13) * 32, sf::IntRect(col * 32, (16 + 4) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 13) * 32, sf::IntRect(col * 32, (16 + 8) * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+14)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
-			img.copy(img, col*32, (16+14)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
-			img.copy(img, col*32, (16+14)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 14) * 32, sf::IntRect(col * 32, (16 + 2) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 14) * 32, sf::IntRect(col * 32, (16 + 4) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 14) * 32, sf::IntRect(col * 32, (16 + 8) * 32, 32, 32), true);
 
-			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+1)*32, 32, 32), true);
-			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+2)*32, 32, 32), true);
-			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+4)*32, 32, 32), true);
-			img.copy(img, col*32, (16+15)*32, sf::IntRect(col*32, (16+8)*32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 15) * 32, sf::IntRect(col * 32, (16 + 1) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 15) * 32, sf::IntRect(col * 32, (16 + 2) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 15) * 32, sf::IntRect(col * 32, (16 + 4) * 32, 32, 32), true);
+			img.copy(img, col * 32, (16 + 15) * 32, sf::IntRect(col * 32, (16 + 8) * 32, 32, 32), true);
 		}
 	}
 
@@ -259,7 +261,7 @@ public:
 	}
 
 	sf::IntRect getCenterRect(std::string name) {
-		return this->centerRects[name];
+		return texLoader.centerRects[name];
 	}
 
 	sf::Color getPlayerColor(sf::Color key, int idx) {
@@ -419,7 +421,7 @@ public:
 
 			for (int i = 0; i < directions; i++) {
 				Animation anim = this->parseAnim(stateEl, pixFrame);
-				
+
 				if (stateNm == "die") {
 					anim.repeat = false;
 					anim.duration = (0.1f * refresh) / 4.0;
@@ -575,7 +577,7 @@ public:
 		tile.state = "idle";
 		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
 
-		tile.centerRect = this->centerRects[name];
+		tile.centerRect = this->getCenterRect(name);
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
@@ -642,7 +644,7 @@ public:
 		tile.state = "idle";
 		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
 
-		tile.centerRect = this->centerRects[obj.name];
+		tile.centerRect = this->getCenterRect(obj.name);
 
 		registry.assign<Tile>(entity, tile);
 
@@ -704,7 +706,7 @@ public:
 		tile.direction = North;
 		tile.state = "idle";
 
-		tile.centerRect = this->centerRects[name];
+		tile.centerRect = this->getCenterRect(name);
 
 		Resource resource;
 		resource.type = type;
@@ -768,7 +770,7 @@ public:
 		tile.direction = North;
 		tile.state = "idle";
 
-		tile.centerRect = this->centerRects[rname];
+		tile.centerRect = this->getCenterRect(name);
 
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
@@ -897,6 +899,27 @@ public:
 			}
 		}
 	}
+
+
+	void loadManifest2(std::string filename) {
+		std::cout << "EntityFactory: load manifest " << filename << std::endl;
+		tinyxml2::XMLDocument doc;
+		doc.LoadFile(filename.c_str());
+
+		for (tinyxml2::XMLElement *childEl : doc.RootElement()) {
+			std::string name = childEl->Name();
+			std::string filename = childEl->Attribute("path");
+
+			tinyxml2::XMLDocument doc;
+			doc.LoadFile(filename.c_str());
+
+			texLoader.parse(doc.RootElement());
+			sndLoader.parse(doc.RootElement());
+
+		}
+		std::cout << "EntityFactory: manifest loaded " << filename << std::endl;
+	}
+
 
 	void load() {
 		if (!this->loaded) {

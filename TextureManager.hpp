@@ -27,11 +27,11 @@ public:
 
     void loadTexture(std::string name, const std::string& filename)
     {
+
+        if (this->textures.count(name) == 0) {
 #ifdef MANAGER_DEBUG
         std::cout << "TextureManager: load " << name << " from file " << filename << std::endl;
 #endif
-
-        if (this->textures.count(name) == 0) {
             /* Load the texture */
             sf::Texture tex;
             tex.loadFromFile(filename);
@@ -43,11 +43,11 @@ public:
     }
 
     void loadTexture(std::string name, sf::Image img, const sf::IntRect &area) {
+
+        if (this->textures.count(name) == 0) {
 #ifdef MANAGER_DEBUG
         std::cout << "TextureManager: load " << name << " from image " << std::endl;
 #endif
-
-        if (this->textures.count(name) == 0) {
             /* Load the texture */
             sf::Texture tex;
             tex.loadFromImage(img, area);

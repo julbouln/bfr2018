@@ -302,7 +302,7 @@ public:
 		unit.speed = element->FirstChildElement("speed")->IntAttribute("value");
 
 		unit.attack1 = Attack{(unsigned int)element->FirstChildElement("attack1")->IntAttribute("power"), 0};
-		unit.attack2 = Attack{(unsigned int)element->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)element->FirstChildElement("attack2")->IntAttribute("distance")};
+		unit.attack2 = Attack{(unsigned int)element->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist")};
 
 		tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
 
