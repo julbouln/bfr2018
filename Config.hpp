@@ -10,6 +10,8 @@
 //#define COMBAT_DEBUG
 //#define VICTORY_DEBUG
 //#define AI_DEBUG
+#define MANAGER_DEBUG
+#define PARSER_DEBUG
 //#define BUG_DEBUG
 
 #define ZOOMLEVEL_ENABLE

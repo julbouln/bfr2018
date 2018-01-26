@@ -9,6 +9,8 @@
 #include "tinyxml2.h"
 #include "tixml2ex.h"
 
+#include "XmlParser.hpp"
+
 enum class TechComponent {
 	Building,
 	Character,
@@ -65,6 +67,9 @@ public:
 	TextureManager texManager;
 	SoundBufferManager sndManager;
 
+	TextureLoader texLoader;
+	SoundBufferLoader sndLoader;
+
 	sf::Texture &getTex(std::string name) {
 		return texManager.getRef(name);
 	}
@@ -73,73 +78,48 @@ public:
 		return sndManager.getRef(name);
 	}
 
-	void loadButton(std::string name, std::string filename) {
-		sf::Image but;
-		but.loadFromFile(filename);
-		texManager.loadTexture(name, but, sf::IntRect{0, 0, (int)but.getSize().x, (int)but.getSize().y / 2});
-		texManager.loadTexture(name + "_down", but, sf::IntRect{0, (int)(but.getSize().y / 2), (int)but.getSize().x, (int)(but.getSize().y) / 2});
-	}
-
-	void loadBuildButton(std::string name, std::string filename) {
-		sf::Image but;
-		but.loadFromFile(filename);
-		int height = (int)but.getSize().y / 5;
-		texManager.loadTexture(name, but, sf::IntRect{0, 0, (int)but.getSize().x, height});
-		texManager.loadTexture(name + "_down", but, sf::IntRect{0, height, (int)but.getSize().x, height});
-		texManager.loadTexture(name + "_building", but, sf::IntRect{0, height * 2, (int)but.getSize().x, height});
-		texManager.loadTexture(name + "_built", but, sf::IntRect{0, height * 3, (int)but.getSize().x, height});
-		texManager.loadTexture(name + "_built_down", but, sf::IntRect{0, height * 4, (int)but.getSize().x, height});
-	}
-
-	void loadTextureWithWhiteMask(std::string name, std::string filename) {
-		sf::Image img;
-		img.loadFromFile(filename);
-		this->getSpecialPix(name, img, img.getSize().x, img.getSize().y);
-		img.createMaskFromColor(sf::Color::White);
-		texManager.loadTexture(name, img, sf::IntRect{0, 0, (int)img.getSize().x, (int)img.getSize().y});
-
-	}
-
 	void loadInitial() {
-		this->loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
+		texLoader.loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
 
+		texLoader.parseFile("defs/new/uni/zork.xml");
+		sndLoader.parseFile("defs/new/uni/zork.xml");
 	}
 
 	void loadMisc() {
 
-		this->loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
-		this->loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
+		texLoader.loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
+		texLoader.loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
 
-		this->loadTextureWithWhiteMask("indice_bg_rebel", "medias/interface/bgs/indice_bio-bg.png");
-		this->loadTextureWithWhiteMask("indice_bg_neonaz", "medias/interface/bgs/indice_pol-bg.png");
+		texLoader.loadTextureWithWhiteMask("indice_bg_rebel", "medias/interface/bgs/indice_bio-bg.png");
+		texLoader.loadTextureWithWhiteMask("indice_bg_neonaz", "medias/interface/bgs/indice_pol-bg.png");
 
-		this->loadTextureWithWhiteMask("indice_rebel", "medias/interface/bgs/indice_bio.png");
-		this->loadTextureWithWhiteMask("indice_neonaz", "medias/interface/bgs/indice_pol.png");
+		texLoader.loadTextureWithWhiteMask("indice_rebel", "medias/interface/bgs/indice_bio.png");
+		texLoader.loadTextureWithWhiteMask("indice_neonaz", "medias/interface/bgs/indice_pol.png");
 
-		this->loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
-		this->loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
-		this->loadButton("rebel_cancel", "medias/interface/buttons/annuler_rebelle.png");
+		texLoader.loadButton("rebel_move", "medias/interface/buttons/rebel_move_button.png");
+		texLoader.loadButton("rebel_attack", "medias/interface/buttons/rebel_attack_button.png");
+		texLoader.loadButton("rebel_cancel", "medias/interface/buttons/annuler_rebelle.png");
 
-		this->loadButton("neonaz_move", "medias/interface/buttons/naz_move_button.png");
-		this->loadButton("neonaz_attack", "medias/interface/buttons/naz_attack_button.png");
-		this->loadButton("neonaz_cancel", "medias/interface/buttons/annuler_naz.png");
+		texLoader.loadButton("neonaz_move", "medias/interface/buttons/naz_move_button.png");
+		texLoader.loadButton("neonaz_attack", "medias/interface/buttons/naz_attack_button.png");
+		texLoader.loadButton("neonaz_cancel", "medias/interface/buttons/annuler_naz.png");
 
-		this->loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
-		this->loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
+		texLoader.loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
+		texLoader.loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
 
-		this->loadTextureWithWhiteMask("button2", "medias/interface/buttons/button2.png");
+		texLoader.loadTextureWithWhiteMask("button2", "medias/interface/buttons/button2.png");
 
-		this->loadButton("menu_button", "medias/interface/buttons/menu_button.png");
+		texLoader.loadButton("menu_button", "medias/interface/buttons/menu_button.png");
 
-		this->loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
-		this->loadTextureWithWhiteMask("selected", "medias/tiles/cadre_unit.png");
-		this->loadTextureWithWhiteMask("forbid", "medias/misc/forbide.png");
+		texLoader.loadTextureWithWhiteMask("shadow", "medias/misc/shadow.png");
+		texLoader.loadTextureWithWhiteMask("selected", "medias/tiles/cadre_unit.png");
+		texLoader.loadTextureWithWhiteMask("forbid", "medias/misc/forbide.png");
 
-		this->loadTextureWithWhiteMask("ruin", "medias/misc/ruine.png");
+		texLoader.loadTextureWithWhiteMask("ruin", "medias/misc/ruine.png");
 
-		this->loadTextureWithWhiteMask("explosion", "medias/misc/explosion.png");
+		texLoader.loadTextureWithWhiteMask("explosion", "medias/misc/explosion.png");
 		sndManager.loadSoundBuffer("explosion", "medias/misc/explosion.wav");
-		this->loadTextureWithWhiteMask("blood", "medias/misc/blood.png");
+		texLoader.loadTextureWithWhiteMask("blood", "medias/misc/blood.png");
 
 		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
 		sndManager.loadSoundBuffer("killer", "medias/misc/killer.wav");
@@ -225,16 +205,8 @@ public:
 		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 1024});
 		texManager.loadTexture("concrete_transition", transitions, sf::IntRect{128, 0, 32, 1024});
 
-
-//		sf::Image fogTransitions;
 		texManager.loadTexture("fog_transition", "medias/new/fog.png");
-//		fogTransitions.loadFromFile("medias/new/fow.png");
-//		texManager.loadTexture("fog_transition", fogTransitions, sf::IntRect{0, 0, 32, 512});
-//		texManager.loadTexture("fog_transition2", fogTransitions, sf::IntRect{32, 0, 32, 512});
-
-
 		texManager.loadTexture("debug_transition", "medias/new/debug_transitions256.png");
-
 	}
 
 	TechNode loadTechTree(std::string filename) {
@@ -290,79 +262,11 @@ public:
 		return this->centerRects[name];
 	}
 
-	void getSpecialPix(std::string name, sf::Image &image, int width, int height) {
-		sf::Vector2i pix1;
-		sf::Vector2i pix2;
-		int found = 0;
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				if (found > 1)
-					return;
-				if (image.getPixel(x, y) == sf::Color(255, 36, 196)) {
-#ifdef FACTORY_DEBUG
-					std::cout << "EntityFactory: " << name << " special pix " << x << "x" << y << std::endl;
-#endif
-					if (found == 0) {
-						pix1 = sf::Vector2i(x, y);
-					} else if(found == 1) {
-						pix2 = sf::Vector2i(x, y);
-						sf::IntRect centerRect(pix1, pix2 - pix1);
-#ifdef FACTORY_DEBUG
-						std::cout << "EntityFactory: " << name << " center rect " << centerRect.left << "x" << centerRect.top << ":" << centerRect.width << "x" << centerRect.height << std::endl;
-#endif
-						centerRects[name] = centerRect;
-					}
-
-					found++;
-				}
-			}
-		}
-
-		if (found) {
-
-		}
-
+	sf::Color getPlayerColor(sf::Color key, int idx) {
+		return playerColors[key.r << 16 + key.g << 8 + key.b][idx];
 	}
 
-	// init unit texture with mirroring
-	void initDirTexture(std::string name, std::string imgPath) {
-		sf::Image image, outImage;
-
-		image.loadFromFile(imgPath);
-		int columnWidth = image.getSize().x / 5;
-		int height = image.getSize().y;
-
-		this->getSpecialPix(name, image, columnWidth, height);
-
-		outImage.create(columnWidth * 8, height, sf::Color::Transparent);
-
-		std::vector<sf::Image> directionsImg;
-
-		for (int i = 0; i < 5; i++) {
-			sf::Image dirImg;
-			dirImg.create(columnWidth, height, sf::Color::Transparent);
-			dirImg.copy(image, 0, 0, sf::IntRect(i * columnWidth, 0, columnWidth, height), true);
-			directionsImg.push_back(dirImg);
-		}
-
-		for (int i = 1; i < 4; i ++) {
-			sf::Image dirImg;
-			dirImg.create(columnWidth, height, sf::Color::Transparent);
-			dirImg.copy(image, 0, 0, sf::IntRect(i * columnWidth, 0, columnWidth, height), true);
-			dirImg.flipHorizontally();
-			directionsImg.push_back(dirImg);
-		}
-
-		for (int i = 0; i < 8; i++) {
-			outImage.copy(directionsImg[i], i * columnWidth, 0, sf::IntRect(0, 0, columnWidth, height), true);
-		}
-
-		outImage.createMaskFromColor(sf::Color::White);
-#ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: init dir texture " << name << " " << columnWidth << "x" << height << std::endl;
-#endif
-		texManager.loadTexture(name, outImage, sf::IntRect {0, 0, columnWidth * 8, height});
-	}
+// XML loader
 
 	void loadUnits() {
 		for (std::string &fn : this->unitFiles) {
@@ -373,14 +277,14 @@ public:
 
 			tinyxml2::XMLElement *root = doc->RootElement();
 			std::string imgPath = root->FirstChildElement("file")->Attribute("path");
-			this->initDirTexture(name, imgPath);
+			texLoader.loadTextureWithDirections(name, imgPath);
 
-			this->loadButton(name + "_icon", root->FirstChildElement("icon")->Attribute("path"));
+			texLoader.loadButton(name + "_icon", root->FirstChildElement("icon")->Attribute("path"));
 
 			texManager.loadTexture(name + "_face", root->FirstChildElement("face")->Attribute("path"));
 			tinyxml2::XMLElement *speEl = root->FirstChildElement("spe");
 			if (speEl)
-				this->loadTextureWithWhiteMask(name + "_spe", speEl->Attribute("path"));
+				texLoader.loadTextureWithWhiteMask(name + "_spe", speEl->Attribute("path"));
 
 			tinyxml2::XMLElement * selSnds = root->FirstChildElement("select_sounds");
 			if (selSnds) {
@@ -411,7 +315,7 @@ public:
 				tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
 
 				if (fileEl)
-					this->initDirTexture(prName, fileEl->Attribute("path"));
+					texLoader.loadTextureWithDirections(prName, fileEl->Attribute("path"));
 
 				tinyxml2::XMLElement *sndEl = projEl->FirstChildElement("sounds")->FirstChildElement();
 				if (sndEl) {
@@ -430,9 +334,9 @@ public:
 			this->docs[name] = doc;
 
 			std::string imgPath = doc->RootElement()->FirstChildElement("file")->Attribute("path");
-			this->loadTextureWithWhiteMask(name, imgPath);
+			texLoader.loadTextureWithWhiteMask(name, imgPath);
 
-			this->loadBuildButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
+			texLoader.loadBuildButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
 		}
 	}
 
@@ -442,14 +346,13 @@ public:
 		std::string name = doc->RootElement()->Attribute("name");
 		this->docs[name] = doc;
 
-		this->loadTextureWithWhiteMask(name, "medias/resources/" + name + ".png");
+		texLoader.loadTextureWithWhiteMask(name, "medias/resources/" + name + ".png");
 
 		int i = 1;
 		for (tinyxml2::XMLElement *el : doc->RootElement()) {
 
 			std::string imgfile = el->FirstChildElement("file")->Attribute("path");
-//			std::cout << "RESOURCE: " << imgfile << std::endl;
-			this->loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
+			texLoader.loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
 			i++;
 		}
 		resourcesCount[name] = i - 1;
@@ -469,9 +372,7 @@ public:
 		}
 	}
 
-	sf::Color getPlayerColor(sf::Color key, int idx) {
-		return playerColors[key.r << 16 + key.g << 8 + key.b][idx];
-	}
+// XML parser
 
 	Animation parseAnim(tinyxml2::XMLElement *stateEl, int pixFrame) {
 		int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
@@ -480,7 +381,6 @@ public:
 		std::vector<int> frames;
 		for (tinyxml2::XMLElement *frameEl : framesEl) {
 			int frame = frameEl->IntAttribute("n");
-//					std::cout << "ADD FRAME " << frame << std::endl;
 			if (pixFrame == -1 || frame < pixFrame)
 				frames.push_back(frame);
 #ifdef BUG_DEBUG
@@ -510,7 +410,6 @@ public:
 		for (tinyxml2::XMLElement *stateEl : statesEl) {
 			std::string stateNm = stateEl->Attribute("name");
 			int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
-//			std::cout << "STATE " << stateNm << std::endl;
 
 			AnimationHandler animHandler;
 
@@ -520,21 +419,7 @@ public:
 
 			for (int i = 0; i < directions; i++) {
 				Animation anim = this->parseAnim(stateEl, pixFrame);
-				/*
-								tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
-
-								std::vector<int> frames;
-								for (tinyxml2::XMLElement *frameEl : framesEl) {
-									int frame = frameEl->IntAttribute("n");
-				//					std::cout << "ADD FRAME " << frame << std::endl;
-									if (frame < pixFrame)
-										frames.push_back(frame);
-									else
-										std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
-								}
-
-								Animation anim(frames, 0.1f * refresh);
-				*/
+				
 				if (stateNm == "die") {
 					anim.repeat = false;
 					anim.duration = (0.1f * refresh) / 4.0;
@@ -584,7 +469,6 @@ public:
 
 		}
 
-
 		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
 
 		for (tinyxml2::XMLElement *stateEl : statesEl) {
@@ -605,13 +489,9 @@ public:
 		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
 		if (projEl) {
 			tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
-
-
 			std::string prName = projEl->Attribute("name");
 			unit.attackSound = prName;
-//			unit.attackSound.setBuffer(this->sndManager.getRef(prName));
 		}
-
 	}
 
 	void parseBuildingFromXml(std::string name, Building &building)
@@ -619,7 +499,6 @@ public:
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
 
-//		building.buildTime = 10;
 		building.buildTime = (float)root->FirstChildElement("build_time")->IntAttribute("value");
 		building.maxBuildTime = building.buildTime;
 	}
@@ -765,9 +644,6 @@ public:
 
 		tile.centerRect = this->centerRects[obj.name];
 
-//		obj.life = obj.life * (tile.size.x * tile.size.y) / 2;
-//		obj.maxLife = obj.life;
-
 		registry.assign<Tile>(entity, tile);
 
 		return entity;
@@ -812,7 +688,6 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-//		tile.sprite.setOrigin(sf::Vector2f(16, 16));
 		tile.sprite.setTexture(texManager.getRef(name));
 
 		Animation staticAnim({0});
@@ -839,7 +714,6 @@ public:
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Resource>(entity, resource);
 
-
 		return entity;
 	}
 
@@ -859,25 +733,18 @@ public:
 				tinyxml2::XMLElement * psizeEl = el->FirstChildElement("pixel_size");
 
 				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
-//				tile.size = sf::Vector2i{1, 1};
 				tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"), (float)psizeEl->IntAttribute("h")};
 				if (offsetEl) {
-//					tile.offset = sf::Vector2i{offsetEl->IntAttribute("w"), offsetEl->IntAttribute("h")};
 					tile.offset = sf::Vector2i{0, offsetEl->IntAttribute("h")};
 				}
 				else
 					tile.offset = sf::Vector2i{0, 0};
-
-//				tile.offset = sf::Vector2i{0, 0};
-//				if (offsetEl)
-//				tile.offset = sf::Vector2i{0, sizeEl->IntAttribute("h")-1};
 
 				break;
 			}
 			i++;
 		}
 
-//		std::cout << "growedResource: " << rnd << " " << rname << " " << tile.size.x << "x" << tile.size.y << std::endl;
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 		tile.z = 0;
@@ -950,7 +817,6 @@ public:
 		effect.show = false;
 		effect.speed = 0.0;
 		effect.sound = name;
-//		effect.sound.setBuffer(sndManager.getRef(name));
 
 		tile.centerRect = centerRect;
 		registry.assign<Tile>(entity, tile);
@@ -1052,6 +918,8 @@ public:
 	}
 
 	EntityFactory() {
+		texLoader.setManager(&texManager);
+		sndLoader.setManager(&sndManager);
 		this->loaded = false;
 	}
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 
-
 <char team="rebel" name="abdel">
  <file path="medias/units/rebels/abdel/pics/abdel.png"/>
  <icon path="medias/units/rebels/abdel/pics/abdel-icon.png"/>
@@ -16,7 +15,6 @@
  <attack2 power="0" dist="0"/>
 
  <states>
-
    <state name="idle">
     <frames>
      <frame n="0"/>

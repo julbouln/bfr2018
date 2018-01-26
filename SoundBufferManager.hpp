@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include "Config.hpp"
+
 class SoundBufferManager
 {
 private:
@@ -16,13 +18,17 @@ public:
 
     void loadSoundBuffer(std::string name, const std::string& filename)
     {
-//        std::cout << "SoundBufferManager: load " << name << " " << filename << std::endl;
+#ifdef MANAGER_DEBUG
+        std::cout << "SoundBufferManager: load " << name << " from file " << filename << std::endl;
+#endif
         /* Load the texture */
-        sf::SoundBuffer buf;
-        buf.loadFromFile(filename);
+        if (this->buffers.count(name) == 0) {
+            sf::SoundBuffer buf;
+            buf.loadFromFile(filename);
 
-        /* Add it to the list of textures */
-        this->buffers[name] = buf;
+            /* Add it to the list of textures */
+            this->buffers[name] = buf;
+        }
 
         return;
     }

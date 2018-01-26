@@ -10,6 +10,17 @@
 #include "Map.hpp"
 #include "BrainTree/BrainTree.h"
 
+enum {
+	North,
+	NorthEast,
+	East,
+	SouthEast,
+	South,
+	NorthWest,
+	West,
+	SouthWest
+};
+
 struct Tile {
 	sf::Vector2f psize; // pixel size
 	sf::Vector2i size; // map size
@@ -35,7 +46,6 @@ struct Attack {
 	unsigned int distance;
 };
 
-
 struct MapEffect {
 	bool show;
 	float speed;
@@ -46,27 +56,18 @@ struct MapEffect {
 
 // unit or building
 struct GameObject {
+	std::string name;
+	std::string team;
+
 	float life;
 	float maxLife;
 	unsigned int view;
+
 	bool mapped;
 	bool destroy;
 
-	std::string name;
-	std::string team;
 	EntityID player;
 	std::map<std::string, EntityID> effects;
-};
-
-enum {
-	North,
-	NorthEast,
-	East,
-	SouthEast,
-	South,
-	NorthWest,
-	West,
-	SouthWest
 };
 
 struct Unit {
