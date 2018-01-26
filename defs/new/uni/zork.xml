@@ -103,7 +103,7 @@
           <frame n="25"/>
           <frame n="26"/>
         </frames>
-        <duration value="800"/>
+        <duration value="200"/>
       </animation>
     </animations>
   </tile>
@@ -139,7 +139,7 @@
       </sound_action>
     </sound_actions>
     <sound_attack name="hit">
-      <sound_buffer name="hit" path="medias/extra/sounds/hit01.wav"/>
+      <sound_buffer global="hit" path="medias/extra/sounds/hit01.wav"/>
     </sound_attack>
   </unit>
 </entity>

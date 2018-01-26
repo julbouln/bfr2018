@@ -44,9 +44,8 @@
           <frame n="11"/>
           <frame n="12"/>
           <frame n="13"/>
-          <frame n="14"/>
         </frames>
-        <duration value="800"/>
+        <duration value="200"/>
       </animation>
     </animations>
   </tile>
@@ -55,12 +54,15 @@
     <team value="neonaz"/>
     <view value="5"/>
     <life value="3"/>
-    <effects/>
+    <effects>
+      <effect name="projectile" ref="rockette"/>
+    </effects>
   </game_object>
   <unit>
     <speed value="3"/>
     <attack1 power="1"/>
-    <attack2 power="5" dist="3"/>
+    <attack2 dist="3" power="5"/>
     <sound_actions/>
+    <sound_attack name="rockette"/>
   </unit>
 </entity>

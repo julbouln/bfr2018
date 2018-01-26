@@ -53,7 +53,7 @@
           <frame n="18"/>
           <frame n="19"/>
         </frames>
-        <duration value="400"/>
+        <duration value="100"/>
       </animation>
     </animations>
   </tile>
@@ -62,12 +62,14 @@
     <team value="neonaz"/>
     <view value="3"/>
     <life value="10"/>
-    <effects/>
   </game_object>
   <unit>
     <speed value="1"/>
     <attack1 power="4"/>
-    <attack2 power="7" dist="2"/>
+    <attack2 dist="2" power="7"/>
     <sound_actions/>
+    <sound_attack name="mitraille">
+      <sound_buffer global="mitraille" path="medias/projectiles/mitraille.wav"/>
+    </sound_attack>
   </unit>
 </entity>

@@ -847,7 +847,6 @@ public:
 		effect.speed = 0.0;
 		effect.sound = name;
 
-		tile.centerRect = sf::IntRect(0, 0, 32, 32);
 		registry.assign<Tile>(entity, tile);
 		registry.assign<MapEffect>(entity, effect);
 

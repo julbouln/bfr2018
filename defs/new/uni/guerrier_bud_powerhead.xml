@@ -39,7 +39,7 @@
           <frame n="8"/>
           <frame n="9"/>
         </frames>
-        <duration value="800"/>
+        <duration value="200"/>
       </animation>
     </animations>
   </tile>
@@ -48,12 +48,15 @@
     <team value="rebel"/>
     <view value="4"/>
     <life value="5"/>
-    <effects/>
+    <effects>
+      <effect name="projectile" ref="bud"/>
+    </effects>
   </game_object>
   <unit>
     <speed value="4"/>
     <attack1 power="3"/>
     <attack2 power="6" dist="2"/>
     <sound_actions/>
+    <sound_attack name="bud"/>
   </unit>
 </entity>

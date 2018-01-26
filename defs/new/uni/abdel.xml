@@ -39,7 +39,7 @@
           <frame n="9"/>
           <frame n="10"/>
         </frames>
-        <duration value="400"/>
+        <duration value="100"/>
       </animation>
     </animations>
   </tile>

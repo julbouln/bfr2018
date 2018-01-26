@@ -2,6 +2,7 @@
     <tile>
         <texture mode="with_white_mask" path="medias/misc/explosion.png"/>
         <psize x="288" y="280"/>
+        <size x="8" y="6"/>
         <animations>
             <animation name="fx">
                 <frames>

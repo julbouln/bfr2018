@@ -196,7 +196,7 @@ public:
 						if (!proj.show) {
 							proj.show = true;
 							projTile.pos = tile.pos;
-							projTile.ppos = tile.ppos;
+							projTile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 							projTile.direction = this->getDirection(projTile.pos, destTile.pos);
 							proj.speed = 3.0;
@@ -252,7 +252,7 @@ public:
 #endif
 					explosion.show = true;
 					explosionTile.pos = tile.pos;
-					explosionTile.ppos = tile.ppos;
+					explosionTile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 					explosionTile.animHandlers["fx"].reset();
 					explosionTile.animHandlers["fx"].changeAnim(0);
 					explosionTile.animHandlers["fx"].set(0);

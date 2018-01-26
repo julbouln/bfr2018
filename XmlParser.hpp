@@ -148,8 +148,8 @@ public:
 					if (child->Attribute("mode"))
 						mode = texLoadModes[child->Attribute("mode")];
 
-					if (child->Attribute("name")) {
-						cname = child->Attribute("name");
+					if (child->Attribute("global")) {
+						cname = child->Attribute("global");
 					}
 
 #ifdef PARSER_DEBUG
@@ -204,32 +204,55 @@ public:
 
 	void recParse(std::string name, tinyxml2::XMLElement *element) {
 		int i = 0;
+		int cnt = 0;
 		for (tinyxml2::XMLElement *child : element) {
+			std::string nodeName = child->Name();
+			if (nodeName == "sound_buffer")
+				cnt++;
+		}
+
+		if (cnt == 1) {
+			tinyxml2::XMLElement *child = element->FirstChildElement("sound_buffer");
 			std::string cname = name;
 			if (child->Attribute("name")) {
 				std::string cName = child->Attribute("name");
 				cname = name + "_" + cName;
 			}
 
-			if (std::string(child->Name()) == "sound_buffer")
-			{
-				std::string ncname = cname + "_" + std::to_string(i);
-				if (child->Attribute("path")) {
-					std::string path = child->Attribute("path");
+			if (child->Attribute("global")) {
+				cname = child->Attribute("global");
+			}
+
+			sndManager->loadSoundBuffer(cname, child->Attribute("path"));
+		} else {
+			for (tinyxml2::XMLElement *child : element) {
+				std::string nodeName = child->Name();
+				std::string cname = name;
+				if (child->Attribute("name")) {
+					std::string cName = child->Attribute("name");
+					cname = name + "_" + cName;
+				}
+
+				if (nodeName == "sound_buffer")
+				{
+					std::string ncname = cname + "_" + std::to_string(i);
+					if (child->Attribute("path")) {
+						std::string path = child->Attribute("path");
 
 #ifdef PARSER_DEBUG
-					std::cout << "SoundBufferLoader: recParse child " << ncname << " " << path << std::endl;
+						std::cout << "SoundBufferLoader: recParse child " << ncname << " " << path << std::endl;
 #endif
 
-					if (child->Attribute("name")) {
-						ncname = child->Attribute("name");
-					}
+						if (child->Attribute("global")) {
+							ncname = child->Attribute("global");
+						}
 
-					sndManager->loadSoundBuffer(ncname, path);
+						sndManager->loadSoundBuffer(ncname, path);
+					}
+					i++;
 				}
-				i++;
+				this->recParse(cname, child);
 			}
-			this->recParse(cname, child);
 
 		}
 	}

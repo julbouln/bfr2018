@@ -51,7 +51,7 @@
           <frame n="16"/>
           <frame n="16"/>
         </frames>
-        <duration value="800"/>
+        <duration value="200"/>
       </animation>
     </animations>
   </tile>

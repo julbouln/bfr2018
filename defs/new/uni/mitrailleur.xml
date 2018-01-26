@@ -55,7 +55,7 @@
           <frame n="15"/>
           <frame n="16"/>
         </frames>
-        <duration value="800"/>
+        <duration value="200"/>
       </animation>
     </animations>
   </tile>
@@ -71,7 +71,7 @@
     <attack2 power="3" dist="2"/>
     <sound_actions/>
     <sound_attack name="mitraille">
-      <sound_buffer name="mitraille" path="medias/projectiles/mitraille.wav"/>
+      <sound_buffer global="mitraille" path="medias/projectiles/mitraille.wav"/>
     </sound_attack>
   </unit>
 </entity>
