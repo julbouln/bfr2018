@@ -15,7 +15,7 @@
 			<xsl:apply-templates select="icon"/>
 			<xsl:apply-templates select="face"/>
 			<xsl:apply-templates select="spe"/>
-			<tile>
+			<tile directions="8">
 				<xsl:apply-templates select="pixel_size"/>
 				<xsl:apply-templates select="case_size"/>
 				<xsl:apply-templates select="decal_value"/>
@@ -38,6 +38,9 @@
 					</xsl:attribute>
 				</view>
 				<xsl:copy-of select="life"/>
+				<effects>
+					<xsl:apply-templates select="projectile"/>
+				</effects>
 			</game_object>
 			<unit>
 				<xsl:copy-of select="speed"/>
@@ -49,6 +52,16 @@
 						<xsl:call-template name="states_sounds"/>
 					</xsl:for-each>
 				</sound_actions>
+				<xsl:choose>
+					<xsl:when test="count(projectile/sounds/sound) &gt; 0">
+						<sound_attack>
+							<xsl:attribute name="name">
+								<xsl:value-of select="projectile/@name"/>
+							</xsl:attribute>
+						</sound_attack>
+					</xsl:when>
+					<xsl:otherwise/>
+				</xsl:choose>
 			</unit>
 		</entity>
 	</xsl:template>
@@ -90,6 +103,9 @@
 					</xsl:attribute>
 				</view>
 				<xsl:copy-of select="life"/>
+				<effects>
+					<effect name="explosion" ref="explosion"/>
+				</effects>
 			</game_object>
 			<building>
 				<xsl:copy-of select="build_time"/>
@@ -108,7 +124,7 @@
 		</texture>
 	</xsl:template>
 	<xsl:template match="icon">
-		<texture mode="button" name="icon">
+		<texture mode="build_button" name="icon">
 			<xsl:attribute name="path">
 				<xsl:value-of select="@path"/>
 			</xsl:attribute>
@@ -217,5 +233,12 @@
 				<xsl:value-of select="@path"/>
 			</xsl:attribute>
 		</sound_buffer>
+	</xsl:template>
+	<xsl:template match="projectile">
+		<effect name="projectile">
+			<xsl:attribute name="ref">
+				<xsl:value-of select="@name"/>
+			</xsl:attribute>
+		</effect>
 	</xsl:template>
 </xsl:stylesheet>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<entity class="building" name="squat" team="rebel">
+  <texture mode="with_white_mask" path="medias/buildings/rebels/squat/pics/squat.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/rebels/squat/pics/squat-icon.png"/>
+  <tile>
+    <psize x="256" y="224"/>
+    <size x="8" y="4"/>
+    <offset x="0" y="3"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="squat"/>
+    <team value="rebel"/>
+    <view value="2"/>
+    <life value="9"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="7"/>
+  </building>
+</entity>

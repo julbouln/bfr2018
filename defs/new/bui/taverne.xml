@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<entity class="building" name="taverne" team="rebel">
+  <texture mode="with_white_mask" path="medias/buildings/rebels/taverne/pics/taverne.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/rebels/taverne/pics/taverne-icon.png"/>
+  <tile>
+    <psize x="213" y="148"/>
+    <size x="6" y="4"/>
+    <offset x="0" y="1"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="taverne"/>
+    <team value="rebel"/>
+    <view value="5"/>
+    <life value="10"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="10"/>
+  </building>
+</entity>

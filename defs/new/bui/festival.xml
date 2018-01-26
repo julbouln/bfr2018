@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<entity class="building" name="festival" team="rebel">
+  <texture mode="with_white_mask" path="medias/buildings/rebels/festival/pics/festival.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/rebels/festival/pics/festival-icon.png"/>
+  <tile>
+    <psize x="320" y="364"/>
+    <size x="6" y="4"/>
+    <offset x="0" y="0"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="9"/>
+          <frame n="10"/>
+          <frame n="11"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="festival"/>
+    <team value="rebel"/>
+    <view value="2"/>
+    <life value="12"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="4"/>
+  </building>
+</entity>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<entity class="building" name="mirador" team="neonaz">
+  <texture mode="with_white_mask" path="medias/buildings/neonazs/mirador/pics/mirador.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/neonazs/mirador/pics/mirador-icon.png"/>
+  <tile>
+    <psize x="144" y="399"/>
+    <size x="4" y="2"/>
+    <offset x="0" y="10"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="2"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="mirador"/>
+    <team value="neonaz"/>
+    <view value="7"/>
+    <life value="8"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="6"/>
+  </building>
+</entity>

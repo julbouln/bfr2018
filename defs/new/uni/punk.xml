@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<entity class="unit" name="punk" team="rebel">
+  <texture mode="with_directions" path="medias/units/rebels/punk/pics/punk.png"/>
+  <texture mode="build_button" name="icon" path="medias/units/rebels/punk/pics/punk-icon.png"/>
+  <texture name="face" path="medias/units/rebels/punk/pics/punk-face.png"/>
+  <texture name="spe" path="medias/units/rebels/punk/pics/punk-spe.png"/>
+  <tile directions="8">
+    <psize x="70" y="70"/>
+    <size x="1" y="1"/>
+    <offset x="0" y="0"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="1"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="2"/>
+        </frames>
+        <duration value="5000"/>
+      </animation>
+      <animation name="move">
+        <frames>
+          <frame n="0"/>
+          <frame n="4"/>
+          <frame n="0"/>
+          <frame n="5"/>
+        </frames>
+        <duration value="200"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+        </frames>
+        <duration value="300"/>
+      </animation>
+      <animation name="die">
+        <frames>
+          <frame n="15"/>
+          <frame n="16"/>
+          <frame n="16"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="punk"/>
+    <team value="rebel"/>
+    <view value="4"/>
+    <life value="5"/>
+    <effects/>
+  </game_object>
+  <unit>
+    <speed value="3"/>
+    <attack1 power="5"/>
+    <attack2 power="0" dist="0"/>
+    <sound_actions/>
+  </unit>
+</entity>

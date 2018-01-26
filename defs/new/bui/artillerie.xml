@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<entity class="building" name="artillerie" team="neonaz">
+  <texture mode="with_white_mask" path="medias/buildings/neonazs/artillerie/pics/artillerie.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/neonazs/artillerie/pics/artillerie-icon.png"/>
+  <tile>
+    <psize x="256" y="230"/>
+    <size x="6" y="4"/>
+    <offset x="0" y="1"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="artillerie"/>
+    <team value="neonaz"/>
+    <view value="5"/>
+    <life value="12"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="10"/>
+  </building>
+</entity>

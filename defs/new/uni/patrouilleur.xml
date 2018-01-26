@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<entity class="unit" name="patrouilleur" team="neonaz">
+  <texture mode="with_directions" path="medias/units/neonazs/patrouilleur/pics/patrouilleur.png"/>
+  <texture mode="build_button" name="icon" path="medias/units/neonazs/patrouilleur/pics/patrouilleur-icon.png"/>
+  <texture name="face" path="medias/units/neonazs/patrouilleur/pics/patrouilleur-face.png"/>
+  <tile directions="8">
+    <psize x="43" y="52"/>
+    <size x="1" y="1"/>
+    <offset x="0" y="0"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+      <animation name="move">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="0"/>
+          <frame n="2"/>
+        </frames>
+        <duration value="200"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="0"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+      <animation name="die">
+        <frames>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="9"/>
+          <frame n="10"/>
+          <frame n="11"/>
+          <frame n="12"/>
+          <frame n="13"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="patrouilleur"/>
+    <team value="neonaz"/>
+    <view value="3"/>
+    <life value="3"/>
+    <effects/>
+  </game_object>
+  <unit>
+    <speed value="4"/>
+    <attack1 power="2"/>
+    <attack2 power="0" dist="0"/>
+    <sound_actions>
+      <sound_action name="select">
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_selec01.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_selec02.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_selec03.wav"/>
+      </sound_action>
+      <sound_action name="move">
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_action01.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_action02.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_action03.wav"/>
+      </sound_action>
+      <sound_action name="attack">
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_attaque01.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_attaque02.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_attaque03.wav"/>
+        <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_attaque04.wav"/>
+      </sound_action>
+    </sound_actions>
+  </unit>
+</entity>

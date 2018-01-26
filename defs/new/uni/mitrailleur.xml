@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<entity class="unit" name="mitrailleur" team="neonaz">
+  <texture mode="with_directions" path="medias/units/neonazs/mitrailleur/pics/mitrailleur.png"/>
+  <texture mode="build_button" name="icon" path="medias/units/neonazs/mitrailleur/pics/mitrailleur-icon.png"/>
+  <texture name="face" path="medias/units/neonazs/mitrailleur/pics/mitrailleur-face.png"/>
+  <tile directions="8">
+    <psize x="43" y="60"/>
+    <size x="1" y="1"/>
+    <offset x="0" y="0"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+      <animation name="move">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="0"/>
+          <frame n="2"/>
+        </frames>
+        <duration value="200"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="5"/>
+          <frame n="4"/>
+          <frame n="3"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+      <animation name="die">
+        <frames>
+          <frame n="9"/>
+          <frame n="10"/>
+          <frame n="11"/>
+          <frame n="12"/>
+          <frame n="13"/>
+          <frame n="14"/>
+          <frame n="15"/>
+          <frame n="16"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="mitrailleur"/>
+    <team value="neonaz"/>
+    <view value="3"/>
+    <life value="4"/>
+  </game_object>
+  <unit>
+    <speed value="3"/>
+    <attack1 power="2"/>
+    <attack2 power="3" dist="2"/>
+    <sound_actions/>
+    <sound_attack name="mitraille">
+      <sound_buffer name="mitraille" path="medias/projectiles/mitraille.wav"/>
+    </sound_attack>
+  </unit>
+</entity>

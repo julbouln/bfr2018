@@ -1,0 +1,22 @@
+<entity class="effect" name="rockette">
+    <tile directions="8">
+        <texture mode="with_directions" path="medias/projectiles/rockette.png"/>
+        <psize x="64" y="64"/>
+        <animations>
+            <animation name="fx">
+                <frames>
+                    <frame n="0"/>
+                    <frame n="1"/>
+                    <frame n="1"/>
+                    <frame n="1"/>
+                    <frame n="1"/>
+                    <frame n="1"/>
+                    <frame n="1"/>
+                    <frame n="1"/>
+                </frames>
+                <duration value="100"/>
+            </animation>
+        </animations>
+    </tile>
+    <sound_buffer path="medias/projectiles/rockette.wav"/>
+</entity>

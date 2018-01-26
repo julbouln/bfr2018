@@ -221,14 +221,10 @@ public:
 								projTile.pos = tile.pos;
 								projTile.ppos = tile.ppos;
 								proj.curPosition = 0;
-
 							}
 						}
 					}
-
 				}
-
-
 			} else {
 				if (obj.effects.count("projectile") > 0) {
 					EntityID projEnt = obj.effects["projectile"];
@@ -261,7 +257,6 @@ public:
 					explosionTile.animHandlers["fx"].changeAnim(0);
 					explosionTile.animHandlers["fx"].set(0);
 					this->map->sounds.push(SoundPlay{explosion.sound, 1, explosionTile.pos});
-//					explosion.sound.play();
 				}
 //					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["fx"].l<<std::endl;
 
@@ -291,8 +286,6 @@ public:
 						proj.curPosition = 0;
 						projTile.animHandlers["fx"].reset();
 						projTile.animHandlers["fx"].set(0);
-
-
 					}
 //					std::cout << "Projectile: " << entity << " " << proj.curPosition << "/"<<proj.positions.size()<< " "<< projTile.ppos.x << "x" << projTile.ppos.y << " " << projTile.pos.x << "x" << projTile.pos.y << std::endl;
 				}

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<entity class="unit" name="super_guerrier" team="neonaz">
+  <texture mode="with_directions" path="medias/units/neonazs/super_guerrier/pics/super_guerrier.png"/>
+  <texture mode="build_button" name="icon" path="medias/units/neonazs/super_guerrier/pics/super_guerrier-icon.png"/>
+  <texture name="face" path="medias/units/neonazs/super_guerrier/pics/super_guerrier-face.png"/>
+  <tile directions="8">
+    <psize x="92" y="64"/>
+    <size x="1" y="1"/>
+    <offset x="0" y="0"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+      <animation name="move">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+        </frames>
+        <duration value="200"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="8"/>
+          <frame n="11"/>
+          <frame n="12"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="2"/>
+          <frame n="1"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+      <animation name="die">
+        <frames>
+          <frame n="13"/>
+          <frame n="14"/>
+          <frame n="15"/>
+          <frame n="16"/>
+          <frame n="17"/>
+          <frame n="18"/>
+          <frame n="19"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="super_guerrier"/>
+    <team value="neonaz"/>
+    <view value="3"/>
+    <life value="10"/>
+    <effects/>
+  </game_object>
+  <unit>
+    <speed value="1"/>
+    <attack1 power="4"/>
+    <attack2 power="7" dist="2"/>
+    <sound_actions/>
+  </unit>
+</entity>

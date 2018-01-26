@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<entity class="building" name="gymnaz" team="neonaz">
+  <texture mode="with_white_mask" path="medias/buildings/neonazs/gymnaz/pics/gymnaz.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/neonazs/gymnaz/pics/gymnaz-icon.png"/>
+  <tile>
+    <psize x="224" y="209"/>
+    <size x="6" y="4"/>
+    <offset x="0" y="1"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="gymnaz"/>
+    <team value="neonaz"/>
+    <view value="1"/>
+    <life value="10"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="4"/>
+  </building>
+</entity>

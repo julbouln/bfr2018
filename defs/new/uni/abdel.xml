@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<entity class="unit" name="abdel" team="rebel">
+  <texture mode="with_directions" path="medias/units/rebels/abdel/pics/abdel.png"/>
+  <texture mode="build_button" name="icon" path="medias/units/rebels/abdel/pics/abdel-icon.png"/>
+  <texture name="face" path="medias/units/rebels/abdel/pics/abdel-face.png"/>
+  <texture name="spe" path="medias/units/rebels/abdel/pics/abdel-spe.png"/>
+  <tile directions="8">
+    <psize x="60" y="65"/>
+    <size x="1" y="1"/>
+    <offset x="0" y="0"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+      <animation name="move">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="3"/>
+          <frame n="4"/>
+        </frames>
+        <duration value="200"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+      <animation name="die">
+        <frames>
+          <frame n="8"/>
+          <frame n="9"/>
+          <frame n="10"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="abdel"/>
+    <team value="rebel"/>
+    <view value="3"/>
+    <life value="5"/>
+    <effects/>
+  </game_object>
+  <unit>
+    <speed value="5"/>
+    <attack1 power="6"/>
+    <attack2 power="0" dist="0"/>
+    <sound_actions/>
+  </unit>
+</entity>

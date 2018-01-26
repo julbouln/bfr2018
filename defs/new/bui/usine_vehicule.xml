@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<entity class="building" name="usine_vehicule" team="neonaz">
+  <texture mode="with_white_mask" path="medias/buildings/neonazs/usine_vehicule/pics/usine_vehicule.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/neonazs/usine_vehicule/pics/usine_vehicule-icon.png"/>
+  <tile>
+    <psize x="224" y="181"/>
+    <size x="6" y="4"/>
+    <offset x="0" y="2"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="usine_vehicule"/>
+    <team value="neonaz"/>
+    <view value="2"/>
+    <life value="10"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="8"/>
+  </building>
+</entity>

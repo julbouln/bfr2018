@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<entity class="building" name="tourelle" team="rebel">
+  <texture mode="with_white_mask" path="medias/buildings/rebels/tourelle/pics/tourelle.png"/>
+  <texture mode="build_button" name="icon" path="medias/buildings/rebels/tourelle/pics/tourelle-icon.png"/>
+  <tile>
+    <psize x="128" y="192"/>
+    <size x="4" y="2"/>
+    <offset x="0" y="4"/>
+    <animations>
+      <animation name="idle">
+        <frames>
+          <frame n="0"/>
+        </frames>
+        <duration value="800"/>
+      </animation>
+      <animation name="attack">
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+        </frames>
+        <duration value="400"/>
+      </animation>
+    </animations>
+  </tile>
+  <game_object>
+    <name value="tourelle"/>
+    <team value="rebel"/>
+    <view value="6"/>
+    <life value="6"/>
+    <effects>
+      <effect name="explosion" ref="explosion"/>
+    </effects>
+  </game_object>
+  <building>
+    <build_time value="6"/>
+  </building>
+</entity>

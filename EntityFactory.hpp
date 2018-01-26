@@ -70,6 +70,11 @@ public:
 	TextureLoader texLoader;
 	SoundBufferLoader sndLoader;
 
+	TileParser tileParser;
+	GameObjectParser gameObjectParser;
+	UnitParser unitParser;
+	BuildingParser buildingParser;
+
 	sf::Texture &getTex(std::string name) {
 		return texManager.getRef(name);
 	}
@@ -84,7 +89,7 @@ public:
 //		texLoader.parseFile("defs/new/uni/zork.xml");
 //		sndLoader.parseFile("defs/new/uni/zork.xml");
 
-		this->loadManifest2("defs/new/manifest.xml");
+//		this->loadManifest2("defs/new/manifest.xml");
 	}
 
 	void loadMisc() {
@@ -375,7 +380,6 @@ public:
 	}
 
 // XML parser
-
 	Animation parseAnim(tinyxml2::XMLElement *stateEl, int pixFrame) {
 		int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
 		tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
@@ -449,6 +453,8 @@ public:
 		obj.team = root->Attribute("team");
 	}
 
+#if 0
+
 	void parseUnitFromXml(std::string name, Unit &unit) {
 		tinyxml2::XMLDocument *doc = this->docs[name];
 		tinyxml2::XMLElement *root = doc->RootElement();
@@ -505,6 +511,14 @@ public:
 		building.maxBuildTime = building.buildTime;
 	}
 
+#endif
+
+	tinyxml2::XMLElement *getXmlComponent(std::string name, const char* component) {
+		if (this->loadedXmlDocs.count(name) > 0)
+			return this->loadedXmlDocs[name]->RootElement()->FirstChildElement(component);
+		else
+			return nullptr;
+	}
 // Creator
 
 	void destroyEntity(entt::Registry<EntityID> &registry, EntityID entity) {
@@ -565,7 +579,8 @@ public:
 		std::cout << "EntityFactory: create unit " << entity << " " << name << " at " << x << "x" << y << std::endl;
 #endif
 		Tile tile;
-		this->parseTileFromXml(name, tile, 8);
+//		this->parseTileFromXml(name, tile, 8);
+		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -580,14 +595,24 @@ public:
 		tile.centerRect = this->getCenterRect(name);
 
 		GameObject obj;
-		this->parseGameObjectFromXml(name, obj);
-		this->addProjectileFromXml(registry, name, obj );
+//		this->parseGameObjectFromXml(name, obj);
+		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
+
+		for (auto o : gameObjectParser.parseEffects(this->getXmlComponent(name, "game_object"))) {
+#ifdef FACTORY_DEBUG
+			std::cout << "EntityFactory: " << entity << " add effect " << o.first << " from ref " << o.second << std::endl;
+#endif
+			obj.effects[o.first] = this->createMapEffect(registry, o.second);
+		}
+
+//		this->addProjectileFromXml(registry, name, obj );
 		obj.player = player;
 		obj.mapped = true;
 		obj.destroy = false;
 
 		Unit unit;
-		this->parseUnitFromXml(name, unit);
+		unitParser.parse(unit, this->getXmlComponent(name, "unit"));
+//		this->parseUnitFromXml(name, unit);
 
 		unit.nextpos = tile.pos;
 		unit.destAttack = 0;
@@ -608,12 +633,14 @@ public:
 		std::cout << "EntityFactory: start building " << entity << " " << name << " constructed by " << constructedBy << std::endl;
 #endif
 		Building building;
-		this->parseBuildingFromXml(name, building);
+//		this->parseBuildingFromXml(name, building);
+		buildingParser.parse(building, this->getXmlComponent(name, "building"));
 		building.construction = 0;
 		building.constructedBy = constructedBy;
 
 		GameObject obj;
-		this->parseGameObjectFromXml(name, obj);
+//		this->parseGameObjectFromXml(name, obj);
+		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
 		obj.player = 0;
 		obj.mapped = false;
 		obj.destroy = false;
@@ -627,12 +654,18 @@ public:
 
 	EntityID finishBuilding(entt::Registry<EntityID> &registry, EntityID entity, EntityID player, int x, int y, bool built) {
 		GameObject &obj = registry.get<GameObject>(entity);
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: finish building " << entity << " " << obj.name << " at " << x << "x" << y << std::endl;
+#endif
+
 		obj.player = player;
 		obj.mapped = built;
-		obj.effects["explosion"] = this->createExplosionEffect(registry);
+
+//		obj.effects["explosion"] = this->createExplosionEffect(registry);
 
 		Tile tile;
-		this->parseTileFromXml(obj.name, tile, 8);
+//		this->parseTileFromXml(obj.name, tile, 8);
+		tileParser.parse(tile, this->getXmlComponent(obj.name, "tile"));
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -647,6 +680,13 @@ public:
 		tile.centerRect = this->getCenterRect(obj.name);
 
 		registry.assign<Tile>(entity, tile);
+
+		for (auto o : gameObjectParser.parseEffects(this->getXmlComponent(obj.name, "game_object"))) {
+#ifdef FACTORY_DEBUG
+			std::cout << "EntityFactory: " << entity << " add effect " << o.first << " from ref " << o.second << std::endl;
+#endif
+			obj.effects[o.first] = this->createMapEffect(registry, o.second);
+		}
 
 		return entity;
 	}
@@ -777,6 +817,45 @@ public:
 		return entity;
 	}
 
+	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name)
+	{
+		EntityID entity = registry.create();
+
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create map effect " << entity << " " << name << std::endl;
+#endif
+
+		Tile tile;
+		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
+		tile.pos = sf::Vector2i(0, 0);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = 1;
+
+		tile.sprite.setTexture(texManager.getRef(name));
+
+		tile.direction = North;
+		tile.state = "fx";
+
+		AnimationHandler &fxAnim = tile.animHandlers["fx"];
+
+		fxAnim.changeAnim(0);
+		fxAnim.set(0);
+		tile.sprite.setTextureRect(fxAnim.bounds); // texture need to be updated
+
+		MapEffect effect;
+		effect.show = false;
+		effect.speed = 0.0;
+		effect.sound = name;
+
+		tile.centerRect = sf::IntRect(0, 0, 32, 32);
+		registry.assign<Tile>(entity, tile);
+		registry.assign<MapEffect>(entity, effect);
+
+		return entity;
+	}
+
+
+
 	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name,
 	                         int w, int h, sf::IntRect centerRect, std::initializer_list<int> frames, float duration, int directions, int z) {
 		Animation anim(frames, duration);
@@ -901,29 +980,35 @@ public:
 	}
 
 
+	std::map<std::string, tinyxml2::XMLDocument *> loadedXmlDocs;
+
+
 	void loadManifest2(std::string filename) {
 		std::cout << "EntityFactory: load manifest " << filename << std::endl;
+
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile(filename.c_str());
 
 		for (tinyxml2::XMLElement *childEl : doc.RootElement()) {
 			std::string name = childEl->Name();
-			std::string filename = childEl->Attribute("path");
+			std::string sfilename = childEl->Attribute("path");
 
-			tinyxml2::XMLDocument doc;
-			doc.LoadFile(filename.c_str());
+			tinyxml2::XMLDocument *sdoc = new tinyxml2::XMLDocument();
+			sdoc->LoadFile(sfilename.c_str());
 
-			texLoader.parse(doc.RootElement());
-			sndLoader.parse(doc.RootElement());
+			this->loadedXmlDocs[texLoader.getName(sdoc->RootElement())] = sdoc;
+
+			texLoader.parse(sdoc->RootElement());
+			sndLoader.parse(sdoc->RootElement());
 
 		}
 		std::cout << "EntityFactory: manifest loaded " << filename << std::endl;
 	}
 
-
 	void load() {
 		if (!this->loaded) {
 			this->loadManifest("defs/manifest.xml");
+			this->loadManifest2("defs/new/manifest.xml");
 
 			this->loadTerrains();
 			this->loadUnits();

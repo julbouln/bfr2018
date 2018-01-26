@@ -1,0 +1,18 @@
+<entity class="effect" name="bud">
+    <tile directions="8">
+        <texture mode="with_directions" path="medias/projectiles/bud.png"/>
+        <psize x="32" y="32"/>
+        <animations>
+            <animation name="fx">
+                <frames>
+                    <frame n="0"/>
+                    <frame n="1"/>
+                    <frame n="2"/>
+                    <frame n="3"/>
+                </frames>
+                <duration value="100"/>
+            </animation>
+        </animations>
+    </tile>
+    <sound_buffer path="medias/projectiles/tir_bud.wav"/>
+</entity>

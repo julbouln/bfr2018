@@ -143,11 +143,14 @@ public:
 			if (std::string(child->Name()) == "texture")
 			{
 				if (child->Attribute("path")) {
-
 					std::string path = child->Attribute("path");
 					TextureLoadMode mode = TextureLoadMode::Default;
 					if (child->Attribute("mode"))
 						mode = texLoadModes[child->Attribute("mode")];
+
+					if (child->Attribute("name")) {
+						cname = child->Attribute("name");
+					}
 
 #ifdef PARSER_DEBUG
 					std::cout << "TextureLoader: recParse child " << cname << " " << path << " " << (int)mode << std::endl;
@@ -181,6 +184,9 @@ public:
 		this->recParse(element->Attribute("name"), element);
 	}
 
+	std::string getName(tinyxml2::XMLElement *element) {
+		return element->Attribute("name");
+	}
 	void parseFile(std::string filename) {
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile(filename.c_str());
@@ -207,13 +213,17 @@ public:
 
 			if (std::string(child->Name()) == "sound_buffer")
 			{
-				std::string ncname = cname+"_"+std::to_string(i);
+				std::string ncname = cname + "_" + std::to_string(i);
 				if (child->Attribute("path")) {
 					std::string path = child->Attribute("path");
 
 #ifdef PARSER_DEBUG
 					std::cout << "SoundBufferLoader: recParse child " << ncname << " " << path << std::endl;
 #endif
+
+					if (child->Attribute("name")) {
+						ncname = child->Attribute("name");
+					}
 
 					sndManager->loadSoundBuffer(ncname, path);
 				}
@@ -249,82 +259,123 @@ public:
 
 		Animation anim(frames, duration);
 
+#ifdef PARSER_DEBUG
+		std::cout << "TileParser: create animation containing " << frames.size() << " frames" << std::endl;
+#endif
+
 		return anim;
 	}
 
 	void parse(Tile &tile, tinyxml2::XMLElement *element) {
-		tinyxml2::XMLElement * sizeEl = element->FirstChildElement("size");
-		tinyxml2::XMLElement * psizeEl = element->FirstChildElement("psize");
-		tinyxml2::XMLElement * offsetEl = element->FirstChildElement("offset");
-		tinyxml2::XMLElement * animsEl = element->FirstChildElement("animations");
+		if (element) {
+			tinyxml2::XMLElement * sizeEl = element->FirstChildElement("size");
+			tinyxml2::XMLElement * psizeEl = element->FirstChildElement("psize");
+			tinyxml2::XMLElement * offsetEl = element->FirstChildElement("offset");
+			tinyxml2::XMLElement * animsEl = element->FirstChildElement("animations");
 
-		tile.size = sf::Vector2i{sizeEl->IntAttribute("x"), sizeEl->IntAttribute("y")};
-		tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("x"), (float)psizeEl->IntAttribute("y")};
-		tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
+			if (sizeEl)
+				tile.size = sf::Vector2i{sizeEl->IntAttribute("x"), sizeEl->IntAttribute("y")};
+			else
+				tile.size = sf::Vector2i{1, 1};
 
-		int directions = 1;
-		if (element->Attribute("directions"))
-			directions = element->IntAttribute("directions");
+			tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("x"), (float)psizeEl->IntAttribute("y")};
 
-		for (tinyxml2::XMLElement *animEl : animsEl) {
-			std::string stateNm = animEl->Attribute("name");
+			if (offsetEl)
+				tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
+			else
+				tile.offset = sf::Vector2i{0, 0};
 
-			AnimationHandler animHandler;
+			int directions = 1;
+			if (element->Attribute("directions"))
+				directions = element->IntAttribute("directions");
 
-			animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+			for (tinyxml2::XMLElement *animEl : animsEl) {
+				std::string stateNm = animEl->Attribute("name");
 
-			for (int i = 0; i < directions; i++) {
-				Animation anim = this->parseAnim(animEl);
-				animHandler.addAnim(anim);
+				AnimationHandler animHandler;
+
+				animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+
+				for (int i = 0; i < directions; i++) {
+					Animation anim = this->parseAnim(animEl);
+					animHandler.addAnim(anim);
+				}
+				animHandler.update(0.0f);
+
+				tile.animHandlers[stateNm] = animHandler;
+#ifdef PARSER_DEBUG
+				std::cout << "TileParser: add animation handler " << stateNm << " containing " << directions << " directions" << std::endl;
+#endif
 			}
-			animHandler.update(0.0f);
-
-			tile.animHandlers[stateNm] = animHandler;
 		}
 	}
 };
 
 class GameObjectParser {
 public:
+	std::map<std::string, std::string> parseEffects(tinyxml2::XMLElement *element) {
+		std::map<std::string, std::string> effects;
+		tinyxml2::XMLElement * effectsEl = element->FirstChildElement("effects");
+		if (effectsEl) {
+			for (tinyxml2::XMLElement *effectEl : effectsEl) {
+				effects[effectEl->Attribute("name")] = effectEl->Attribute("ref");
+			}
+		}
+		return effects;
+	}
+
 	void parse(GameObject &obj, tinyxml2::XMLElement *element) {
 		obj.view = element->FirstChildElement("view")->IntAttribute("value");
 		obj.life = (float)element->FirstChildElement("life")->IntAttribute("value");
 		obj.maxLife = obj.life;
-		obj.name = element->Attribute("name");
-		obj.team = element->Attribute("team");
+		obj.name = element->FirstChildElement("name")->Attribute("value");
+		obj.team = element->FirstChildElement("team")->Attribute("value");
+
 	}
 };
 
 class UnitParser {
 public:
 	void parse(Unit &unit, tinyxml2::XMLElement *element) {
+		if (element) {
 
-		unit.speed = element->FirstChildElement("speed")->IntAttribute("value");
+			unit.speed = element->FirstChildElement("speed")->IntAttribute("value");
 
-		unit.attack1 = Attack{(unsigned int)element->FirstChildElement("attack1")->IntAttribute("power"), 0};
-		unit.attack2 = Attack{(unsigned int)element->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist")};
+			unit.attack1 = Attack{(unsigned int)element->FirstChildElement("attack1")->IntAttribute("power"), 0};
+			unit.attack2 = Attack{(unsigned int)element->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist")};
 
-		tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
+			tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
 
-		for (tinyxml2::XMLElement *soundEl : soundsEl) {
-			std::string stName = soundEl->Attribute("name");
-			tinyxml2::XMLElement *bufsEl = soundEl->FirstChildElement("sound_buffer");
-			if (bufsEl) {
-				int i = 0;
-				for (tinyxml2::XMLElement *bufEl : bufsEl) {
-					i++;
+			for (tinyxml2::XMLElement *soundEl : soundsEl) {
+				std::string stName = soundEl->Attribute("name");
+				tinyxml2::XMLElement *bufsEl = soundEl->FirstChildElement("sound_buffer");
+				if (bufsEl) {
+					int i = 0;
+					for (tinyxml2::XMLElement *bufEl : bufsEl) {
+						i++;
+					}
+					unit.soundActions[stName] = i;
+
+				} else {
+					unit.soundActions[stName] = 0;
 				}
-				unit.soundActions[stName] = i;
+			}
 
-			} else {
-				unit.soundActions[stName] = 0;
+			tinyxml2::XMLElement * soundAttackEl = element->FirstChildElement("sound_attack");
+			if (soundAttackEl) {
+				std::string sName = soundAttackEl->Attribute("name");
+				unit.attackSound = sName;
 			}
 		}
+	}
+};
 
-		tinyxml2::XMLElement * soundAttackEl = element->FirstChildElement("sound_attack");
-		if (soundAttackEl) {
-			std::string sName = soundAttackEl->Attribute("name");
-			unit.attackSound = sName;
+class BuildingParser {
+public:
+	void parse(Building &building, tinyxml2::XMLElement *element) {
+		if (element) {
+			building.buildTime = (float)element->FirstChildElement("build_time")->IntAttribute("value");
+			building.maxBuildTime = building.buildTime;
 		}
 	}
 };
