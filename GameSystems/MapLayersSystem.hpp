@@ -384,7 +384,7 @@ public:
 
 	void initCorpse(std::string name) {
 		Tile tile;
-		this->vault->factory.parseTileFromXml(name, tile, 8);
+		this->vault->factory.parseTileFromXml(name, tile);
 
 		tile.pos = sf::Vector2i(0, 0);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -399,6 +399,7 @@ public:
 		dieAnim.changeAnim(0);
 		int frame = dieAnim.getAnim().getFrame(dieAnim.getAnim().getLength() - 1);
 //		std::cout << "CORPSE frame "<<name << " "<<frame<<std::endl;
+		dieAnim.getAnim().repeat = false;
 		dieAnim.set(frame);
 
 		tile.sprite.setTextureRect(dieAnim.bounds); // texture need to be updated

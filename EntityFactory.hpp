@@ -52,15 +52,12 @@ class EntityFactory {
 	bool loaded;
 
 	std::map<std::string, tinyxml2::XMLDocument *> docs;
-
-	std::vector<std::string> unitFiles;
-	std::vector<std::string> buildingFiles;
+	std::map<std::string, tinyxml2::XMLDocument *> loadedXmlDocs;
 
 	std::map<std::string, TechNode> techTrees;
 
 	std::map<std::string, int> resourcesCount;
 
-	std::map<std::string, sf::IntRect> centerRects;
 	std::map<int, std::vector<sf::Color> > playerColors;
 
 public:
@@ -124,8 +121,6 @@ public:
 
 		texLoader.loadTextureWithWhiteMask("ruin", "medias/misc/ruine.png");
 
-		texLoader.loadTextureWithWhiteMask("explosion", "medias/misc/explosion.png");
-		sndManager.loadSoundBuffer("explosion", "medias/misc/explosion.wav");
 		texLoader.loadTextureWithWhiteMask("blood", "medias/misc/blood.png");
 
 		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
@@ -275,78 +270,6 @@ public:
 
 // XML loader
 
-	void loadUnits() {
-		for (std::string &fn : this->unitFiles) {
-			tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
-			doc->LoadFile(fn.c_str());
-			std::string name = doc->RootElement()->Attribute("name");
-			this->docs[name] = doc;
-
-			tinyxml2::XMLElement *root = doc->RootElement();
-			std::string imgPath = root->FirstChildElement("file")->Attribute("path");
-			texLoader.loadTextureWithDirections(name, imgPath);
-
-			texLoader.loadButton(name + "_icon", root->FirstChildElement("icon")->Attribute("path"));
-
-			texManager.loadTexture(name + "_face", root->FirstChildElement("face")->Attribute("path"));
-			tinyxml2::XMLElement *speEl = root->FirstChildElement("spe");
-			if (speEl)
-				texLoader.loadTextureWithWhiteMask(name + "_spe", speEl->Attribute("path"));
-
-			tinyxml2::XMLElement * selSnds = root->FirstChildElement("select_sounds");
-			if (selSnds) {
-				int i = 0;
-				for (tinyxml2::XMLElement *selSnd : selSnds) {
-					sndManager.loadSoundBuffer(name + "_select_" + std::to_string(i), selSnd->Attribute("path"));
-					i++;
-				}
-			}
-
-			tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
-
-			for (tinyxml2::XMLElement *stateEl : statesEl) {
-				std::string stName = stateEl->Attribute("name");
-				tinyxml2::XMLElement *sndsEl = stateEl->FirstChildElement("sounds");
-				if (sndsEl) {
-					int i = 0;
-					for (tinyxml2::XMLElement *sndEl : sndsEl) {
-						sndManager.loadSoundBuffer(name + "_" + stName + "_" + std::to_string(i), sndEl->Attribute("path"));
-						i++;
-					}
-				}
-			}
-
-			tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
-			if (projEl) {
-				std::string prName = projEl->Attribute("name");
-				tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
-
-				if (fileEl)
-					texLoader.loadTextureWithDirections(prName, fileEl->Attribute("path"));
-
-				tinyxml2::XMLElement *sndEl = projEl->FirstChildElement("sounds")->FirstChildElement();
-				if (sndEl) {
-					sndManager.loadSoundBuffer(prName, sndEl->Attribute("path"));
-				}
-			}
-		}
-
-	}
-
-	void loadBuildings() {
-		for (std::string &fn : this->buildingFiles) {
-			tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
-			doc->LoadFile(fn.c_str());
-			std::string name = doc->RootElement()->Attribute("name");
-			this->docs[name] = doc;
-
-			std::string imgPath = doc->RootElement()->FirstChildElement("file")->Attribute("path");
-			texLoader.loadTextureWithWhiteMask(name, imgPath);
-
-			texLoader.loadBuildButton(name + "_icon", doc->RootElement()->FirstChildElement("icon")->Attribute("path"));
-		}
-	}
-
 	void loadResources(std::string filename) {
 		tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
 		doc->LoadFile(filename.c_str());
@@ -379,146 +302,21 @@ public:
 		}
 	}
 
-// XML parser
-	Animation parseAnim(tinyxml2::XMLElement *stateEl, int pixFrame) {
-		int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
-		tinyxml2::XMLElement * framesEl = stateEl->FirstChildElement("frames");
-
-		std::vector<int> frames;
-		for (tinyxml2::XMLElement *frameEl : framesEl) {
-			int frame = frameEl->IntAttribute("n");
-			if (pixFrame == -1 || frame < pixFrame)
-				frames.push_back(frame);
-#ifdef BUG_DEBUG
-			else
-				std::cout << "BUG: invalid frame " << frame << " >= " << pixFrame << std::endl;
-#endif
-		}
-
-		Animation anim(frames, 0.1f * refresh);
-
-		return anim;
-	}
-
-	void parseTileFromXml(std::string name, Tile &tile, int directions) {
-		tinyxml2::XMLDocument *doc = this->docs[name];
-		tinyxml2::XMLElement *root = doc->RootElement();
-		tinyxml2::XMLElement * sizeEl = root->FirstChildElement("case_size");
-		tinyxml2::XMLElement * psizeEl = root->FirstChildElement("pixel_size");
-		tinyxml2::XMLElement * offsetEl = root->FirstChildElement("decal_value");
-		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
-
-		tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
-		tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"), (float)psizeEl->IntAttribute("h")};
-
-		tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
-
-		for (tinyxml2::XMLElement *stateEl : statesEl) {
-			std::string stateNm = stateEl->Attribute("name");
-			int refresh = stateEl->FirstChildElement("refresh")->IntAttribute("value");
-
-			AnimationHandler animHandler;
-
-			animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
-
-			int pixFrame = texManager.getRef(name).getSize().y / tile.psize.y;
-
-			for (int i = 0; i < directions; i++) {
-				Animation anim = this->parseAnim(stateEl, pixFrame);
-
-				if (stateNm == "die") {
-					anim.repeat = false;
-					anim.duration = (0.1f * refresh) / 4.0;
-				}
-
-				animHandler.addAnim(anim);
-			}
-			animHandler.update(0.0f);
-
-			tile.animHandlers[stateNm] = animHandler;
-
-		}
-
-	}
-
-	void parseGameObjectFromXml(std::string name, GameObject &obj)
-	{
-		tinyxml2::XMLDocument *doc = this->docs[name];
-		tinyxml2::XMLElement *root = doc->RootElement();
-
-		obj.view = root->FirstChildElement("view")->IntAttribute("dist");
-		obj.life = (float)root->FirstChildElement("life")->IntAttribute("value");
-		obj.maxLife = obj.life;
-		obj.name = root->Attribute("name");
-		obj.team = root->Attribute("team");
-	}
-
-#if 0
-
-	void parseUnitFromXml(std::string name, Unit &unit) {
-		tinyxml2::XMLDocument *doc = this->docs[name];
-		tinyxml2::XMLElement *root = doc->RootElement();
-
-		unit.speed = root->FirstChildElement("speed")->IntAttribute("value");
-
-		unit.attack1 = Attack{(unsigned int)root->FirstChildElement("attack1")->IntAttribute("power"), 0};
-		unit.attack2 = Attack{(unsigned int)root->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)root->FirstChildElement("attack2")->IntAttribute("dist")};
-
-
-		tinyxml2::XMLElement * selSnds = root->FirstChildElement("select_sounds");
-		if (selSnds) {
-			int i = 0;
-			for (tinyxml2::XMLElement *selSnd : selSnds) {
-				i++;
-			}
-			unit.soundActions["select"] = i;
-		} else {
-			unit.soundActions["select"] = 0;
-
-		}
-
-		tinyxml2::XMLElement * statesEl = root->FirstChildElement("states");
-
-		for (tinyxml2::XMLElement *stateEl : statesEl) {
-			std::string stName = stateEl->Attribute("name");
-			tinyxml2::XMLElement *sndsEl = stateEl->FirstChildElement("sounds");
-			if (sndsEl) {
-				int i = 0;
-				for (tinyxml2::XMLElement *sndEl : sndsEl) {
-					i++;
-				}
-				unit.soundActions[stName] = i;
-
-			} else {
-				unit.soundActions[stName] = 0;
-			}
-		}
-
-		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
-		if (projEl) {
-			tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
-			std::string prName = projEl->Attribute("name");
-			unit.attackSound = prName;
-		}
-	}
-
-	void parseBuildingFromXml(std::string name, Building &building)
-	{
-		tinyxml2::XMLDocument *doc = this->docs[name];
-		tinyxml2::XMLElement *root = doc->RootElement();
-
-		building.buildTime = (float)root->FirstChildElement("build_time")->IntAttribute("value");
-		building.maxBuildTime = building.buildTime;
-	}
-
-#endif
-
 	tinyxml2::XMLElement *getXmlComponent(std::string name, const char* component) {
 		if (this->loadedXmlDocs.count(name) > 0)
 			return this->loadedXmlDocs[name]->RootElement()->FirstChildElement(component);
 		else
 			return nullptr;
 	}
+
+	void parseTileFromXml(std::string name, Tile &tile) {
+		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
+	}
+
+	void parseGameObjectFromXml(std::string name, GameObject &obj) {
+		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
+	}
+
 // Creator
 
 	void destroyEntity(entt::Registry<EntityID> &registry, EntityID entity) {
@@ -853,84 +651,6 @@ public:
 		return entity;
 	}
 
-
-
-	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name,
-	                         int w, int h, sf::IntRect centerRect, std::initializer_list<int> frames, float duration, int directions, int z) {
-		Animation anim(frames, duration);
-		return this->createMapEffect(registry, name, w, h, centerRect, anim, directions, z);
-	}
-
-	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name,
-	                         int w, int h, sf::IntRect centerRect, Animation anim, int directions, int z) {
-		EntityID entity = registry.create();
-
-#ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: create map effect " << entity << " " << name << " " << w << "x" << h << " " << directions << std::endl;
-#endif
-		Tile tile;
-
-		tile.size = sf::Vector2i(1, 1);
-		tile.psize = sf::Vector2f(w, h);
-		tile.pos = sf::Vector2i(0, 0);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = z;
-
-		tile.sprite.setTexture(texManager.getRef(name));
-
-		tile.direction = North;
-		tile.state = "fx";
-
-		AnimationHandler fxAnim;
-		fxAnim.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
-
-		for (int i = 0; i < directions; i++) {
-			fxAnim.addAnim(anim);
-		}
-		fxAnim.changeAnim(0);
-		fxAnim.set(0);
-		tile.sprite.setTextureRect(fxAnim.bounds); // texture need to be updated
-
-		tile.animHandlers["fx"] = fxAnim;
-
-		MapEffect effect;
-		effect.show = false;
-		effect.speed = 0.0;
-		effect.sound = name;
-
-		tile.centerRect = centerRect;
-		registry.assign<Tile>(entity, tile);
-		registry.assign<MapEffect>(entity, effect);
-
-		return entity;
-	}
-
-	EntityID createExplosionEffect(entt::Registry<EntityID> &registry) {
-		return this->createMapEffect(registry, "explosion", 288, 280, sf::IntRect(128, 238, 32, 32), {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, 0.1, 1, 1);
-	}
-
-	void addProjectileFromXml(entt::Registry<EntityID> &registry, std::string name, GameObject &obj) {
-		tinyxml2::XMLDocument *doc = this->docs[name];
-		tinyxml2::XMLElement *root = doc->RootElement();
-
-		// projectile effect
-		tinyxml2::XMLElement * projEl = root->FirstChildElement("projectile");
-		if (projEl) {
-			tinyxml2::XMLElement *fileEl = projEl->FirstChildElement("file");
-			if (fileEl) {
-				std::string prName = projEl->Attribute("name");
-				tinyxml2::XMLElement * psizeEl = projEl->FirstChildElement("pixel_size");
-				Animation anim = this->parseAnim(projEl, -1);
-				EntityID projEnt = this->createMapEffect(registry, prName, psizeEl->IntAttribute("w"), psizeEl->IntAttribute("h"), sf::IntRect(0, 0, 32, 32), anim, 8, 1);
-
-#ifdef FACTORY_DEBUG
-				std::cout << "EntityFactory: add projectile " << projEnt << " to " << name << std::endl;
-#endif
-				obj.effects["projectile"] = projEnt;
-			}
-		}
-	}
-
 // Player
 	EntityID createPlayer(entt::Registry<EntityID> &registry, std::string team, bool ai) {
 		EntityID entity = registry.create();
@@ -964,25 +684,6 @@ public:
 	}
 
 	void loadManifest(std::string filename) {
-		tinyxml2::XMLDocument doc;
-		doc.LoadFile(filename.c_str());
-
-		for (tinyxml2::XMLElement *childEl : doc.RootElement()) {
-			std::string name = childEl->Name();
-
-			if (name == "unit") {
-				unitFiles.push_back(childEl->Attribute("path"));
-			} else if (name == "building") {
-				buildingFiles.push_back(childEl->Attribute("path"));
-			}
-		}
-	}
-
-
-	std::map<std::string, tinyxml2::XMLDocument *> loadedXmlDocs;
-
-
-	void loadManifest2(std::string filename) {
 		std::cout << "EntityFactory: load manifest " << filename << std::endl;
 
 		tinyxml2::XMLDocument doc;
@@ -1006,12 +707,9 @@ public:
 
 	void load() {
 		if (!this->loaded) {
-			this->loadManifest("defs/manifest.xml");
-			this->loadManifest2("defs/new/manifest.xml");
+			this->loadManifest("defs/new/manifest.xml");
 
 			this->loadTerrains();
-			this->loadUnits();
-			this->loadBuildings();
 
 			this->loadResources("defs/res/nature.xml");
 			this->loadResources("defs/res/pollution.xml");
