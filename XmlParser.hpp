@@ -380,10 +380,9 @@ public:
 
 			for (tinyxml2::XMLElement *soundEl : soundsEl) {
 				std::string stName = soundEl->Attribute("name");
-				tinyxml2::XMLElement *bufsEl = soundEl->FirstChildElement("sound_buffer");
-				if (bufsEl) {
+				if (soundEl) {
 					int i = 0;
-					for (tinyxml2::XMLElement *bufEl : bufsEl) {
+					for (tinyxml2::XMLElement *bufEl : soundEl) {
 						i++;
 					}
 					unit.soundActions[stName] = i;

@@ -70,5 +70,8 @@
         <sound_buffer path="medias/units/neonazs/brad_lab/sounds/brad_attaque03.wav"/>
       </sound_action>
     </sound_actions>
+    <sound_attack name="hit_meat">
+      <sound_buffer global="hit_meat" path="medias/extra/sounds/hit_meat.wav"/>
+    </sound_attack>
   </unit>
 </entity>

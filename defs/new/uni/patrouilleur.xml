@@ -86,5 +86,8 @@
         <sound_buffer path="medias/units/neonazs/patrouilleur/sounds/pat_attaque04.wav"/>
       </sound_action>
     </sound_actions>
+    <sound_attack name="hit_wood">
+      <sound_buffer global="hit_wood" path="medias/extra/sounds/hit_wood.wav"/>
+    </sound_attack>
   </unit>
 </entity>

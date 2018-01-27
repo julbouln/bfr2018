@@ -53,7 +53,7 @@
   <unit>
     <speed value="3"/>
     <attack1 power="4"/>
-    <attack2 power="0" dist="0"/>
+    <attack2 dist="0" power="0"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/rebels/punkette/sounds/pk_selec01.wav"/>
@@ -70,5 +70,8 @@
         <sound_buffer path="medias/units/rebels/punkette/sounds/pk_attaque03.wav"/>
       </sound_action>
     </sound_actions>
+    <sound_attack name="hit2">
+      <sound_buffer global="hit2" path="medias/extra/sounds/hit02.wav"/>
+    </sound_attack>
   </unit>
 </entity>

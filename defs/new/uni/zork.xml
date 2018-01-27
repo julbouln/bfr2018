@@ -138,8 +138,8 @@
         <sound_buffer path="medias/units/rebels/zork/sounds/zo_attaque04.wav"/>
       </sound_action>
     </sound_actions>
-    <sound_attack name="hit">
-      <sound_buffer global="hit" path="medias/extra/sounds/hit01.wav"/>
+    <sound_attack name="hit01">
+      <sound_buffer global="hit01" path="medias/extra/sounds/hit01.wav"/>
     </sound_attack>
   </unit>
 </entity>
