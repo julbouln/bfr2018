@@ -341,19 +341,17 @@ public:
 		Player &player = vault->registry.get<Player>(entity);
 
 		std::vector<EntityID> plantAround;
-		ResourceType type;
+
 		if (name == "nature") {
 			plantAround = player.objsByType["ferme"];
-			type = ResourceType::Nature;
 		} else {
 			plantAround = player.objsByType["labo"];
-			type = ResourceType::Pollution;
 		}
 
 		if (plantAround.size() > 0) {
 			std::random_shuffle ( plantAround.begin(), plantAround.end() );
 			if (this->vault->registry.valid(plantAround.front())) {
-				this->seedResources(type, plantAround.front());
+				this->seedResources(name, plantAround.front());
 
 #ifdef AI_DEBUG
 				std::cout << "AI: " << entity << " plant " << name << " around " << plantAround.front() << std::endl;

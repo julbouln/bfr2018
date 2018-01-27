@@ -95,13 +95,8 @@ struct Building {
 	EntityID constructedBy;
 };
 
-enum class ResourceType {
-	Nature,
-	Pollution
-};
-
 struct Resource {
-	ResourceType type;
+	std::string type;
 	unsigned int level;
 	float grow;
 };
@@ -110,7 +105,7 @@ struct Player {
 	std::string team;
 	int colorIdx;
 	bool ai;
-	ResourceType resourceType;
+	std::string resourceType;
 	int resources;
 
 	std::set<EntityID> kills;

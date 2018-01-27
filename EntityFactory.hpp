@@ -51,7 +51,6 @@ public:
 class EntityFactory {
 	bool loaded;
 
-	std::map<std::string, tinyxml2::XMLDocument *> docs;
 	std::map<std::string, tinyxml2::XMLDocument *> loadedXmlDocs;
 
 	std::map<std::string, int> groupCount;
@@ -84,11 +83,6 @@ public:
 
 	void loadInitial() {
 		texLoader.loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
-
-//		texLoader.parseFile("defs/new/uni/zork.xml");
-//		sndLoader.parseFile("defs/new/uni/zork.xml");
-
-//		this->loadManifest2("defs/new/manifest.xml");
 	}
 
 	void loadMisc() {
@@ -486,24 +480,13 @@ public:
 		}
 	}
 
-// Resource
-	std::string resourceTypeName( ResourceType type) {
-		switch (type) {
-		case ResourceType::Nature:
-			return "nature";
-		case ResourceType::Pollution:
-			return "pollution";
-		}
-	}
-
-	EntityID plantResource(entt::Registry<EntityID> &registry, ResourceType type, int x, int y) {
+	EntityID plantResource(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
 		EntityID entity = registry.create();
 
 #ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: plant resource " << entity << " " << (int)type << " at " << x << "x" << y << std::endl;
+		std::cout << "EntityFactory: plant resource " << entity << " " << name << " at " << x << "x" << y << std::endl;
 #endif
 
-		std::string name = this->resourceTypeName(type);
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
 		tile.size = sf::Vector2i{1, 1};
@@ -521,7 +504,10 @@ public:
 		idleHandler.frameSize = sf::IntRect(0, 0, 32, 32);
 
 		idleHandler.addAnim(staticAnim);
-		idleHandler.update(0.0f);
+		idleHandler.changeColumn(0);
+		idleHandler.set(0);
+
+		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
 
 		tile.animHandlers["idle"] = idleHandler;
 
@@ -531,7 +517,7 @@ public:
 		tile.centerRect = this->getCenterRect(name);
 
 		Resource resource;
-		resource.type = type;
+		resource.type = name;
 		resource.level = 0;
 		resource.grow = 0.0;
 
@@ -572,7 +558,7 @@ public:
 		tile.direction = North;
 		tile.state = "idle";
 
-		tile.centerRect = this->getCenterRect(name);
+		tile.centerRect = this->getCenterRect(rname);
 
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
@@ -603,6 +589,8 @@ public:
 		fxAnim.changeColumn(0);
 		fxAnim.set(0);
 		tile.sprite.setTextureRect(fxAnim.bounds); // texture need to be updated
+
+		tile.centerRect = this->getCenterRect(name);
 
 		MapEffect effect;
 		effect.show = false;
@@ -639,9 +627,9 @@ public:
 		player.stats["butchery"] = 0;
 
 		if (team == "rebel")
-			player.resourceType = ResourceType::Nature;
+			player.resourceType = "nature";
 		else if (team == "neonaz")
-			player.resourceType = ResourceType::Pollution;
+			player.resourceType = "pollution";
 
 		registry.assign<Player>(entity, player);
 		return entity;

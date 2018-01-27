@@ -201,7 +201,7 @@ public:
 		return points;
 	}
 
-	bool canSpendResources(EntityID playerEnt, ResourceType type, int val) {
+	bool canSpendResources(EntityID playerEnt, std::string type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		if (player.resources > val)
 			return true;
@@ -209,7 +209,7 @@ public:
 			return false;
 	}
 
-	void spendResources(EntityID playerEnt, ResourceType type, int val) {
+	void spendResources(EntityID playerEnt, std::string type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		int spended = val;
 		auto view = this->vault->registry.view<Resource>();
@@ -269,7 +269,7 @@ public:
 
 // action
 
-	void seedResources(ResourceType type, EntityID entity) {
+	void seedResources(std::string type, EntityID entity) {
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Tile &tile = this->vault->registry.get<Tile>(entity);
 			for (sf::Vector2i const &p : this->tileAround(tile, 1)) {

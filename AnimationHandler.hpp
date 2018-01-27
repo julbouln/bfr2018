@@ -191,7 +191,7 @@ public:
     void reset() {
         this->t = 0.0f;
         this->currentFrame = 0;
-        this->currentColumn = -1;
+        this->currentColumn = 0;
         this->l = 0;
         this->newFrame = false;
         this->changeFrameCallback = [](int frame) {};

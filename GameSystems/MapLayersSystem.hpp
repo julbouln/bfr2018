@@ -96,7 +96,7 @@ public:
 
 			for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 1)) {
 				EntityID newEnt = 0;
-				if (resource.type == ResourceType::Nature) {
+				if (resource.type == "nature") {
 					newEnt = tiles["grass"][0];
 				} else {
 					newEnt = tiles["concrete"][0];
@@ -663,9 +663,9 @@ public:
 								if (res > 0.6 && res < 0.65) {
 									float rnd = ((float) rand()) / (float) RAND_MAX;
 									if (rnd > 0.5) {
-										this->vault->factory.plantResource(this->vault->registry, ResourceType::Nature, x, y);
+										this->vault->factory.plantResource(this->vault->registry, "nature", x, y);
 									} else {
-										this->vault->factory.plantResource(this->vault->registry, ResourceType::Pollution, x, y);
+										this->vault->factory.plantResource(this->vault->registry, "pollution", x, y);
 									}
 								}
 								*/

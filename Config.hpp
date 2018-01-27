@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION "0.8.99"
+#define VERSION "0.9.00"
 
 //#define SOUND_SYSTEM_DEBUG
 //#define TRANSITIONS_DEBUG
@@ -10,8 +10,8 @@
 //#define COMBAT_DEBUG
 //#define VICTORY_DEBUG
 //#define AI_DEBUG
-#define MANAGER_DEBUG
-#define PARSER_DEBUG
+//#define MANAGER_DEBUG
+//#define PARSER_DEBUG
 //#define BUG_DEBUG
 
 #define ZOOMLEVEL_ENABLE
