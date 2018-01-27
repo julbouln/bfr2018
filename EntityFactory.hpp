@@ -111,7 +111,7 @@ public:
 		texLoader.loadButton("neonaz_cancel", "medias/interface/buttons/annuler_naz.png");
 
 		texLoader.loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
-		texLoader.loadBuildButton("pollution_icon", "medias/resources/pollution-icon.png");
+		texLoader.loadButton("pollution_icon", "medias/resources/pollution-icon.png");
 
 		texLoader.loadTextureWithWhiteMask("button2", "medias/interface/buttons/button2.png");
 
