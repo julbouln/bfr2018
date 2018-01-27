@@ -278,12 +278,14 @@ public:
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Player &player = this->vault->registry.get<Player>(playerEnt);
 			Tile &tile = this->vault->registry.get<Tile>(entity);
+			float cost = 2 * this->objTypeLife(type);
 
-			if (this->canSpendResources(playerEnt, player.resourceType, 10)) {
+			if (this->canSpendResources(playerEnt, player.resourceType, cost)) {
 				for (sf::Vector2i const &p : this->tileAround(tile, 1)) {
 					if (!this->map->objs.get(p.x, p.y)) {
 						EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
-						this->spendResources(playerEnt, player.resourceType, 2 * this->objTypeLife(type));
+						this->spendResources(playerEnt, player.resourceType, cost);
+						player.resources -= cost;
 #ifdef GAME_SYSTEM_DEBUG
 						std::cout << "GameSystem: train " << type << std::endl;
 #endif

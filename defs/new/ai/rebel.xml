@@ -104,7 +104,7 @@
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="guerrier_bud" qty="5"/>
+		<HasLessObjectsTypeThan type="guerrier_bud" qty="2"/>
 		<Train type="guerrier_bud"/>
 	</Sequence>
 	<Sequence>
@@ -123,7 +123,7 @@
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>	
 		<HasLessObjectsTypeThan type="squat" qty="1"/>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<Build type="squat"/>	
 	</Sequence>
 	<Sequence>
@@ -131,7 +131,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="squat" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<HasLessObjectsTypeThan type="abdel" qty="5"/>
 		<Train type="abdel"/>
 	</Sequence>
@@ -142,7 +142,7 @@
 			<HasLessObjectsTypeThan type="festival" qty="1"/>
 		</Inverter>	
 		<HasLessObjectsTypeThan type="raffinerie_bud" qty="1"/>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<Build type="raffinerie_bud"/>	
 	</Sequence>
 	<Sequence>
@@ -150,7 +150,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="raffinerie_bud" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<HasLessObjectsTypeThan type="guerrier_bud_powerhead" qty="5"/>
 		<Train type="guerrier_bud_powerhead"/>
 	</Sequence>
@@ -178,7 +178,7 @@
 		</RandomSelector>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="100" per="1"/>
 		<Sequence>
 			<Inverter>
 				<PlaceBuilt/>

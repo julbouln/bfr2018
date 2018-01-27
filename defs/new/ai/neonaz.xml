@@ -68,7 +68,7 @@
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="patrouilleur" qty="10"/>
+		<HasLessObjectsTypeThan type="patrouilleur" qty="15"/>
 		<Train type="patrouilleur"/>
 	</Sequence>
 	<Sequence>
@@ -86,7 +86,7 @@
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="mitrailleur" qty="5"/>
+		<HasLessObjectsTypeThan type="mitrailleur" qty="2"/>
 		<Train type="mitrailleur"/>
 	</Sequence>
 	<Sequence>
@@ -104,7 +104,7 @@
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="bazooka" qty="5"/>
+		<HasLessObjectsTypeThan type="bazooka" qty="2"/>
 		<Train type="bazooka"/>
 	</Sequence>
 	<Sequence>
@@ -123,7 +123,7 @@
 			<HasLessObjectsTypeThan type="caserne" qty="1"/>
 		</Inverter>	
 		<HasLessObjectsTypeThan type="usine_vehicule" qty="1"/>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<Build type="usine_vehicule"/>	
 	</Sequence>
 	<Sequence>
@@ -131,7 +131,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="usine_vehicule" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<HasLessObjectsTypeThan type="super_guerrier" qty="5"/>
 		<Train type="super_guerrier"/>
 	</Sequence>
@@ -150,7 +150,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="artillerie" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<HasLessObjectsTypeThan type="lance_missille" qty="5"/>
 		<Train type="lance_missille"/>
 	</Sequence>
@@ -159,7 +159,7 @@
 		<Inverter>
 			<HasLessObjectsTypeThan type="artillerie" qty="1"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="100"/>
+		<HasMoreResourcesThan amount="200"/>
 		<HasLessObjectsTypeThan type="grosnaz" qty="5"/>
 		<Train type="grosnaz"/>
 	</Sequence>
@@ -189,7 +189,7 @@
 		</RandomSelector>
 	</Sequence>
 	<Sequence>
-		<Probability frac="10" per="1"/>
+		<Probability frac="100" per="1"/>
 		<Sequence>
 			<Inverter>
 				<PlaceBuilt/>

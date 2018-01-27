@@ -271,7 +271,6 @@ public:
 			std::vector<sf::Vector2i> buildPos;
 			for (int x = 0; x < this->map->width; x++) {
 				for (int y = 0; y < this->map->height; y++) {
-//				std::cout << "FOG:" << (int)player.fog.get(x,y) << std::endl;
 					if (player.fog.get(x, y) == FogState::InSight) {
 						tile.pos = sf::Vector2i(x, y);
 						bool intersect = false;
@@ -286,11 +285,9 @@ public:
 
 						if (!intersect)
 							buildPos.push_back(sf::Vector2i(x, y));
-
 					}
 				}
 			}
-
 
 			if (buildPos.size() > 0) {
 
@@ -314,7 +311,6 @@ public:
 #ifdef AI_DEBUG
 				std::cout << "AI: " << entity << " cannot build " << obj.name << std::endl;
 #endif
-//				this->vault->registry.destroy(buildingEnt);
 				this->vault->registry.remove<Tile>(buildingEnt);
 
 				return Node::Status::Failure;
@@ -381,7 +377,7 @@ public:
 			std::vector<EntityID> trainAround = player.objsByType[parentName];
 
 			std::random_shuffle ( trainAround.begin(), trainAround.end() );
-			if (trainUnit(name, entity, trainAround.front() )) {
+			if (this->trainUnit(name, entity, trainAround.front() )) {
 #ifdef AI_DEBUG
 				std::cout << "AI: " << entity << " train " << name << " around " << trainAround.front() << std::endl;
 #endif
