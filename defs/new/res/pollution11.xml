@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<entity class="resource" name="pollution11" group="pollution" team="neonaz">
+    <texture mode="with_white_mask" path="medias/extra/resources/pollution12.png"/>
+    <tile>
+      <psize x="106" y="89"/>
+      <size x="3" y="2"/>
+    </tile>
+    <resource>
+      <level value="1"/>
+    </resource>
+  </entity>

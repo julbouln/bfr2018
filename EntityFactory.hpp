@@ -54,6 +54,8 @@ class EntityFactory {
 	std::map<std::string, tinyxml2::XMLDocument *> docs;
 	std::map<std::string, tinyxml2::XMLDocument *> loadedXmlDocs;
 
+	std::map<std::string, int> groupCount;
+
 	std::map<std::string, TechNode> techTrees;
 
 	std::map<std::string, int> resourcesCount;
@@ -269,24 +271,6 @@ public:
 	}
 
 // XML loader
-
-	void loadResources(std::string filename) {
-		tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
-		doc->LoadFile(filename.c_str());
-		std::string name = doc->RootElement()->Attribute("name");
-		this->docs[name] = doc;
-
-		texLoader.loadTextureWithWhiteMask(name, "medias/resources/" + name + ".png");
-
-		int i = 1;
-		for (tinyxml2::XMLElement *el : doc->RootElement()) {
-
-			std::string imgfile = el->FirstChildElement("file")->Attribute("path");
-			texLoader.loadTextureWithWhiteMask(name + std::to_string(i), imgfile);
-			i++;
-		}
-		resourcesCount[name] = i - 1;
-	}
 
 	void loadPlayerColors(std::string filename) {
 		tinyxml2::XMLDocument *doc = new tinyxml2::XMLDocument();
@@ -558,32 +542,12 @@ public:
 	}
 
 	EntityID growedResource(entt::Registry<EntityID> &registry, std::string name, EntityID entity) {
-		int rnd = rand() % resourcesCount[name];
+		int rnd = rand() % groupCount[name];
 		std::string rname = name + std::to_string(rnd + 1);
 		Tile &oldTile = registry.get<Tile>(entity);
 
 		Tile tile;
-
-		tinyxml2::XMLDocument *doc = this->docs[name];
-		int i = 0;
-		for (tinyxml2::XMLElement *el : doc->RootElement()) {
-			if (rnd == i) {
-				tinyxml2::XMLElement * sizeEl = el->FirstChildElement("case_size");
-				tinyxml2::XMLElement * offsetEl = el->FirstChildElement("decal_value");
-				tinyxml2::XMLElement * psizeEl = el->FirstChildElement("pixel_size");
-
-				tile.size = sf::Vector2i{sizeEl->IntAttribute("w"), sizeEl->IntAttribute("h")};
-				tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("w"), (float)psizeEl->IntAttribute("h")};
-				if (offsetEl) {
-					tile.offset = sf::Vector2i{0, offsetEl->IntAttribute("h")};
-				}
-				else
-					tile.offset = sf::Vector2i{0, 0};
-
-				break;
-			}
-			i++;
-		}
+		tileParser.parse(tile, this->getXmlComponent(rname, "tile"));
 
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -696,12 +660,23 @@ public:
 			tinyxml2::XMLDocument *sdoc = new tinyxml2::XMLDocument();
 			sdoc->LoadFile(sfilename.c_str());
 
-			this->loadedXmlDocs[texLoader.getName(sdoc->RootElement())] = sdoc;
+			std::string entName = sdoc->RootElement()->Attribute("name");
+
+			this->loadedXmlDocs[entName] = sdoc;
+
+			if (sdoc->RootElement()->Attribute("group")) {
+				std::string entGroup = sdoc->RootElement()->Attribute("group");
+				if (this->groupCount.count(entGroup) == 0) {
+					this->groupCount[entGroup] = 1;
+				} else {
+					this->groupCount[entGroup] = this->groupCount[entGroup] + 1;
+				}
+			}
 
 			texLoader.parse(sdoc->RootElement());
 			sndLoader.parse(sdoc->RootElement());
 		}
-		
+
 		std::cout << "EntityFactory: manifest loaded " << filename << std::endl;
 	}
 
@@ -710,9 +685,6 @@ public:
 			this->loadManifest("defs/new/manifest.xml");
 
 			this->loadTerrains();
-
-			this->loadResources("defs/res/nature.xml");
-			this->loadResources("defs/res/pollution.xml");
 
 			this->loadPlayerColors("defs/unit_color.xml");
 

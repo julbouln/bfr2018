@@ -112,6 +112,60 @@
 			</building>
 		</entity>
 	</xsl:template>
+	<!-- resource -->
+	<xsl:template match="resources">
+		<entities>
+			<xsl:variable name="name" select="@name"/>
+			<xsl:variable name="team" select="@team"/>
+			<xsl:for-each select="*">
+				<entity class="resource" name="resource">
+					<xsl:attribute name="name">
+						<xsl:value-of select="$name"/>
+						<xsl:value-of select="position()"/>
+					</xsl:attribute>
+					<xsl:attribute name="group">
+						<xsl:value-of select="$name"/>
+					</xsl:attribute>
+					<xsl:attribute name="team">
+						<xsl:choose>
+							<xsl:when test="$name = 'nature'">rebel</xsl:when>
+							<xsl:otherwise>neonaz</xsl:otherwise>
+						</xsl:choose>
+					</xsl:attribute>
+					<xsl:apply-templates select="file">
+						<xsl:with-param name="mode">with_white_mask</xsl:with-param>
+					</xsl:apply-templates>
+					<tile>
+						<xsl:apply-templates select="pixel_size"/>
+						<xsl:apply-templates select="case_size"/>
+						<xsl:choose>
+							<xsl:when test="count(decal_value) &gt; 0">
+								<offset>
+									<xsl:attribute name="x">
+										<xsl:value-of select="decal_value/@w"/>
+									</xsl:attribute>
+									<xsl:attribute name="y">
+										<xsl:value-of select="decal_value/@h"/>
+									</xsl:attribute>
+								</offset>
+							</xsl:when>
+						</xsl:choose>
+						<!--
+						<animations>
+							<animation name="idle">
+								<xsl:apply-templates select="frames"/>
+								<xsl:apply-templates select="refresh"/>
+							</animation>
+						</animations>
+					-->
+					</tile>
+					<resource>
+						<level value="1"/>
+					</resource>
+				</entity>
+			</xsl:for-each>
+		</entities>
+	</xsl:template>
 	<xsl:template match="file">
 		<xsl:param name="mode"/>
 		<texture mode="with_directions">

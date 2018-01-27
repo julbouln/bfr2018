@@ -187,6 +187,7 @@ public:
 	std::string getName(tinyxml2::XMLElement *element) {
 		return element->Attribute("name");
 	}
+
 	void parseFile(std::string filename) {
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile(filename.c_str());
@@ -312,23 +313,25 @@ public:
 			if (element->Attribute("directions"))
 				directions = element->IntAttribute("directions");
 
-			for (tinyxml2::XMLElement *animEl : animsEl) {
-				std::string stateNm = animEl->Attribute("name");
+			if (animsEl) {
+				for (tinyxml2::XMLElement *animEl : animsEl) {
+					std::string stateNm = animEl->Attribute("name");
 
-				AnimationHandler animHandler;
+					AnimationHandler animHandler;
 
-				animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
+					animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
 
-				for (int i = 0; i < directions; i++) {
-					Animation anim = this->parseAnim(animEl);
-					animHandler.addAnim(anim);
-				}
-				animHandler.update(0.0f);
+					for (int i = 0; i < directions; i++) {
+						Animation anim = this->parseAnim(animEl);
+						animHandler.addAnim(anim);
+					}
+					animHandler.update(0.0f);
 
-				tile.animHandlers[stateNm] = animHandler;
+					tile.animHandlers[stateNm] = animHandler;
 #ifdef PARSER_DEBUG
-				std::cout << "TileParser: add animation handler " << stateNm << " containing " << directions << " directions" << std::endl;
+					std::cout << "TileParser: add animation handler " << stateNm << " containing " << directions << " directions" << std::endl;
 #endif
+				}
 			}
 		}
 	}

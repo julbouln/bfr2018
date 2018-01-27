@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<entity class="resource" name="nature12" group="nature" team="rebel">
+    <texture mode="with_white_mask" path="medias/resources/nature12.png"/>
+    <tile>
+      <psize x="197" y="196"/>
+      <size x="3" y="1"/>
+    </tile>
+    <resource>
+      <level value="1"/>
+    </resource>
+  </entity>
