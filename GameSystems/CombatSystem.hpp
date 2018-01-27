@@ -174,7 +174,7 @@ public:
 							std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
 #endif
 							if (map->sounds.size() < 255)
-								map->sounds.push(SoundPlay{unit.attackSound, 1, tile.pos});
+								map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
 						}
 					}
 				};
@@ -259,7 +259,7 @@ public:
 					explosionTile.animHandlers["idle"].reset();
 					explosionTile.animHandlers["idle"].changeColumn(0);
 					explosionTile.animHandlers["idle"].set(0);
-					this->map->sounds.push(SoundPlay{explosion.sound, 1, explosionTile.pos});
+					this->map->sounds.push(SoundPlay{explosion.sound, 1, false, explosionTile.pos});
 				}
 //					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["idle"].l<<std::endl;
 

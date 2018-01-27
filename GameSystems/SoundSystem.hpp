@@ -23,6 +23,7 @@ public:
 #endif
 				sound.setBuffer(this->vault->factory.getSndBuf(sndp.name));
 
+				sound.setRelativeToListener(sndp.relative);
 				sound.setPosition(sndp.pos.x, 0.f, sndp.pos.y);
 				sound.setMinDistance(16.f);
 				sound.setPitch(pitch);

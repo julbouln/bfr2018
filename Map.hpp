@@ -100,6 +100,7 @@ public:
 struct SoundPlay {
 	std::string name;
 	int priority;
+	bool relative;
 	sf::Vector2i pos;
 };
 
