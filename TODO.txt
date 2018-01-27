@@ -21,10 +21,7 @@ Game:
 - add resource trap + explosion FX
 
 Interface:
-- add units faces
-- finish gui (naz alignement)
 - add settings
 
 Refactor:
 - add FontManager
-- manage custom medias & defs path

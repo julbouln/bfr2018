@@ -55,6 +55,10 @@ public:
 	AI ai;
 
 	sf::Sprite iface;
+	sf::Sprite box;
+	int box_w;
+	sf::Sprite minimap_bg;
+	int minimap_bg_h;
 	sf::Sprite indice_bg;
 	sf::Sprite indice;
 
@@ -328,6 +332,10 @@ public:
 			this->centerMapView(player.initialPos);
 
 			iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
+			box.setTexture(this->vault->factory.getTex("box_" + player.team));
+			box_w=this->vault->factory.getTex("box_" + player.team).getSize().x;
+			minimap_bg.setTexture(this->vault->factory.getTex("minimap_" + player.team));
+			minimap_bg_h = this->vault->factory.getTex("minimap_" + player.team).getSize().y;
 			indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
 			indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
 
@@ -338,7 +346,8 @@ public:
 
 		// 128,512
 		// TODO: convert to window dimension relative coord
-		minimapRect = sf::FloatRect(this->scaleX() * 128 - (this->minimapSize() / 2), this->scaleY() * 520 - (this->minimapSize() / 2), this->minimapSize(), this->minimapSize());
+//		minimapRect = sf::FloatRect(this->scaleX() * 128 - (this->minimapSize() / 2), this->scaleY() * 520 - (this->minimapSize() / 2), this->minimapSize(), this->minimapSize());
+		minimapRect = sf::FloatRect(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14), this->minimapSize(), this->minimapSize());
 	}
 
 	void menuGui() {
@@ -390,7 +399,7 @@ public:
 			GameObject &objCons = this->vault->registry.get<GameObject>(consEnt);
 
 			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
-			ImGui::ProgressBar((buildingCons.maxBuildTime - buildingCons.buildTime) / buildingCons.maxBuildTime, ImVec2(200.0f * this->scaleX(), 0.0f), "");
+			ImGui::ProgressBar((buildingCons.maxBuildTime - buildingCons.buildTime) / buildingCons.maxBuildTime, ImVec2(110.0f * this->scaleX(), 0.0f), "");
 			ImGui::PopStyleColor(); ImGui::SameLine();
 
 			if (buildingCons.buildTime > 0) {
@@ -411,9 +420,15 @@ public:
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 		if (player.team != "neutral") {
-			float uiX = 258.0f * this->scaleX();
+/*			float uiX = 258.0f * this->scaleX();
 			float uiHeight = 134.0f * this->scaleY();
 			float uiWidth = 500.0f * this->scaleX();
+			float uiLWidth = 300.0f * this->scaleX();
+			float uiRWidth = 200.0f * this->scaleX();
+*/
+			float uiX = 590.0f * this->scaleX();
+			float uiHeight = 124.0f * this->scaleY();
+			float uiWidth = 250.0f * this->scaleX();
 			float uiLWidth = 300.0f * this->scaleX();
 			float uiRWidth = 200.0f * this->scaleX();
 
@@ -426,8 +441,8 @@ public:
 			if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
 				if (this->selectedObjs.size() == 1) {
-					ImGui::Columns(2, NULL, false);
-					ImGui::SetColumnWidth(-1, uiLWidth);
+//					ImGui::Columns(2, NULL, false);
+//					ImGui::SetColumnWidth(-1, uiLWidth);
 					EntityID selectedObj = this->selectedObjs[0];
 
 					Tile &tile = this->vault->registry.get<Tile>(selectedObj);
@@ -448,14 +463,13 @@ public:
 						ImGui::BeginGroup();
 						ImGui::Text("PV: %d", (int)obj.life);
 						ImGui::Text("AC: %d", unit.attack1.power);
-						ImGui::Text("DC: %d", unit.attack1.distance);
 						ImGui::Text("AE: %d", unit.attack2.power);
 						ImGui::Text("DE: %d", unit.attack2.distance);
 						ImGui::EndGroup();
 					}
 
-					ImGui::NextColumn();
-					ImGui::SetColumnWidth(-1, uiRWidth);
+//					ImGui::NextColumn();
+//					ImGui::SetColumnWidth(-1, uiRWidth);
 
 
 					if (this->vault->registry.has<Unit>(selectedObj)) {
@@ -529,17 +543,17 @@ public:
 							}
 						}
 					}
-					ImGui::Columns(1);
+//					ImGui::Columns(1);
 
 
 				} else {
 					if (this->selectedObjs.size() == 0) {
-						ImGui::Columns(2, NULL, false);
-						ImGui::SetColumnWidth(-1, uiLWidth);
+//						ImGui::Columns(2, NULL, false);
+//						ImGui::SetColumnWidth(-1, uiLWidth);
 
 						this->constructionProgressGui(player.rootConstruction);
-						ImGui::NextColumn();
-						ImGui::SetColumnWidth(-1, uiRWidth);
+//						ImGui::NextColumn();
+//						ImGui::SetColumnWidth(-1, uiRWidth);
 
 						if (player.rootConstruction) {
 							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
@@ -559,7 +573,7 @@ public:
 									player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
 							}
 						}
-						ImGui::Columns(1);
+//						ImGui::Columns(1);
 					}
 				}
 
@@ -941,6 +955,15 @@ public:
 		iface.setPosition(sf::Vector2f(0, 0));
 		iface.setScale(this->scaleX(), this->scaleY());
 		this->game->window.draw(iface);
+
+		minimap_bg.setPosition(sf::Vector2f(0, (600 - minimap_bg_h) * this->scaleY()));
+		minimap_bg.setScale(this->scaleX(), this->scaleY());
+		this->game->window.draw(minimap_bg);
+
+		box.setPosition(sf::Vector2f((800 - box_w) * this->scaleX(), (600 - 136) * this->scaleY()));
+		box.setScale(this->scaleX(), this->scaleY());
+		this->game->window.draw(box);
+
 		if (this->showDebugWindow)
 			this->debugGui(dt);
 		this->menuGui();

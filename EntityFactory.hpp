@@ -87,8 +87,14 @@ public:
 
 	void loadMisc() {
 
-		texLoader.loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel_800x600.png");
-		texLoader.loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz_800x600.png");
+		texLoader.loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel.png");
+		texLoader.loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz.png");
+
+		texLoader.loadTextureWithWhiteMask("minimap_rebel", "medias/interface/bgs/minimap_rebel.png");
+		texLoader.loadTextureWithWhiteMask("minimap_neonaz", "medias/interface/bgs/minimap_neonaz.png");
+
+		texLoader.loadTextureWithWhiteMask("box_rebel", "medias/interface/bgs/boite_rebel.png");
+		texLoader.loadTextureWithWhiteMask("box_neonaz", "medias/interface/bgs/boite_neonaz.png");
 
 		texLoader.loadTextureWithWhiteMask("indice_bg_rebel", "medias/interface/bgs/indice_bio-bg.png");
 		texLoader.loadTextureWithWhiteMask("indice_bg_neonaz", "medias/interface/bgs/indice_pol-bg.png");
