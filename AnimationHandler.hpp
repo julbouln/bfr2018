@@ -95,14 +95,6 @@ public:
         return;
     }
 
-    void set(int frame) {
-        /* Set the sprite to the new frame */
-        sf::IntRect rect = this->frameSize;
-        rect.left = rect.width * this->currentColumn;
-        rect.top = rect.height * frame;
-        this->bounds = rect;
-    }
-
     Animation &getAnim() {
         return this->animations[this->currentColumn];
     }
@@ -164,6 +156,14 @@ public:
         }
 
         return;
+    }
+
+    void set(int frame) {
+        /* Set the sprite to the new frame */
+        sf::IntRect rect = this->frameSize;
+        rect.left = rect.width * this->currentColumn;
+        rect.top = rect.height * frame;
+        this->bounds = rect;
     }
 
     /* Change the animation, resetting t in the process */

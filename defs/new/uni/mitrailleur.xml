@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <entity class="unit" name="mitrailleur" team="neonaz">
   <texture mode="with_directions" path="medias/units/neonazs/mitrailleur/pics/mitrailleur.png"/>
-  <texture mode="build_button" name="icon" path="medias/units/neonazs/mitrailleur/pics/mitrailleur-icon.png"/>
+  <texture mode="button" name="icon" path="medias/units/neonazs/mitrailleur/pics/mitrailleur-icon.png"/>
   <texture name="face" path="medias/units/neonazs/mitrailleur/pics/mitrailleur-face.png"/>
   <tile directions="8">
     <psize x="43" y="60"/>

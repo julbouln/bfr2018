@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <entity class="unit" name="lance_pepino" team="rebel">
   <texture mode="with_directions" path="medias/units/rebels/lance_pepino/pics/lance_pepino.png"/>
-  <texture mode="build_button" name="icon" path="medias/units/rebels/lance_pepino/pics/lance_pepino-icon.png"/>
+  <texture mode="button" name="icon" path="medias/units/rebels/lance_pepino/pics/lance_pepino-icon.png"/>
   <texture name="face" path="medias/units/rebels/lance_pepino/pics/lance_pepino-face.png"/>
   <texture name="spe" path="medias/units/rebels/lance_pepino/pics/lance_pepino-spe.png"/>
   <tile directions="8">

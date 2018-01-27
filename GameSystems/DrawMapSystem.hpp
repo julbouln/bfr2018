@@ -161,9 +161,10 @@ public:
 
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
+				if (!obj.mapped || (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0)) {
 					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
 					        p.y >= clip.top && p.y <= clip.top + clip.height)
 						this->entitiesDrawList.push_back(entity);

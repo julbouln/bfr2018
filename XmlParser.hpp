@@ -295,7 +295,13 @@ public:
 			tinyxml2::XMLElement * sizeEl = element->FirstChildElement("size");
 			tinyxml2::XMLElement * psizeEl = element->FirstChildElement("psize");
 			tinyxml2::XMLElement * offsetEl = element->FirstChildElement("offset");
+			tinyxml2::XMLElement * zEl = element->FirstChildElement("z");
 			tinyxml2::XMLElement * animsEl = element->FirstChildElement("animations");
+
+			if(zEl) 
+				tile.z = zEl->IntAttribute("value");
+			else
+				tile.z = 0;
 
 			if (sizeEl)
 				tile.size = sf::Vector2i{sizeEl->IntAttribute("x"), sizeEl->IntAttribute("y")};

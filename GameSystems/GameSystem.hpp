@@ -76,17 +76,9 @@ public:
 	sf::Vector2i nearestTileAround(sf::Vector2i src, Tile &tile, int dist) {
 		sf::Vector2i nearest(1024, 1024);
 		for (sf::Vector2i const &p : this->tileAround(tile, dist)) {
-//			float mod = 1.0;
-//			if (this->map->objs.get(p.x, p.y)) {
-//				mod = 2.0;
-//			} else {
-//				std::cout << "DEBUG: free pos " << p.x << "x" << p.y << " around " << tile.pos.x << "x" << tile.pos.y << " (" << tile.size.x << "x" << tile.size.y << ")" << std::endl;
-//			}
 			if (!this->map->objs.get(p.x, p.y)) {
 				if (this->approxDistance(src, p) < this->approxDistance(src, nearest)) {
-//					std::cout << "DEBUG: free pos " << p.x << "x" << p.y << " around " << tile.pos.x << "x" << tile.pos.y << " (" << tile.size.x << "x" << tile.size.y << ")" << std::endl;
 					nearest = p;
-				} else {
 				}
 			}
 		}
@@ -138,7 +130,6 @@ public:
 			EntityID pEnt = this->map->objs.get(p.x, p.y);
 			if ((pEnt && pEnt != entity) || player.fog.get(p.x, p.y) == FogState::Unvisited || this->map->staticBuildable.get(p.x, p.y) != 0)
 			{
-//				std::cout << "RESTRICT BUILD "<<p.x<<"x"<<p.y<<std::endl;
 				restrictedPos.push_back(p);
 			}
 		}
@@ -236,13 +227,10 @@ public:
 	}
 
 	void changeState(Tile &tile, std::string state) {
-		tile.state = state;
-		/*		AnimationHandler &currentAnim = tile.animHandlers[tile.state];
-
-				currentAnim.changeColumn(tile.direction);
-				currentAnim.update(0);
-				tile.sprite.setTextureRect(currentAnim.bounds);
-				*/
+		if (tile.state != state) {
+			tile.state = state;
+			this->vault->factory.resetTileAnim(tile, state);
+		}
 	}
 
 	void playSound(sf::Sound &snd, std::string name) {
@@ -261,14 +249,11 @@ public:
 		if (unit.soundActions[state] > 0) {
 			int rnd = rand() % unit.soundActions[state];
 			std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
-//			unit.sound.setBuffer(this->vault->factory.getSndBuf(obj.name + "_" + state + "_" + std::to_string(rnd)));
-//			unit.sound.play();
 			this->map->sounds.push(SoundPlay{sname, 1, sf::Vector2i{0, 0}});
 		}
 	}
 
 // action
-
 	void seedResources(std::string type, EntityID entity) {
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Tile &tile = this->vault->registry.get<Tile>(entity);

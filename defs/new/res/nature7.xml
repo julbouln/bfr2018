@@ -4,7 +4,6 @@
     <tile>
       <psize x="64" y="128"/>
       <size x="1" y="1"/>
-      <offset x="1" y="3"/>
     </tile>
     <resource>
       <level value="1"/>

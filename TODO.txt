@@ -1,7 +1,6 @@
 Bug:
 - last map line is not always displayed
 - unit looking for each other fight sometimes stuck together
-- effects, corpses and ruins are not correctely positionned
 
 Misc
 - add mouse cursors
@@ -22,6 +21,7 @@ Game:
 - add resource trap + explosion FX
 
 Interface:
+- add units faces
 - finish gui (naz alignement)
 - add settings
 

@@ -442,6 +442,10 @@ public:
 						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
 						ImGui::BeginGroup();
+						ImGui::Image(this->vault->factory.texManager.getRef(obj.name+"_face"));
+						ImGui::EndGroup();ImGui::SameLine();
+
+						ImGui::BeginGroup();
 						ImGui::Text("PV: %d", (int)obj.life);
 						ImGui::Text("AC: %d", unit.attack1.power);
 						ImGui::Text("DC: %d", unit.attack1.distance);
@@ -461,16 +465,14 @@ public:
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
 						                           this->vault->factory.texManager.getRef(player.team + "_move"),
 						                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
-//							std::cout << "move clicked " << std::endl;
-
+							std::cout << "TODO: move clicked " << std::endl;
 						}
 
 						ImGui::SameLine();
 						if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_attack"),
 						                           this->vault->factory.texManager.getRef(player.team + "_attack"),
 						                           this->vault->factory.texManager.getRef(player.team + "_attack_down"))) {
-//							std::cout << "attack clicked " << std::endl;
-
+							std::cout << "TODO: attack clicked " << std::endl;
 						}
 						ImGui::EndGroup();
 

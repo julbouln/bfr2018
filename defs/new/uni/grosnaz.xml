@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <entity class="unit" name="grosnaz" team="neonaz">
   <texture mode="with_directions" path="medias/units/neonazs/grosnaz/pics/grosnaz.png"/>
-  <texture mode="build_button" name="icon" path="medias/units/neonazs/grosnaz/pics/grosnaz-icon.png"/>
+  <texture mode="button" name="icon" path="medias/units/neonazs/grosnaz/pics/grosnaz-icon.png"/>
   <texture name="face" path="medias/units/neonazs/grosnaz/pics/grosnaz-face.png"/>
   <tile directions="8">
     <psize x="60" y="75"/>

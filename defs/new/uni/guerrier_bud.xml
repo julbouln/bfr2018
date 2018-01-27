@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <entity class="unit" name="guerrier_bud" team="rebel">
   <texture mode="with_directions" path="medias/units/rebels/guerrier_bud/pics/guerrier_bud.png"/>
-  <texture mode="build_button" name="icon" path="medias/units/rebels/guerrier_bud/pics/guerrier_bud-icon.png"/>
+  <texture mode="button" name="icon" path="medias/units/rebels/guerrier_bud/pics/guerrier_bud-icon.png"/>
   <texture name="face" path="medias/units/rebels/guerrier_bud/pics/guerrier_bud-face.png"/>
   <texture name="spe" path="medias/units/rebels/guerrier_bud/pics/guerrier_bud-spe.png"/>
   <tile directions="8">

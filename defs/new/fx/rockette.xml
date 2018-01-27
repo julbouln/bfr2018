@@ -2,8 +2,9 @@
     <tile directions="8">
         <texture mode="with_directions" path="medias/projectiles/rockette.png"/>
         <psize x="64" y="64"/>
+        <z value="1"/>
         <animations>
-            <animation name="fx">
+            <animation name="idle">
                 <frames>
                     <frame n="0"/>
                     <frame n="1"/>

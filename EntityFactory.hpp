@@ -287,8 +287,20 @@ public:
 			return nullptr;
 	}
 
+	void resetTileAnim(Tile &tile, std::string state) {
+		AnimationHandler &animHandler = tile.animHandlers[state];
+		animHandler.changeColumn(tile.direction);
+		animHandler.set(0);
+		tile.sprite.setTextureRect(animHandler.bounds); // texture need to be updated		
+	}
+
 	void parseTileFromXml(std::string name, Tile &tile) {
 		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
+		tile.sprite.setTexture(texManager.getRef(name));
+		tile.direction = North;
+		tile.state = "idle";
+		this->resetTileAnim(tile, "idle");
+		tile.centerRect = this->getCenterRect(name);
 	}
 
 	void parseGameObjectFromXml(std::string name, GameObject &obj) {
@@ -355,24 +367,16 @@ public:
 		std::cout << "EntityFactory: create unit " << entity << " " << name << " at " << x << "x" << y << std::endl;
 #endif
 		Tile tile;
-//		this->parseTileFromXml(name, tile, 8);
-		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
+		this->parseTileFromXml(name, tile);
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = 0;
-
-		tile.sprite.setTexture(texManager.getRef(name));
 
 		tile.direction = South;
-		tile.state = "idle";
-		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
-
-		tile.centerRect = this->getCenterRect(name);
+		this->resetTileAnim(tile, "idle");
 
 		GameObject obj;
-//		this->parseGameObjectFromXml(name, obj);
-		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
+		this->parseGameObjectFromXml(name, obj);
 
 		for (auto o : gameObjectParser.parseEffects(this->getXmlComponent(name, "game_object"))) {
 #ifdef FACTORY_DEBUG
@@ -415,8 +419,7 @@ public:
 		building.constructedBy = constructedBy;
 
 		GameObject obj;
-//		this->parseGameObjectFromXml(name, obj);
-		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
+		this->parseGameObjectFromXml(name, obj);
 		obj.player = 0;
 		obj.mapped = false;
 		obj.destroy = false;
@@ -437,23 +440,11 @@ public:
 		obj.player = player;
 		obj.mapped = built;
 
-//		obj.effects["explosion"] = this->createExplosionEffect(registry);
-
 		Tile tile;
-//		this->parseTileFromXml(obj.name, tile, 8);
-		tileParser.parse(tile, this->getXmlComponent(obj.name, "tile"));
+		this->parseTileFromXml(obj.name, tile);
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = 0;
-
-		tile.sprite.setTexture(texManager.getRef(obj.name));
-
-		tile.direction = North;
-		tile.state = "idle";
-		tile.sprite.setTextureRect(tile.animHandlers["idle"].bounds); // texture need to be updated
-
-		tile.centerRect = this->getCenterRect(obj.name);
 
 		registry.assign<Tile>(entity, tile);
 
@@ -490,7 +481,6 @@ public:
 		Tile tile;
 		tile.psize = sf::Vector2f{32, 32};
 		tile.size = sf::Vector2i{1, 1};
-		tile.z = 0;
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -537,7 +527,6 @@ public:
 
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = 0;
 
 		tile.sprite.setTexture(texManager.getRef(rname));
 
@@ -574,23 +563,10 @@ public:
 #endif
 
 		Tile tile;
-		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
+		this->parseTileFromXml(name, tile);
+
 		tile.pos = sf::Vector2i(0, 0);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = 1;
-
-		tile.sprite.setTexture(texManager.getRef(name));
-
-		tile.direction = North;
-		tile.state = "fx";
-
-		AnimationHandler &fxAnim = tile.animHandlers["fx"];
-
-		fxAnim.changeColumn(0);
-		fxAnim.set(0);
-		tile.sprite.setTextureRect(fxAnim.bounds); // texture need to be updated
-
-		tile.centerRect = this->getCenterRect(name);
 
 		MapEffect effect;
 		effect.show = false;
@@ -636,8 +612,9 @@ public:
 	}
 
 	void loadManifest(std::string filename) {
+#ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: load manifest " << filename << std::endl;
-
+#endif
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile(filename.c_str());
 
@@ -664,8 +641,9 @@ public:
 			texLoader.parse(sdoc->RootElement());
 			sndLoader.parse(sdoc->RootElement());
 		}
-
+#ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: manifest loaded " << filename << std::endl;
+#endif
 	}
 
 	void load() {

@@ -85,8 +85,7 @@ public:
 							}
 							unit.destpos = tile.pos;
 							unit.destAttackPos = tile.pos;
-//							if (tile.state == "attack" && tile.animHandlers["attack"].getCurrentFrame() == 0) {
-//								int frCnt = tile.animHandlers["attack"].getAnim().getLength();
+
 							float damage = (float)attackPower / 100.0;
 #ifdef COMBAT_DEBUG
 							std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.destAttack << std::endl;
@@ -101,7 +100,7 @@ public:
 									player.kills.insert(unit.destAttack);
 								}
 								if (this->vault->registry.has<Unit>(unit.destAttack)) {
-									destTile.state = "die";
+									this->changeState(destTile, "die");
 									AnimationHandler &dieAnim = destTile.animHandlers["die"];
 									dieAnim.getAnim().repeat = false;
 								}
@@ -208,8 +207,8 @@ public:
 							proj.positions = this->lineTrajectory(tile.ppos.x, tile.ppos.y, destTile.ppos.x, destTile.ppos.y);
 							proj.curPosition = 0;
 
-							projTile.animHandlers["fx"].reset();
-							projTile.animHandlers["fx"].set(0);
+							projTile.animHandlers["idle"].reset();
+							projTile.animHandlers["idle"].set(0);
 
 //							std::cout << "Trajectory: " << entity << " " << points.size() << std::endl;
 //							for (sf::Vector2f p : points) {
@@ -257,14 +256,14 @@ public:
 					explosion.show = true;
 					explosionTile.pos = tile.pos;
 					explosionTile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-					explosionTile.animHandlers["fx"].reset();
-					explosionTile.animHandlers["fx"].changeColumn(0);
-					explosionTile.animHandlers["fx"].set(0);
+					explosionTile.animHandlers["idle"].reset();
+					explosionTile.animHandlers["idle"].changeColumn(0);
+					explosionTile.animHandlers["idle"].set(0);
 					this->map->sounds.push(SoundPlay{explosion.sound, 1, explosionTile.pos});
 				}
-//					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["fx"].l<<std::endl;
+//					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["idle"].l<<std::endl;
 
-				if (explosionTile.animHandlers["fx"].l >= 1) {
+				if (explosionTile.animHandlers["idle"].l >= 1) {
 					obj.destroy = true;
 				}
 
@@ -288,8 +287,8 @@ public:
 					} else {
 						projTile.ppos = proj.positions[0];
 						proj.curPosition = 0;
-						projTile.animHandlers["fx"].reset();
-						projTile.animHandlers["fx"].set(0);
+						projTile.animHandlers["idle"].reset();
+						projTile.animHandlers["idle"].set(0);
 					}
 //					std::cout << "Projectile: " << entity << " " << proj.curPosition << "/"<<proj.positions.size()<< " "<< projTile.ppos.x << "x" << projTile.ppos.y << " " << projTile.pos.x << "x" << projTile.pos.y << std::endl;
 				}
