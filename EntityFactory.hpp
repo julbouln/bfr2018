@@ -490,6 +490,7 @@ public:
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.z = 0;
 
 		tile.sprite.setTexture(texManager.getRef(name));
 

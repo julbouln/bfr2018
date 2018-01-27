@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/rebels/ferme/pics/ferme-icon.png"/>
   <tile>
     <psize x="160" y="180"/>
-    <size x="5" y="4"/>
+    <size x="5" y="3"/>
     <offset x="0" y="2"/>
     <animations>
       <animation name="idle">

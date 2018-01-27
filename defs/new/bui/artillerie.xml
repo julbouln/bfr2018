@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/neonazs/artillerie/pics/artillerie-icon.png"/>
   <tile>
     <psize x="256" y="230"/>
-    <size x="6" y="4"/>
+    <size x="7" y="4"/>
     <offset x="0" y="1"/>
     <animations>
       <animation name="idle">

@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/rebels/squat/pics/squat-icon.png"/>
   <tile>
     <psize x="256" y="224"/>
-    <size x="8" y="4"/>
+    <size x="7" y="4"/>
     <offset x="0" y="3"/>
     <animations>
       <animation name="idle">

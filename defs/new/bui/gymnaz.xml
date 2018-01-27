@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/neonazs/gymnaz/pics/gymnaz-icon.png"/>
   <tile>
     <psize x="224" y="209"/>
-    <size x="6" y="4"/>
+    <size x="5" y="3"/>
     <offset x="0" y="1"/>
     <animations>
       <animation name="idle">

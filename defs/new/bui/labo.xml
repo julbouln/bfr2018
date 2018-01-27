@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/neonazs/labo/pics/labo-icon.png"/>
   <tile>
     <psize x="192" y="201"/>
-    <size x="6" y="4"/>
+    <size x="5" y="3"/>
     <offset x="0" y="2"/>
     <animations>
       <animation name="idle">
