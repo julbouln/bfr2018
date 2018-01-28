@@ -11,7 +11,7 @@
                     <frame n="0"/>
                     <frame n="1"/>
                 </frames>
-                <duration value="100"/>
+                <duration value="1000"/>
             </animation>
         </animations>
     </tile>

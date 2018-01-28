@@ -208,7 +208,9 @@ public:
 				ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
 				effect.spawner->center = ppos;
 				effect.particleSystem->emitParticles(effect.particles);
+#ifdef GAME_SYSTEM_DEBUG
 				std::cout << "GameSystem: emit effect " << name << " at " << ppos.x << "x" << ppos.y << std::endl;
+#endif
 			}
 		}
 

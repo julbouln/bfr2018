@@ -1,6 +1,6 @@
 <entity class="effect" name="rotten_hit">
-    <particle name="rotten_hit" count="100" max="100" type="points" rate="0.0">
-        <spawner type="point"/>
+    <particle name="rotten_hit" count="200" max="200" type="points" rate="0.0">
+        <spawner type="disk" x="8.0" y="8.0"/>
         <time_generator max_time="1.0" min_time="0.5"/>
         <size_generator max_end_size="50.0" max_start_size="20.0" min_end_size="40.0" min_start_size="10.0"/>
         <velocity_generator type="angled" max_angle="360.0" max_start_speed="50.0" min_angle="-360.0" min_start_speed="10.0"/>

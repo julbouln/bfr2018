@@ -838,7 +838,7 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 		drawMap.draw(this->game->window, clip, dt);
-		fx.draw(this->game->window, dt);
+		fx.draw(this->game->window, clip, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {

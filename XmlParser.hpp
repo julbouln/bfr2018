@@ -501,12 +501,34 @@ public:
 				effect.particleSystem->emitRate = particleEl->FloatAttribute("rate"); // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
 
 				tinyxml2::XMLElement *spawnerEl = particleEl->FirstChildElement("spawner");
+
 				switch (spawnModes[spawnerEl->Attribute("type")]) {
 				case SpawnerMode::Point:
 					effect.spawner = effect.particleSystem->addSpawner<particles::PointSpawner>();
 					break;
+				case SpawnerMode::Box: {
+					sf::Vector2f size(spawnerEl->FloatAttribute("x"), spawnerEl->FloatAttribute("y"));
+					auto boxSpawner = effect.particleSystem->addSpawner<particles::BoxSpawner>();
+					boxSpawner->size = size;
+					effect.spawner = boxSpawner;
+				}
+				break;
+				case SpawnerMode::Circle: {
+					sf::Vector2f radius(spawnerEl->FloatAttribute("x"), spawnerEl->FloatAttribute("y"));
+					auto circleSpawner = effect.particleSystem->addSpawner<particles::CircleSpawner>();
+					circleSpawner->radius = radius;
+					effect.spawner = circleSpawner;
+
+				}
+				break;
+				case SpawnerMode::Disk: {
+					sf::Vector2f radius(spawnerEl->FloatAttribute("x"), spawnerEl->FloatAttribute("y"));
+					auto diskSpawner = effect.particleSystem->addSpawner<particles::DiskSpawner>();
+					diskSpawner->radius = radius;
+					effect.spawner = diskSpawner;
+				}
+				break;
 				default:
-					// TODO
 					break;
 				}
 				effect.spawner->center = sf::Vector2f(0, 0);

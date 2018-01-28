@@ -347,7 +347,7 @@ void gui() {
 	ImGui::End();
 }
 
-int main() {
+int main2() {
 	int maxNumberParticles = 1000;
 	sf::Texture *texture = new sf::Texture();
 	texture->loadFromFile("medias/misc/neonaz.png");
@@ -436,7 +436,7 @@ int main() {
 	delete particleSystem;
 }
 
-int main2() {
+int main() {
 	circleTexture = new sf::Texture();
 	blobTexture = new sf::Texture();
 	starTexture = new sf::Texture();

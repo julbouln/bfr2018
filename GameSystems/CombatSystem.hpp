@@ -180,9 +180,9 @@ public:
 							if(unit.destAttack) {
 								Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
 								sf::Vector2f fxPos = destTile.ppos;
-								sf::Vector2i diffPos = destTile.pos - tile.pos;
-								fxPos.x += diffPos.x * 4.0;
-								fxPos.y += diffPos.y * 4.0;
+								sf::Vector2i diffPos = tile.pos - destTile.pos;
+								fxPos.x += diffPos.x * 8.0 + 16.0;
+								fxPos.y += diffPos.y * 8.0;
 
 								this->emitEffect("hit", unit.destAttack, fxPos, 1.0);								
 							}
