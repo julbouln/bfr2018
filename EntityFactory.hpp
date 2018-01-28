@@ -606,7 +606,7 @@ public:
 		return entity;
 	}
 
-	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, float lifetime) {
+	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, float lifetime, sf::Vector2f destPos = sf::Vector2f{0,0}) {
 		EntityID entity = registry.create();
 
 #ifdef FACTORY_DEBUG
@@ -616,7 +616,7 @@ public:
 		effect.lifetime = lifetime;
 		effect.currentTime = 0.0;
 
-		particleEffectParser.parse(effect, this->getXmlComponent(name, "particle"), texManager);
+		particleEffectParser.parse(effect, this->getXmlComponent(name, "particle"), texManager, destPos);
 
 #if 0
 //		ps = new particles::PointParticleSystem(maxNumberParticles);

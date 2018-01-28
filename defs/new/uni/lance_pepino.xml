@@ -49,9 +49,10 @@
     <team value="rebel"/>
     <view value="5"/>
     <life value="4"/>
-    <effects>
+<!--    <effects>
       <effect name="projectile" ref="pepino"/>
     </effects>
+  -->
   </game_object>
   <unit>
     <speed value="2"/>
@@ -77,5 +78,6 @@
   </unit>
   <effects>
     <effect name="hit" ref="blood_hit"/>
+    <effect name="projectile" ref="pepino"/>
   </effects>
 </entity>

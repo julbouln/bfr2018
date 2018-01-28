@@ -177,14 +177,16 @@ public:
 							if (map->sounds.size() < MAX_SOUNDS)
 								map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
 
-							if(unit.destAttack) {
+							if (unit.destAttack) {
 								Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
 								sf::Vector2f fxPos = destTile.ppos;
 								sf::Vector2i diffPos = tile.pos - destTile.pos;
 								fxPos.x += diffPos.x * 8.0 + 16.0;
 								fxPos.y += diffPos.y * 8.0;
 
-								this->emitEffect("hit", unit.destAttack, fxPos, 1.0);								
+								this->emitEffect("hit", unit.destAttack, fxPos, 1.0);
+								this->emitEffect("projectile", entity, tile.ppos, this->approxDistance(tile.pos,destTile.pos)/2.0, destTile.ppos);
+
 							}
 
 						}
@@ -197,7 +199,6 @@ public:
 					unit.destAttack = 0;
 					unit.destpos = tile.pos;
 				}
-
 
 				// projectile effect
 				if (obj.effects.count("projectile") > 0) {

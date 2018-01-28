@@ -473,7 +473,7 @@ public:
 		}
 	}
 
-	void parse(ParticleEffect &effect, tinyxml2::XMLElement *element, TextureManager &texManager) {
+	void parse(ParticleEffect &effect, tinyxml2::XMLElement *element, TextureManager &texManager, sf::Vector2f destPos = sf::Vector2f{0, 0}) {
 		if (element) {
 
 			tinyxml2::XMLElement * particleEl = element;
@@ -490,9 +490,13 @@ public:
 					effect.particleSystem = new particles::TextureParticleSystem(max, &(texManager.getRef(particleEl->Attribute("name"))));
 					break;
 				case ParticleSystemMode::Spritesheet:
-				case ParticleSystemMode::AnimatedSpritesheet:
+				case ParticleSystemMode::AnimatedSpritesheet: {
 					effect.particleSystem = new particles::SpriteSheetParticleSystem(max, &(texManager.getRef(particleEl->Attribute("name"))));
-					break;
+
+					auto texCoordGen = effect.particleSystem->addGenerator<particles::TexCoordsRandomGenerator>();
+					texCoordGen->texCoords.push_back(sf::IntRect(0, 0, 32, 32));
+				}
+				break;
 				default:
 					// TODO
 					break;
@@ -550,6 +554,13 @@ public:
 				tinyxml2::XMLElement *velGenEl = particleEl->FirstChildElement("velocity_generator");
 
 				switch (velGenModes[velGenEl->Attribute("type")]) {
+				case VelocityGeneratorMode::Vector:
+				{
+					auto vectorGenerator = effect.particleSystem->addGenerator<particles::VectorVelocityGenerator>();
+					vectorGenerator->minStartVel = sf::Vector2f(velGenEl->FloatAttribute("min_start_vel_x"), velGenEl->FloatAttribute("min_start_vel_y"));
+					vectorGenerator->maxStartVel = sf::Vector2f(velGenEl->FloatAttribute("max_start_vel_x"), velGenEl->FloatAttribute("max_start_vel_y"));
+				}
+				break;
 				case VelocityGeneratorMode::Angled:
 				{
 					auto velocityGenerator = effect.particleSystem->addGenerator<particles::AngledVelocityGenerator>();
@@ -562,6 +573,7 @@ public:
 				case VelocityGeneratorMode::Aimed:
 				{
 					auto aimedGenerator = effect.particleSystem->addGenerator<particles::AimedVelocityGenerator>();
+					aimedGenerator->goal = destPos;
 //					aimedGenerator->goal = sf::Vector2f(0.5f * this->game->width, 0.5f * this->game->height);
 					aimedGenerator->minStartSpeed = velGenEl->FloatAttribute("min_start_speed");
 					aimedGenerator->maxStartSpeed = velGenEl->FloatAttribute("max_start_speed");
