@@ -25,5 +25,5 @@
             </animation>
         </animations>
     </tile>
-    <sound_buffer path="medias/misc/explosion.wav"/>
+    <sound_buffer path="medias/misc/explosion.flac"/>
 </entity>

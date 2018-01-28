@@ -26,7 +26,7 @@
     </frames>  
     <refresh value="1"/>  
     <sounds>
-     <sound  path="medias/projectiles/tir_bud.wav"/>   
+     <sound  path="medias/projectiles/tir_bud.flac"/>   
     </sounds>
  </projectile>
 

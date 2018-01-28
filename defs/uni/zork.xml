@@ -18,16 +18,16 @@
 
  <projectile name="hit">
     <sounds>
-	  <file path="medias/extra/sounds/hit01.wav"/>
+	  <file path="medias/extra/sounds/hit01.flac"/>
 	</sounds>
 </projectile>
 
  <select_sounds>
-  <sound  path="medias/units/rebels/zork/sounds/zo_selec01.wav"/>
-  <sound  path="medias/units/rebels/zork/sounds/zo_selec02.wav"/>
-  <sound  path="medias/units/rebels/zork/sounds/zo_selec03.wav"/>
-  <sound  path="medias/units/rebels/zork/sounds/zo_selec04.wav"/>
-  <sound  path="medias/units/rebels/zork/sounds/zo_selec05.wav"/>
+  <sound  path="medias/units/rebels/zork/sounds/zo_selec01.flac"/>
+  <sound  path="medias/units/rebels/zork/sounds/zo_selec02.flac"/>
+  <sound  path="medias/units/rebels/zork/sounds/zo_selec03.flac"/>
+  <sound  path="medias/units/rebels/zork/sounds/zo_selec04.flac"/>
+  <sound  path="medias/units/rebels/zork/sounds/zo_selec05.flac"/>
  </select_sounds>
 
  <states>
@@ -115,10 +115,10 @@
     </frames>
     <refresh value="2"/>
     <sounds>
-     <sound  path="medias/units/rebels/zork/sounds/zo_action01.wav"/>
-     <sound  path="medias/units/rebels/zork/sounds/zo_action02.wav"/>
-     <sound  path="medias/units/rebels/zork/sounds/zo_action03.wav"/>
-     <sound  path="medias/units/rebels/zork/sounds/zo_action04.wav"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_action01.flac"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_action02.flac"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_action03.flac"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_action04.flac"/>
     </sounds>
   </state>
   
@@ -129,10 +129,10 @@
     </frames>
     <refresh value="4"/>
     <sounds>
-     <sound  path="medias/units/rebels/zork/sounds/zo_attaque01.wav"/>
-     <sound  path="medias/units/rebels/zork/sounds/zo_attaque02.wav"/>
-     <sound  path="medias/units/rebels/zork/sounds/zo_attaque03.wav"/>
-     <sound  path="medias/units/rebels/zork/sounds/zo_attaque04.wav"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_attaque01.flac"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_attaque02.flac"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_attaque03.flac"/>
+     <sound  path="medias/units/rebels/zork/sounds/zo_attaque04.flac"/>
    </sounds>
   </state>
 

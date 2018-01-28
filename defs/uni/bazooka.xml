@@ -16,9 +16,9 @@
  <attack2 power="4" dist="3"/>
 
  <select_sounds>
-  <sound  path="medias/units/neonazs/bazooka/sounds/baz_selec01.wav"/>
-  <sound  path="medias/units/neonazs/bazooka/sounds/baz_selec02.wav"/>
-  <sound  path="medias/units/neonazs/bazooka/sounds/baz_selec03.wav"/>
+  <sound  path="medias/units/neonazs/bazooka/sounds/baz_selec01.flac"/>
+  <sound  path="medias/units/neonazs/bazooka/sounds/baz_selec02.flac"/>
+  <sound  path="medias/units/neonazs/bazooka/sounds/baz_selec03.flac"/>
  </select_sounds>
 
  <projectile name="rockette">
@@ -36,7 +36,7 @@
     </frames>  
     <refresh value="1"/>  
     <sounds>
-     <sound  path="medias/projectiles/rockette.wav"/>   
+     <sound  path="medias/projectiles/rockette.flac"/>   
     </sounds>
  </projectile>
 
@@ -59,8 +59,8 @@
     </frames>
     <refresh value="2"/>
     <sounds>
-     <sound  path="medias/units/neonazs/bazooka/sounds/baz_action01.wav"/>
-     <sound  path="medias/units/neonazs/bazooka/sounds/baz_action02.wav"/>
+     <sound  path="medias/units/neonazs/bazooka/sounds/baz_action01.flac"/>
+     <sound  path="medias/units/neonazs/bazooka/sounds/baz_action02.flac"/>
     </sounds>
   </state>
   
@@ -73,9 +73,9 @@
     </frames>
     <refresh value="4"/>
     <sounds>
-     <sound  path="medias/units/neonazs/bazooka/sounds/baz_attaque01.wav"/>
-     <sound  path="medias/units/neonazs/bazooka/sounds/baz_attaque02.wav"/>
-     <sound  path="medias/units/neonazs/bazooka/sounds/baz_attaque03.wav"/>
+     <sound  path="medias/units/neonazs/bazooka/sounds/baz_attaque01.flac"/>
+     <sound  path="medias/units/neonazs/bazooka/sounds/baz_attaque02.flac"/>
+     <sound  path="medias/units/neonazs/bazooka/sounds/baz_attaque03.flac"/>
    </sounds>
   </state>
 

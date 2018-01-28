@@ -17,7 +17,7 @@
 
  <projectile name="none">
     <sounds>
-     <sound  path="medias/projectiles/mitraille.wav"/>   
+     <sound  path="medias/projectiles/mitraille.flac"/>   
     </sounds>
  </projectile>
 
