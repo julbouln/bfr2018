@@ -56,7 +56,7 @@
     <attack2 power="0" dist="0"/>
     <sound_actions/>
     <sound_attack name="sword">
-      <sound_buffer global="sword" path="medias/extra/sounds/sword.wav"/>
+      <sound_buffer global="sword" path="medias/extra/sounds/sword.flac"/>
     </sound_attack>
   </unit>
   <effects>

@@ -126,11 +126,11 @@ public:
 
 		texLoader.loadTextureWithWhiteMask("blood", "medias/misc/blood.png");
 
-		sndManager.loadSoundBuffer("combo", "medias/misc/combo.wav");
-		sndManager.loadSoundBuffer("killer", "medias/misc/killer.wav");
-		sndManager.loadSoundBuffer("megakill", "medias/misc/megakill.wav");
-		sndManager.loadSoundBuffer("barbarian", "medias/misc/barbarian.wav");
-		sndManager.loadSoundBuffer("butchery", "medias/misc/butchery.wav");
+		sndManager.loadSoundBuffer("combo", "medias/misc/combo.flac");
+		sndManager.loadSoundBuffer("killer", "medias/misc/killer.flac");
+		sndManager.loadSoundBuffer("megakill", "medias/misc/megakill.flac");
+		sndManager.loadSoundBuffer("barbarian", "medias/misc/barbarian.flac");
+		sndManager.loadSoundBuffer("butchery", "medias/misc/butchery.flac");
 
 		texLoader.loadTextureWithWhiteMask("baril_fx", "medias/extra/baril.png");
 		texLoader.loadTextureWithWhiteMask("pepino_fx", "medias/extra/pepino.png");

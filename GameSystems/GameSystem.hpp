@@ -271,7 +271,8 @@ public:
 		if (unit.soundActions[state] > 0) {
 			int rnd = rand() % unit.soundActions[state];
 			std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
-			this->map->sounds.push(SoundPlay{sname, 1, true, sf::Vector2i{0, 0}});
+			if (this->map->sounds.size() < MAX_SOUNDS)
+				this->map->sounds.push(SoundPlay{sname, 1, true, sf::Vector2i{0, 0}});
 		}
 	}
 

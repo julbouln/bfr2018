@@ -174,7 +174,7 @@ public:
 #ifdef COMBAT_DEBUG
 							std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
 #endif
-							if (map->sounds.size() < 255)
+							if (map->sounds.size() < MAX_SOUNDS)
 								map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
 
 							if(unit.destAttack) {

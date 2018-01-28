@@ -16,3 +16,5 @@
 
 #define ZOOMLEVEL_ENABLE
 #define SHADER_ENABLE
+
+#define MAX_SOUNDS 32

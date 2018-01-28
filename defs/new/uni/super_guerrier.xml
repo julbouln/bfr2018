@@ -69,7 +69,7 @@
     <attack2 dist="2" power="7"/>
     <sound_actions/>
     <sound_attack name="mitraille">
-      <sound_buffer global="mitraille" path="medias/projectiles/mitraille.wav"/>
+      <sound_buffer global="mitraille" path="medias/projectiles/mitraille.flac"/>
     </sound_attack>
   </unit>
   <effects>

@@ -63,18 +63,18 @@
     <attack2 power="4" dist="3"/>
     <sound_actions>
       <sound_action name="select">
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec01.wav"/>
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec02.wav"/>
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec03.wav"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec01.flac"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec02.flac"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec03.flac"/>
       </sound_action>
       <sound_action name="move">
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_action01.wav"/>
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_action02.wav"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_action01.flac"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_action02.flac"/>
       </sound_action>
       <sound_action name="attack">
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_attaque01.wav"/>
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_attaque02.wav"/>
-        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_attaque03.wav"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_attaque01.flac"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_attaque02.flac"/>
+        <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_attaque03.flac"/>
       </sound_action>
     </sound_actions>
     <sound_attack name="rockette"/>
