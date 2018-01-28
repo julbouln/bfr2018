@@ -228,7 +228,10 @@ public:
 			if (resource.type == type && resource.level > 0) {
 				spended -= resource.level;
 				Tile &tile = this->vault->registry.get<Tile>(entity);
-				this->emitEffect("spend", entity, tile.ppos, 5.0);
+				sf::Vector2f fxPos = tile.ppos;
+				fxPos.x += 16.0;
+				fxPos.y += 16.0;
+				this->emitEffect("spend", entity, fxPos, 5.0);
 
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 
