@@ -59,4 +59,7 @@
       <sound_buffer global="sword" path="medias/extra/sounds/sword.wav"/>
     </sound_attack>
   </unit>
+  <effects>
+    <effect name="hit" ref="blood_hit"/>
+  </effects>
 </entity>

@@ -68,4 +68,7 @@
     <attack2 power="0" dist="0"/>
     <sound_actions/>
   </unit>
+  <effects>
+    <effect name="hit" ref="blood_hit"/>
+  </effects>
 </entity>

@@ -298,7 +298,7 @@ public:
 			tinyxml2::XMLElement * zEl = element->FirstChildElement("z");
 			tinyxml2::XMLElement * animsEl = element->FirstChildElement("animations");
 
-			if(zEl) 
+			if (zEl)
 				tile.z = zEl->IntAttribute("value");
 			else
 				tile.z = 0;
@@ -409,4 +409,162 @@ public:
 			building.maxBuildTime = building.buildTime;
 		}
 	}
+};
+
+enum class ParticleSystemMode {
+	Points,
+	Texture,
+	Spritesheet,
+	AnimatedSpritesheet,
+	Metaball
+};
+
+enum class SpawnerMode {
+	Point,
+	Box,
+	Circle,
+	Disk
+};
+
+enum class VelocityGeneratorMode {
+	Angled,
+	Vector,
+	Aimed
+};
+
+
+static std::map<std::string, ParticleSystemMode> partSysModes =
+{
+	{ "points", ParticleSystemMode::Points },
+	{ "texture", ParticleSystemMode::Texture },
+	{ "spritesheet", ParticleSystemMode::Spritesheet },
+	{ "animated_spritesheet", ParticleSystemMode::AnimatedSpritesheet },
+	{ "metaball", ParticleSystemMode::Metaball },
+};
+
+
+static std::map<std::string, SpawnerMode> spawnModes =
+{
+	{ "point", SpawnerMode::Point },
+	{ "box", SpawnerMode::Box },
+	{ "circle", SpawnerMode::Circle },
+	{ "disk", SpawnerMode::Disk },
+};
+
+
+static std::map<std::string, VelocityGeneratorMode> velGenModes =
+{
+	{ "angled", VelocityGeneratorMode::Angled },
+	{ "vector", VelocityGeneratorMode::Vector },
+	{ "aimed", VelocityGeneratorMode::Aimed },
+};
+
+class ParticleEffectParser {
+public:
+	sf::Color parseColor(tinyxml2::XMLElement *element) {
+		return sf::Color(element->IntAttribute("r"), element->IntAttribute("g"), element->IntAttribute("b"), element->IntAttribute("a"));
+	}
+
+	void parseEffects(Effects &effects, tinyxml2::XMLElement *element) {
+		if (element) {
+			for (tinyxml2::XMLElement *effectEl : element) {
+				effects.effects[effectEl->Attribute("name")] = effectEl->Attribute("ref");
+			}
+		}
+	}
+
+	void parse(ParticleEffect &effect, tinyxml2::XMLElement *element, TextureManager &texManager) {
+		if (element) {
+
+			tinyxml2::XMLElement * particleEl = element;
+
+			if (particleEl) {
+				int max = particleEl->IntAttribute("max");
+				int count = particleEl->IntAttribute("count");
+				effect.particles = count;
+				switch (partSysModes[particleEl->Attribute("type")]) {
+				case ParticleSystemMode::Points:
+					effect.particleSystem = new particles::PointParticleSystem(max);
+					break;
+				case ParticleSystemMode::Texture:
+					effect.particleSystem = new particles::TextureParticleSystem(max, &(texManager.getRef(particleEl->Attribute("name"))));
+					break;
+				case ParticleSystemMode::Spritesheet:
+				case ParticleSystemMode::AnimatedSpritesheet:
+					effect.particleSystem = new particles::SpriteSheetParticleSystem(max, &(texManager.getRef(particleEl->Attribute("name"))));
+					break;
+				default:
+					// TODO
+					break;
+				}
+
+				effect.particleSystem->emitRate = particleEl->FloatAttribute("rate"); // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
+
+				tinyxml2::XMLElement *spawnerEl = particleEl->FirstChildElement("spawner");
+				switch (spawnModes[spawnerEl->Attribute("type")]) {
+				case SpawnerMode::Point:
+					effect.spawner = effect.particleSystem->addSpawner<particles::PointSpawner>();
+					break;
+				default:
+					// TODO
+					break;
+				}
+				effect.spawner->center = sf::Vector2f(0, 0);
+
+				tinyxml2::XMLElement *timeGenEl = particleEl->FirstChildElement("time_generator");
+
+				auto timeGenerator = effect.particleSystem->addGenerator<particles::TimeGenerator>();
+				timeGenerator->minTime = timeGenEl->FloatAttribute("min_time");
+				timeGenerator->maxTime = timeGenEl->FloatAttribute("max_time");
+
+				tinyxml2::XMLElement *sizeGenEl = particleEl->FirstChildElement("size_generator");
+
+				auto sizeGenerator = effect.particleSystem->addGenerator<particles::SizeGenerator>();
+				sizeGenerator->minStartSize = sizeGenEl->FloatAttribute("min_start_size");
+				sizeGenerator->maxStartSize = sizeGenEl->FloatAttribute("max_start_size");
+				sizeGenerator->minEndSize = sizeGenEl->FloatAttribute("min_end_size");
+				sizeGenerator->maxEndSize = sizeGenEl->FloatAttribute("max_end_size");
+
+				tinyxml2::XMLElement *velGenEl = particleEl->FirstChildElement("velocity_generator");
+
+				switch (velGenModes[velGenEl->Attribute("type")]) {
+				case VelocityGeneratorMode::Angled:
+				{
+					auto velocityGenerator = effect.particleSystem->addGenerator<particles::AngledVelocityGenerator>();
+					velocityGenerator->minAngle = velGenEl->FloatAttribute("min_angle");
+					velocityGenerator->maxAngle = velGenEl->FloatAttribute("max_angle");
+					velocityGenerator->minStartSpeed = velGenEl->FloatAttribute("min_start_speed");
+					velocityGenerator->maxStartSpeed = velGenEl->FloatAttribute("max_start_speed");
+				}
+				break;
+				case VelocityGeneratorMode::Aimed:
+				{
+					auto aimedGenerator = effect.particleSystem->addGenerator<particles::AimedVelocityGenerator>();
+//					aimedGenerator->goal = sf::Vector2f(0.5f * this->game->width, 0.5f * this->game->height);
+					aimedGenerator->minStartSpeed = velGenEl->FloatAttribute("min_start_speed");
+					aimedGenerator->maxStartSpeed = velGenEl->FloatAttribute("max_start_speed");
+				}
+				break;
+				default:
+					// TODO
+					break;
+				}
+
+				tinyxml2::XMLElement *colGenEl = particleEl->FirstChildElement("color_generator");
+
+				auto colorGenerator = effect.particleSystem->addGenerator<particles::ColorGenerator>();
+				colorGenerator->minStartCol = this->parseColor(colGenEl->FirstChildElement("min_start_col"));
+				colorGenerator->maxStartCol = this->parseColor(colGenEl->FirstChildElement("max_start_col"));
+				colorGenerator->minEndCol = this->parseColor(colGenEl->FirstChildElement("min_end_col"));
+				colorGenerator->maxEndCol = this->parseColor(colGenEl->FirstChildElement("max_end_col"));
+
+				auto timeUpdater = effect.particleSystem->addUpdater<particles::TimeUpdater>();
+				auto colorUpdater = effect.particleSystem->addUpdater<particles::ColorUpdater>();
+				auto sizeUpdater = effect.particleSystem->addUpdater<particles::SizeUpdater>();
+				auto rotationUpdater = effect.particleSystem->addUpdater<particles::RotationUpdater>();
+				auto eulerUpdater = effect.particleSystem->addUpdater<particles::EulerUpdater>();
+			}
+		}
+	}
+
 };

@@ -79,4 +79,7 @@
     </sound_actions>
     <sound_attack name="rockette"/>
   </unit>
+  <effects>
+    <effect name="hit" ref="rotten_hit"/>
+  </effects>
 </entity>

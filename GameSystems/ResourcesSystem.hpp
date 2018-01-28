@@ -24,6 +24,7 @@ public:
 					if (resource.level == 1) {
 						this->vault->factory.growedResource(this->vault->registry, resource.type, entity);
 						Tile &newTile = this->vault->registry.get<Tile>(entity);
+
 //						std::cout << "NEW RESOURCE "<<tile.animHandlers[tile.state].bounds.left << "x" << tile.animHandlers[tile.state].bounds.top << ":" << tile.animHandlers[tile.state].bounds.width << "x" << tile.animHandlers[tile.state].bounds.height << std::endl;
 					}
 					else {
@@ -36,7 +37,7 @@ public:
 				}
 			}
 
-			if(resource.type == "nature")
+			if (resource.type == "nature")
 				natureResources += resource.level;
 			else
 				pollutionResources += resource.level;
@@ -47,7 +48,7 @@ public:
 			Player &player = playerView.get(entity);
 			if (player.team == "rebel")
 				player.resources = natureResources;
-			else if(player.team == "neonaz")
+			else if (player.team == "neonaz")
 				player.resources = pollutionResources;
 		}
 	}

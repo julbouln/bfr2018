@@ -142,4 +142,7 @@
       <sound_buffer global="hit01" path="medias/extra/sounds/hit01.wav"/>
     </sound_attack>
   </unit>
+  <effects>
+    <effect name="hit" ref="blood_hit"/>
+  </effects>
 </entity>

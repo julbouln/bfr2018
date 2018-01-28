@@ -105,12 +105,12 @@ public:
 				peekStage()->handleEvent(event);
 			}
 
-			peekStage()->update(dt);
+			peekStage()->update(elapsed);
 
 			// clear the window with black color
 			window.clear(sf::Color::Black);
 
-			peekStage()->draw(dt);
+			peekStage()->draw(elapsed);
 
 			window.display();
 		}
@@ -127,6 +127,7 @@ public:
 			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
 
 		this->window.setFramerateLimit(30);
+//		this->window.setVerticalSyncEnabled(true);
 
 		srand (time(NULL));
 

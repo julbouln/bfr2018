@@ -27,4 +27,7 @@
   <building>
     <build_time value="4"/>
   </building>
+  <effects>
+    <effect name="hit" ref="building_hit"/>
+  </effects>
 </entity>

@@ -200,6 +200,20 @@ public:
 			return false;
 	}
 
+	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime) {
+		if (this->vault->registry.has<Effects>(emitter)) {
+			Effects &effects = this->vault->registry.get<Effects>(emitter);
+			if (effects.effects.count(name) > 0) {
+				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], lifetime);
+				ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
+				effect.spawner->center = ppos;
+				effect.particleSystem->emitParticles(effect.particles);
+				std::cout << "GameSystem: emit effect " << name << " at " << ppos.x << "x" << ppos.y << std::endl;
+			}
+		}
+
+	}
+
 	void spendResources(EntityID playerEnt, std::string type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		int spended = val;
@@ -211,6 +225,9 @@ public:
 			Resource &resource = view.get(entity);
 			if (resource.type == type && resource.level > 0) {
 				spended -= resource.level;
+				Tile &tile = this->vault->registry.get<Tile>(entity);
+				this->emitEffect("spend", entity, tile.ppos, 5.0);
+
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 
 				if (spended <= 0)

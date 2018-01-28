@@ -5,8 +5,6 @@ Bug:
 Misc
 - add mouse cursors
 - add projectile explosion
-- add resource harvesting anim/effect ?
-- add hit blood FX
 - vautour FX
 - add some decors
 - add intro & credits

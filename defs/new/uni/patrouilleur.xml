@@ -90,4 +90,7 @@
       <sound_buffer global="hit_wood" path="medias/extra/sounds/hit_wood.wav"/>
     </sound_attack>
   </unit>
+  <effects>
+    <effect name="hit" ref="rotten_hit"/>
+  </effects>
 </entity>

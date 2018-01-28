@@ -93,6 +93,7 @@ public:
 							destObj.life -= damage;
 
 //							}
+
 							if (destObj.life <= 0) {
 								destObj.life = 0;
 								if (destTile.state != "die") {
@@ -175,6 +176,17 @@ public:
 #endif
 							if (map->sounds.size() < 255)
 								map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
+
+							if(unit.destAttack) {
+								Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
+								sf::Vector2f fxPos = destTile.ppos;
+								sf::Vector2i diffPos = destTile.pos - tile.pos;
+								fxPos.x += diffPos.x * 4.0;
+								fxPos.y += diffPos.y * 4.0;
+
+								this->emitEffect("hit", unit.destAttack, fxPos, 1.0);								
+							}
+
 						}
 					}
 				};

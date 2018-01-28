@@ -72,4 +72,7 @@
       <sound_buffer global="mitraille" path="medias/projectiles/mitraille.wav"/>
     </sound_attack>
   </unit>
+  <effects>
+    <effect name="hit" ref="rotten_hit"/>
+  </effects>
 </entity>

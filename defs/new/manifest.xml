@@ -13,7 +13,6 @@
 	<unit path="defs/new/uni/lance_missille.xml"/>
 	<unit path="defs/new/uni/mitrailleur.xml"/>
 	<unit path="defs/new/uni/punk.xml"/>
-	
 	<building path="defs/new/bui/artillerie.xml"/>
 	<building path="defs/new/bui/caserne.xml"/>
 	<building path="defs/new/bui/ferme.xml"/>
@@ -26,7 +25,6 @@
 	<building path="defs/new/bui/taverne.xml"/>
 	<building path="defs/new/bui/tourelle.xml"/>
 	<building path="defs/new/bui/usine_vehicule.xml"/>
-
 	<resource path="defs/new/res/nature.xml"/>
 	<resource path="defs/new/res/nature1.xml"/>
 	<resource path="defs/new/res/nature2.xml"/>
@@ -42,7 +40,6 @@
 	<resource path="defs/new/res/nature12.xml"/>
 	<resource path="defs/new/res/nature13.xml"/>
 	<resource path="defs/new/res/nature14.xml"/>
-
 	<resource path="defs/new/res/pollution.xml"/>
 	<resource path="defs/new/res/pollution1.xml"/>
 	<resource path="defs/new/res/pollution2.xml"/>
@@ -53,13 +50,16 @@
 	<resource path="defs/new/res/pollution7.xml"/>
 	<resource path="defs/new/res/pollution8.xml"/>
 	<resource path="defs/new/res/pollution9.xml"/>
-<!--
-	<resource path="defs/new/res/pollution10.xml"/>
-	<resource path="defs/new/res/pollution11.xml"/>
--->
+	<!--
+	<resource path="defs/new/res/pollution10.xml"/><resource path="defs/new/res/pollution11.xml"/>-->
 	<effect path="defs/new/fx/explosion.xml"/>
 	<effect path="defs/new/fx/bud.xml"/>
 	<effect path="defs/new/fx/pepino.xml"/>
 	<effect path="defs/new/fx/petrole.xml"/>
 	<effect path="defs/new/fx/rockette.xml"/>
+	<effect path="defs/new/fx/nature_spend.xml"/>
+	<effect path="defs/new/fx/pollution_spend.xml"/>
+	<effect path="defs/new/fx/blood_hit.xml"/>
+	<effect path="defs/new/fx/rotten_hit.xml"/>
+	<effect path="defs/new/fx/building_hit.xml"/>
 </manifest>

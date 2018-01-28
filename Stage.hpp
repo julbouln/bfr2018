@@ -15,4 +15,12 @@ public:
 	virtual void update(const float dt) = 0;
 	virtual void handleEvent(sf::Event &event) = 0;
 
+	virtual void draw(sf::Time &dt) {
+		this->draw(dt.asSeconds());
+	};
+
+	virtual void update(sf::Time &dt) {
+		this->update(dt.asSeconds());
+	};
+
 };

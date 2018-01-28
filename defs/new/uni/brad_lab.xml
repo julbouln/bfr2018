@@ -74,4 +74,7 @@
       <sound_buffer global="hit_meat" path="medias/extra/sounds/hit_meat.wav"/>
     </sound_attack>
   </unit>
+  <effects>
+    <effect name="hit" ref="blood_hit"/>
+  </effects>
 </entity>

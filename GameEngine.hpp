@@ -23,6 +23,7 @@
 #include "GameSystems/CombatSystem.hpp"
 #include "GameSystems/VictorySystem.hpp"
 #include "GameSystems/SoundSystem.hpp"
+#include "GameSystems/FxSystem.hpp"
 
 #include "AI.hpp"
 
@@ -51,6 +52,7 @@ public:
 	CombatSystem combat;
 	VictorySystem victory;
 	SoundSystem sound;
+	FxSystem fx;
 
 	AI ai;
 
@@ -218,6 +220,8 @@ public:
 		victory.map = this->map;
 		sound.setVault(vault);
 		sound.map = this->map;
+		fx.setVault(vault);
+		fx.map = this->map;
 
 		ai.setVault(vault);
 		ai.map = this->map;
@@ -333,7 +337,7 @@ public:
 
 			iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
 			box.setTexture(this->vault->factory.getTex("box_" + player.team));
-			box_w=this->vault->factory.getTex("box_" + player.team).getSize().x;
+			box_w = this->vault->factory.getTex("box_" + player.team).getSize().x;
 			minimap_bg.setTexture(this->vault->factory.getTex("minimap_" + player.team));
 			minimap_bg_h = this->vault->factory.getTex("minimap_" + player.team).getSize().y;
 			indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
@@ -420,12 +424,12 @@ public:
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 		if (player.team != "neutral") {
-/*			float uiX = 258.0f * this->scaleX();
-			float uiHeight = 134.0f * this->scaleY();
-			float uiWidth = 500.0f * this->scaleX();
-			float uiLWidth = 300.0f * this->scaleX();
-			float uiRWidth = 200.0f * this->scaleX();
-*/
+			/*			float uiX = 258.0f * this->scaleX();
+						float uiHeight = 134.0f * this->scaleY();
+						float uiWidth = 500.0f * this->scaleX();
+						float uiLWidth = 300.0f * this->scaleX();
+						float uiRWidth = 200.0f * this->scaleX();
+			*/
 			float uiX = 590.0f * this->scaleX();
 			float uiHeight = 124.0f * this->scaleY();
 			float uiWidth = 250.0f * this->scaleX();
@@ -457,8 +461,8 @@ public:
 						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
 						ImGui::BeginGroup();
-						ImGui::Image(this->vault->factory.texManager.getRef(obj.name+"_face"));
-						ImGui::EndGroup();ImGui::SameLine();
+						ImGui::Image(this->vault->factory.texManager.getRef(obj.name + "_face"));
+						ImGui::EndGroup(); ImGui::SameLine();
 
 						ImGui::BeginGroup();
 						ImGui::Text("PV: %d", (int)obj.life);
@@ -834,6 +838,7 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 		drawMap.draw(this->game->window, clip, dt);
+		fx.draw(this->game->window, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -1056,8 +1061,12 @@ public:
 
 	}
 
-
 	void update(float dt) {
+	}
+
+	void update(sf::Time &elapsed) {
+		float dt = elapsed.asSeconds();
+
 		float updateDt = dt;
 //		std::cout << "GameEngine: update " << dt << std::endl;
 		this->game->window.setView(this->gameView);
@@ -1065,6 +1074,7 @@ public:
 		if (this->timePerTick == FLT_MAX) return;
 
 		this->updateEveryFrame(dt);
+		this->fx.update(elapsed);
 
 		this->currentTime += dt;
 

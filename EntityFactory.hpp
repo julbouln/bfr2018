@@ -72,6 +72,7 @@ public:
 	GameObjectParser gameObjectParser;
 	UnitParser unitParser;
 	BuildingParser buildingParser;
+	ParticleEffectParser particleEffectParser;
 
 	sf::Texture &getTex(std::string name) {
 		return texManager.getRef(name);
@@ -130,6 +131,10 @@ public:
 		sndManager.loadSoundBuffer("megakill", "medias/misc/megakill.wav");
 		sndManager.loadSoundBuffer("barbarian", "medias/misc/barbarian.wav");
 		sndManager.loadSoundBuffer("butchery", "medias/misc/butchery.wav");
+
+		texLoader.loadTextureWithWhiteMask("baril_fx", "medias/extra/baril.png");
+		texLoader.loadTextureWithWhiteMask("pepino_fx", "medias/extra/pepino.png");
+
 	}
 
 	void autoTransition(sf::Image &img) {
@@ -297,7 +302,7 @@ public:
 		AnimationHandler &animHandler = tile.animHandlers[state];
 		animHandler.changeColumn(tile.direction);
 		animHandler.set(0);
-		tile.sprite.setTextureRect(animHandler.bounds); // texture need to be updated		
+		tile.sprite.setTextureRect(animHandler.bounds); // texture need to be updated
 	}
 
 	void parseTileFromXml(std::string name, Tile &tile) {
@@ -409,6 +414,10 @@ public:
 		registry.assign<GameObject>(entity, obj);
 		registry.assign<Unit>(entity, unit);
 
+		Effects effects;
+		particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
+		registry.assign<Effects>(entity, effects);
+
 		return entity;
 	}
 
@@ -459,6 +468,12 @@ public:
 			std::cout << "EntityFactory: " << entity << " add effect " << o.first << " from ref " << o.second << std::endl;
 #endif
 			obj.effects[o.first] = this->createMapEffect(registry, o.second);
+		}
+
+		if (!registry.has<Effects>(entity)) {
+			Effects effects;
+			particleEffectParser.parseEffects(effects, this->getXmlComponent(obj.name, "effects"));
+			registry.assign<Effects>(entity, effects);
 		}
 
 		return entity;
@@ -558,6 +573,11 @@ public:
 
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
+
+		Effects effects;
+		effects.effects["spend"] = name + "_spend";
+		registry.assign<Effects>(entity, effects);
+
 		return entity;
 	}
 
@@ -584,6 +604,73 @@ public:
 		registry.assign<MapEffect>(entity, effect);
 
 		return entity;
+	}
+
+	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, float lifetime) {
+		EntityID entity = registry.create();
+
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create map effect " << entity << " " << name << std::endl;
+#endif
+		ParticleEffect effect;
+		effect.lifetime = lifetime;
+		effect.currentTime = 0.0;
+
+		particleEffectParser.parse(effect, this->getXmlComponent(name, "particle"), texManager);
+
+#if 0
+//		ps = new particles::PointParticleSystem(maxNumberParticles);
+		effect.particleSystem = new particles::TextureParticleSystem(10, &(texManager.getRef(name)));
+//		ps->additiveBlendMode = true;
+		effect.particleSystem->emitRate = 0.0; // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
+
+// Spawn particles at position (500, 500)
+		effect.spawner = effect.particleSystem->addSpawner<particles::PointSpawner>();
+		effect.spawner->center = sf::Vector2f(0, 0);
+
+// Set particle lifetime to random value between 1 and 5 seconds
+		auto timeGenerator = effect.particleSystem->addGenerator<particles::TimeGenerator>();
+		timeGenerator->minTime = 2.f;
+		timeGenerator->maxTime = 2.f;
+
+// Set random particle start and end sizes to interpolate between over their lifetime
+		auto sizeGenerator = effect.particleSystem->addGenerator<particles::SizeGenerator>();
+		sizeGenerator->minStartSize = 50.f;
+		sizeGenerator->maxStartSize = 50.f;
+		sizeGenerator->minEndSize = 50.f;
+		sizeGenerator->maxEndSize = 50.f;
+
+// Set particle start velocity using a random direction and speed
+		auto velocityGenerator = effect.particleSystem->addGenerator<particles::AngledVelocityGenerator>();
+		velocityGenerator->minAngle = 0.f;
+		velocityGenerator->maxAngle = 0.f;
+		velocityGenerator->minStartSpeed = 50.f;
+		velocityGenerator->maxStartSpeed = 50.f;
+
+		/*
+				auto aimedGenerator = ps->addGenerator<particles::AimedVelocityGenerator>();
+				aimedGenerator->goal = sf::Vector2f(0.5f * this->game->width, 0.5f * this->game->height);
+				aimedGenerator->minStartSpeed = 50.f;
+				aimedGenerator->maxStartSpeed = 50.f;
+		*/
+
+		auto colorGenerator = effect.particleSystem->addGenerator<particles::ColorGenerator>();
+		colorGenerator->minStartCol = sf::Color(255, 255, 255, 255);
+		colorGenerator->maxStartCol = sf::Color(255, 255, 255, 255);
+		colorGenerator->minEndCol = sf::Color(255, 255, 255, 0);
+		colorGenerator->maxEndCol = sf::Color(255, 255, 255, 0);
+
+
+		auto timeUpdater = effect.particleSystem->addUpdater<particles::TimeUpdater>();
+		auto colorUpdater = effect.particleSystem->addUpdater<particles::ColorUpdater>();
+		auto sizeUpdater = effect.particleSystem->addUpdater<particles::SizeUpdater>();
+		auto rotationUpdater = effect.particleSystem->addUpdater<particles::RotationUpdater>();
+		auto eulerUpdater = effect.particleSystem->addUpdater<particles::EulerUpdater>();
+#endif
+		registry.assign<ParticleEffect>(entity, effect);
+
+		return entity;
+
 	}
 
 // Player

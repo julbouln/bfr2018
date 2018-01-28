@@ -1,0 +1,15 @@
+<entity class="effect" name="nature_spend">
+    <texture path="medias/extra/pepino.png"/>
+    <particle name="nature_spend" count="1" max="10" type="texture" rate="0.0">
+        <spawner type="point"/>
+        <time_generator max_time="2.0" min_time="2.0"/>
+        <size_generator max_end_size="25.0" max_start_size="25.0" min_end_size="25.0" min_start_size="25.0"/>
+        <velocity_generator type="angled" max_angle="0.0" max_start_speed="50.0" min_angle="0.0" min_start_speed="50.0"/>
+        <color_generator>
+            <min_start_col a="255" b="255" g="255" r="255"/>
+            <max_start_col a="255" b="255" g="255" r="255"/>
+            <min_end_col a="0" b="255" g="255" r="255"/>
+            <max_end_col a="0" b="255" g="255" r="255"/>
+        </color_generator>
+    </particle>
+</entity>

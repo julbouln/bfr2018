@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
 	    game.pushRegisteredStage("game_over");
 	*/
 	game.pushRegisteredStage("main_menu");
+
 	game.loop();
 
 	return EXIT_SUCCESS;

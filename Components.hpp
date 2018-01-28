@@ -10,6 +10,8 @@
 #include "Map.hpp"
 #include "BrainTree/BrainTree.h"
 
+#include "Particles/ParticleSystem.h"
+
 enum {
 	North,
 	NorthEast,
@@ -35,10 +37,10 @@ struct Tile {
 	sf::IntRect centerRect;
 
 	sf::Sprite sprite;
-	std::map<std::string,AnimationHandler> animHandlers;
+	std::map<std::string, AnimationHandler> animHandlers;
 
-    std::string state;
-    unsigned int direction;
+	std::string state;
+	unsigned int direction;
 };
 
 struct Attack {
@@ -52,6 +54,18 @@ struct MapEffect {
 	std::vector<sf::Vector2f>positions;
 	int curPosition;
 	std::string sound;
+};
+
+struct ParticleEffect {
+	particles::ParticleSystem *particleSystem;
+	particles::ParticleSpawner *spawner;
+	float lifetime;
+	float currentTime;
+	int particles;
+};
+
+struct Effects {
+	std::map<std::string, std::string> effects;
 };
 
 // unit or building
