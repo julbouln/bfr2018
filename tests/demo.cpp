@@ -124,6 +124,10 @@ void initParticleSystem() {
 	rotationUpdater = particleSystem->addUpdater<particles::RotationUpdater>();
 	eulerUpdater = particleSystem->addUpdater<particles::EulerUpdater>();
 
+	auto destinationUpdater = particleSystem->addUpdater<particles::DestinationUpdater>();
+	destinationUpdater->destination = sf::Vector2f(640.0,360.0);
+	destinationUpdater->delta = 32.0;
+
 	if (particleSystemMode == ParticleSystemMode::Spritesheet) {
 		auto texCoordGen = particleSystem->addGenerator<particles::TexCoordsRandomGenerator>();
 		texCoordGen->texCoords.push_back(sf::IntRect(0, 0, 8, 8));

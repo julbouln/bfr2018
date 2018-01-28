@@ -128,6 +128,26 @@ void TimeUpdater::update(ParticleData *data, float dt) {
 }
 
 
+void DestinationUpdater::update(ParticleData *data, float dt) {
+	int endId = data->countAlive;
+
+	if (endId == 0) return;
+
+	for (int i = 0; i < endId; ++i) {
+		sf::Vector2f sD = destination;
+		sf::Vector2f eD = destination;
+		sD.x -= delta;
+		sD.y -= delta;
+		eD.x += delta;
+		eD.y += delta;
+		if (data->pos[i].x > sD.x && data->pos[i].y > sD.y && data->pos[i].x < eD.x && data->pos[i].y < eD.y) {
+			data->kill(i);
+			endId = data->countAlive;
+		}
+	}
+}
+
+
 void AnimationUpdater::update(ParticleData *data, float dt) {
 	const int endId = data->countAlive;
 	int animationSize = static_cast<int>(frames.size());

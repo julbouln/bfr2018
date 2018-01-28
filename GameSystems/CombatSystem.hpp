@@ -185,7 +185,12 @@ public:
 								fxPos.y += diffPos.y * 8.0;
 
 								this->emitEffect("hit", unit.destAttack, fxPos, 1.0);
-								this->emitEffect("projectile", entity, tile.ppos, this->approxDistance(tile.pos,destTile.pos)/2.0, destTile.ppos);
+
+								ParticleEffectOptions projOptions;
+								projOptions.destPos = destTile.ppos;
+								projOptions.direction = this->getDirection(tile.pos, destTile.pos);
+
+								this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
 
 							}
 

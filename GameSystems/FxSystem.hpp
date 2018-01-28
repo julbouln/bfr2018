@@ -11,7 +11,7 @@ public:
 			ParticleEffect &effect = view.get(entity);
 			effect.currentTime += elapsed.asSeconds();
 
-			if (effect.currentTime >= effect.lifetime) {
+			if (effect.currentTime >= effect.lifetime || effect.particleSystem->countAlive() == 0) {
 				delete effect.particleSystem;
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 			} else {

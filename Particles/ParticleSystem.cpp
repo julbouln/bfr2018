@@ -108,6 +108,10 @@ void ParticleSystem::reset() {
 	m_particles->countAlive = 0;
 }
 
+int ParticleSystem::countAlive() {
+	return m_particles->countAlive;
+}
+
 
 /* PointParticleSystem */
 
@@ -175,7 +179,7 @@ void TextureParticleSystem::updateVertices() {
 	for (int i = 0; i < m_particles->countAlive; ++i) {
 		float size = 0.5f * m_particles->size[i].x;
 		float angle = m_particles->angle[i].x;
-		
+
 		m_vertices[4 * i + 0].position.x = -size;	m_vertices[4 * i + 0].position.y = -size;
 		m_vertices[4 * i + 1].position.x = +size;	m_vertices[4 * i + 1].position.y = -size;
 		m_vertices[4 * i + 2].position.x = +size;	m_vertices[4 * i + 2].position.y = +size;
@@ -227,7 +231,7 @@ void TextureParticleSystem::render(sf::RenderTarget &renderTarget) {
 
 void SpriteSheetParticleSystem::render(sf::RenderTarget &renderTarget) {
 	updateVertices();
-	
+
 	if (m_particles->countAlive <= 0) return;
 
 	sf::RenderStates states = sf::RenderStates::Default;
@@ -262,28 +266,28 @@ void SpriteSheetParticleSystem::updateVertices() {
 /* MetaballParticleSystem */
 
 const std::string vertexShader = \
-	"void main()" \
-	"{" \
-	"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;" \
-	"    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;" \
-	"    gl_FrontColor = gl_Color;" \
-	"}";
+                                 "void main()" \
+                                 "{" \
+                                 "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;" \
+                                 "    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;" \
+                                 "    gl_FrontColor = gl_Color;" \
+                                 "}";
 
 const std::string fragmentShader = \
-	"uniform sampler2D texture;" \
-	"uniform vec4 customColor;" \
-	"uniform float threshold;" \
-	"" \
-	"void main()" \
-	"{" \
-	"    vec4 pixel = texture2D(texture, gl_TexCoord[0].xy);" \
-	"    if (pixel.a > threshold) {" \
-	"        gl_FragColor = customColor;" \
-	"    }" \
-	"    else {" \
-	"        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);" \
-	"    }" \
-	"}";
+                                   "uniform sampler2D texture;" \
+                                   "uniform vec4 customColor;" \
+                                   "uniform float threshold;" \
+                                   "" \
+                                   "void main()" \
+                                   "{" \
+                                   "    vec4 pixel = texture2D(texture, gl_TexCoord[0].xy);" \
+                                   "    if (pixel.a > threshold) {" \
+                                   "        gl_FragColor = customColor;" \
+                                   "    }" \
+                                   "    else {" \
+                                   "        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);" \
+                                   "    }" \
+                                   "}";
 
 MetaballParticleSystem::MetaballParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight) : TextureParticleSystem(maxCount, texture) {
 	additiveBlendMode = true;
@@ -315,7 +319,7 @@ void MetaballParticleSystem::render(sf::RenderTarget &renderTarget) {
 	sf::Glsl::Vec4 colorVec = sf::Glsl::Vec4(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f);
 	m_shader.setUniform("customColor", colorVec);
 	m_shader.setUniform("threshold", threshold);
-	
+
 	renderTarget.setView(defaultView);
 	renderTarget.draw(m_sprite, &m_shader);
 	renderTarget.setView(oldView);

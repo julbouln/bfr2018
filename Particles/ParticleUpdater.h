@@ -106,6 +106,20 @@ public:
 };
 
 
+
+class DestinationUpdater : public ParticleUpdater {
+public:
+	DestinationUpdater() {}
+	~DestinationUpdater() {}
+
+	void update(ParticleData *data, float dt);
+
+public:
+	sf::Vector2f destination;
+	float delta;
+};
+
+
 class AnimationUpdater : public ParticleUpdater {
 public:
 	AnimationUpdater() {}

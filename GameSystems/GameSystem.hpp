@@ -200,11 +200,11 @@ public:
 			return false;
 	}
 
-	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, sf::Vector2f destPos = sf::Vector2f{0,0}) {
+	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options=ParticleEffectOptions{}) {
 		if (this->vault->registry.has<Effects>(emitter)) {
 			Effects &effects = this->vault->registry.get<Effects>(emitter);
 			if (effects.effects.count(name) > 0) {
-				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], lifetime, destPos);
+				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], lifetime, options);
 				ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
 				effect.spawner->center = ppos;
 				effect.particleSystem->emitParticles(effect.particles);

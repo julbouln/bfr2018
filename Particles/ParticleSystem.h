@@ -76,6 +76,8 @@ public:
 		m_updaters.clear();
 	}
 
+	int countAlive();
+
 protected:
 	void emitWithRate(float dt);	// emit a stream of particles defined by emitRate and dt
 

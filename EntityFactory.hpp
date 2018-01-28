@@ -606,7 +606,7 @@ public:
 		return entity;
 	}
 
-	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, float lifetime, sf::Vector2f destPos = sf::Vector2f{0,0}) {
+	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, float lifetime, ParticleEffectOptions options) {
 		EntityID entity = registry.create();
 
 #ifdef FACTORY_DEBUG
@@ -616,57 +616,10 @@ public:
 		effect.lifetime = lifetime;
 		effect.currentTime = 0.0;
 
-		particleEffectParser.parse(effect, this->getXmlComponent(name, "particle"), texManager, destPos);
+		options.texMgr = &texManager;
 
-#if 0
-//		ps = new particles::PointParticleSystem(maxNumberParticles);
-		effect.particleSystem = new particles::TextureParticleSystem(10, &(texManager.getRef(name)));
-//		ps->additiveBlendMode = true;
-		effect.particleSystem->emitRate = 0.0; // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
+		particleEffectParser.parse(effect, this->getXmlComponent(name, "particle"), options);
 
-// Spawn particles at position (500, 500)
-		effect.spawner = effect.particleSystem->addSpawner<particles::PointSpawner>();
-		effect.spawner->center = sf::Vector2f(0, 0);
-
-// Set particle lifetime to random value between 1 and 5 seconds
-		auto timeGenerator = effect.particleSystem->addGenerator<particles::TimeGenerator>();
-		timeGenerator->minTime = 2.f;
-		timeGenerator->maxTime = 2.f;
-
-// Set random particle start and end sizes to interpolate between over their lifetime
-		auto sizeGenerator = effect.particleSystem->addGenerator<particles::SizeGenerator>();
-		sizeGenerator->minStartSize = 50.f;
-		sizeGenerator->maxStartSize = 50.f;
-		sizeGenerator->minEndSize = 50.f;
-		sizeGenerator->maxEndSize = 50.f;
-
-// Set particle start velocity using a random direction and speed
-		auto velocityGenerator = effect.particleSystem->addGenerator<particles::AngledVelocityGenerator>();
-		velocityGenerator->minAngle = 0.f;
-		velocityGenerator->maxAngle = 0.f;
-		velocityGenerator->minStartSpeed = 50.f;
-		velocityGenerator->maxStartSpeed = 50.f;
-
-		/*
-				auto aimedGenerator = ps->addGenerator<particles::AimedVelocityGenerator>();
-				aimedGenerator->goal = sf::Vector2f(0.5f * this->game->width, 0.5f * this->game->height);
-				aimedGenerator->minStartSpeed = 50.f;
-				aimedGenerator->maxStartSpeed = 50.f;
-		*/
-
-		auto colorGenerator = effect.particleSystem->addGenerator<particles::ColorGenerator>();
-		colorGenerator->minStartCol = sf::Color(255, 255, 255, 255);
-		colorGenerator->maxStartCol = sf::Color(255, 255, 255, 255);
-		colorGenerator->minEndCol = sf::Color(255, 255, 255, 0);
-		colorGenerator->maxEndCol = sf::Color(255, 255, 255, 0);
-
-
-		auto timeUpdater = effect.particleSystem->addUpdater<particles::TimeUpdater>();
-		auto colorUpdater = effect.particleSystem->addUpdater<particles::ColorUpdater>();
-		auto sizeUpdater = effect.particleSystem->addUpdater<particles::SizeUpdater>();
-		auto rotationUpdater = effect.particleSystem->addUpdater<particles::RotationUpdater>();
-		auto eulerUpdater = effect.particleSystem->addUpdater<particles::EulerUpdater>();
-#endif
 		registry.assign<ParticleEffect>(entity, effect);
 
 		return entity;

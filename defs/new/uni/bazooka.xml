@@ -53,9 +53,10 @@
     <team value="neonaz"/>
     <view value="4"/>
     <life value="3"/>
-    <effects>
+<!--    <effects>
       <effect name="projectile" ref="rockette"/>
     </effects>
+  -->
   </game_object>
   <unit>
     <speed value="2"/>
@@ -81,5 +82,6 @@
   </unit>
   <effects>
     <effect name="hit" ref="rotten_hit"/>
+    <effect name="projectile" ref="rockette"/>
   </effects>
 </entity>

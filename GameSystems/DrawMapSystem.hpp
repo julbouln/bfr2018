@@ -135,6 +135,11 @@ public:
 		}
 	}
 
+	inline bool clipped(sf::IntRect &clip, sf::Vector2i const &p) const {
+		return (p.x >= clip.left && p.x <= clip.left + clip.width &&
+		        p.y >= clip.top && p.y <= clip.top + clip.height);
+	}
+
 	// reduce object list to visible entities
 	void updateObjsDrawList(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 
@@ -148,8 +153,7 @@ public:
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
-					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
-					        p.y >= clip.top && p.y <= clip.top + clip.height)
+					if (this->clipped(clip, p))
 						this->entitiesDrawList.push_back(entity);
 				}
 			}
@@ -165,8 +169,7 @@ public:
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				if (!obj.mapped || (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0)) {
-					if (p.x >= clip.left && p.x <= clip.left + clip.width &&
-					        p.y >= clip.top && p.y <= clip.top + clip.height)
+					if (this->clipped(clip, p))
 						this->entitiesDrawList.push_back(entity);
 				}
 			}
@@ -180,8 +183,7 @@ public:
 			if (effect.show) {
 				for (sf::Vector2i const &p : this->tileSurface(tile)) {
 					if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
-						if (p.x >= clip.left && p.x <= clip.left + clip.width &&
-						        p.y >= clip.top && p.y <= clip.top + clip.height)
+						if (this->clipped(clip, p))
 							this->entitiesDrawList.push_back(entity);
 					}
 				}
@@ -195,13 +197,13 @@ public:
 
 
 		// remove if invalid
-		
+
 		this->entitiesDrawList.erase(std::remove_if(
 		                                 this->entitiesDrawList.begin(), this->entitiesDrawList.end(),
 		[this](const EntityID & ent) {
-			return (ent==0 || !vault->registry.valid(ent) || !vault->registry.has<Tile>(ent));
+			return (ent == 0 || !vault->registry.valid(ent) || !vault->registry.has<Tile>(ent));
 		}), this->entitiesDrawList.end());
-		
+
 
 		// sort by position
 		std::sort( this->entitiesDrawList.begin( ), this->entitiesDrawList.end(), [this ]( const auto & lhs, const auto & rhs )
@@ -222,8 +224,8 @@ public:
 						if (ly == ry) {
 							int lx = lp.x + lht.centerRect.left + lht.centerRect.width / 2;
 							int rx = rp.x + rht.centerRect.left + rht.centerRect.width / 2;
-								return (lht.psize.y < rht.psize.y);
-							if(lx < rx) {
+							return (lht.psize.y < rht.psize.y);
+							if (lx < rx) {
 								return true;
 							} else {
 								return (lht.psize.y < rht.psize.y);
