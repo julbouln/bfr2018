@@ -184,7 +184,7 @@ public:
 
 									} else if (destTile.state == "attack" && destUnit.destAttack) {
 										// if ennemy is attacking a building, he will fight back
-										if (this->vault->registry.has<Building>(destUnit.destAttack)) {
+										if (this->vault->registry.valid(destUnit.destAttack) && this->vault->registry.has<Building>(destUnit.destAttack)) {
 											this->attack(destUnit, entity);
 										}
 									}

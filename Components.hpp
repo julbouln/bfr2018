@@ -76,6 +76,12 @@ struct GameObject {
 	EntityID player;
 };
 
+enum class GroupFormation {
+	Square,
+	TwoLine,
+	OneLine
+};
+
 struct Unit {
 	unsigned int speed;
 	Attack attack1;

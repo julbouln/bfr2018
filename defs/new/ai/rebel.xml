@@ -24,8 +24,8 @@
 		<Inverter>
 			<HasMoreResourcesThan amount="200"/>
 		</Inverter>
-		<HasMoreResourcesThan amount="95"/>
-		<HasLessObjectsTypeThan qty="15" type="punkette"/>
+		<HasMoreResourcesThan amount="80"/>
+		<HasLessObjectsTypeThan qty="10" type="punkette"/>
 		<HasLessObjectsTypeThan qty="1" type="festival"/>
 		<Build type="ferme"/>
 	</Sequence>
@@ -35,7 +35,7 @@
 			<HasLessObjectsTypeThan qty="1" type="ferme"/>
 		</Inverter>
 		<Inverter>
-			<HasMoreResourcesThan amount="100"/>
+			<HasMoreResourcesThan amount="400"/>
 		</Inverter>
 		<Plant type="nature"/>
 	</Sequence>

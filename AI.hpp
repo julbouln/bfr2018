@@ -135,7 +135,7 @@ public:
 	{
 		Player &player = vault->registry.get<Player>(entity);
 		int foundQty = 0;
-		for(auto o : player.objsByType) {
+		for (auto o : player.objsByType) {
 			foundQty += o.second.size();
 		}
 
@@ -446,6 +446,8 @@ public:
 			std::vector<EntityID> attackers = player.objsByType[name];
 			std::random_shuffle ( attackers.begin(), attackers.end() );
 
+			std::vector<EntityID> group;
+
 			for (int i = 0; i < perCnt; i++) {
 				EntityID attacker = attackers[i];
 				if (this->vault->registry.valid(attacker)) {
@@ -455,10 +457,12 @@ public:
 #ifdef AI_DEBUG
 						std::cout << "AI: " << entity << " launch expedition with " << attacker << " at " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
 #endif
-						this->goTo(attacker, player.enemyPos);
+						group.push_back(attacker);
+//						this->goTo(attacker, player.enemyPos);
 					}
 				}
 			}
+			this->sendGroup(group, player.enemyPos, GroupFormation::Square, North, false);
 			return Node::Status::Success;
 		} else {
 			return Node::Status::Failure;
@@ -471,8 +475,6 @@ private:
 	std::string name;
 	int per;
 };
-
-
 
 class SendDefense : public BrainTree::Leaf, public GameSystem
 {
@@ -490,20 +492,24 @@ public:
 			std::vector<EntityID> attackers = player.objsByType[name];
 			std::random_shuffle ( attackers.begin(), attackers.end() );
 
+			std::vector<EntityID> group;
+			sf::Vector2i destPos = player.frontPoints.back().pos;
+
 			for (int i = 0; i < perCnt; i++) {
 				EntityID attacker = attackers[i];
 				if (this->vault->registry.valid(attacker)) {
 					Tile &atTile = this->vault->registry.get<Tile>(attacker);
-					sf::Vector2i destPos = player.frontPoints.back().pos;
 
 					if (atTile.state == "idle" && this->approxDistance(atTile.pos, destPos) > 8) {
 #ifdef AI_DEBUG
 						std::cout << "AI: " << entity << " send defense with " << attacker << " at " << destPos.x << "x" << destPos.y << std::endl;
 #endif
-						this->goTo(attacker, destPos);
+						group.push_back(attacker);
+//						this->goTo(attacker, destPos);
 					}
 				}
 			}
+			this->sendGroup(group, destPos, GroupFormation::Square, North, false);
 			return Node::Status::Success;
 		} else {
 			return Node::Status::Failure;

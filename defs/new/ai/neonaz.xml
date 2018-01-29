@@ -35,7 +35,7 @@
 			<HasLessObjectsTypeThan qty="1" type="labo"/>
 		</Inverter>
 		<Inverter>
-			<HasMoreResourcesThan amount="100"/>
+			<HasMoreResourcesThan amount="400"/>
 		</Inverter>
 		<Plant type="pollution"/>
 	</Sequence>

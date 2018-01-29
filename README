@@ -15,3 +15,4 @@ Included third-party:
 - tinyxml2-ex : https://github.com/stanthomas/tinyxml2-ex (MIT)
 - argagg : https://github.com/vietjtnguyen/argagg (MIT)
 - particles : https://github.com/tizian/particles (MIT)
+- dbscan : https://github.com/buresu/DBSCAN (MIT)

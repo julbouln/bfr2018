@@ -650,25 +650,19 @@ public:
 					this->map->staticPathfinding.set(x, y, t);
 					this->map->terrainsForTransitions.set(x, y, tiles["water"][0]);
 				}
-				/*
-								if (res > -0.4) {
-									t = tiles["dirt"][0];
-								} else {
-									t = tiles["water"][0];
-								}
 
-				*/
 				this->map->terrains.set(x, y, t);
-				/*
-								if (res > 0.6 && res < 0.65) {
-									float rnd = ((float) rand()) / (float) RAND_MAX;
-									if (rnd > 0.5) {
-										this->vault->factory.plantResource(this->vault->registry, "nature", x, y);
-									} else {
-										this->vault->factory.plantResource(this->vault->registry, "pollution", x, y);
-									}
-								}
-								*/
+
+				// add some random ressources
+				if (res > 0.6 && res < 0.61) {
+					float rnd = ((float) rand()) / (float) RAND_MAX;
+					if (rnd > 0.5) {
+						this->vault->factory.plantResource(this->vault->registry, "nature", x, y);
+					} else {
+						this->vault->factory.plantResource(this->vault->registry, "pollution", x, y);
+					}
+				}
+
 			}
 		}
 

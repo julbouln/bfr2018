@@ -304,8 +304,8 @@ public:
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
-//			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
-//			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
+			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
+			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 
 			this->centerMapView(sf::Vector2i(mapWidth / 2, mapHeight / 2));
 		}
@@ -819,7 +819,7 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 		drawMap.draw(this->game->window, clip, dt);
-		if(this->gameSpeed < 2)
+		if (this->gameSpeed < 2)
 			fx.draw(this->game->window, clip, dt);
 
 		// draw selected
@@ -1048,7 +1048,7 @@ public:
 		this->updateEveryFrame(dt);
 		this->updateMoveView(dt);
 
-		if(this->gameSpeed < 2) {
+		if (this->gameSpeed < 2) {
 			this->fx.update(elapsed);
 		}
 		else {
@@ -1134,13 +1134,10 @@ public:
 
 	void orderSelected(sf::Vector2f destpos) {
 		if (this->selectedObjs.size() > 0) {
-			double squareD = sqrt((double)this->selectedObjs.size());
-			int square = ceil(squareD);
-			int curObj = 0;
-
 			EntityID destEnt = this->ennemyAtPosition(this->currentPlayer, destpos.x, destpos.y);
 
 			if (destEnt) {
+				int curObj = 0;
 				while (curObj < this->selectedObjs.size()) {
 					EntityID selectedObj = this->selectedObjs[curObj];
 					if (this->vault->registry.has<Unit>(selectedObj)) {
@@ -1150,21 +1147,7 @@ public:
 					curObj++;
 				}
 			} else {
-				for (int x = 0; x < square; x++) {
-					for (int y = 0; y < square; y++) {
-						if (curObj < this->selectedObjs.size()) {
-							EntityID selectedObj = this->selectedObjs[curObj];
-							if (this->vault->registry.has<Unit>(selectedObj)) {
-								this->goTo(selectedObj, sf::Vector2i(destpos.x + x, destpos.y + y));
-								this->playRandomUnitSound(selectedObj, "move");
-
-								Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-								unit.destAttack = 0;
-							}
-							curObj++;
-						}
-					}
-				}
+				this->sendGroup(this->selectedObjs, sf::Vector2i(destpos), GroupFormation::Square, North, true);
 			}
 		}
 	}

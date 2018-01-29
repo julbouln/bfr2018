@@ -202,14 +202,14 @@ public:
 			return false;
 	}
 
-	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options=ParticleEffectOptions{}) {
+	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions{}) {
 		if (this->vault->registry.has<Effects>(emitter)) {
 			Effects &effects = this->vault->registry.get<Effects>(emitter);
 			if (effects.effects.count(name) > 0) {
 				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], lifetime, options);
 				ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
 				effect.spawner->center = ppos;
-				if(!effect.continuous)
+				if (!effect.continuous)
 					effect.particleSystem->emitParticles(effect.particles);
 #ifdef GAME_SYSTEM_DEBUG
 				std::cout << "GameSystem: emit effect " << name << " at " << ppos.x << "x" << ppos.y << std::endl;
@@ -325,6 +325,72 @@ public:
 #endif
 		}
 		return false;
+	}
+
+	void sendGroup(std::vector<EntityID> group, sf::Vector2i destpos, GroupFormation formation, int direction, bool playSound) {
+		if (group.size() > 0) {
+			switch (formation) {
+			case GroupFormation::Square:
+			{
+				double squareD = sqrt((double)group.size());
+				int square = ceil(squareD);
+				int cur = 0;
+				for (int x = 0; x < square; x++) {
+					for (int y = 0; y < square; y++) {
+						if (cur < group.size()) {
+							EntityID entity = group[cur];
+							if (this->vault->registry.has<Unit>(entity)) {
+								this->goTo(entity, sf::Vector2i(destpos.x + x, destpos.y + y));
+								this->clearTarget(entity);
+								if (playSound)
+									this->playRandomUnitSound(entity, "move");
+							}
+							cur++;
+						}
+					}
+				}
+			}
+			break;
+			case GroupFormation::TwoLine:
+			{
+				int cur = 0;
+				for (int x = 0; x < group.size() / 2; x++) {
+					for (int y = 0; y < 2; y++) {
+						if (cur < group.size()) {
+							EntityID entity = group[cur];
+							if (this->vault->registry.has<Unit>(entity)) {
+								this->goTo(entity, sf::Vector2i(destpos.x + x, destpos.y + y));
+								this->clearTarget(entity);
+								if (playSound)
+									this->playRandomUnitSound(entity, "move");
+							}
+							cur++;
+						}
+					}
+				}
+			}
+			default:
+				for (EntityID entity : group) {
+					this->goTo(entity, destpos);
+					this->clearTarget(entity);
+
+				}
+
+				break;
+
+
+			}
+
+		}
+	}
+
+	void clearTarget(Unit &unit) {
+		unit.destAttack = 0;
+	}
+
+	void clearTarget(EntityID entity) {
+		Unit &unit = this->vault->registry.get<Unit>(entity);
+		this->clearTarget(unit);
 	}
 
 	void goTo(Unit &unit, sf::Vector2i destpos) {
