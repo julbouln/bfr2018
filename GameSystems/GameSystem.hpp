@@ -11,6 +11,8 @@
 class GameSystem : public System {
 public:
 	Map *map;
+	int screenWidth;
+	int screenHeight;
 
 	sf::Vector2f tileDrawPosition(Tile &tile) {
 		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32,

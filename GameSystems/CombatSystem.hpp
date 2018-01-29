@@ -196,11 +196,17 @@ public:
 									fxPos.x += diffPos.x * 8.0 + 16.0;
 									fxPos.y += diffPos.y * 8.0;
 
-									this->emitEffect("hit", unit.destAttack, fxPos, 1.0);
+									ParticleEffectOptions hitOptions;
+									hitOptions.destPos = destTile.ppos;
+									hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
+									hitOptions.screenSize = sf::Vector2i(this->screenWidth,this->screenHeight);
+
+									this->emitEffect("hit", unit.destAttack, fxPos, 1.0, hitOptions);
 
 									ParticleEffectOptions projOptions;
 									projOptions.destPos = destTile.ppos;
 									projOptions.direction = this->getDirection(tile.pos, destTile.pos);
+									projOptions.screenSize = sf::Vector2i(this->screenWidth,this->screenHeight);
 
 									this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
 								} else {

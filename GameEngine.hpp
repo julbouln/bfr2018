@@ -221,6 +221,8 @@ public:
 		pathfinding.map = this->map;
 		combat.setVault(vault);
 		combat.map = this->map;
+		combat.screenWidth = this->width;
+		combat.screenHeight = this->height;
 		victory.setVault(vault);
 		victory.map = this->map;
 		sound.setVault(vault);

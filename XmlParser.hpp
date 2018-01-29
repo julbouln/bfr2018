@@ -451,8 +451,9 @@ static std::map<std::string, VelocityGeneratorMode> velGenModes =
 
 struct ParticleEffectOptions {
 	TextureManager *texMgr;
-	sf::Vector2f destPos;
-	int direction;
+	sf::Vector2f destPos; // for aimed swawner
+	int direction; // for aimed spawner
+	sf::Vector2i screenSize; // for metaball
 };
 
 class ParticleEffectParser {
@@ -532,7 +533,7 @@ public:
 			break;
 			case ParticleSystemMode::Metaball: {
 				// FIXME size == screen size
-				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), 1024, 768);
+				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
 				metaball->color = this->parseColor(particleEl);
 				effect.particleSystem = metaball;
 			}
