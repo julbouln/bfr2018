@@ -32,6 +32,11 @@
   <building>
     <build_time value="6"/>
   </building>
+  <unit>
+    <speed value="0"/>
+    <attack1 power="6"/>
+    <attack2 dist="3" power="6"/>
+  </unit>
   <effects>
     <effect name="hit" ref="building_hit"/>
     <effect name="destroy" ref="explosion"/>

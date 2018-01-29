@@ -64,6 +64,10 @@ public:
         return this->textures.at(texture);
     }
 
+    bool hasRef(std::string texture) {
+        return this->textures.count(texture) > 0;
+    }
+
     /* Constructor */
     TextureManager()
     {

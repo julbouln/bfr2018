@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/rebels/tourelle/pics/tourelle-icon.png"/>
   <tile>
     <psize x="128" y="192"/>
-    <size x="4" y="2"/>
+    <size x="3" y="2"/>
     <offset x="0" y="4"/>
     <animations>
       <animation name="idle">
@@ -31,6 +31,11 @@
   <building>
     <build_time value="6"/>
   </building>
+  <unit>
+    <speed value="0"/>
+    <attack1 power="6"/>
+    <attack2 dist="3" power="6"/>
+  </unit>
   <effects>
     <effect name="hit" ref="building_hit"/>
     <effect name="destroy" ref="explosion"/>

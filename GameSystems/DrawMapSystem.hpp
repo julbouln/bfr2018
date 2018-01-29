@@ -256,13 +256,20 @@ public:
 					sf::Color col2 = sf::Color(0, 235, 188);
 					sf::Color replace1 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
 					sf::Color replace2 = this->vault->factory.getPlayerColor(col2, player.colorIdx);
-
+#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
+					colorSwap.setUniform("texture", sf::Shader::CurrentTexture);
+					colorSwap.setUniform("color1", sf::Glsl::Vec4(col1.r / 255.f, col1.g / 255.f, col1.b / 255.f, col1.a / 255.f));
+					colorSwap.setUniform("replace1", sf::Glsl::Vec4(replace1.r / 255.f, replace1.g / 255.f, replace1.b / 255.f, replace1.a / 255.f));
+					colorSwap.setUniform("color2", sf::Glsl::Vec4(col2.r / 255.f, col2.g / 255.f, col2.b / 255.f, col2.a / 255.f));
+					colorSwap.setUniform("replace2", sf::Glsl::Vec4(replace2.r / 255.f, replace2.g / 255.f, replace2.b / 255.f, replace2.a / 255.f));
+#else
+// SFML 2.3
 					colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
 					colorSwap.setParameter("color1", col1);
 					colorSwap.setParameter("replace1", replace1);
 					colorSwap.setParameter("color2", col2);
 					colorSwap.setParameter("replace2", replace2);
-
+#endif
 					window.draw(tile.sprite, &colorSwap);
 #else
 					window.draw(tile.sprite);

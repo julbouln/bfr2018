@@ -366,18 +366,19 @@ public:
 			unit.attack2 = Attack{(unsigned int)element->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist")};
 
 			tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
+			if (soundsEl) {
+				for (tinyxml2::XMLElement *soundEl : soundsEl) {
+					std::string stName = soundEl->Attribute("name");
+					if (soundEl) {
+						int i = 0;
+						for (tinyxml2::XMLElement *bufEl : soundEl) {
+							i++;
+						}
+						unit.soundActions[stName] = i;
 
-			for (tinyxml2::XMLElement *soundEl : soundsEl) {
-				std::string stName = soundEl->Attribute("name");
-				if (soundEl) {
-					int i = 0;
-					for (tinyxml2::XMLElement *bufEl : soundEl) {
-						i++;
+					} else {
+						unit.soundActions[stName] = 0;
 					}
-					unit.soundActions[stName] = i;
-
-				} else {
-					unit.soundActions[stName] = 0;
 				}
 			}
 
@@ -527,6 +528,13 @@ public:
 					animationUpdater->looped = animEl->BoolAttribute("loop");
 				}
 
+			}
+			break;
+			case ParticleSystemMode::Metaball: {
+				// FIXME size == screen size
+				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), 1024, 768);
+				metaball->color = this->parseColor(particleEl);
+				effect.particleSystem = metaball;
 			}
 			break;
 			default:

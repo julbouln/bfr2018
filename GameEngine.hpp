@@ -144,7 +144,12 @@ public:
 
 		text.setFont(font);
 		text.setCharacterSize(48);
+#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
+		text.setFillColor(sf::Color::White);
+#else
+// SFML 2.3
 		text.setColor(sf::Color::White);
+#endif
 
 		this->initView();
 
@@ -232,7 +237,12 @@ public:
 
 		scoreBonusText.setFont(font);
 		scoreBonusText.setCharacterSize(48);
+#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
+		scoreBonusText.setFillColor(sf::Color::White);
+#else
+		// SFML 2.3
 		scoreBonusText.setColor(sf::Color::White);
+#endif
 	}
 
 	void initView() {
@@ -424,12 +434,6 @@ public:
 	void actionGui() {
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 		if (player.team != "neutral") {
-			/*			float uiX = 258.0f * this->scaleX();
-						float uiHeight = 134.0f * this->scaleY();
-						float uiWidth = 500.0f * this->scaleX();
-						float uiLWidth = 300.0f * this->scaleX();
-						float uiRWidth = 200.0f * this->scaleX();
-			*/
 			float uiX = 590.0f * this->scaleX();
 			float uiHeight = 124.0f * this->scaleY();
 			float uiWidth = 250.0f * this->scaleX();
@@ -437,7 +441,6 @@ public:
 			float uiRWidth = 200.0f * this->scaleX();
 
 			ImVec2 window_pos = ImVec2(uiX, ImGui::GetIO().DisplaySize.y - uiHeight);
-//		ImVec2 window_pos_pivot = ImVec2(1.0f, 1.0f);
 			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
 			ImGui::SetNextWindowSize(ImVec2(uiWidth, uiHeight), ImGuiCond_Always);
 			this->guiPushStyles();
@@ -445,8 +448,6 @@ public:
 			if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 			{
 				if (this->selectedObjs.size() == 1) {
-//					ImGui::Columns(2, NULL, false);
-//					ImGui::SetColumnWidth(-1, uiLWidth);
 					EntityID selectedObj = this->selectedObjs[0];
 
 					Tile &tile = this->vault->registry.get<Tile>(selectedObj);
@@ -460,10 +461,11 @@ public:
 					if (this->vault->registry.has<Unit>(selectedObj)) {
 						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
-						ImGui::BeginGroup();
-						ImGui::Image(this->vault->factory.texManager.getRef(obj.name + "_face"));
-						ImGui::EndGroup(); ImGui::SameLine();
-
+						if (this->vault->factory.texManager.hasRef(obj.name + "_face")) {
+							ImGui::BeginGroup();
+							ImGui::Image(this->vault->factory.texManager.getRef(obj.name + "_face"));
+							ImGui::EndGroup(); ImGui::SameLine();
+						}
 						ImGui::BeginGroup();
 						ImGui::Text("PV: %d", (int)obj.life);
 						ImGui::Text("AC: %d", unit.attack1.power);
@@ -471,10 +473,6 @@ public:
 						ImGui::Text("DE: %d", unit.attack2.distance);
 						ImGui::EndGroup();
 					}
-
-//					ImGui::NextColumn();
-//					ImGui::SetColumnWidth(-1, uiRWidth);
-
 
 					if (this->vault->registry.has<Unit>(selectedObj)) {
 						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
@@ -493,7 +491,6 @@ public:
 							std::cout << "TODO: attack clicked " << std::endl;
 						}
 						ImGui::EndGroup();
-
 					}
 
 					if (this->vault->registry.has<Building>(selectedObj)) {
@@ -509,24 +506,19 @@ public:
 								building.construction = 0;
 							}
 						} else {
-
 							if (pnode->children.size() > 0) {
 								int buts = 0;
 								for (TechNode &node : pnode->children) {
 									if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node.type + "_icon"),
 									                           this->vault->factory.texManager.getRef(node.type + "_icon"),
 									                           this->vault->factory.texManager.getRef(node.type + "_icon_down"))) {
-//										std::cout << "build clicked " << node.type << " " << selectedObj << std::endl;
 										switch (node.comp) {
 										case TechComponent::Building: {
-//										Building &building = this->vault->registry.get<Building>(selectedObj);
 											if (!building.construction) {
 												EntityID newConsEnt = this->vault->factory.startBuilding(this->vault->registry, node.type, selectedObj);
-
 												// need to reload the parent building to assign construction
 												Building &pBuilding = this->vault->registry.get<Building>(selectedObj);
 												pBuilding.construction = newConsEnt;
-//												std::cout << "start build " << building.construction << std::endl;
 											}
 										}
 										break;
@@ -547,17 +539,9 @@ public:
 							}
 						}
 					}
-//					ImGui::Columns(1);
-
-
 				} else {
 					if (this->selectedObjs.size() == 0) {
-//						ImGui::Columns(2, NULL, false);
-//						ImGui::SetColumnWidth(-1, uiLWidth);
-
 						this->constructionProgressGui(player.rootConstruction);
-//						ImGui::NextColumn();
-//						ImGui::SetColumnWidth(-1, uiRWidth);
 
 						if (player.rootConstruction) {
 							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_cancel"),
@@ -572,17 +556,13 @@ public:
 							if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(node->type + "_icon"),
 							                           this->vault->factory.texManager.getRef(node->type + "_icon"),
 							                           this->vault->factory.texManager.getRef(node->type + "_icon_down"))) {
-//								std::cout << "build clicked " << node->type << std::endl;
 								if (!player.rootConstruction)
 									player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
 							}
 						}
-//						ImGui::Columns(1);
 					}
 				}
-
 				ImGui::End();
-
 			}
 			ImGui::PopStyleColor();
 			this->guiPopStyles();
@@ -608,7 +588,6 @@ public:
 			ImGui::Text("Total Entities: %d", (int)this->vault->registry.size());
 			ImGui::Text("Drawn Entities: %d", (int)drawMap.entitiesDrawList.size());
 			ImGui::Checkbox("Debug layer", &drawMap.showDebugLayer);
-
 
 			ImGui::Text("Speed"); ImGui::SameLine();
 			ImGui::RadioButton("0", &gameSpeed, 0); ImGui::SameLine();
@@ -1307,14 +1286,14 @@ public:
 							}
 						} else {
 							this->action = Action::Selecting;
-//							std::cout << "START SELECTION" << std::endl;
 							this->selectionStart = gamePos;
 
 							this->selectedObjs.clear();
 							if (this->map->bound(gameMapPos.x, gameMapPos.y)) {
 								EntityID entity = this->map->objs.get(gameMapPos.x, gameMapPos.y);
 
-								if (entity && this->vault->registry.has<Building>(entity)) {
+								// select building only
+								if (entity && this->vault->registry.has<Building>(entity) && !this->vault->registry.has<Unit>(entity)) {
 									GameObject &obj = this->vault->registry.get<GameObject>(entity);
 									if (obj.player == this->currentPlayer)
 										this->selectedObjs.push_back(entity);

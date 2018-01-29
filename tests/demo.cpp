@@ -62,7 +62,7 @@ particles::SizeUpdater *sizeUpdater;
 particles::EulerUpdater *eulerUpdater;
 
 // Global State
-ParticleSystemMode particleSystemMode = ParticleSystemMode::Texture;
+ParticleSystemMode particleSystemMode = ParticleSystemMode::Metaball;
 SpawnerMode spawnerMode = SpawnerMode::Point;
 VelocityGeneratorMode velocityGeneratorMode = VelocityGeneratorMode::Angled;
 
@@ -123,10 +123,6 @@ void initParticleSystem() {
 	sizeUpdater = particleSystem->addUpdater<particles::SizeUpdater>();
 	rotationUpdater = particleSystem->addUpdater<particles::RotationUpdater>();
 	eulerUpdater = particleSystem->addUpdater<particles::EulerUpdater>();
-
-	auto destinationUpdater = particleSystem->addUpdater<particles::DestinationUpdater>();
-	destinationUpdater->destination = sf::Vector2f(640.0,360.0);
-	destinationUpdater->delta = 32.0;
 
 	if (particleSystemMode == ParticleSystemMode::Spritesheet) {
 		auto texCoordGen = particleSystem->addGenerator<particles::TexCoordsRandomGenerator>();
@@ -351,95 +347,6 @@ void gui() {
 	ImGui::End();
 }
 
-int main2() {
-	int maxNumberParticles = 1000;
-	sf::Texture *texture = new sf::Texture();
-	texture->loadFromFile("medias/misc/neonaz.png");
-
-	particleSystem = new particles::PointParticleSystem(maxNumberParticles);
-//		ps = new particles::TextureParticleSystem(maxNumberParticles, texture);
-//		ps->additiveBlendMode = true;
-	particleSystem->emitRate = 100.f; // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
-
-// Spawn particles at position (500, 500)
-	spawner = particleSystem->addSpawner<particles::PointSpawner>();
-	spawner->center = sf::Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-
-// Set particle lifetime to random value between 1 and 5 seconds
-	timeGenerator = particleSystem->addGenerator<particles::TimeGenerator>();
-	timeGenerator->minTime = 1.f;
-	timeGenerator->maxTime = 5.f;
-
-// Set random particle start and end sizes to interpolate between over their lifetime
-	sizeGenerator = particleSystem->addGenerator<particles::SizeGenerator>();
-	sizeGenerator->minStartSize = 10.f;
-	sizeGenerator->maxStartSize = 30.f;
-	sizeGenerator->minEndSize = 20.f;
-	sizeGenerator->maxEndSize = 60.f;
-
-// Set particle start velocity using a random direction and speed
-	auto velocityGenerator = particleSystem->addGenerator<particles::AngledVelocityGenerator>();
-	velocityGenerator->minAngle = -5.f;
-	velocityGenerator->maxAngle = 5.f;
-	velocityGenerator->minStartSpeed = 10.f;
-	velocityGenerator->maxStartSpeed = 20.f;
-
-
-	colorGenerator = particleSystem->addGenerator<particles::ColorGenerator>();
-	colorGenerator->minStartCol = sf::Color(16, 124, 167, 255);
-	colorGenerator->maxStartCol = sf::Color(30, 150, 255, 255);
-	colorGenerator->minEndCol = sf::Color(57, 0, 150, 0);
-	colorGenerator->maxEndCol = sf::Color(235, 128, 220, 0);
-#if 0
-// Update particle lifetime
-	particleSystem->addUpdater<particles::TimeUpdater>();
-
-// Interpolate particle size
-	particleSystem->addUpdater<particles::SizeUpdater>();
-
-// Update particle position using velocity and acceleration data
-	particleSystem->addUpdater<particles::EulerUpdater>();
-#endif
-
-	timeUpdater = particleSystem->addUpdater<particles::TimeUpdater>();
-	colorUpdater = particleSystem->addUpdater<particles::ColorUpdater>();
-	sizeUpdater = particleSystem->addUpdater<particles::SizeUpdater>();
-	rotationUpdater = particleSystem->addUpdater<particles::RotationUpdater>();
-	eulerUpdater = particleSystem->addUpdater<particles::EulerUpdater>();
-
-	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Particles Demo");
-	window.setVerticalSyncEnabled(true);
-
-
-	sf::Clock clock;
-	while (window.isOpen()) {
-		sf::Event event;
-		while (window.pollEvent(event)) {
-
-			if (event.type == sf::Event::Closed ||
-			        (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
-				window.close();
-			}
-		}
-
-		sf::Vector2i mouse = sf::Mouse::getPosition(window);
-		sf::Vector2f pos = window.mapPixelToCoords(mouse);
-
-		spawner->center = pos;
-
-		sf::Time dt = clock.restart();
-		particleSystem->update(dt);
-
-		window.clear();
-
-		particleSystem->render(window);
-
-		window.display();
-	}
-
-	delete particleSystem;
-}
-
 int main() {
 	circleTexture = new sf::Texture();
 	blobTexture = new sf::Texture();
@@ -468,7 +375,7 @@ int main() {
 			ImGui::SFML::ProcessEvent(event);
 
 			if (event.type == sf::Event::Closed ||
-			        (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
+				(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
 				window.close();
 			}
 		}
@@ -479,7 +386,7 @@ int main() {
 		spawner->center = pos;
 
 		sf::Time dt = clock.restart();
-		ImGui::SFML::Update(window, dt);
+		ImGui::SFML::Update(window,dt);
 		particleSystem->update(dt);
 
 		gui();
@@ -487,7 +394,7 @@ int main() {
 		window.clear();
 
 		particleSystem->render(window);
-		ImGui::Render();
+		ImGui::SFML::Render(window);
 
 		window.display();
 	}
