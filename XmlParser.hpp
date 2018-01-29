@@ -511,8 +511,15 @@ public:
 
 					if (framesEl) {
 						for (tinyxml2::XMLElement *frameEl : framesEl) {
-							int frame = frameEl->IntAttribute("n");
-							animationUpdater->frames.push_back(sf::IntRect(options.direction * spriteSize.x, frame * spriteSize.y, spriteSize.x, spriteSize.y));
+							if (frameEl->Attribute("n")) {
+								int frame = frameEl->IntAttribute("n");
+								animationUpdater->frames.push_back(sf::IntRect(options.direction * spriteSize.x, frame * spriteSize.y, spriteSize.x, spriteSize.y));
+							} else {
+								int x = frameEl->IntAttribute("x");
+								int y = frameEl->IntAttribute("y");
+								animationUpdater->frames.push_back(sf::IntRect(x * spriteSize.x, y * spriteSize.y, spriteSize.x, spriteSize.y));
+							}
+
 						}
 					}
 
@@ -528,7 +535,7 @@ public:
 
 			effect.continuous = particleEl->BoolAttribute("continuous");
 
-			if(effect.continuous)
+			if (effect.continuous)
 				effect.particleSystem->emitRate = (float)count; // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
 			else
 				effect.particleSystem->emitRate = 0.0;
@@ -615,6 +622,15 @@ public:
 				break;
 			}
 
+			tinyxml2::XMLElement *rotGenEl = particleEl->FirstChildElement("rotation_generator");
+			if (rotGenEl) {
+				auto rotationGenerator = effect.particleSystem->addGenerator<particles::RotationGenerator>();
+				rotationGenerator->minStartAngle = rotGenEl->FloatAttribute("min_start_angle");
+				rotationGenerator->maxStartAngle = rotGenEl->FloatAttribute("max_start_angle");
+				rotationGenerator->minEndAngle = rotGenEl->FloatAttribute("min_end_angle");
+				rotationGenerator->maxEndAngle = rotGenEl->FloatAttribute("max_end_angle");
+			}
+
 			tinyxml2::XMLElement *colGenEl = particleEl->FirstChildElement("color_generator");
 
 			auto colorGenerator = effect.particleSystem->addGenerator<particles::ColorGenerator>();
@@ -628,6 +644,10 @@ public:
 			auto sizeUpdater = effect.particleSystem->addUpdater<particles::SizeUpdater>();
 			auto rotationUpdater = effect.particleSystem->addUpdater<particles::RotationUpdater>();
 			auto eulerUpdater = effect.particleSystem->addUpdater<particles::EulerUpdater>();
+			tinyxml2::XMLElement *eulUpEl = particleEl->FirstChildElement("euler_updater");
+			if (eulUpEl) {
+				eulerUpdater->globalAcceleration = sf::Vector2f(eulUpEl->FloatAttribute("accel_x"), eulUpEl->FloatAttribute("accel_y"));
+			}
 
 			if (velGenModes[velGenEl->Attribute("type")] == VelocityGeneratorMode::Aimed) {
 				auto destinationUpdater = effect.particleSystem->addUpdater<particles::DestinationUpdater>();

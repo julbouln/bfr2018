@@ -63,4 +63,10 @@
 	<effect path="defs/new/fx/blood_hit.xml"/>
 	<effect path="defs/new/fx/rotten_hit.xml"/>
 	<effect path="defs/new/fx/building_hit.xml"/>
+
+	<effect path="defs/new/fx/zork_alt_die.xml"/>
+	<effect path="defs/new/fx/punkette_alt_die.xml"/>
+	<effect path="defs/new/fx/lance_pepino_alt_die.xml"/>
+	<effect path="defs/new/fx/guerrier_bud_alt_die.xml"/>
+
 </manifest>

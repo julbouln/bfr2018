@@ -154,9 +154,20 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 
 			if (obj.life == 0) {
-				// unit died, destroy after playing anim
-				if (tile.state == "die" && tile.animHandlers[tile.state].l >= 1) {
+
+				if (tile.state == "die" && (rand()%8)==0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
+					// alt die FX
+					ParticleEffectOptions projOptions;
+					projOptions.destPos = tile.ppos;
+					projOptions.direction = 0;
+
+					this->emitEffect("alt_die", entity, tile.ppos, 2.0, projOptions);
 					obj.destroy = true;
+				} else {
+					// unit died, destroy after playing anim
+					if (tile.animHandlers[tile.state].l >= 1) {
+						obj.destroy = true;
+					}
 				}
 
 				this->changeState(tile, "die");

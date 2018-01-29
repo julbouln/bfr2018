@@ -75,5 +75,6 @@
   </unit>
   <effects>
     <effect name="hit" ref="blood_hit"/>
+    <effect name="alt_die" ref="punkette_alt_die"/>
   </effects>
 </entity>

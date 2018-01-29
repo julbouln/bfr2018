@@ -1,0 +1,29 @@
+<entity class="effect" name="lance_pepino_alt_die">
+    <texture mode="with_white_mask" path="medias/units/rebels/lance_pepino/pics/lance_pepino-spe.png"/>
+    <particle count="1" max="1" name="lance_pepino_alt_die" type="animated_spritesheet">
+        <psize x="92" y="101"/>
+        <animation loop="false">
+            <frames>
+                <frame x="0" y="0"/>
+                <frame x="0" y="0"/>
+                <frame x="0" y="0"/>
+                <frame x="1" y="0"/>
+                <frame x="2" y="0"/>
+                <frame x="3" y="0"/>
+            </frames>
+            <duration value="200"/>
+        </animation>
+        <spawner type="point"/>
+        <time_generator max_time="1.5" min_time="1.5"/>
+        <size_generator max_end_size="320.0" max_start_size="64.0" min_end_size="320.0" min_start_size="64.0"/>
+        <velocity_generator max_start_vel_x="20.0" max_start_vel_y="-20.0" min_start_vel_x="20.0" min_start_vel_y="-20.0" type="vector"/>
+        <rotation_generator min_start_angle="-90.0" max_start_angle="-90.0" min_end_angle="180.0" max_end_angle="180.0"/>
+        <euler_updater accel_x="0.0" accel_y="400.0"/>
+        <color_generator>
+            <min_start_col a="255" b="255" g="255" r="255"/>
+            <max_start_col a="255" b="255" g="255" r="255"/>
+            <min_end_col a="255" b="255" g="255" r="255"/>
+            <max_end_col a="255" b="255" g="255" r="255"/>
+        </color_generator>
+    </particle>
+</entity>

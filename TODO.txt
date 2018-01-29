@@ -1,10 +1,11 @@
 Bug:
 - last map line is not always displayed
 - unit looking for each other fight sometimes stuck together
+- if an ennemy is in sight, unit refuse to obey
 
 Misc
 - add mouse cursors
-- add projectile explosion
+- add projectile explosion FX
 - vautour FX
 - add some decors
 - add intro & credits

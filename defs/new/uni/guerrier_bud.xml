@@ -74,5 +74,6 @@
   <effects>
     <effect name="hit" ref="blood_hit"/>
     <effect name="projectile" ref="bud"/>
+    <effect name="alt_die" ref="guerrier_bud_alt_die"/>
   </effects>
 </entity>
