@@ -207,7 +207,8 @@ public:
 				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], lifetime, options);
 				ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
 				effect.spawner->center = ppos;
-				effect.particleSystem->emitParticles(effect.particles);
+				if(!effect.continuous)
+					effect.particleSystem->emitParticles(effect.particles);
 #ifdef GAME_SYSTEM_DEBUG
 				std::cout << "GameSystem: emit effect " << name << " at " << ppos.x << "x" << ppos.y << std::endl;
 #endif

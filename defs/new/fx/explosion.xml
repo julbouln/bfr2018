@@ -1,29 +1,34 @@
 <entity class="effect" name="explosion">
-    <tile>
-        <texture mode="with_white_mask" path="medias/misc/explosion.png"/>
+    <texture mode="with_white_mask" path="medias/misc/explosion.png"/>
+    <particle count="1" max="1" name="explosion" type="animated_spritesheet">
         <psize x="288" y="280"/>
-        <size x="8" y="6"/>
-        <z value="1"/>
-        <offset x="0" y="5"/>
-        <animations>
-            <animation name="idle">
-                <frames>
-                    <frame n="0"/>
-                    <frame n="1"/>
-                    <frame n="2"/>
-                    <frame n="3"/>
-                    <frame n="4"/>
-                    <frame n="5"/>
-                    <frame n="6"/>
-                    <frame n="7"/>
-                    <frame n="8"/>
-                    <frame n="9"/>
-                    <frame n="10"/>
-                    <frame n="11"/>
-                </frames>
-                <duration value="100"/>
-            </animation>
-        </animations>
-    </tile>
+        <animation loop="false">
+            <frames>
+                <frame n="0"/>
+                <frame n="1"/>
+                <frame n="2"/>
+                <frame n="3"/>
+                <frame n="4"/>
+                <frame n="5"/>
+                <frame n="6"/>
+                <frame n="7"/>
+                <frame n="8"/>
+                <frame n="9"/>
+                <frame n="10"/>
+                <frame n="11"/>
+            </frames>
+            <duration value="100"/>
+        </animation>
+        <spawner type="point"/>
+        <time_generator max_time="4.0" min_time="4.0"/>
+        <size_generator max_end_size="280.0" max_start_size="280.0" min_end_size="280.0" min_start_size="280.0"/>
+        <velocity_generator type="angled" max_angle="0.0" max_start_speed="0.0" min_angle="0.0" min_start_speed="0.0"/>
+        <color_generator>
+            <min_start_col a="255" b="255" g="255" r="255"/>
+            <max_start_col a="255" b="255" g="255" r="255"/>
+            <min_end_col a="255" b="255" g="255" r="255"/>
+            <max_end_col a="255" b="255" g="255" r="255"/>
+        </color_generator>
+    </particle>
     <sound_buffer path="medias/misc/explosion.flac"/>
 </entity>

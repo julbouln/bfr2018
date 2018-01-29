@@ -178,19 +178,25 @@ public:
 								map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
 
 							if (unit.destAttack) {
-								Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
-								sf::Vector2f fxPos = destTile.ppos;
-								sf::Vector2i diffPos = tile.pos - destTile.pos;
-								fxPos.x += diffPos.x * 8.0 + 16.0;
-								fxPos.y += diffPos.y * 8.0;
+								if (this->vault->registry.valid(unit.destAttack)) { // ???
+									Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
+									sf::Vector2f fxPos = destTile.ppos;
+									sf::Vector2i diffPos = tile.pos - destTile.pos;
+									fxPos.x += diffPos.x * 8.0 + 16.0;
+									fxPos.y += diffPos.y * 8.0;
 
-								this->emitEffect("hit", unit.destAttack, fxPos, 1.0);
+									this->emitEffect("hit", unit.destAttack, fxPos, 1.0);
 
-								ParticleEffectOptions projOptions;
-								projOptions.destPos = destTile.ppos;
-								projOptions.direction = this->getDirection(tile.pos, destTile.pos);
+									ParticleEffectOptions projOptions;
+									projOptions.destPos = destTile.ppos;
+									projOptions.direction = this->getDirection(tile.pos, destTile.pos);
 
-								this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
+									this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
+								} else {
+									this->changeState(tile, "idle");
+									unit.destAttack = 0;
+									unit.destpos = tile.pos;
+								}
 
 							}
 
@@ -205,54 +211,6 @@ public:
 					unit.destpos = tile.pos;
 				}
 
-				// projectile effect
-				if (obj.effects.count("projectile") > 0) {
-					EntityID projEnt = obj.effects["projectile"];
-					MapEffect &proj = this->vault->registry.get<MapEffect>(projEnt);
-					Tile &projTile = this->vault->registry.get<Tile>(projEnt);
-					if (unit.destAttack) {
-//						std::cout << "CombatSystem: show projectile "<<projEnt<<std::endl;
-						Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
-
-						if (!proj.show) {
-							proj.show = true;
-							projTile.pos = tile.pos;
-							projTile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-
-							projTile.direction = this->getDirection(projTile.pos, destTile.pos);
-							proj.speed = 3.0;
-
-							proj.positions = this->lineTrajectory(tile.ppos.x, tile.ppos.y, destTile.ppos.x, destTile.ppos.y);
-							proj.curPosition = 0;
-
-							projTile.animHandlers["idle"].reset();
-							projTile.animHandlers["idle"].set(0);
-
-//							std::cout << "Trajectory: " << entity << " " << points.size() << std::endl;
-//							for (sf::Vector2f p : points) {
-//								std::cout << "Trajectory point: " << entity << " " << p.x << "x" << p.y << std::endl;
-//							}
-						} else {
-							sf::Vector2i pos(tile.ppos.x / 32, tile.ppos.y / 32);
-							projTile.pos = pos;
-
-							if (projTile.pos == destTile.pos) {
-								proj.speed = 0.0;
-								proj.show = false;
-								projTile.pos = tile.pos;
-								projTile.ppos = tile.ppos;
-								proj.curPosition = 0;
-							}
-						}
-					}
-				}
-			} else {
-				if (obj.effects.count("projectile") > 0) {
-					EntityID projEnt = obj.effects["projectile"];
-					MapEffect &proj = this->vault->registry.get<MapEffect>(projEnt);
-					proj.show = false;
-					proj.speed = 0.0;
-				}
 			}
 		}
 
@@ -263,27 +221,15 @@ public:
 			GameObject &obj = buldingView.get<GameObject>(entity);
 
 			if (obj.life == 0) {
-				EntityID explosionEnt = obj.effects["explosion"];
-				MapEffect &explosion = this->vault->registry.get<MapEffect>(explosionEnt);
-				Tile &explosionTile = this->vault->registry.get<Tile>(explosionEnt);
 
-				if (!explosion.show) {
-#ifdef COMBAT_DEBUG
-					std::cout << "CombatSystem: " << entity << " destroyed, show explosion anim" << std::endl;
-#endif
-					explosion.show = true;
-					explosionTile.pos = tile.pos;
-					explosionTile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-					explosionTile.animHandlers["idle"].reset();
-					explosionTile.animHandlers["idle"].changeColumn(0);
-					explosionTile.animHandlers["idle"].set(0);
-					this->map->sounds.push(SoundPlay{explosion.sound, 1, false, explosionTile.pos});
-				}
-//					std::cout << "CombatSystem: explosion "<<explosionTile.animHandlers["idle"].l<<std::endl;
+				ParticleEffectOptions projOptions;
+				projOptions.destPos = tile.ppos;
+				projOptions.direction = 0;
 
-				if (explosionTile.animHandlers["idle"].l >= 1) {
-					obj.destroy = true;
-				}
+				this->emitEffect("destroy", entity, tile.ppos, 1.0, projOptions);
+				map->sounds.push(SoundPlay{"explosion", 1, true, tile.pos});
+
+				obj.destroy = true;
 
 			}
 
@@ -292,26 +238,4 @@ public:
 
 	}
 
-	void updateProjectiles(float dt) {
-		auto fxView = this->vault->registry.persistent<Tile, MapEffect>();
-		for (EntityID entity : fxView) {
-			Tile &projTile = fxView.get<Tile>(entity);
-			MapEffect &proj = fxView.get<MapEffect>(entity);
-			if (proj.show) {
-				if (proj.positions.size() > 0) {
-					if (proj.curPosition < proj.positions.size()) {
-						projTile.ppos = proj.positions[proj.curPosition];
-						proj.curPosition += proj.speed;
-					} else {
-						projTile.ppos = proj.positions[0];
-						proj.curPosition = 0;
-						projTile.animHandlers["idle"].reset();
-						projTile.animHandlers["idle"].set(0);
-					}
-//					std::cout << "Projectile: " << entity << " " << proj.curPosition << "/"<<proj.positions.size()<< " "<< projTile.ppos.x << "x" << projTile.ppos.y << " " << projTile.pos.x << "x" << projTile.pos.y << std::endl;
-				}
-//				projTile.ppos += this->dirMovement(projTile.direction, effect.speed);
-			}
-		}
-	}
 };

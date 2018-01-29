@@ -48,20 +48,13 @@ struct Attack {
 	unsigned int distance;
 };
 
-struct MapEffect {
-	bool show;
-	float speed;
-	std::vector<sf::Vector2f>positions;
-	int curPosition;
-	std::string sound;
-};
-
 struct ParticleEffect {
 	particles::ParticleSystem *particleSystem;
 	particles::ParticleSpawner *spawner;
 	float lifetime;
 	float currentTime;
 	int particles;
+	bool continuous;
 };
 
 struct Effects {
@@ -81,7 +74,6 @@ struct GameObject {
 	bool destroy;
 
 	EntityID player;
-	std::map<std::string, EntityID> effects;
 };
 
 struct Unit {

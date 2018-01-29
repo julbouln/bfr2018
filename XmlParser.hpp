@@ -345,17 +345,6 @@ public:
 
 class GameObjectParser {
 public:
-	std::map<std::string, std::string> parseEffects(tinyxml2::XMLElement *element) {
-		std::map<std::string, std::string> effects;
-		tinyxml2::XMLElement * effectsEl = element->FirstChildElement("effects");
-		if (effectsEl) {
-			for (tinyxml2::XMLElement *effectEl : effectsEl) {
-				effects[effectEl->Attribute("name")] = effectEl->Attribute("ref");
-			}
-		}
-		return effects;
-	}
-
 	void parse(GameObject &obj, tinyxml2::XMLElement *element) {
 		obj.view = element->FirstChildElement("view")->IntAttribute("value");
 		obj.life = (float)element->FirstChildElement("life")->IntAttribute("value");
@@ -489,7 +478,7 @@ public:
 			if (psizeEl)
 				spriteSize = sf::Vector2f{(float)psizeEl->IntAttribute("x"), (float)psizeEl->IntAttribute("y")};
 
-			int max = particleEl->IntAttribute("max");
+			int max = particleEl->IntAttribute("max") + 1;
 			int count = particleEl->IntAttribute("count");
 			effect.particles = count;
 			switch (partSysModes[particleEl->Attribute("type")]) {
@@ -507,24 +496,45 @@ public:
 			}
 			break;
 			case ParticleSystemMode::AnimatedSpritesheet: {
+				effect.particleSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
+
 				auto texCoordGen = effect.particleSystem->addGenerator<particles::TexCoordsGenerator>();
 				texCoordGen->texCoords = sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y);
 
-				// TODO
 				auto animationUpdater = effect.particleSystem->addUpdater<particles::AnimationUpdater>();
-				animationUpdater->frames.push_back(sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y));
-				animationUpdater->frames.push_back(sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y));
 
-				animationUpdater->frameTime = 0.8f;
-				animationUpdater->looped = true;
+				tinyxml2::XMLElement * animEl = particleEl->FirstChildElement("animation");
+
+				if (animEl) {
+					float duration = animEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
+					tinyxml2::XMLElement * framesEl = animEl->FirstChildElement("frames");
+
+					if (framesEl) {
+						for (tinyxml2::XMLElement *frameEl : framesEl) {
+							int frame = frameEl->IntAttribute("n");
+							animationUpdater->frames.push_back(sf::IntRect(options.direction * spriteSize.x, frame * spriteSize.y, spriteSize.x, spriteSize.y));
+						}
+					}
+
+					animationUpdater->frameTime = duration;// / animationUpdater->frames.size();
+					animationUpdater->looped = animEl->BoolAttribute("loop");
+				}
+
 			}
 			break;
 			default:
 				break;
 			}
 
-			effect.particleSystem->emitRate = particleEl->FloatAttribute("rate"); // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
+			effect.continuous = particleEl->BoolAttribute("continuous");
 
+			if(effect.continuous)
+				effect.particleSystem->emitRate = (float)count; // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
+			else
+				effect.particleSystem->emitRate = 0.0;
+
+//			effect.particleSystem->emitRate = particleEl->FloatAttribute("rate"); // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams
+//			std::cout << "RATE "<<effect.particleSystem->emitRate<< " "<< effect.continuous << std::endl;
 			tinyxml2::XMLElement *spawnerEl = particleEl->FirstChildElement("spawner");
 
 			switch (spawnModes[spawnerEl->Attribute("type")]) {
@@ -597,7 +607,6 @@ public:
 			{
 				auto aimedGenerator = effect.particleSystem->addGenerator<particles::AimedVelocityGenerator>();
 				aimedGenerator->goal = options.destPos;
-//					aimedGenerator->goal = sf::Vector2f(0.5f * this->game->width, 0.5f * this->game->height);
 				aimedGenerator->minStartSpeed = velGenEl->FloatAttribute("min_start_speed");
 				aimedGenerator->maxStartSpeed = velGenEl->FloatAttribute("max_start_speed");
 			}

@@ -62,7 +62,6 @@
     <team value="neonaz"/>
     <view value="3"/>
     <life value="3"/>
-    <effects/>
   </game_object>
   <unit>
     <speed value="4"/>

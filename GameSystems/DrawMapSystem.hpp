@@ -175,21 +175,6 @@ public:
 			}
 		}
 
-		// effects draw list
-		auto fxView = this->vault->registry.persistent<Tile, MapEffect>();
-		for (EntityID entity : fxView) {
-			Tile &tile = fxView.get<Tile>(entity);
-			MapEffect &effect = fxView.get<MapEffect>(entity);
-			if (effect.show) {
-				for (sf::Vector2i const &p : this->tileSurface(tile)) {
-					if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
-						if (this->clipped(clip, p))
-							this->entitiesDrawList.push_back(entity);
-					}
-				}
-			}
-		}
-
 		// sort by EntityID and uniq
 		std::sort(this->entitiesDrawList.begin(), this->entitiesDrawList.end());
 		auto last = std::unique(this->entitiesDrawList.begin(), this->entitiesDrawList.end());

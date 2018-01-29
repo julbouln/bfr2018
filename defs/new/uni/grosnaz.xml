@@ -47,9 +47,6 @@
     <team value="neonaz"/>
     <view value="4"/>
     <life value="5"/>
-    <effects>
-      <effect name="projectile" ref="petrole"/>
-    </effects>
   </game_object>
   <unit>
     <speed value="3"/>
@@ -60,5 +57,6 @@
   </unit>
   <effects>
     <effect name="hit" ref="rotten_hit"/>
+    <effect name="projectile" ref="petrole"/>
   </effects>
 </entity>

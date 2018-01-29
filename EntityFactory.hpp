@@ -389,13 +389,6 @@ public:
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 
-		for (auto o : gameObjectParser.parseEffects(this->getXmlComponent(name, "game_object"))) {
-#ifdef FACTORY_DEBUG
-			std::cout << "EntityFactory: " << entity << " add effect " << o.first << " from ref " << o.second << std::endl;
-#endif
-			obj.effects[o.first] = this->createMapEffect(registry, o.second);
-		}
-
 //		this->addProjectileFromXml(registry, name, obj );
 		obj.player = player;
 		obj.mapped = true;
@@ -462,13 +455,6 @@ public:
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 		registry.assign<Tile>(entity, tile);
-
-		for (auto o : gameObjectParser.parseEffects(this->getXmlComponent(obj.name, "game_object"))) {
-#ifdef FACTORY_DEBUG
-			std::cout << "EntityFactory: " << entity << " add effect " << o.first << " from ref " << o.second << std::endl;
-#endif
-			obj.effects[o.first] = this->createMapEffect(registry, o.second);
-		}
 
 		if (!registry.has<Effects>(entity)) {
 			Effects effects;
@@ -577,31 +563,6 @@ public:
 		Effects effects;
 		effects.effects["spend"] = name + "_spend";
 		registry.assign<Effects>(entity, effects);
-
-		return entity;
-	}
-
-	EntityID createMapEffect(entt::Registry<EntityID> &registry, std::string name)
-	{
-		EntityID entity = registry.create();
-
-#ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: create map effect " << entity << " " << name << std::endl;
-#endif
-
-		Tile tile;
-		this->parseTileFromXml(name, tile);
-
-		tile.pos = sf::Vector2i(0, 0);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-
-		MapEffect effect;
-		effect.show = false;
-		effect.speed = 0.0;
-		effect.sound = name;
-
-		registry.assign<Tile>(entity, tile);
-		registry.assign<MapEffect>(entity, effect);
 
 		return entity;
 	}

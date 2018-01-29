@@ -49,10 +49,6 @@
     <team value="rebel"/>
     <view value="5"/>
     <life value="4"/>
-<!--    <effects>
-      <effect name="projectile" ref="pepino"/>
-    </effects>
-  -->
   </game_object>
   <unit>
     <speed value="2"/>

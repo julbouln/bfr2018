@@ -60,7 +60,6 @@
     <team value="rebel"/>
     <view value="4"/>
     <life value="5"/>
-    <effects/>
   </game_object>
   <unit>
     <speed value="3"/>

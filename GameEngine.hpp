@@ -811,8 +811,6 @@ public:
 		this->tileAnim.update(dt);
 		this->pathfinding.update(dt);
 
-		this->combat.updateProjectiles(dt);
-
 		this->sound.update(dt);
 		this->sound.cleanPlaying(dt);
 
@@ -1044,15 +1042,6 @@ public:
 						// destroy currently building cons
 						this->vault->factory.destroyEntity(this->vault->registry, building.construction);
 					}
-				}
-
-				// destroy effects too
-				if (obj.effects.size() > 0) {
-					for (auto o : obj.effects) {
-						this->vault->factory.destroyEntity(this->vault->registry, o.second);
-
-					}
-					obj.effects.clear();
 				}
 
 				this->vault->factory.destroyEntity(this->vault->registry, entity);

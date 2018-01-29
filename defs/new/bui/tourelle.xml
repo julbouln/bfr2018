@@ -27,14 +27,12 @@
     <team value="rebel"/>
     <view value="6"/>
     <life value="6"/>
-    <effects>
-      <effect name="explosion" ref="explosion"/>
-    </effects>
   </game_object>
   <building>
     <build_time value="6"/>
   </building>
   <effects>
     <effect name="hit" ref="building_hit"/>
+    <effect name="destroy" ref="explosion"/>
   </effects>
 </entity>

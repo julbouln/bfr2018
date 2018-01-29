@@ -57,6 +57,7 @@
 	<effect path="defs/new/fx/pepino.xml"/>
 	<effect path="defs/new/fx/petrole.xml"/>
 	<effect path="defs/new/fx/rockette.xml"/>
+	<effect path="defs/new/fx/mitraille.xml"/>
 	<effect path="defs/new/fx/nature_spend.xml"/>
 	<effect path="defs/new/fx/pollution_spend.xml"/>
 	<effect path="defs/new/fx/blood_hit.xml"/>

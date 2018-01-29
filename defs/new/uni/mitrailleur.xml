@@ -76,5 +76,6 @@
   </unit>
   <effects>
     <effect name="hit" ref="rotten_hit"/>
+    <effect name="projectile" ref="mitraille"/>
   </effects>
 </entity>

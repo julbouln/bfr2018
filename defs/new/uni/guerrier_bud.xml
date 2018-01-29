@@ -48,9 +48,6 @@
     <team value="rebel"/>
     <view value="4"/>
     <life value="6"/>
-    <effects>
-      <effect name="projectile" ref="bud"/>
-    </effects>
   </game_object>
   <unit>
     <speed value="4"/>
@@ -76,5 +73,6 @@
   </unit>
   <effects>
     <effect name="hit" ref="blood_hit"/>
+    <effect name="projectile" ref="bud"/>
   </effects>
 </entity>

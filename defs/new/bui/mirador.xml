@@ -28,14 +28,12 @@
     <team value="neonaz"/>
     <view value="7"/>
     <life value="8"/>
-    <effects>
-      <effect name="explosion" ref="explosion"/>
-    </effects>
   </game_object>
   <building>
     <build_time value="6"/>
   </building>
   <effects>
     <effect name="hit" ref="building_hit"/>
+    <effect name="destroy" ref="explosion"/>
   </effects>
 </entity>
