@@ -107,6 +107,22 @@ struct Resource {
 	float grow;
 };
 
+struct FrontPoint {
+	sf::Vector2i pos;
+	int priority;
+};
+
+
+class FrontPointCompare
+{
+public:
+	bool operator() (FrontPoint &l, FrontPoint &r)
+	{
+		return l.priority < r.priority;
+	}
+};
+
+
 struct Player {
 	std::string team;
 	int colorIdx;
@@ -121,6 +137,9 @@ struct Player {
 	sf::Vector2i initialPos;
 	bool enemyFound;
 	sf::Vector2i enemyPos;
+
+	std::vector<sf::Vector2i> allFrontPoints;
+	std::vector<FrontPoint> frontPoints;
 
 	Fog fog;
 

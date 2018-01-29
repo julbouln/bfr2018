@@ -1,5 +1,6 @@
-CFLAGS = -g -std=c++14
+CFLAGS = -O3 -std=c++14
 INCLUDES = -I.
+DBSCAN_OBJS = dbscan/dbscan.o
 IMGUI_OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o
 PARTICLES_OBJS = Particles/ParticleData.o Particles/ParticleSpawner.o Particles/ParticleUpdater.o Particles/ParticleGenerator.o Particles/ParticleSystem.o
 OBJS = tinyxml2.o SimplexNoise.o bfr.o
@@ -7,8 +8,8 @@ OBJS = tinyxml2.o SimplexNoise.o bfr.o
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
-bfr: $(OBJS) $(PARTICLES_OBJS) $(IMGUI_OBJS)
-	$(CXX) $(OBJS) $(PARTICLES_OBJS) $(IMGUI_OBJS) $(CFLAGS) -o bfr -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
+bfr: $(OBJS) $(PARTICLES_OBJS) $(IMGUI_OBJS) $(DBSCAN_OBJS)
+	$(CXX) $(OBJS) $(PARTICLES_OBJS) $(IMGUI_OBJS) $(DBSCAN_OBJS) $(CFLAGS) -o bfr -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
 
 all: bfr
 

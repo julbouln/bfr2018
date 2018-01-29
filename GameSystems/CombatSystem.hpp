@@ -2,10 +2,56 @@
 
 #include "GameSystem.hpp"
 
+#include "dbscan/dbscan.h"
+
 class CombatSystem : public GameSystem {
 public:
-	void update(float dt) {
 
+	void updateFront(float dt) {
+		// player
+		auto playerView = this->vault->registry.view<Player>();
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+
+			std::vector<Point> points;
+			for (auto &p : player.allFrontPoints) {
+				points.push_back(Point{p.x, p.y});
+			}
+			player.allFrontPoints.clear();
+			player.frontPoints.clear();
+
+			std::vector<int> labels;
+
+			int num = dbscan(points, labels, 10.0, 3);
+
+//			std::cout << player.team << " cluster size is " << num << "/" << points.size() << std::endl;
+
+			std::map<int, Point> points_map;
+			std::map<int, int> points_map_size;
+			for (int i = 0; i < (int)points.size(); i++) {
+				if (points_map.count(labels[i]) == 0) {
+					points_map[labels[i]] = points[i];
+					points_map_size[labels[i]] = 1;
+				} else {
+					points_map[labels[i]].x = points_map[labels[i]].x + points[i].x;
+					points_map[labels[i]].y = points_map[labels[i]].y + points[i].y;
+					points_map_size[labels[i]] = points_map_size[labels[i]] + 1;
+				}
+//				std::cout << "Point(" << points[i].x << ", " << points[i].y << "): " << labels[i] << std::endl;
+			}
+
+			for (auto o : points_map) {
+				player.frontPoints.push_back(FrontPoint{sf::Vector2i(o.second.x / points_map_size[o.first], o.second.y / points_map_size[o.first]), points_map_size[o.first]});
+			}
+
+			std::sort (player.frontPoints.begin(), player.frontPoints.end(), FrontPointCompare());
+//			for (FrontPoint &p : player.frontPoints) {
+//				std::cout << player.team << " front point " << p.pos.x << "x" << p.pos.y << " " << p.priority << std::endl;
+//			}
+
+		}
+	}
+	void update(float dt) {
 		// pass 1, if an ennemy is in sight, then attack
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
@@ -92,6 +138,19 @@ public:
 #endif
 							destObj.life -= damage;
 
+//							if(tile.state!="attack") {
+							if (destObj.player) {
+								Player &destPlayer = this->vault->registry.get<Player>(destObj.player);
+								if (this->vault->registry.has<Unit>(unit.destAttack)) {
+									if(this->approxDistance(destPlayer.initialPos, destTile.pos) < this->approxDistance(sf::Vector2i(0,0),sf::Vector2i(this->map->width,this->map->height))/4) {
+										destPlayer.allFrontPoints.push_back(destTile.pos);
+									}
+								} else {
+									if (this->vault->registry.has<Building>(unit.destAttack)) {
+										destPlayer.allFrontPoints.push_back(destTile.pos);
+									}
+								}
+							}
 //							}
 
 							if (destObj.life <= 0) {
@@ -155,7 +214,7 @@ public:
 
 			if (obj.life == 0) {
 
-				if (tile.state == "die" && (rand()%8)==0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
+				if (tile.state == "die" && (rand() % 8) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
 					// alt die FX
 					ParticleEffectOptions projOptions;
 					projOptions.destPos = tile.ppos;
@@ -199,14 +258,14 @@ public:
 									ParticleEffectOptions hitOptions;
 									hitOptions.destPos = destTile.ppos;
 									hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
-									hitOptions.screenSize = sf::Vector2i(this->screenWidth,this->screenHeight);
+									hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
 									this->emitEffect("hit", unit.destAttack, fxPos, 1.0, hitOptions);
 
 									ParticleEffectOptions projOptions;
 									projOptions.destPos = destTile.ppos;
 									projOptions.direction = this->getDirection(tile.pos, destTile.pos);
-									projOptions.screenSize = sf::Vector2i(this->screenWidth,this->screenHeight);
+									projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
 									this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
 								} else {

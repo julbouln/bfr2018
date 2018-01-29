@@ -1,41 +1,39 @@
 <AI team="rebel">
 	<Sequence>
 		<Probability frac="25" per="1"/>
-		<HasLessObjectsTypeThan type="taverne" qty="1"/>
+		<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		<Build type="taverne"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="taverne" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		</Inverter>
-		<HasLessObjectsTypeThan type="ferme" qty="2"/>
-		<Build type="ferme"/>		
+		<HasLessObjectsTypeThan qty="2" type="ferme"/>
+		<Build type="ferme"/>
 	</Sequence>
-
 	<Sequence>
 		<Probability frac="100" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="taverne" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		</Inverter>
 		<Inverter>
-			<HasLessObjectsTypeThan type="ferme" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="ferme"/>
 		</Inverter>
-		<HasLessObjectsTypeThan type="ferme" qty="4"/>
+		<HasLessObjectsTypeThan qty="4" type="ferme"/>
 		<Inverter>
 			<HasMoreResourcesThan amount="200"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="95"/>
-		<HasLessObjectsTypeThan type="punkette" qty="15"/>
-		<HasLessObjectsTypeThan type="festival" qty="1"/>
-		<Build type="ferme"/>		
+		<HasLessObjectsTypeThan qty="15" type="punkette"/>
+		<HasLessObjectsTypeThan qty="1" type="festival"/>
+		<Build type="ferme"/>
 	</Sequence>
-
 	<Sequence>
 		<Probability frac="10" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="ferme" qty="1"/>
-		</Inverter>	
+			<HasLessObjectsTypeThan qty="1" type="ferme"/>
+		</Inverter>
 		<Inverter>
 			<HasMoreResourcesThan amount="100"/>
 		</Inverter>
@@ -44,137 +42,149 @@
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="taverne" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		</Inverter>
 		<Inverter>
-			<HasLessObjectsTypeThan type="ferme" qty="1"/>
-		</Inverter>	
-		<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="ferme"/>
+		</Inverter>
+		<HasLessObjectsTypeThan qty="1" type="festival"/>
 		<HasMoreResourcesThan amount="100"/>
-		<Build type="festival"/>	
+		<Build type="festival"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="taverne" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="zork" qty="2"/>
+		<HasLessObjectsTypeThan qty="2" type="zork"/>
 		<Train type="zork"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="50" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="punkette" qty="10"/>
+		<HasLessObjectsTypeThan qty="10" type="punkette"/>
 		<Train type="punkette"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan type="punkette" qty="100"/>
+		<HasLessObjectsTypeThan qty="100" type="punkette"/>
 		<Train type="punkette"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="50" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="lance_pepino" qty="5"/>
+		<HasLessObjectsTypeThan qty="5" type="lance_pepino"/>
 		<Train type="lance_pepino"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan type="lance_pepino" qty="50"/>
+		<HasLessObjectsTypeThan qty="50" type="lance_pepino"/>
 		<Train type="lance_pepino"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="50" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="100"/>
-		<HasLessObjectsTypeThan type="guerrier_bud" qty="2"/>
+		<HasLessObjectsTypeThan qty="2" type="guerrier_bud"/>
 		<Train type="guerrier_bud"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan type="guerrier_bud" qty="50"/>
+		<HasLessObjectsTypeThan qty="50" type="guerrier_bud"/>
 		<Train type="guerrier_bud"/>
 	</Sequence>
-
 	<Sequence>
 		<Probability frac="100" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
-		</Inverter>	
-		<HasLessObjectsTypeThan type="squat" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
+		</Inverter>
+		<HasLessObjectsTypeThan qty="1" type="squat"/>
 		<HasMoreResourcesThan amount="200"/>
-		<Build type="squat"/>	
+		<Build type="squat"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="50" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="squat" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="squat"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan type="abdel" qty="5"/>
+		<HasLessObjectsTypeThan qty="5" type="abdel"/>
 		<Train type="abdel"/>
 	</Sequence>
-
 	<Sequence>
 		<Probability frac="100" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="festival" qty="1"/>
-		</Inverter>	
-		<HasLessObjectsTypeThan type="raffinerie_bud" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="festival"/>
+		</Inverter>
+		<HasLessObjectsTypeThan qty="1" type="raffinerie_bud"/>
 		<HasMoreResourcesThan amount="200"/>
-		<Build type="raffinerie_bud"/>	
+		<Build type="raffinerie_bud"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="50" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="raffinerie_bud" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="raffinerie_bud"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan type="guerrier_bud_powerhead" qty="5"/>
+		<HasLessObjectsTypeThan qty="5" type="guerrier_bud_powerhead"/>
 		<Train type="guerrier_bud_powerhead"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="25" per="1"/>
 		<Inverter>
-			<HasLessObjectsTypeThan type="taverne" qty="1"/>
+			<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		</Inverter>
 		<Selector>
 			<HasFoundEnemy/>
 			<HasExploredLessThan per="50"/>
-		</Selector>		
+		</Selector>
 		<Explore type="zork"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="25" per="1"/>
-		<HasFoundEnemy/>
+		<Probability frac="10" per="1"/>
 		<RandomSelector>
-			<SendExpedition type="zork" per="50"/>
-			<SendExpedition type="punkette" per="50"/>
-			<SendExpedition type="lance_pepino" per="50"/>
-			<SendExpedition type="guerrier_bud" per="50"/>
-			<SendExpedition type="abdel" per="50"/>
-			<SendExpedition type="guerrier_bud_powerhead" per="50"/>
+			<SendDefense per="25" type="zork"/>
+			<SendDefense per="25" type="punkette"/>
+			<SendDefense per="25" type="lance_pepino"/>
+			<SendDefense per="25" type="guerrier_bud"/>
+			<SendDefense per="25" type="abdel"/>
+			<SendDefense per="25" type="guerrier_bud_powerhead"/>
+		</RandomSelector>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<HasFoundEnemy/>
+		<Inverter>
+			<HasLessObjectsThan qty="25"/>
+		</Inverter>
+		<RandomSelector>
+			<SendExpedition per="90" type="zork"/>
+			<SendExpedition per="90" type="punkette"/>
+			<SendExpedition per="90" type="lance_pepino"/>
+			<SendExpedition per="90" type="guerrier_bud"/>
+			<SendExpedition per="90" type="abdel"/>
+			<SendExpedition per="90" type="guerrier_bud_powerhead"/>
 		</RandomSelector>
 	</Sequence>
 	<Sequence>
@@ -183,8 +193,7 @@
 			<Inverter>
 				<PlaceBuilt/>
 			</Inverter>
-			<Explore type="zork" maxDist="8"/>
+			<Explore maxDist="8" type="zork"/>
 		</Sequence>
 	</Sequence>
-
 </AI>

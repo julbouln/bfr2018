@@ -16,6 +16,7 @@ enum class AITag {
 	TProbability,
 	THasMoreResourcesThan,
 	THasLessObjectsTypeThan,
+	THasLessObjectsThan,
 	THasExploredLessThan,
 	THasFoundEnnemy,
 	TExplore,
@@ -23,7 +24,8 @@ enum class AITag {
 	TPlaceBuilt,
 	TPlant,
 	TTrain,
-	TSendExpedition
+	TSendExpedition,
+	TSendDefense
 };
 
 static std::map<std::string, AITag> aiTags =
@@ -37,6 +39,7 @@ static std::map<std::string, AITag> aiTags =
 	{ "Probability", AITag::TProbability},
 	{ "HasMoreResourcesThan", AITag::THasMoreResourcesThan},
 	{ "HasLessObjectsTypeThan", AITag::THasLessObjectsTypeThan},
+	{ "HasLessObjectsThan", AITag::THasLessObjectsThan},
 	{ "HasExploredLessThan", AITag::THasExploredLessThan},
 	{ "HasFoundEnnemy", AITag::THasFoundEnnemy},
 	{ "Explore", AITag::TExplore},
@@ -45,6 +48,7 @@ static std::map<std::string, AITag> aiTags =
 	{ "Plant", AITag::TPlant},
 	{ "Train", AITag::TTrain},
 	{ "SendExpedition", AITag::TSendExpedition},
+	{ "SendDefense", AITag::TSendDefense},
 };
 
 class Probability : public BrainTree::Leaf
@@ -120,6 +124,35 @@ private:
 	int qty;
 };
 
+
+
+class HasLessObjectsThan : public BrainTree::Leaf, public GameSystem
+{
+public:
+	HasLessObjectsThan(BrainTree::Blackboard::Ptr board, EntityID entity, int qty) : Leaf(board), entity(entity), qty(qty) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+		int foundQty = 0;
+		for(auto o : player.objsByType) {
+			foundQty += o.second.size();
+		}
+
+		if (foundQty < qty) {
+#ifdef AI_DEBUG
+			std::cout << "AI: " << entity << " has less than " << qty << " (" << foundQty << ") " << std::endl;
+#endif
+			return Node::Status::Success;
+		}
+		else
+			return Node::Status::Failure;
+	}
+
+private:
+	EntityID entity;
+	int qty;
+};
 
 class HasExploredLessThan : public BrainTree::Leaf, public GameSystem
 {
@@ -439,6 +472,51 @@ private:
 	int per;
 };
 
+
+
+class SendDefense : public BrainTree::Leaf, public GameSystem
+{
+public:
+	SendDefense(BrainTree::Blackboard::Ptr board, EntityID entity, std::string name, int per) : Leaf(board), entity(entity), name(name), per(per) {}
+
+	Status update() override
+	{
+		Player &player = vault->registry.get<Player>(entity);
+
+		if (player.frontPoints.size() > 0 && player.objsByType.count(name) > 0) {
+			int tot = player.objsByType[name].size();
+			int perCnt = (int)((float)per / 100.0 * (float)tot);
+
+			std::vector<EntityID> attackers = player.objsByType[name];
+			std::random_shuffle ( attackers.begin(), attackers.end() );
+
+			for (int i = 0; i < perCnt; i++) {
+				EntityID attacker = attackers[i];
+				if (this->vault->registry.valid(attacker)) {
+					Tile &atTile = this->vault->registry.get<Tile>(attacker);
+					sf::Vector2i destPos = player.frontPoints.back().pos;
+
+					if (atTile.state == "idle" && this->approxDistance(atTile.pos, destPos) > 8) {
+#ifdef AI_DEBUG
+						std::cout << "AI: " << entity << " send defense with " << attacker << " at " << destPos.x << "x" << destPos.y << std::endl;
+#endif
+						this->goTo(attacker, destPos);
+					}
+				}
+			}
+			return Node::Status::Success;
+		} else {
+			return Node::Status::Failure;
+		}
+
+	}
+
+private:
+	EntityID entity;
+	std::string name;
+	int per;
+};
+
 class AIParser : public GameSystem {
 	tinyxml2::XMLDocument doc;
 public:
@@ -528,6 +606,13 @@ public:
 			node->setVault(this->vault);
 			return node;
 		}
+		case AITag::THasLessObjectsThan: {
+			int qty = element->IntAttribute("qty");
+			auto node = std::make_shared<HasLessObjectsThan>(blackboard, entity, qty);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
 		case AITag::THasExploredLessThan: {
 			int per = element->IntAttribute("per");
 			auto node = std::make_shared<HasExploredLessThan>(blackboard, entity, per);
@@ -578,6 +663,14 @@ public:
 			std::string name = element->Attribute("type");
 			int per = element->IntAttribute("per");
 			auto node = std::make_shared<SendExpedition>(blackboard, entity, name, per);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
+		case AITag::TSendDefense: {
+			std::string name = element->Attribute("type");
+			int per = element->IntAttribute("per");
+			auto node = std::make_shared<SendDefense>(blackboard, entity, name, per);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;

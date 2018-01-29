@@ -729,6 +729,7 @@ public:
 
 			}
 		}
+
 	}
 
 	void updateDecade(float dt) {
@@ -780,6 +781,7 @@ public:
 		}
 
 		this->updateMinimap();
+		combat.updateFront(dt);
 	}
 
 	void updateEveryFrame(float dt)
