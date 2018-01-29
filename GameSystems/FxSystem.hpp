@@ -20,6 +20,13 @@ public:
 		}
 	}
 
+	void clear() {
+		auto view = this->vault->registry.view<ParticleEffect>();
+		for (EntityID entity : view) {
+			this->vault->factory.destroyEntity(this->vault->registry, entity);
+		}
+	}
+	
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 
 		auto view = this->vault->registry.view<ParticleEffect>();

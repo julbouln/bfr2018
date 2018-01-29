@@ -817,7 +817,8 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 		drawMap.draw(this->game->window, clip, dt);
-		fx.draw(this->game->window, clip, dt);
+		if(this->gameSpeed < 2)
+			fx.draw(this->game->window, clip, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -1038,13 +1039,19 @@ public:
 		float dt = elapsed.asSeconds();
 
 		float updateDt = dt;
-//		std::cout << "GameEngine: update " << dt << std::endl;
 		this->game->window.setView(this->gameView);
 
 		if (this->timePerTick == FLT_MAX) return;
 
 		this->updateEveryFrame(dt);
-		this->fx.update(elapsed);
+		this->updateMoveView(dt);
+
+		if(this->gameSpeed < 2) {
+			this->fx.update(elapsed);
+		}
+		else {
+			this->fx.clear();
+		}
 
 		this->currentTime += dt;
 
@@ -1083,7 +1090,6 @@ public:
 		}
 
 		this->updateSelected(updateDt);
-		this->updateMoveView(updateDt);
 
 		sf::Vector2f viewPos = this->gameView.getCenter();
 //		std::cout << "GameEngine: set listener position to " << viewPos.x / 32.0 << "x" << viewPos.y / 32.0 << std::endl;
@@ -1094,7 +1100,6 @@ public:
 	void updateMoveView(float dt) {
 		sf::Vector2f center = this->gameView.getCenter();
 		float mov = 160.0 * dt;
-//		std::cout << "DT: " << dt << std::endl;
 		switch (this->moveView) {
 		case MoveView::DontMove:
 			break;
