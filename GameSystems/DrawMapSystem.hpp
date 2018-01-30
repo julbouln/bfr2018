@@ -25,88 +25,18 @@ public:
 		this->drawLayer(window, this->map->fogUnvisitedTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
-	void drawMinimap(sf::RenderTexture &target, EntityID playerEnt) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-
-		target.clear(sf::Color::Black);
-
-		for (int y = 0; y < this->map->height; ++y)
-		{
-			for (int x = 0; x < this->map->width; ++x)
-			{
-				FogState fogSt = player.fog.get(x, y);
-				if (fogSt != FogState::Unvisited) {
-					EntityID terrainEnt = this->map->terrains.get(x, y);
-					if (terrainEnt) {
-						sf::RectangleShape rectangle;
-						sf::Vector2f pos(x, y);
-						rectangle.setSize(sf::Vector2f(1, 1));
-						if (fogSt != FogState::Hidden) {
-							rectangle.setFillColor(sf::Color(0x63, 0x4d, 0x0a, 0xff));
-						} else {
-							rectangle.setFillColor(sf::Color(0x63, 0x4d, 0x0a, 0x7f));
-						}
-						rectangle.setPosition(pos);
-						target.draw(rectangle);
-					}
-
-					if (fogSt != FogState::Hidden) {
-						EntityID objEnt = this->map->objs.get(x, y);
-						if (objEnt) {
-							GameObject &obj = this->vault->registry.get<GameObject>(objEnt);
-							sf::RectangleShape rectangle;
-							sf::Vector2f pos(x, y);
-							rectangle.setSize(sf::Vector2f(1, 1));
-
-							if (obj.team == player.team)
-								rectangle.setFillColor(sf::Color(0xff, 0xff, 0xff, 0xff));
-							else
-								rectangle.setFillColor(sf::Color(0xff, 0x00, 0x00, 0xff));
-							rectangle.setPosition(pos);
-							target.draw(rectangle);
-						}
-					}
-				}
-			}
-		}
-
-		// frame rectangle
-		sf::RectangleShape r;
-		sf::Vector2f rPos(1, 1);
-		r.setSize(sf::Vector2f(this->map->width - 2, this->map->height - 2));
-		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));
-		r.setOutlineThickness(1);
-		r.setPosition(rPos);
-		target.draw(r);
-
-		target.display();
-	}
-
-	void drawMinimapClip(sf::RenderWindow &window, sf::IntRect clip) {
-		// clip rectangle
-		sf::RectangleShape clipR;
-		sf::Vector2f clipPos(clip.left, clip.top);
-		clipR.setSize(sf::Vector2f(clip.width, clip.height));
-		clipR.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-		clipR.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0xff));
-		clipR.setOutlineThickness(1);
-		clipR.setPosition(clipPos);
-		window.draw(clipR);
-	}
-
-	void drawSpriteWithShader(sf::RenderTarget &target, sf::Sprite &sprite, std::string shaderName, ShaderOptions &options) {
+	void drawSpriteWithShader(sf::RenderTarget & target, sf::Sprite & sprite, std::string shaderName, ShaderOptions & options) {
 		sf::Shader *shader = this->vault->factory.shrManager.getRef(shaderName);
 		applyShaderOptions(shader, options);
 		target.draw(sprite, shader);
 	}
 
-	void drawLayer(sf::RenderTarget &target, Layer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
+	void drawLayer(sf::RenderTarget & target, Layer & layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		// UGLY: add one line of tile to draw to avoid half tile crop
-		if(clip.top + clip.height + 1 < this->map->height)
+		if (clip.top + clip.height + 1 < this->map->height)
 			clip.height++;
 
-		if(clip.left + clip.width + 1 < this->map->width)
+		if (clip.left + clip.width + 1 < this->map->width)
 			clip.width++;
 
 		for (int y = clip.top; y < clip.top + clip.height; ++y) {
@@ -137,7 +67,7 @@ public:
 		}
 	}
 
-	void drawTileLayers(sf::RenderTarget &target, sf::IntRect clip, float dt) {
+	void drawTileLayers(sf::RenderTarget & target, sf::IntRect clip, float dt) {
 		this->drawLayer(target, this->map->terrains, clip, dt);
 		for (Layer &transitionLayer : this->map->transitions) {
 			this->drawLayer(target, transitionLayer, clip, dt);
@@ -146,13 +76,13 @@ public:
 		this->drawLayer(target, this->map->corpses, clip, dt);
 	}
 
-	inline bool clipped(sf::IntRect &clip, sf::Vector2i const &p) const {
+	inline bool clipped(sf::IntRect & clip, sf::Vector2i const & p) const {
 		return (p.x >= clip.left && p.x <= clip.left + clip.width &&
 		        p.y >= clip.top && p.y <= clip.top + clip.height);
 	}
 
 	// reduce object list to visible entities
-	void updateObjsDrawList(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+	void updateObjsDrawList(sf::RenderWindow & window, sf::IntRect clip, float dt) {
 
 		this->entitiesDrawList.clear();
 
@@ -246,7 +176,7 @@ public:
 		});
 	}
 
-	void drawObjLayer(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+	void drawObjLayer(sf::RenderWindow & window, sf::IntRect clip, float dt) {
 		this->updateObjsDrawList(window, clip, dt);
 
 		for (EntityID ent : this->entitiesDrawList) {
@@ -331,7 +261,7 @@ public:
 	}
 
 	// draw debug grid
-	void drawDebug(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+	void drawDebug(sf::RenderWindow & window, sf::IntRect clip, float dt) {
 		for (int y = clip.top; y < clip.top + clip.height; ++y)
 		{
 			for (int x = clip.left; x < clip.left + clip.width; ++x)

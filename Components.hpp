@@ -142,6 +142,7 @@ public:
 struct Player {
 	std::string team;
 	int colorIdx;
+	sf::Color color;
 	bool ai;
 	std::string resourceType;
 	int resources;

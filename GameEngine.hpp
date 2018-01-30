@@ -17,6 +17,7 @@
 #include "GameSystems/TileAnimSystem.hpp"
 #include "GameSystems/MapLayersSystem.hpp"
 #include "GameSystems/DrawMapSystem.hpp"
+#include "GameSystems/MinimapSystem.hpp"
 #include "GameSystems/ResourcesSystem.hpp"
 #include "GameSystems/ConstructionSystem.hpp"
 #include "GameSystems/PathfindingSystem.hpp"
@@ -46,6 +47,7 @@ public:
 	ResourcesSystem resources;
 	TileAnimSystem tileAnim;
 	DrawMapSystem drawMap;
+	MinimapSystem minimap;
 	MapLayersSystem mapLayers;
 	ConstructionSystem construction;
 	PathfindingSystem pathfinding;
@@ -89,8 +91,7 @@ public:
 	sf::Text scoreBonusText;
 	sf::Sound scoreSound;
 
-	sf::RenderTexture minimapTarget;
-	sf::Sprite minimap;
+	sf::Sprite minimapSprite;
 	sf::FloatRect minimapRect;
 
 	int debugCorner;
@@ -211,6 +212,8 @@ public:
 		resources.map = this->map;
 		drawMap.setVault(vault);
 		drawMap.map = this->map;
+		minimap.setVault(vault);
+		minimap.map = this->map;
 		mapLayers.setVault(vault);
 		mapLayers.map = this->map;
 		construction.setVault(vault);
@@ -310,8 +313,10 @@ public:
 		auto view = this->vault->registry.view<Player>();
 		for (EntityID entity : view) {
 			Player &player = view.get(entity);
+			sf::Color refCol = sf::Color(3, 255, 205);
 
 			player.colorIdx = colorIndices.back();
+			player.color = this->vault->factory.getPlayerColor(refCol, player.colorIdx);
 			colorIndices.pop_back();
 
 			if (player.team == "rebel")
@@ -355,8 +360,7 @@ public:
 
 		mapLayers.initCorpses();
 
-		minimapTarget.create(this->map->width, this->map->height);
-		minimap.setTexture(minimapTarget.getTexture());
+		minimapSprite.setTexture(minimap.createTexture());
 
 		// 128,512
 		// TODO: convert to window dimension relative coord
@@ -774,7 +778,7 @@ public:
 			player.kills.clear();
 		}
 
-		this->updateMinimap();
+		minimap.update(this->currentPlayer);
 		combat.updateFront(dt);
 	}
 
@@ -979,16 +983,14 @@ public:
 		mClip.width = (int)((float)(this->width / 32.0) * (this->minimapSize() / this->map->width));
 		mClip.height = (int)((float)(this->height / 32.0) * (this->minimapSize() / this->map->height));
 
-		minimap.setPosition(sf::Vector2f(minimapRect.left, minimapRect.top));
-		minimap.setScale(sf::Vector2f(this->minimapSize() / this->map->width, this->minimapSize() / this->map->height));
-		this->game->window.draw(minimap);
-		drawMap.drawMinimapClip(this->game->window, mClip);
+		minimapSprite.setPosition(sf::Vector2f(minimapRect.left, minimapRect.top));
+		minimapSprite.setScale(sf::Vector2f(this->minimapSize() / this->map->width, this->minimapSize() / this->map->height));
+		this->game->window.draw(minimapSprite);
+
+		minimap.drawFrame(this->game->window);
+		minimap.drawClip(this->game->window, mClip);
 
 		this->updateFading();
-	}
-
-	void updateMinimap() {
-		drawMap.drawMinimap(this->minimapTarget, this->currentPlayer);
 	}
 
 	void setGameSpeed(float factor) {
@@ -1077,7 +1079,7 @@ public:
 		this->mapLayers.update(updateDt);
 
 		this->mapLayers.updateSpectatorFog(this->currentPlayer, dt);
-		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, sf::IntRect(0,0,this->map->width,this->map->height), dt);
+		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, sf::IntRect(0, 0, this->map->width, this->map->height), dt);
 //		sf::IntRect clip = this->viewClip();
 //		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, clip, dt);
 
