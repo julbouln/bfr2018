@@ -3,7 +3,7 @@
     <texture mode="with_white_mask" path="medias/extra/resources/pollution10.png"/>
     <tile>
       <psize x="106" y="89"/>
-      <size x="3" y="2"/>
+      <size x="3" y="1"/>
     </tile>
     <resource>
       <level value="1"/>

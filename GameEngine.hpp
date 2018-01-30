@@ -1095,6 +1095,8 @@ public:
 //		std::cout << "GameEngine: set listener position to " << viewPos.x / 32.0 << "x" << viewPos.y / 32.0 << std::endl;
 		sf::Listener::setPosition(viewPos.x / 32.0, 0.f, viewPos.y / 32.0);
 
+//		sf::IntRect clip = this->viewClip();
+//		drawMap.updateObjsDrawList(this->game->window, clip, updateDt);
 	}
 
 	void updateMoveView(float dt) {

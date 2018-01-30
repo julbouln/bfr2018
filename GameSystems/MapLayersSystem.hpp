@@ -669,11 +669,14 @@ public:
 
 		for (EntityID entity : decorView) {
 			Tile &tile = decorView.get<Tile>(entity);
+			Decor &decor = decorView.get<Decor>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				this->map->decors.set(p.x, p.y, entity);
-				this->map->staticBuildable.set(p.x, p.y, entity);
+				if(decor.blocking)
+					this->map->staticBuildable.set(p.x, p.y, entity);
 			}
+
 		}
 
 

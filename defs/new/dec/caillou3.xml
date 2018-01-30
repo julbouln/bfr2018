@@ -13,6 +13,6 @@
 		</animations>
 	</tile>
 	<decor>
-		<blocking value="true"/>
+		<blocking value="false"/>
 	</decor>
 </entity>
