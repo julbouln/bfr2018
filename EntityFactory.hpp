@@ -77,6 +77,9 @@ public:
 	UnitParser unitParser;
 	BuildingParser buildingParser;
 	ParticleEffectParser particleEffectParser;
+	DecorParser decorParser;
+
+	std::map<std::string,int> decorGenerator;
 
 	sf::Texture &getTex(std::string name) {
 		return texManager.getRef(name);
@@ -227,6 +230,15 @@ public:
 		texManager.load("debug_transition", "medias/new/debug_transitions256.png");
 	}
 
+	void loadDecorGenerator(std::string filename) {
+		tinyxml2::XMLDocument doc;
+		doc.LoadFile(filename.c_str());
+
+		for(tinyxml2::XMLElement *el : doc.RootElement()) {
+			decorGenerator[el->Attribute("group")]=el->IntAttribute("fact");
+		}
+	}
+
 	TechNode loadTechTree(std::string filename) {
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile(filename.c_str());
@@ -329,6 +341,11 @@ public:
 		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
 	}
 
+
+	void parseDecorFromXml(std::string name, Decor &decor) {
+		decorParser.parse(decor, this->getXmlComponent(name, "decor"));
+	}
+
 // Creator
 
 	void destroyEntity(entt::Registry<EntityID> &registry, EntityID entity) {
@@ -336,6 +353,11 @@ public:
 		std::cout << "EntityFactory: destroy " << entity << std::endl;
 #endif
 		registry.destroy(entity);
+	}
+
+	std::string randGroupName(std::string name) {
+		int rnd = rand() % groupCount[name];
+		return name + std::to_string(rnd + 1);
 	}
 
 // Terrain
@@ -576,8 +598,7 @@ public:
 	}
 
 	EntityID growedResource(entt::Registry<EntityID> &registry, std::string name, EntityID entity) {
-		int rnd = rand() % groupCount[name];
-		std::string rname = name + std::to_string(rnd + 1);
+		std::string rname = this->randGroupName(name);
 		Tile &oldTile = registry.get<Tile>(entity);
 
 		Tile tile;
@@ -635,6 +656,37 @@ public:
 
 		return entity;
 
+	}
+
+
+
+	EntityID createDecor(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
+		std::string rname = this->randGroupName(name);
+
+		EntityID entity = registry.create();
+#ifdef FACTORY_DEBUG
+		std::cout << "EntityFactory: create decor " << entity << " " << rname << " at " << x << "x" << y << std::endl;
+#endif
+		Tile tile;
+		this->parseTileFromXml(rname, tile);
+
+		tile.pos = sf::Vector2i(x, y);
+		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+
+		tile.direction = North;
+
+		Decor decor;
+		this->parseDecorFromXml(rname, decor);
+
+		registry.assign<Tile>(entity, tile);
+		registry.assign<Decor>(entity, decor);
+
+		/*
+				Effects effects;
+				particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
+				registry.assign<Effects>(entity, effects);
+		*/
+		return entity;
 	}
 
 // Player
@@ -714,6 +766,7 @@ public:
 
 			this->loadMisc();
 			this->loadTechTrees();
+			this->loadDecorGenerator("defs/new/dec/decor_generator.xml");
 			this->loaded = true;
 		}
 	}

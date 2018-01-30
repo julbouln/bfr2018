@@ -85,7 +85,7 @@ public:
 		return visited;
 	}
 
-	int index(int x, int y) const { return x + width * y; }
+	inline int index(int x, int y) const { return x + width * y; }
 
 	FogState get(int x, int y) {
 		return grid[this->index(x, y)];
@@ -114,6 +114,19 @@ public:
 };
 
 
+struct CompareVector2i
+{
+	bool operator()(sf::Vector2i a, sf::Vector2i b) const
+	{
+		if (a.x < b.x)
+			return true;
+		else if (b.x < a.x)
+			return false;
+		else
+			return a.y < b.y;
+	}
+};
+
 class Map {
 public:
 
@@ -133,6 +146,7 @@ public:
 
 	Layer objs;
 	Layer resources;
+	Layer decors;
 
 	Layer effects;
 
@@ -143,6 +157,7 @@ public:
 	Layer staticPathfinding;
 	Layer pathfinding;
 
+	// not sure if sound must be there
 	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
 
 	Map() {
@@ -159,6 +174,8 @@ public:
 		this->terrainsForTransitions.setSize(width, height);
 		this->objs.setSize(width, height);
 		this->resources.setSize(width, height);
+		this->decors.setSize(width, height);
+
 		this->fogHidden.setSize(width, height);
 		this->fogUnvisited.setSize(width, height);
 

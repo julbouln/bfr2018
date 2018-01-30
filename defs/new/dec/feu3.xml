@@ -1,0 +1,22 @@
+<entity class="decor" group="feu" name="feu3">
+	<texture mode="with_white_mask" path="medias/decors/feu3.png"/>
+	<tile>
+		<psize x="44" y="60"/>
+		<size x="1" y="1"/>
+		<animations>
+			<animation name="idle">
+				<frames>
+					<frame n="0"/>
+					<frame n="1"/>
+					<frame n="2"/>
+					<frame n="3"/>
+					<frame n="4"/>
+				</frames>
+				<duration value="200"/>
+			</animation>
+		</animations>
+	</tile>
+	<decor>
+		<blocking value="true"/>
+	</decor>
+</entity>

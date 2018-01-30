@@ -21,15 +21,27 @@ public:
 		}
 
 		auto unitView = this->vault->registry.persistent<Tile, Unit>();
-
 		for (EntityID entity : unitView) {
 			Tile &tile = unitView.get<Tile>(entity);
 			Unit &unit = unitView.get<Unit>(entity);
 
-			if(tile.pos == unit.destpos) {
+			if (tile.pos == unit.destpos) {
 				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			}
 		}
+
+		auto decorView = this->vault->registry.persistent<Tile, Decor>();
+		for (EntityID entity : decorView) {
+			Tile &tile = decorView.get<Tile>(entity);
+			Decor &decor = decorView.get<Decor>(entity);
+
+			if (decor.blocking) {
+				for (sf::Vector2i const &p : this->tileSurface(tile)) {
+					this->map->pathfinding.set(p.x, p.y, entity);
+				}
+			}
+		}
+
 	}
 
 	bool checkAround(EntityID entity, sf::Vector2i npos) {
@@ -37,7 +49,7 @@ public:
 
 		for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 2)) {
 			EntityID other = this->map->objs.get(p.x, p.y);
-			if (other && other!=entity) {
+			if (other && other != entity) {
 				if (this->vault->registry.has<Unit>(other)) {
 					Unit &otherUnit = this->vault->registry.get<Unit>(other);
 					Tile &otherTile = this->vault->registry.get<Tile>(other);
@@ -90,13 +102,13 @@ public:
 
 
 #ifdef PATHFINDING_DEBUG
-								std::cout << "Pathfinding: " << entity << " at "<<cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
+								std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
 #endif
 							} else {
 								this->changeState(tile, "idle");
-								#ifdef PATHFINDING_DEBUG
-									std::cout << "Pathfinding: "<<entity<<" wait a moment "<<std::endl;
-								#endif
+#ifdef PATHFINDING_DEBUG
+								std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
+#endif
 							}
 						} else {
 #ifdef PATHFINDING_DEBUG

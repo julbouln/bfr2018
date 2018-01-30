@@ -569,7 +569,6 @@ public:
 		}
 	}
 
-
 	void debugGui(float dt) {
 		sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(sf::Mouse::getPosition(this->game->window), this->gameView));
 		sf::Vector2f gameMapPos = gamePos;
@@ -637,7 +636,6 @@ public:
 						ImGui::Text("Level: %d\n", resource.level);
 						ImGui::Text("Grow: %.2f\n", resource.grow);
 					}
-
 				}
 			}
 
@@ -724,10 +722,8 @@ public:
 
 				nextStage = 2;
 				fadeOut();
-
 			}
 		}
-
 	}
 
 	void updateDecade(float dt) {
@@ -816,6 +812,7 @@ public:
 
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
+
 		drawMap.draw(this->game->window, clip, dt);
 		if (this->gameSpeed < 2)
 			fx.draw(this->game->window, clip, dt);
@@ -1013,7 +1010,7 @@ public:
 
 			if (obj.destroy) {
 				if (this->vault->registry.has<Unit>(entity)) {
-					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_"+std::to_string(obj.player), 0);
+					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_" + std::to_string(obj.player), 0);
 //					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
 				}
@@ -1079,7 +1076,10 @@ public:
 		this->resources.update(updateDt);
 		this->mapLayers.update(updateDt);
 
-		this->mapLayers.updateFogLayer(this->currentPlayer, updateDt);
+		this->mapLayers.updateSpectatorFog(this->currentPlayer, dt);
+		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, sf::IntRect(0,0,this->map->width,this->map->height), dt);
+//		sf::IntRect clip = this->viewClip();
+//		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, clip, dt);
 
 		// AI
 		auto playerView = this->vault->registry.view<Player>();
@@ -1262,6 +1262,7 @@ public:
 #endif
 						this->centerMapView(sf::Vector2i(mPos));
 						this->clearSelection();
+
 					} else {
 						if (this->action == Action::Building)
 						{
@@ -1292,6 +1293,8 @@ public:
 								this->selectedDebugObj = entity;
 								if (!this->selectedDebugObj)
 									this->selectedDebugObj = this->map->resources.get(gameMapPos.x, gameMapPos.y);
+								if (!this->selectedDebugObj)
+									this->selectedDebugObj = this->map->decors.get(gameMapPos.x, gameMapPos.y);
 							}
 						}
 					}

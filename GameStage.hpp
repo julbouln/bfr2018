@@ -17,10 +17,25 @@ public:
 
 	int nextStage;
 
+	sf::Text version;
 	sf::Text text;
 
 	GameStage() {
-		
+		version.setCharacterSize(24);
+#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
+		version.setFillColor(sf::Color::White);
+#else
+// SFML 2.3
+		version.setColor(sf::Color::White);
+#endif
+
+		version.setString("BFR " + std::string(VERSION));
+	}
+
+	void drawVersion() {
+		version.setFont(this->game->vault.factory.fntManager.getRef("samos"));
+		version.setPosition(sf::Vector2f(8, this->height - 24 - 8));
+		this->game->window.draw(version);
 	}
 
 	void setSize(unsigned int width, unsigned int height) {

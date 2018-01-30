@@ -119,6 +119,10 @@ struct Resource {
 	float grow;
 };
 
+struct Decor {
+	bool blocking;
+};
+
 struct FrontPoint {
 	sf::Vector2i pos;
 	int priority;

@@ -1,0 +1,18 @@
+<entity class="decor" group="rocher" name="rocher4">
+	<texture mode="with_white_mask" path="medias/decors/rocher4.png"/>
+	<tile>
+		<psize x="142" y="97"/>
+		<size x="4" y="2"/>
+		<animations>
+			<animation name="idle">
+				<frames>
+					<frame n="0"/>
+				</frames>
+				<duration value="1000"/>
+			</animation>
+		</animations>
+	</tile>
+	<decor>
+		<blocking value="true"/>
+	</decor>
+</entity>

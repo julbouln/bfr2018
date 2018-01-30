@@ -1,8 +1,7 @@
 Optimizations
-- render tile layers into a RenderTexture only updated when needed
+- uses vertex to render tile layers
 
 Bug:
-- last map line is not always displayed
 - unit looking for each other fight sometimes stuck together
 - if an ennemy is in sight, unit refuse to obey
 - memory leak ?
@@ -15,7 +14,6 @@ Improvements:
 Game:
 - add projectile explosion FX
 - vautour FX
-- add some decors
 - add intro & credits
 - add min/max attack2 distance
 - add building damage level sprites
@@ -27,4 +25,3 @@ Game:
 Interface:
 - add mouse cursors
 - add settings
-- add version on menu stages

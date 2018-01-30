@@ -1,0 +1,18 @@
+<entity class="decor" group="direction" name="direction3">
+	<texture mode="with_white_mask" path="medias/decors/direction3.png"/>
+	<tile>
+		<psize x="59" y="71"/>
+		<size x="1" y="1"/>
+		<animations>
+			<animation name="idle">
+				<frames>
+					<frame n="0"/>
+				</frames>
+				<duration value="1000"/>
+			</animation>
+		</animations>
+	</tile>
+	<decor>
+		<blocking value="false"/>
+	</decor>
+</entity>

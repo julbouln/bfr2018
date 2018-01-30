@@ -69,4 +69,35 @@
 	<effect path="defs/new/fx/lance_pepino_alt_die.xml"/>
 	<effect path="defs/new/fx/guerrier_bud_alt_die.xml"/>
 
+	<decor path="defs/new/dec/petit_caillou1.xml"/>
+	<decor path="defs/new/dec/petit_caillou2.xml"/>
+	<decor path="defs/new/dec/petit_caillou3.xml"/>
+	<decor path="defs/new/dec/petit_caillou4.xml"/>
+	<decor path="defs/new/dec/caillou1.xml"/>
+	<decor path="defs/new/dec/caillou2.xml"/>
+	<decor path="defs/new/dec/caillou3.xml"/>
+	<decor path="defs/new/dec/caillou4.xml"/>
+	<decor path="defs/new/dec/rocher1.xml"/>
+	<decor path="defs/new/dec/rocher2.xml"/>
+	<decor path="defs/new/dec/rocher3.xml"/>
+	<decor path="defs/new/dec/rocher4.xml"/>
+	<decor path="defs/new/dec/rocher5.xml"/>
+	<decor path="defs/new/dec/rocher6.xml"/>
+	<decor path="defs/new/dec/pieu_naz1.xml"/>
+	<decor path="defs/new/dec/pieu_naz2.xml"/>
+	<decor path="defs/new/dec/pieu_naz3.xml"/>
+	<decor path="defs/new/dec/maison1.xml"/>
+	<decor path="defs/new/dec/maison2.xml"/>
+	<decor path="defs/new/dec/maison3.xml"/>
+	<decor path="defs/new/dec/direction1.xml"/>
+	<decor path="defs/new/dec/direction2.xml"/>
+	<decor path="defs/new/dec/direction3.xml"/>
+	<decor path="defs/new/dec/direction4.xml"/>
+	<decor path="defs/new/dec/direction5.xml"/>
+	<decor path="defs/new/dec/direction6.xml"/>
+	<decor path="defs/new/dec/feu1.xml"/>
+	<decor path="defs/new/dec/feu2.xml"/>
+	<decor path="defs/new/dec/feu3.xml"/>
+	<decor path="defs/new/dec/feu4.xml"/>
+
 </manifest>

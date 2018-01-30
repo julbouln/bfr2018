@@ -13,12 +13,7 @@ public:
 	}
 
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
-		this->drawLayer(window, this->map->terrains, clip, dt);
-		for (Layer &transitionLayer : this->map->transitions) {
-			this->drawLayer(window, transitionLayer, clip, dt);
-		}
-
-		this->drawLayer(window, this->map->corpses, clip, dt);
+		this->drawTileLayers(window, clip, dt);
 
 		this->drawObjLayer(window, clip, dt);
 		if (showDebugLayer)
@@ -58,10 +53,15 @@ public:
 					if (fogSt != FogState::Hidden) {
 						EntityID objEnt = this->map->objs.get(x, y);
 						if (objEnt) {
+							GameObject &obj = this->vault->registry.get<GameObject>(objEnt);
 							sf::RectangleShape rectangle;
 							sf::Vector2f pos(x, y);
 							rectangle.setSize(sf::Vector2f(1, 1));
-							rectangle.setFillColor(sf::Color(0xff, 0xff, 0xff, 0xff));
+
+							if (obj.team == player.team)
+								rectangle.setFillColor(sf::Color(0xff, 0xff, 0xff, 0xff));
+							else
+								rectangle.setFillColor(sf::Color(0xff, 0x00, 0x00, 0xff));
 							rectangle.setPosition(pos);
 							target.draw(rectangle);
 						}
@@ -95,17 +95,22 @@ public:
 		window.draw(clipR);
 	}
 
-	void drawSpriteWithShader(sf::RenderWindow &window, sf::Sprite &sprite, std::string shaderName, ShaderOptions &options) {
+	void drawSpriteWithShader(sf::RenderTarget &target, sf::Sprite &sprite, std::string shaderName, ShaderOptions &options) {
 		sf::Shader *shader = this->vault->factory.shrManager.getRef(shaderName);
 		applyShaderOptions(shader, options);
-		window.draw(sprite, shader);
+		target.draw(sprite, shader);
 	}
 
-	void drawLayer(sf::RenderWindow &window, Layer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
-		for (int y = clip.top; y < clip.top + clip.height; ++y)
-		{
-			for (int x = clip.left; x < clip.left + clip.width; ++x)
-			{
+	void drawLayer(sf::RenderTarget &target, Layer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
+		// UGLY: add one line of tile to draw to avoid half tile crop
+		if(clip.top + clip.height + 1 < this->map->height)
+			clip.height++;
+
+		if(clip.left + clip.width + 1 < this->map->width)
+			clip.width++;
+
+		for (int y = clip.top; y < clip.top + clip.height; ++y) {
+			for (int x = clip.left; x < clip.left + clip.width; ++x) {
 				EntityID ent = layer.get(x, y);
 				if (ent) {
 					Tile &tile = this->vault->registry.get<Tile>(ent);
@@ -120,16 +125,25 @@ public:
 					/* Draw the tile */
 #ifdef SHADER_ENABLE
 					if (tile.shader)
-						this->drawSpriteWithShader(window, tile.sprite, tile.shaderName, tile.shaderOptions);
+						this->drawSpriteWithShader(target, tile.sprite, tile.shaderName, tile.shaderOptions);
 					else
-						window.draw(tile.sprite);
+						target.draw(tile.sprite);
 #else
-					window.draw(tile.sprite);
+					target.draw(tile.sprite);
 #endif
 				}
 			}
 
 		}
+	}
+
+	void drawTileLayers(sf::RenderTarget &target, sf::IntRect clip, float dt) {
+		this->drawLayer(target, this->map->terrains, clip, dt);
+		for (Layer &transitionLayer : this->map->transitions) {
+			this->drawLayer(target, transitionLayer, clip, dt);
+		}
+
+		this->drawLayer(target, this->map->corpses, clip, dt);
 	}
 
 	inline bool clipped(sf::IntRect &clip, sf::Vector2i const &p) const {
@@ -165,6 +179,21 @@ public:
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				if (!obj.mapped || (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0)) {
+					if (this->clipped(clip, p))
+						this->entitiesDrawList.push_back(entity);
+				}
+			}
+		}
+
+		// decor draw list
+		auto decorView = this->vault->registry.persistent<Tile, Decor>();
+
+		for (EntityID entity : decorView) {
+			Tile &tile = decorView.get<Tile>(entity);
+			Decor &decor = decorView.get<Decor>(entity);
+
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
+				if ((this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0)) {
 					if (this->clipped(clip, p))
 						this->entitiesDrawList.push_back(entity);
 				}

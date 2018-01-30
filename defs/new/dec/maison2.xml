@@ -1,0 +1,18 @@
+<entity class="decor" group="maison" name="maison2">
+	<texture mode="with_white_mask" path="medias/decors/maison2.png"/>
+	<tile>
+		<psize x="160" y="160"/>
+		<size x="5" y="2"/>
+		<animations>
+			<animation name="idle">
+				<frames>
+					<frame n="0"/>
+				</frames>
+				<duration value="1000"/>
+			</animation>
+		</animations>
+	</tile>
+	<decor>
+		<blocking value="true"/>
+	</decor>
+</entity>

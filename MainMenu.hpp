@@ -50,7 +50,7 @@ public:
 		this->guiPopStyles();
 
 		ImGui::SFML::Render(this->game->window);
-
+		this->drawVersion();
 		this->updateFading();
 	}
 

@@ -1,0 +1,9 @@
+<decor_generator>
+	<spawn group="petit_caillou" fact="200"/>
+	<spawn group="caillou" fact="500"/>
+	<spawn group="rocher" fact="1000"/>
+	<spawn group="maison" fact="2000"/>
+	<spawn group="pieu_naz" fact="3000"/>
+	<spawn group="direction" fact="3000"/>
+	<spawn group="feu" fact="3000"/>
+</decor_generator>

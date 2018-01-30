@@ -4,19 +4,6 @@
 
 #define ALT_TILES 3
 
-struct CompareVector2i
-{
-	bool operator()(sf::Vector2i a, sf::Vector2i b) const
-	{
-		if (a.x < b.x)
-			return true;
-		else if (b.x < a.x)
-			return false;
-		else
-			return a.y < b.y;
-	}
-};
-
 class MapLayersSystem : public GameSystem {
 	std::map<std::string, std::vector<EntityID>> tiles;
 
@@ -26,9 +13,7 @@ class MapLayersSystem : public GameSystem {
 	std::vector<EntityID> concreteTransitions;
 
 	std::map<int, int> terrainTransitionsMapping;
-
 	std::vector<EntityID> fogTransitions;
-
 	std::map<int, int> fogTransitionsMapping;
 
 	std::vector<EntityID> debugTransitions;
@@ -75,8 +60,9 @@ public:
 					}
 
 					if (this->map->terrainsForTransitions.get(p.x, p.y) != newEnt) {
-						for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1))
+						for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1)) {
 							this->markUpdateTerrainTransitions.insert(sp);
+						}
 
 						if (this->map->staticBuildable.get(p.x, p.y) == 0) {
 							this->map->terrains.set(p.x, p.y, newEnt);
@@ -103,8 +89,9 @@ public:
 				}
 
 				if (this->map->terrainsForTransitions.get(p.x, p.y) != newEnt) {
-					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1))
+					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1)) {
 						this->markUpdateTerrainTransitions.insert(sp);
+					}
 
 					if (this->map->staticBuildable.get(p.x, p.y) == 0) {
 						this->map->terrains.set(p.x, p.y, newEnt);
@@ -141,17 +128,6 @@ public:
 				this->map->objs.set(p.x, p.y, entity);
 			}
 		}
-
-		/*
-				auto unitView = this->vault->registry.persistent<Tile, Unit>();
-
-				for (EntityID entity : unitView) {
-					Tile &tile = unitView.get<Tile>(entity);
-					Unit &unit = unitView.get<Unit>(entity);
-
-					this->map->objs.set(unit.nextpos.x, unit.nextpos.y, entity);
-				}
-				*/
 	}
 
 	void updatePlayersFog(float dt) {
@@ -180,19 +156,28 @@ public:
 			}
 
 		}
-
 	}
 
-	void updateFogLayer(EntityID playerEnt, float dt) {
+	// spectator FOG concat all other players fog
+	void updateSpectatorFog(EntityID playerEnt, float dt) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 
+		if (player.team == "neutral") {
+			auto playerView = this->vault->registry.view<Player>();
+			for (int y = 0; y < this->map->height; ++y) {
+				for (int x = 0; x < this->map->width; ++x) {
+					player.fog.set(x, y, FogState::InSight);
+				}
+			}
+		}
+		/*
 		if (player.team == "neutral") {
 			auto playerView = this->vault->registry.view<Player>();
 			for (EntityID entity : playerView) {
 				if (entity != playerEnt) {
 					Player &otherPlayer = playerView.get(entity);
-					for (int x = 0; x < this->map->width; ++x) {
-						for (int y = 0; y < this->map->height; ++y) {
+					for (int y = 0; y < this->map->height; ++y) {
+						for (int x = 0; x < this->map->width; ++x) {
 							if (player.fog.get(x, y) == FogState::Hidden && otherPlayer.fog.get(x, y) != FogState::Unvisited) {
 								player.fog.set(x, y, otherPlayer.fog.get(x, y));
 							}
@@ -204,11 +189,14 @@ public:
 				}
 			}
 		}
+		*/
+	}
 
-		for (int y = 0; y < this->map->height; ++y)
-		{
-			for (int x = 0; x < this->map->width; ++x)
-			{
+	void updatePlayerFogLayer(EntityID playerEnt, sf::IntRect clip, float dt) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+
+		for (int y = clip.top; y < clip.top + clip.height; ++y) {
+			for (int x = clip.left; x < clip.left + clip.width; ++x) {
 				sf::Vector2i p = sf::Vector2i(x, y);
 				FogState st = player.fog.get(x, y);
 				bool markUpdate = false;
@@ -240,8 +228,9 @@ public:
 				this->map->fogHidden.set(x, y, newEnt);
 
 				if (markUpdate) {
-					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1))
+					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1)) {
 						this->markUpdateFogTransitions.insert(sp);
+					}
 				}
 			}
 		}
@@ -459,7 +448,7 @@ public:
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
-	int transitionBitmask(Layer &layer, EntityID ent, int x, int y) {
+	int transitionBitmask(Layer & layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (this->map->bound(x, y - 1))
 			bitmask += 1 * ((layer.get(x, y - 1) == ent) ? 1 : 0);
@@ -482,7 +471,7 @@ public:
 		return bitmask;
 	}
 
-	int voidTransitionBitmask(Layer &layer, EntityID ent, int x, int y) {
+	int voidTransitionBitmask(Layer & layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (layer.get(x, y) != ent) {
 			bitmask = this->transitionBitmask(layer, ent, x, y);
@@ -490,7 +479,7 @@ public:
 		return bitmask;
 	}
 
-	int pairTransitionBitmask(Layer &layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
+	int pairTransitionBitmask(Layer & layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
 		int bitmask = 0;
 		if (layer.get(x, y) == srcEnt) {
 			bitmask = this->transitionBitmask(layer, dstEnt, x, y);
@@ -498,7 +487,7 @@ public:
 		return bitmask;
 	}
 
-	int updateTransition(int bitmask, Layer &outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
+	int updateTransition(int bitmask, Layer & outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
 		if (bitmask) {
 			if (bitmask & 0xf) {
 				if (mapping.count(bitmask & 0xf) > 0) {
@@ -520,8 +509,6 @@ public:
 		return bitmask;
 	}
 
-
-
 	void updateGrassConcreteTransition(int x, int y) {
 		EntityID grassEnt = tiles["grass"][0];
 		EntityID concreteEnt = tiles["concrete"][0];
@@ -532,7 +519,6 @@ public:
 			this->map->transitions[0].set(x, y, 0);
 		}
 	}
-
 
 	void updateSandWaterTransition(int x, int y) {
 		EntityID sandEnt = tiles["sand"][0];
@@ -664,9 +650,32 @@ public:
 						this->vault->factory.plantResource(this->vault->registry, "pollution", x, y);
 					}
 				}
-
 			}
 		}
+
+		for (auto pair : this->vault->factory.decorGenerator) {
+			for (int i = 0; i < (this->map->width * this->map->height) / pair.second; i++) {
+				int rx = rand() % this->map->width;
+				int ry = rand() % this->map->height;
+				if (this->map->terrainsForTransitions.get(rx, ry) != tiles["water"][0]) {
+					this->vault->factory.createDecor(this->vault->registry, pair.first, rx, ry);
+				}
+			}
+
+		}
+
+		// set decor layer
+		auto decorView = this->vault->registry.persistent<Tile, Decor>();
+
+		for (EntityID entity : decorView) {
+			Tile &tile = decorView.get<Tile>(entity);
+
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
+				this->map->decors.set(p.x, p.y, entity);
+				this->map->staticBuildable.set(p.x, p.y, entity);
+			}
+		}
+
 
 		this->updateAllTransitions();
 	}

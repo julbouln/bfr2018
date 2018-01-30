@@ -31,7 +31,7 @@ public:
 			ImGui::RadioButton("Neonaz", &team, 1); ImGui::SameLine();
 			ImGui::RadioButton("Spectator", &team, 2);
 
-			const char* mapSizes[] = { "Small", "Medium", "Large", "Huge" };
+			const char* mapSizes[] = { "Small", "Medium", "Large"};
 			ImGui::Text("Map size"); ImGui::SameLine();
 			ImGui::Combo("", &mapSize, mapSizes, IM_ARRAYSIZE(mapSizes));   // Combo using proper array. You can also pass a callback to retrieve array value, no need to create/copy an array just for that.
 
@@ -62,6 +62,7 @@ public:
 		this->guiPopStyles();
 
 		ImGui::SFML::Render(this->game->window);
+		this->drawVersion();
 
 		this->updateFading();
 	}

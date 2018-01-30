@@ -402,6 +402,16 @@ public:
 	}
 };
 
+
+class DecorParser {
+public:
+	void parse(Decor &decor, tinyxml2::XMLElement *element) {
+		if (element) {
+			decor.blocking = element->FirstChildElement("blocking")->BoolAttribute("value");
+		}
+	}
+};
+
 enum class ParticleSystemMode {
 	Points,
 	Texture,
