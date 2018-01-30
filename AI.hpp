@@ -307,7 +307,7 @@ public:
 					if (player.fog.get(x, y) == FogState::InSight) {
 						tile.pos = sf::Vector2i(x, y);
 						bool intersect = false;
-						for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 1)) {
+						for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 2)) {
 							if (this->map->objs.get(p.x, p.y) || this->map->staticBuildable.get(p.x, p.y) != 0) {
 								intersect = true;
 							}

@@ -6,6 +6,8 @@
 #include "Particles/ParticleSpawner.h"
 #include "Particles/ParticleUpdater.h"
 
+#include "ShaderOptions.hpp"
+
 namespace particles {
 
 class ParticleData;
@@ -115,12 +117,16 @@ protected:
 class TextureParticleSystem : public ParticleSystem {
 public:
 	TextureParticleSystem(int maxCount, sf::Texture *texture);
+	TextureParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight);
 	virtual ~TextureParticleSystem() {}
 
 	TextureParticleSystem(const TextureParticleSystem &) = delete;
 	TextureParticleSystem &operator=(const TextureParticleSystem &) = delete;
 
 	virtual void render(sf::RenderTarget &renderTarget) override;
+	// extra
+	void draw(sf::RenderTarget &renderTarget);
+	void drawWithShader(sf::RenderTarget &renderTarget);
 
 	void setTexture(sf::Texture *texture);
 
@@ -129,8 +135,14 @@ protected:
 
 public:
 	bool additiveBlendMode;
+// extra shader
+	bool applyShader;
+	sf::Shader *shader;
+	ShaderOptions shaderOptions;
 
 protected:
+	sf::Sprite m_sprite;
+	sf::RenderTexture m_renderTexture;
 	sf::Texture *m_texture;
 };
 
@@ -138,6 +150,7 @@ protected:
 class SpriteSheetParticleSystem : public TextureParticleSystem {
 public:
 	SpriteSheetParticleSystem(int maxCount, sf::Texture *texture) : TextureParticleSystem(maxCount, texture) {}
+	SpriteSheetParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight) : TextureParticleSystem(maxCount, texture, windowWidth, windowHeight) {}
 	virtual ~SpriteSheetParticleSystem() {}
 
 	SpriteSheetParticleSystem(const SpriteSheetParticleSystem &) = delete;
@@ -165,8 +178,6 @@ public:
 	float threshold{ 0.5f };
 
 protected:
-	sf::RenderTexture m_renderTexture;
-	sf::Sprite m_sprite;
 	sf::Shader m_shader;
 };
 

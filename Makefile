@@ -3,7 +3,7 @@ INCLUDES = -I.
 DBSCAN_OBJS = dbscan/dbscan.o
 IMGUI_OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o
 PARTICLES_OBJS = Particles/ParticleData.o Particles/ParticleSpawner.o Particles/ParticleUpdater.o Particles/ParticleGenerator.o Particles/ParticleSystem.o
-OBJS = tinyxml2.o SimplexNoise.o bfr.o
+OBJS = tinyxml2.o SimplexNoise.o ShaderOptions.o bfr.o
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ -c $<

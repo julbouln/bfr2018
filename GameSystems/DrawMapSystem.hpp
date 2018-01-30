@@ -4,23 +4,11 @@
 
 class DrawMapSystem : public GameSystem {
 public:
-	sf::Shader colorSwap;
-	sf::Shader pixelation;
-	sf::Shader outline;
-
 	std::vector<EntityID> entitiesDrawList;
 
 	bool showDebugLayer;
 
 	DrawMapSystem() {
-#ifdef SHADER_ENABLE
-		if (!colorSwap.loadFromFile("defs/new/shaders/color_swap.frag", sf::Shader::Fragment))
-			std::cout << "ERROR: cannot load colorSwap shader" << std::endl;
-		if (!pixelation.loadFromFile("defs/new/shaders/pixelation.frag", sf::Shader::Fragment))
-			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
-		if (!outline.loadFromFile("defs/new/shaders/outline.frag", sf::Shader::Fragment))
-			std::cout << "ERROR: cannot load pixelation shader" << std::endl;
-#endif
 		this->showDebugLayer = false;
 	}
 
@@ -107,6 +95,12 @@ public:
 		window.draw(clipR);
 	}
 
+	void drawSpriteWithShader(sf::RenderWindow &window, sf::Sprite &sprite, std::string shaderName, ShaderOptions &options) {
+		sf::Shader *shader = this->vault->factory.shrManager.getRef(shaderName);
+		applyShaderOptions(shader, options);
+		window.draw(sprite, shader);
+	}
+
 	void drawLayer(sf::RenderWindow &window, Layer &layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		for (int y = clip.top; y < clip.top + clip.height; ++y)
 		{
@@ -124,11 +118,14 @@ public:
 					tile.sprite.setColor(colorVariant);
 
 					/* Draw the tile */
+#ifdef SHADER_ENABLE
+					if (tile.shader)
+						this->drawSpriteWithShader(window, tile.sprite, tile.shaderName, tile.shaderOptions);
+					else
+						window.draw(tile.sprite);
+#else
 					window.draw(tile.sprite);
-
-//	pixelation.setParameter("texture", sf::Shader::CurrentTexture);
-//	pixelation.setParameter("amount", 32.0);
-//				window.draw(tile.sprite,&pixelation);
+#endif
 				}
 			}
 
@@ -159,7 +156,6 @@ public:
 			}
 		}
 
-
 		// game objects draw list
 		auto view = this->vault->registry.persistent<Tile, GameObject>();
 
@@ -180,7 +176,6 @@ public:
 		auto last = std::unique(this->entitiesDrawList.begin(), this->entitiesDrawList.end());
 		this->entitiesDrawList.erase(last, this->entitiesDrawList.end());
 
-
 		// remove if invalid
 
 		this->entitiesDrawList.erase(std::remove_if(
@@ -188,7 +183,6 @@ public:
 		[this](const EntityID & ent) {
 			return (ent == 0 || !vault->registry.valid(ent) || !vault->registry.has<Tile>(ent));
 		}), this->entitiesDrawList.end());
-
 
 		// sort by position
 		std::sort( this->entitiesDrawList.begin( ), this->entitiesDrawList.end(), [this ]( const auto & lhs, const auto & rhs )
@@ -209,11 +203,11 @@ public:
 						if (ly == ry) {
 							int lx = lp.x + lht.centerRect.left + lht.centerRect.width / 2;
 							int rx = rp.x + rht.centerRect.left + rht.centerRect.width / 2;
-							return (lht.psize.y < rht.psize.y);
 							if (lx < rx) {
 								return true;
 							} else {
-								return (lht.psize.y < rht.psize.y);
+								if (lx == rx)
+									return (lht.psize.y < rht.psize.y);
 							}
 						}
 					}
@@ -252,25 +246,10 @@ public:
 					Player &player = this->vault->registry.get<Player>(obj.player);
 
 #ifdef SHADER_ENABLE
-					sf::Color col1 = sf::Color(3, 255, 205);
-					sf::Color col2 = sf::Color(0, 235, 188);
-					sf::Color replace1 = this->vault->factory.getPlayerColor(col1, player.colorIdx);
-					sf::Color replace2 = this->vault->factory.getPlayerColor(col2, player.colorIdx);
-#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
-					colorSwap.setUniform("texture", sf::Shader::CurrentTexture);
-					colorSwap.setUniform("color1", sf::Glsl::Vec4(col1.r / 255.f, col1.g / 255.f, col1.b / 255.f, col1.a / 255.f));
-					colorSwap.setUniform("replace1", sf::Glsl::Vec4(replace1.r / 255.f, replace1.g / 255.f, replace1.b / 255.f, replace1.a / 255.f));
-					colorSwap.setUniform("color2", sf::Glsl::Vec4(col2.r / 255.f, col2.g / 255.f, col2.b / 255.f, col2.a / 255.f));
-					colorSwap.setUniform("replace2", sf::Glsl::Vec4(replace2.r / 255.f, replace2.g / 255.f, replace2.b / 255.f, replace2.a / 255.f));
-#else
-// SFML 2.3
-					colorSwap.setParameter("texture", sf::Shader::CurrentTexture);
-					colorSwap.setParameter("color1", col1);
-					colorSwap.setParameter("replace1", replace1);
-					colorSwap.setParameter("color2", col2);
-					colorSwap.setParameter("replace2", replace2);
-#endif
-					window.draw(tile.sprite, &colorSwap);
+					if (tile.shader)
+						this->drawSpriteWithShader(window, tile.sprite, tile.shaderName, tile.shaderOptions);
+					else
+						window.draw(tile.sprite);
 #else
 					window.draw(tile.sprite);
 #endif

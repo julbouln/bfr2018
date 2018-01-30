@@ -5,6 +5,8 @@
 #include "Components.hpp"
 #include "TextureManager.hpp"
 #include "SoundBufferManager.hpp"
+#include "FontManager.hpp"
+#include "ShaderManager.hpp"
 
 #include "tinyxml2.h"
 #include "tixml2ex.h"
@@ -64,6 +66,8 @@ class EntityFactory {
 public:
 	TextureManager texManager;
 	SoundBufferManager sndManager;
+	FontManager fntManager;
+	ShaderManager shrManager;
 
 	TextureLoader texLoader;
 	SoundBufferLoader sndLoader;
@@ -83,10 +87,16 @@ public:
 	}
 
 	void loadInitial() {
+		fntManager.load("samos", "medias/fonts/samos.ttf");
 		texLoader.loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
 	}
 
 	void loadMisc() {
+#ifdef SHADER_ENABLE
+		shrManager.load("color_swap", "defs/new/shaders/color_swap.frag");
+		shrManager.load("pixelation", "defs/new/shaders/pixelation.frag");
+		shrManager.load("outline", "defs/new/shaders/outline.frag");
+#endif
 
 		texLoader.loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel.png");
 		texLoader.loadTextureWithWhiteMask("interface_neonaz", "medias/interface/bgs/interface_neonaz.png");
@@ -126,15 +136,14 @@ public:
 
 		texLoader.loadTextureWithWhiteMask("blood", "medias/misc/blood.png");
 
-		sndManager.loadSoundBuffer("combo", "medias/misc/combo.flac");
-		sndManager.loadSoundBuffer("killer", "medias/misc/killer.flac");
-		sndManager.loadSoundBuffer("megakill", "medias/misc/megakill.flac");
-		sndManager.loadSoundBuffer("barbarian", "medias/misc/barbarian.flac");
-		sndManager.loadSoundBuffer("butchery", "medias/misc/butchery.flac");
+		sndManager.load("combo", "medias/misc/combo.flac");
+		sndManager.load("killer", "medias/misc/killer.flac");
+		sndManager.load("megakill", "medias/misc/megakill.flac");
+		sndManager.load("barbarian", "medias/misc/barbarian.flac");
+		sndManager.load("butchery", "medias/misc/butchery.flac");
 
 		texLoader.loadTextureWithWhiteMask("baril_fx", "medias/extra/baril.png");
 		texLoader.loadTextureWithWhiteMask("pepino_fx", "medias/extra/pepino.png");
-
 	}
 
 	void autoTransition(sf::Image &img) {
@@ -197,11 +206,11 @@ public:
 	void loadTerrains() {
 		sf::Image terrains;
 		terrains.loadFromFile("medias/tiles/terrains.png");
-		texManager.loadTexture("sand", terrains, sf::IntRect{0, 0, 32, 96});
-		texManager.loadTexture("water", terrains, sf::IntRect{32, 0, 32, 96});
-		texManager.loadTexture("grass", terrains, sf::IntRect{64, 0, 32, 96});
-		texManager.loadTexture("dirt", terrains, sf::IntRect{96, 0, 32, 96});
-		texManager.loadTexture("concrete", terrains, sf::IntRect{128, 0, 32, 96});
+		texManager.load("sand", terrains, sf::IntRect{0, 0, 32, 96});
+		texManager.load("water", terrains, sf::IntRect{32, 0, 32, 96});
+		texManager.load("grass", terrains, sf::IntRect{64, 0, 32, 96});
+		texManager.load("dirt", terrains, sf::IntRect{96, 0, 32, 96});
+		texManager.load("concrete", terrains, sf::IntRect{128, 0, 32, 96});
 
 		sf::Image transitions;
 		transitions.loadFromFile("medias/new/transitions.png");
@@ -209,13 +218,13 @@ public:
 
 		this->autoTransition(transitions);
 
-		texManager.loadTexture("sand_transition", transitions, sf::IntRect{0, 0, 32, 1024});
-		texManager.loadTexture("water_transition", transitions, sf::IntRect{32, 0, 32, 1024});
-		texManager.loadTexture("dirt_transition", transitions, sf::IntRect{96, 0, 32, 1024});
-		texManager.loadTexture("concrete_transition", transitions, sf::IntRect{128, 0, 32, 1024});
+		texManager.load("sand_transition", transitions, sf::IntRect{0, 0, 32, 1024});
+		texManager.load("water_transition", transitions, sf::IntRect{32, 0, 32, 1024});
+		texManager.load("dirt_transition", transitions, sf::IntRect{96, 0, 32, 1024});
+		texManager.load("concrete_transition", transitions, sf::IntRect{128, 0, 32, 1024});
 
-		texManager.loadTexture("fog_transition", "medias/new/fog.png");
-		texManager.loadTexture("debug_transition", "medias/new/debug_transitions256.png");
+		texManager.load("fog_transition", "medias/new/fog.png");
+		texManager.load("debug_transition", "medias/new/debug_transitions256.png");
 	}
 
 	TechNode loadTechTree(std::string filename) {
@@ -310,6 +319,8 @@ public:
 		tile.sprite.setTexture(texManager.getRef(name));
 		tile.direction = North;
 		tile.state = "idle";
+		tile.shader = false;
+
 		this->resetTileAnim(tile, "idle");
 		tile.centerRect = this->getCenterRect(name);
 	}
@@ -342,6 +353,7 @@ public:
 		tile.pos = sf::Vector2i(0, 0);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 		tile.z = 0;
+		tile.shader = false;
 
 		tile.sprite.setTexture(texManager.getRef(name));
 
@@ -372,7 +384,30 @@ public:
 // Unit
 #define UNIT_FRAME_COUNT 10
 
-	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID player, std::string name, int x, int y) {
+	void setColorSwapShader(entt::Registry<EntityID> &registry, Tile &tile, EntityID playerEnt) {
+#ifdef SHADER_ENABLE
+		Player &player = registry.get<Player>(playerEnt);
+
+		sf::Color col1 = sf::Color(3, 255, 205);
+		sf::Color col2 = sf::Color(0, 235, 188);
+		sf::Color replace1 = this->getPlayerColor(col1, player.colorIdx);
+		sf::Color replace2 = this->getPlayerColor(col2, player.colorIdx);
+
+		ShaderOptions shaderOptions;
+		shaderOptions.colors["color1"] = col1;
+		shaderOptions.colors["replace1"] = replace1;
+		shaderOptions.colors["color2"] = col2;
+		shaderOptions.colors["replace2"] = replace2;
+
+		tile.shader = true;
+		tile.shaderName = "color_swap";
+		tile.shaderOptions = shaderOptions;
+#else
+		tile.shader = false;
+#endif
+	}
+
+	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID playerEnt, std::string name, int x, int y) {
 		EntityID entity = registry.create();
 #ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: create unit " << entity << " " << name << " at " << x << "x" << y << std::endl;
@@ -385,12 +420,13 @@ public:
 
 		tile.direction = South;
 		this->resetTileAnim(tile, "idle");
+		this->setColorSwapShader(registry, tile, playerEnt);
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 
 //		this->addProjectileFromXml(registry, name, obj );
-		obj.player = player;
+		obj.player = playerEnt;
 		obj.mapped = true;
 		obj.destroy = false;
 
@@ -439,13 +475,13 @@ public:
 		return entity;
 	}
 
-	EntityID finishBuilding(entt::Registry<EntityID> &registry, EntityID entity, EntityID player, int x, int y, bool built) {
+	EntityID finishBuilding(entt::Registry<EntityID> &registry, EntityID entity, EntityID playerEnt, int x, int y, bool built) {
 		GameObject &obj = registry.get<GameObject>(entity);
 #ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: finish building " << entity << " " << obj.name << " at " << x << "x" << y << std::endl;
 #endif
 
-		obj.player = player;
+		obj.player = playerEnt;
 		obj.mapped = built;
 
 		Tile tile;
@@ -453,6 +489,7 @@ public:
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		this->setColorSwapShader(registry, tile, playerEnt);
 
 		registry.assign<Tile>(entity, tile);
 
@@ -504,6 +541,7 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 		tile.z = 0;
+		tile.shader = false;
 
 		tile.sprite.setTexture(texManager.getRef(name));
 
@@ -543,7 +581,7 @@ public:
 		Tile &oldTile = registry.get<Tile>(entity);
 
 		Tile tile;
-		tileParser.parse(tile, this->getXmlComponent(rname, "tile"));
+		this->parseTileFromXml(rname, tile);
 
 		tile.pos = oldTile.pos;
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;

@@ -4,7 +4,7 @@
   <texture mode="build_button" name="icon" path="medias/buildings/rebels/festival/pics/festival-icon.png"/>
   <tile>
     <psize x="320" y="364"/>
-    <size x="6" y="4"/>
+    <size x="6" y="3"/>
     <offset x="0" y="0"/>
     <animations>
       <animation name="idle">

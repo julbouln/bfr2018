@@ -382,7 +382,7 @@ public:
 
 	}
 
-	void initCorpse(std::string name) {
+	void initCorpse(std::string name, EntityID playerEnt) {
 		Tile tile;
 		this->vault->factory.parseTileFromXml(name, tile);
 
@@ -391,8 +391,9 @@ public:
 		tile.z = 0;
 
 		tile.sprite.setTexture(this->vault->factory.getTex(name));
-
 		tile.state = "die";
+		tile.shader = false;
+		this->vault->factory.setColorSwapShader(this->vault->registry, tile, playerEnt);
 
 		AnimationHandler &dieAnim = tile.animHandlers["die"];
 
@@ -408,24 +409,25 @@ public:
 		std::vector<EntityID> tvec;
 		tvec.push_back(this->vault->registry.create());
 		this->vault->registry.assign<Tile>(tvec.front(), tile);
-		tiles[name + "_corpse"] = tvec;
+		tiles[name + "_corpse_" + std::to_string(playerEnt)] = tvec; // UGLY and unoptimized
 	}
 
+	// init corpses and ruins tiles, must be called after player creation
 	void initCorpses() {
-		for (TechNode *node : this->vault->factory.getTechNodes("rebel")) {
-			if (node->comp == TechComponent::Character) {
-				this->initCorpse(node->type);
-			}
-		}
-		for (TechNode *node : this->vault->factory.getTechNodes("neonaz")) {
-			if (node->comp == TechComponent::Character) {
-				this->initCorpse(node->type);
+		auto playerView = this->vault->registry.view<Player>();
+		for (EntityID playerEnt : playerView) {
+			Player &player = playerView.get(playerEnt);
+			for (TechNode *node : this->vault->factory.getTechNodes(player.team)) {
+				if (node->comp == TechComponent::Character) {
+					this->initCorpse(node->type, playerEnt);
+				}
 			}
 		}
 
 		Tile ruinTile;
 		ruinTile.pos = sf::Vector2i(0, 0);
 		ruinTile.ppos = sf::Vector2f(ruinTile.pos) * (float)32.0;
+		ruinTile.shader = false;
 
 		ruinTile.sprite.setTexture(this->vault->factory.getTex("ruin"));
 

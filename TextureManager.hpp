@@ -15,7 +15,7 @@ private:
 
 public:
 
-    void loadTexture(std::string name, int w, int h)
+    void load(std::string name, int w, int h)
     {
         if (this->textures.count(name) == 0) {
             sf::Texture tex;
@@ -25,7 +25,7 @@ public:
         return;
     }
 
-    void loadTexture(std::string name, const std::string& filename)
+    void load(std::string name, const std::string& filename)
     {
 
         if (this->textures.count(name) == 0) {
@@ -39,10 +39,15 @@ public:
             /* Add it to the list of textures */
             this->textures[name] = tex;
         }
+#ifdef MANAGER_DEBUG
+        else {
+            std::cout << "TextureManager: " << name << " already loaded" << std::endl;
+        }
+#endif
         return;
     }
 
-    void loadTexture(std::string name, sf::Image img, const sf::IntRect &area) {
+    void load(std::string name, sf::Image img, const sf::IntRect &area) {
 
         if (this->textures.count(name) == 0) {
 #ifdef MANAGER_DEBUG
@@ -55,21 +60,20 @@ public:
             /* Add it to the list of textures */
             this->textures[name] = tex;
         }
+#ifdef MANAGER_DEBUG
+        else {
+            std::cout << "TextureManager: " << name << " already loaded" << std::endl;
+        }
+#endif
         return;
-
     }
 
-    sf::Texture& getRef(std::string texture)
+    sf::Texture& getRef(std::string name)
     {
-        return this->textures.at(texture);
+        return this->textures.at(name);
     }
 
-    bool hasRef(std::string texture) {
-        return this->textures.count(texture) > 0;
-    }
-
-    /* Constructor */
-    TextureManager()
-    {
+    bool hasRef(std::string name) {
+        return this->textures.count(name) > 0;
     }
 };

@@ -202,7 +202,7 @@ public:
 			return false;
 	}
 
-	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions{}) {
+	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions()) {
 		if (this->vault->registry.has<Effects>(emitter)) {
 			Effects &effects = this->vault->registry.get<Effects>(emitter);
 			if (effects.effects.count(name) > 0) {
@@ -251,14 +251,14 @@ public:
 		return obj.life;
 	}
 
-	void changeState(Tile &tile, std::string state) {
+	void changeState(Tile & tile, std::string state) {
 		if (tile.state != state) {
 			tile.state = state;
 			this->vault->factory.resetTileAnim(tile, state);
 		}
 	}
 
-	void playSound(sf::Sound &snd, std::string name) {
+	void playSound(sf::Sound & snd, std::string name) {
 		snd.setBuffer(this->vault->factory.getSndBuf(name));
 		snd.play();
 	}
@@ -270,7 +270,7 @@ public:
 		this->playRandomUnitSound(obj, unit, state);
 	}
 
-	void playRandomUnitSound(GameObject &obj, Unit &unit, std::string state) {
+	void playRandomUnitSound(GameObject & obj, Unit & unit, std::string state) {
 		if (unit.soundActions[state] > 0) {
 			int rnd = rand() % unit.soundActions[state];
 			std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
@@ -384,7 +384,7 @@ public:
 		}
 	}
 
-	void clearTarget(Unit &unit) {
+	void clearTarget(Unit & unit) {
 		unit.destAttack = 0;
 	}
 
@@ -393,7 +393,7 @@ public:
 		this->clearTarget(unit);
 	}
 
-	void goTo(Unit &unit, sf::Vector2i destpos) {
+	void goTo(Unit & unit, sf::Vector2i destpos) {
 		unit.destpos = destpos;
 		unit.nopath = 0;
 	}
@@ -403,7 +403,7 @@ public:
 		this->goTo(unit, destpos);
 	}
 
-	void attack(Unit &unit, EntityID destEnt) {
+	void attack(Unit & unit, EntityID destEnt) {
 		unit.destAttack = destEnt;
 	}
 

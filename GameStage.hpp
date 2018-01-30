@@ -17,8 +17,6 @@ public:
 
 	int nextStage;
 
-	sf::Font font;
-
 	sf::Text text;
 
 	GameStage() {

@@ -142,7 +142,7 @@ public:
 							if (destObj.player) {
 								Player &destPlayer = this->vault->registry.get<Player>(destObj.player);
 								if (this->vault->registry.has<Unit>(unit.destAttack)) {
-									if(this->approxDistance(destPlayer.initialPos, destTile.pos) < this->approxDistance(sf::Vector2i(0,0),sf::Vector2i(this->map->width,this->map->height))/4) {
+									if (this->approxDistance(destPlayer.initialPos, destTile.pos) < this->approxDistance(sf::Vector2i(0, 0), sf::Vector2i(this->map->width, this->map->height)) / 4) {
 										destPlayer.allFrontPoints.push_back(destTile.pos);
 									}
 								} else {
@@ -216,11 +216,19 @@ public:
 
 				if (tile.state == "die" && (rand() % 8) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
 					// alt die FX
-					ParticleEffectOptions projOptions;
-					projOptions.destPos = tile.ppos;
-					projOptions.direction = 0;
+					ParticleEffectOptions altOptions;
+					altOptions.destPos = tile.ppos;
+					altOptions.direction = 0;
+					// copy shader options from original tile
+					if(tile.shader) {
+						// setting screenSize will create a RenderTexture, only do this for effect needing shader
+						altOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
+						altOptions.applyShader = true;
+						altOptions.shader = this->vault->factory.shrManager.getRef(tile.shaderName);
+						altOptions.shaderOptions = tile.shaderOptions;
+					}
 
-					this->emitEffect("alt_die", entity, tile.ppos, 2.0, projOptions);
+					this->emitEffect("alt_die", entity, tile.ppos, 2.0, altOptions);
 					obj.destroy = true;
 				} else {
 					// unit died, destroy after playing anim

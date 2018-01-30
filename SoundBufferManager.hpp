@@ -9,16 +9,11 @@
 class SoundBufferManager
 {
 private:
-
-    /* Array of textures used */
     std::map<std::string, sf::SoundBuffer> buffers;
 
 public:
-
-
-    void loadSoundBuffer(std::string name, const std::string& filename)
+    void load(std::string name, const std::string& filename)
     {
-        /* Load the texture */
         if (this->buffers.count(name) == 0) {
             sf::SoundBuffer buf;
 #ifdef MANAGER_DEBUG
@@ -26,20 +21,24 @@ public:
 #endif
             buf.loadFromFile(filename);
 
-            /* Add it to the list of textures */
             this->buffers[name] = buf;
+        } 
+#ifdef MANAGER_DEBUG
+        else {
+            std::cout << "SoundBufferManager: " << name << " already loaded" << std::endl;
         }
+#endif
 
         return;
     }
 
-    sf::SoundBuffer& getRef(std::string texture)
+    sf::SoundBuffer& getRef(std::string name)
     {
-        return this->buffers.at(texture);
+        return this->buffers.at(name);
     }
 
-    /* Constructor */
-    SoundBufferManager()
-    {
+    bool hasRef(std::string name) {
+        return this->buffers.count(name) > 0;
     }
+
 };

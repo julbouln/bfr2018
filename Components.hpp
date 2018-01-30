@@ -12,6 +12,8 @@
 
 #include "Particles/ParticleSystem.h"
 
+#include "ShaderOptions.hpp"
+
 enum {
 	North,
 	NorthEast,
@@ -41,6 +43,10 @@ struct Tile {
 
 	std::string state;
 	unsigned int direction;
+
+	bool shader;
+	std::string shaderName;
+	ShaderOptions shaderOptions;
 };
 
 struct Attack {

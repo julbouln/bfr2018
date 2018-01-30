@@ -105,7 +105,6 @@ public:
 
 	GameEngine(Game *game) {
 		this->game = game;
-		font.loadFromFile("medias/fonts/samos.ttf");
 		this->init();
 		this->generate(64, 64, "rebel");
 		this->moveView = MoveView::DontMove;
@@ -114,7 +113,6 @@ public:
 
 	GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		this->game = game;
-		font.loadFromFile("medias/fonts/samos.ttf");
 		this->init();
 		this->generate(mapWidth, mapHeight, playerTeam);
 		this->moveView = MoveView::DontMove;
@@ -142,7 +140,7 @@ public:
 		this->setSize(this->game->width, this->game->height);
 		this->setVaults(&(this->game->vault));
 
-		text.setFont(font);
+		text.setFont(this->vault->factory.fntManager.getRef("samos"));
 		text.setCharacterSize(48);
 #if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
 		text.setFillColor(sf::Color::White);
@@ -237,7 +235,7 @@ public:
 		ai.nazAI.setVault(this->vault);
 		ai.nazAI.map = this->map;
 
-		scoreBonusText.setFont(font);
+		scoreBonusText.setFont(this->vault->factory.fntManager.getRef("samos"));
 		scoreBonusText.setCharacterSize(48);
 #if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
 		scoreBonusText.setFillColor(sf::Color::White);
@@ -275,7 +273,6 @@ public:
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		mapLayers.initTerrains();
 		mapLayers.initTransitions();
-		mapLayers.initCorpses();
 		mapLayers.generate(mapWidth, mapHeight);
 
 		std::vector<int> colorIndices;
@@ -354,8 +351,9 @@ public:
 			minimap_bg_h = this->vault->factory.getTex("minimap_" + player.team).getSize().y;
 			indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
 			indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
-
 		}
+
+		mapLayers.initCorpses();
 
 		minimapTarget.create(this->map->width, this->map->height);
 		minimap.setTexture(minimapTarget.getTexture());
@@ -1015,7 +1013,7 @@ public:
 
 			if (obj.destroy) {
 				if (this->vault->registry.has<Unit>(entity)) {
-					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse", 0);
+					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_"+std::to_string(obj.player), 0);
 //					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
 				}

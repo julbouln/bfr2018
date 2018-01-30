@@ -71,7 +71,7 @@ public:
 		img.loadFromFile(filename);
 		this->getSpecialPix(name, img, img.getSize().x, img.getSize().y);
 		img.createMaskFromColor(sf::Color::White);
-		texManager->loadTexture(name, img, sf::IntRect{0, 0, (int)img.getSize().x, (int)img.getSize().y});
+		texManager->load(name, img, sf::IntRect{0, 0, (int)img.getSize().x, (int)img.getSize().y});
 	}
 
 	void loadTextureWithDirections(std::string name, std::string imgPath) {
@@ -110,25 +110,25 @@ public:
 #ifdef PARSER_DEBUG
 		std::cout << "TextureLoader: init dir texture " << name << " " << columnWidth << "x" << height << std::endl;
 #endif
-		texManager->loadTexture(name, outImage, sf::IntRect {0, 0, columnWidth * 8, height});
+		texManager->load(name, outImage, sf::IntRect {0, 0, columnWidth * 8, height});
 	}
 
 	void loadButton(std::string name, std::string filename) {
 		sf::Image but;
 		but.loadFromFile(filename);
-		texManager->loadTexture(name, but, sf::IntRect{0, 0, (int)but.getSize().x, (int)but.getSize().y / 2});
-		texManager->loadTexture(name + "_down", but, sf::IntRect{0, (int)(but.getSize().y / 2), (int)but.getSize().x, (int)(but.getSize().y) / 2});
+		texManager->load(name, but, sf::IntRect{0, 0, (int)but.getSize().x, (int)but.getSize().y / 2});
+		texManager->load(name + "_down", but, sf::IntRect{0, (int)(but.getSize().y / 2), (int)but.getSize().x, (int)(but.getSize().y) / 2});
 	}
 
 	void loadBuildButton(std::string name, std::string filename) {
 		sf::Image but;
 		but.loadFromFile(filename);
 		int height = (int)but.getSize().y / 5;
-		texManager->loadTexture(name, but, sf::IntRect{0, 0, (int)but.getSize().x, height});
-		texManager->loadTexture(name + "_down", but, sf::IntRect{0, height, (int)but.getSize().x, height});
-		texManager->loadTexture(name + "_building", but, sf::IntRect{0, height * 2, (int)but.getSize().x, height});
-		texManager->loadTexture(name + "_built", but, sf::IntRect{0, height * 3, (int)but.getSize().x, height});
-		texManager->loadTexture(name + "_built_down", but, sf::IntRect{0, height * 4, (int)but.getSize().x, height});
+		texManager->load(name, but, sf::IntRect{0, 0, (int)but.getSize().x, height});
+		texManager->load(name + "_down", but, sf::IntRect{0, height, (int)but.getSize().x, height});
+		texManager->load(name + "_building", but, sf::IntRect{0, height * 2, (int)but.getSize().x, height});
+		texManager->load(name + "_built", but, sf::IntRect{0, height * 3, (int)but.getSize().x, height});
+		texManager->load(name + "_built_down", but, sf::IntRect{0, height * 4, (int)but.getSize().x, height});
 	}
 
 	void recParse(std::string name, tinyxml2::XMLElement *element) {
@@ -158,7 +158,7 @@ public:
 
 					switch (mode) {
 					case TextureLoadMode::Default:
-						texManager->loadTexture(cname, path);
+						texManager->load(cname, path);
 						break;
 					case TextureLoadMode::WithWhiteMask:
 						this->loadTextureWithWhiteMask(cname, path);
@@ -224,7 +224,7 @@ public:
 				cname = child->Attribute("global");
 			}
 
-			sndManager->loadSoundBuffer(cname, child->Attribute("path"));
+			sndManager->load(cname, child->Attribute("path"));
 		} else {
 			for (tinyxml2::XMLElement *child : element) {
 				std::string nodeName = child->Name();
@@ -248,7 +248,7 @@ public:
 							ncname = child->Attribute("global");
 						}
 
-						sndManager->loadSoundBuffer(ncname, path);
+						sndManager->load(ncname, path);
 					}
 					i++;
 				}
@@ -310,10 +310,11 @@ public:
 
 			tile.psize = sf::Vector2f{(float)psizeEl->IntAttribute("x"), (float)psizeEl->IntAttribute("y")};
 
-			if (offsetEl)
-				tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
-			else
-				tile.offset = sf::Vector2i{0, 0};
+			// offset not needed, use center rect instead
+//			if (offsetEl)
+//				tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
+//			else
+			tile.offset = sf::Vector2i{0, 0};
 
 			int directions = 1;
 			if (element->Attribute("directions"))
@@ -449,11 +450,22 @@ static std::map<std::string, VelocityGeneratorMode> velGenModes =
 	{ "aimed", VelocityGeneratorMode::Aimed },
 };
 
-struct ParticleEffectOptions {
+class ParticleEffectOptions {
+public:
+	ParticleEffectOptions() {
+		texMgr = nullptr;
+		direction = 0;
+		applyShader = false;
+		shader = nullptr;
+	}
 	TextureManager *texMgr;
 	sf::Vector2f destPos; // for aimed swawner
 	int direction; // for aimed spawner
 	sf::Vector2i screenSize; // for metaball
+	// shader
+	bool applyShader;
+	sf::Shader *shader;
+	ShaderOptions shaderOptions;
 };
 
 class ParticleEffectParser {
@@ -488,22 +500,30 @@ public:
 				effect.particleSystem = new particles::PointParticleSystem(max);
 				break;
 			case ParticleSystemMode::Texture:
-				effect.particleSystem = new particles::TextureParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
+				effect.particleSystem = new particles::TextureParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
 				break;
 			case ParticleSystemMode::Spritesheet: {
-				effect.particleSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
+				auto spriteSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
 
-				auto texCoordGen = effect.particleSystem->addGenerator<particles::TexCoordsGenerator>();
+				auto texCoordGen = spriteSystem->addGenerator<particles::TexCoordsGenerator>();
 				texCoordGen->texCoords = sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y);
+
+				if (options.applyShader) {
+					spriteSystem->applyShader = options.applyShader;
+					spriteSystem->shader = options.shader;
+					spriteSystem->shaderOptions = options.shaderOptions;
+				}
+
+				effect.particleSystem = spriteSystem;
 			}
 			break;
 			case ParticleSystemMode::AnimatedSpritesheet: {
-				effect.particleSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
+				auto spriteSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
 
-				auto texCoordGen = effect.particleSystem->addGenerator<particles::TexCoordsGenerator>();
+				auto texCoordGen = spriteSystem->addGenerator<particles::TexCoordsGenerator>();
 				texCoordGen->texCoords = sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y);
 
-				auto animationUpdater = effect.particleSystem->addUpdater<particles::AnimationUpdater>();
+				auto animationUpdater = spriteSystem->addUpdater<particles::AnimationUpdater>();
 
 				tinyxml2::XMLElement * animEl = particleEl->FirstChildElement("animation");
 
@@ -528,6 +548,14 @@ public:
 					animationUpdater->frameTime = duration;// / animationUpdater->frames.size();
 					animationUpdater->looped = animEl->BoolAttribute("loop");
 				}
+
+				if (options.applyShader) {
+					spriteSystem->applyShader = options.applyShader;
+					spriteSystem->shader = options.shader;
+					spriteSystem->shaderOptions = options.shaderOptions;
+				}
+
+				effect.particleSystem = spriteSystem;
 
 			}
 			break;
