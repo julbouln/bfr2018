@@ -987,7 +987,7 @@ public:
 		minimapSprite.setScale(sf::Vector2f(this->minimapSize() / this->map->width, this->minimapSize() / this->map->height));
 		this->game->window.draw(minimapSprite);
 
-		minimap.drawFrame(this->game->window);
+//		minimap.drawFrame(this->game->window);
 		minimap.drawClip(this->game->window, mClip);
 
 		this->updateFading();

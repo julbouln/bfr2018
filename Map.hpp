@@ -58,8 +58,8 @@ enum class FogState {
 };
 
 class Fog {
-	std::vector<FogState> grid;
 public:
+	std::vector<FogState> grid;
 	unsigned int width;
 	unsigned int height;
 	Fog() {}
@@ -87,7 +87,7 @@ public:
 
 	inline int index(int x, int y) const { return x + width * y; }
 
-	FogState get(int x, int y) {
+	FogState get(int x, int y) const {
 		return grid[this->index(x, y)];
 	}
 

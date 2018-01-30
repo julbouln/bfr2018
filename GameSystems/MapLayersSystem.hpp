@@ -135,11 +135,9 @@ public:
 
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-			for (int x = 0; x < this->map->width; x++) {
-				for (int y = 0; y < this->map->height; y++) {
-					if (player.fog.get(x, y) == FogState::InSight)
-						player.fog.set(x, y, FogState::Hidden);
-				}
+			for(FogState &state : player.fog.grid) {
+				if(state == FogState::InSight)
+					state = FogState::Hidden;
 			}
 		}
 
