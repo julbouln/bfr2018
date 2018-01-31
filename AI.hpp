@@ -700,4 +700,14 @@ public:
 		rebelAI.load("defs/new/ai/rebel.xml");
 		nazAI.load("defs/new/ai/neonaz.xml");
 	}
+
+	void setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight) {
+		this->vault = vault;
+		this->map = map;
+		this->screenWidth = screenWidth;
+		this->screenHeight = screenHeight;
+
+		this->rebelAI.setShared(this->vault, map, screenWidth, screenHeight);
+		this->nazAI.setShared(this->vault, map, screenWidth, screenHeight);
+	}
 };

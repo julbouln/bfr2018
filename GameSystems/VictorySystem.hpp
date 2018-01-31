@@ -3,14 +3,88 @@
 #include "GameSystem.hpp"
 
 class VictorySystem : public GameSystem {
+	bool scoreBonus;
+	sf::Text scoreBonusText;
+	sf::Sound scoreSound;
+
 public:
+	void init() {
+		scoreBonusText.setFont(this->vault->factory.fntManager.getRef("samos"));
+		scoreBonusText.setCharacterSize(48);
+#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
+		scoreBonusText.setFillColor(sf::Color::White);
+#else
+		// SFML 2.3
+		scoreBonusText.setColor(sf::Color::White);
+#endif
+	}
+
+	void updatePlayerBonus(EntityID entity) {
+		Player &player = this->vault->registry.get<Player>(entity);
+		switch (player.kills.size()) {
+		case 0:
+			this->scoreBonus = false;
+			break;
+		case 1:
+			this->scoreBonus = false;
+			// normal
+			break;
+		case 2:
+			this->scoreBonus = true;
+			this->scoreBonusText.setString("COMBO");
+			this->map->sounds.push(SoundPlay{"combo", 1, true, sf::Vector2i{0, 0}});
+			break;
+		case 3:
+			this->scoreBonus = true;
+			this->scoreBonusText.setString("SERIAL KILLER");
+			this->map->sounds.push(SoundPlay{"killer", 1, true, sf::Vector2i{0, 0}});
+			break;
+		case 4:
+			this->scoreBonus = true;
+			this->scoreBonusText.setString("MEGAKILL");
+			this->map->sounds.push(SoundPlay{"megakill", 1, true, sf::Vector2i{0, 0}});
+			break;
+		case 5:
+			this->scoreBonus = true;
+			this->scoreBonusText.setString("BARBARIAN");
+			this->map->sounds.push(SoundPlay{"barbarian", 1, true, sf::Vector2i{0, 0}});
+			break;
+		default: // >= 6
+			this->scoreBonus = true;
+			this->scoreBonusText.setString("BUTCHERY");
+			this->map->sounds.push(SoundPlay{"butchery", 1, true, sf::Vector2i{0, 0}});
+			break;
+		}
+	}
+
+	void draw(sf::RenderWindow &window, float dt) {
+		if (this->scoreBonus) {
+			sf::FloatRect textRect = this->scoreBonusText.getLocalBounds();
+			scoreBonusText.setOrigin(textRect.left + textRect.width / 2.0f,
+			                         textRect.top  + textRect.height / 2.0f);
+			scoreBonusText.setPosition(sf::Vector2f(this->screenWidth / 2, this->screenHeight / 2));
+			window.draw(scoreBonusText);
+		}
+	}
+
+	void clearStats() {
+		auto playerView = this->vault->registry.view<Player>();
+
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+			// FIMXE: not sure we should clean that there
+			player.kills.clear();
+		}
+	}
+
 	void updateStats(float dt) {
 		auto playerView = this->vault->registry.view<Player>();
 
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-//			std::cout << "Player "<<entity<< " "<<player.team<<" kills "<<player.kills.size() << std::endl;
-
+#ifdef VICTORY_DEBUG
+			std::cout << "Player " << entity << " " << player.team << " kills " << player.kills.size() << std::endl;
+#endif
 			player.butchery += pow(player.kills.size(), 2);
 
 			switch (player.kills.size()) {
@@ -78,8 +152,8 @@ public:
 			if (entity != playerEnt) {
 				Player &otherPlayer = view.get(entity);
 				if (otherPlayer.team != player.team) {
-					for (auto o : otherPlayer.objsByType) {
-						ennemyObjs += o.second.size();
+					for (auto pair : otherPlayer.objsByType) {
+						ennemyObjs += pair.second.size();
 					}
 				}
 

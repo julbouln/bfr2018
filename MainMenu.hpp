@@ -24,7 +24,7 @@ public:
 			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(0, 0, 0, 255) );
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
 			if (ImGui::Button("Play", sz)) {
-				nextStage = 1;
+				nextStage = NextStageStr("play_menu");
 				this->fadeOut();
 			}
 
@@ -78,7 +78,7 @@ public:
 
 	void fadeOutCallback() {
 		switch (nextStage) {
-		case 1:
+		case NextStageStr("play_menu"):
 			this->game->pushRegisteredStage("play_menu");
 			break;
 		}

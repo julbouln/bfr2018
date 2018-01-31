@@ -3,6 +3,8 @@
 #include "Stage.hpp"
 #include "Game.hpp"
 
+typedef entt::HashedString::hash_type NextStage;
+typedef entt::HashedString NextStageStr;
 
 class GameStage : public Stage {
 public:
@@ -15,7 +17,7 @@ public:
 	int fadeType;
 	int fadeSpeed;
 
-	int nextStage;
+	NextStage nextStage;
 
 	sf::Text version;
 	sf::Text text;

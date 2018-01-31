@@ -41,6 +41,8 @@ struct Tile {
 	sf::Sprite sprite;
 	std::map<std::string, AnimationHandler> animHandlers;
 
+//	std::map<std::string, SpritesheetHandler> spritesheetHandlers;
+
 	std::string state;
 	unsigned int direction;
 

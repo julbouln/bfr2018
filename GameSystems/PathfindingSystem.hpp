@@ -7,7 +7,19 @@
 #define PATHFINDING_MAX_NO_PATH 16
 
 class PathfindingSystem : public GameSystem {
+	JPS::Searcher<Map> *search;
 public:
+	PathfindingSystem() {
+		search = nullptr;
+	}
+
+	~PathfindingSystem() {
+		if(search)
+			delete search;
+	}
+	void init() {
+		search = new JPS::Searcher<Map>(*this->map);
+	}
 	void updatePathfindingLayer(float dt) {
 		this->map->pathfinding.clear();
 		auto buildingView = this->vault->registry.persistent<Tile, Building>();
@@ -85,7 +97,8 @@ public:
 					if (tile.pos != unit.destpos) {
 
 						JPS::PathVector path;
-						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
+//						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
+						bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
 
 						if (found) {
 							sf::Vector2i cpos(tile.pos.x, tile.pos.y);

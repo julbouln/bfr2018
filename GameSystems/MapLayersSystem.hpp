@@ -135,8 +135,8 @@ public:
 
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-			for(FogState &state : player.fog.grid) {
-				if(state == FogState::InSight)
+			for (FogState &state : player.fog.grid) {
+				if (state == FogState::InSight)
 					state = FogState::Hidden;
 			}
 		}
@@ -148,6 +148,15 @@ public:
 			Player &player = this->vault->registry.get<Player>(obj.player);
 
 			if (obj.mapped) {
+				sf::IntRect surfRect = this->tileSurfaceExtendedRect(tile, obj.view);
+				/*
+				for (int y = surfRect.top; y < surfRect.top + surfRect.height; ++y) {
+					for (int x = surfRect.left; x < surfRect.left + surfRect.width; ++x) {
+						if(this->map->bound(x,y))
+							player.fog.set(x, y, FogState::InSight);
+					}
+				}
+				*/
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					player.fog.set(p.x, p.y, FogState::InSight);
 				}
@@ -671,7 +680,7 @@ public:
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				this->map->decors.set(p.x, p.y, entity);
-				if(decor.blocking)
+				if (decor.blocking)
 					this->map->staticBuildable.set(p.x, p.y, entity);
 			}
 

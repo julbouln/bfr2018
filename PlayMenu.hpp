@@ -37,19 +37,19 @@ public:
 
 //			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
 			if (ImGui::Button("Back", sz)) {
-				nextStage = 1;
+				nextStage = NextStageStr("main_menu");
 				this->fadeOut();
 			}; ImGui::SameLine();
 
 			if (this->game->isRegisteredStage("game")) {
 				if (ImGui::Button("Continue", sz)) {
-					nextStage = 3;
+					nextStage = NextStageStr("continue_game");
 					this->fadeOut();
 				}; ImGui::SameLine();
 			}
 
 			if (ImGui::Button("Play", sz)) {
-				nextStage = 2;
+				nextStage = NextStageStr("new_game");
 				this->fadeOut();
 			}
 //			ImGui::PopStyleVar();
@@ -94,10 +94,10 @@ public:
 
 	void fadeOutCallback() {
 		switch (nextStage) {
-		case 1:
+		case NextStageStr("main_menu"):
 			this->game->pushRegisteredStage("main_menu");
 			break;
-		case 2: {
+		case NextStageStr("new_game"): {
 			std::string playerTeam = "rebel";
 			unsigned int mapWidth = 64;
 			unsigned int mapHeight = 64;
@@ -143,7 +143,7 @@ public:
 			this->game->pushRegisteredStage("game");
 		}
 		break;
-		case 3:
+		case NextStageStr("continue_game"):
 			this->game->pushRegisteredStage("game");
 			break;
 		}

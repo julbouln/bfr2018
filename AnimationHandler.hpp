@@ -4,6 +4,130 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+class Spritesheet {
+public:
+    sf::Vector2i size;
+    sf::Vector2i currentPosition;
+
+    Spritesheet() {
+    }
+    Spritesheet(sf::Vector2i size) : size(size) {}
+
+    void setSize(sf::Vector2i size) {
+        this->size = size;
+    }
+
+    void setPosition(sf::Vector2i pos) {
+        this->currentPosition = pos;
+    }
+
+    virtual void update(float dt) {
+    }
+
+    // get current position sprite texture bounding rect
+    sf::IntRect getBoundingRect() {
+        return sf::IntRect(this->currentPosition.x * size.x, this->currentPosition.y * size.y, size.x, size.y);
+    }
+};
+
+class AnimatedSpritesheet : Spritesheet {
+public:
+    // is looping
+    bool loop;
+    // each frame duration
+    float duration;
+    // frames
+    std::vector<sf::Vector2i> frames;
+    // current frame
+    int currentFrame;
+    // current time since the animation loop started
+    float t;
+    // number of loop since animation started
+    int l;
+
+    // called when frame change
+    std::function<void(int)> frameChangeCallback;
+
+    AnimatedSpritesheet() {
+        this->currentFrame = 0;
+        this->duration = 0.0;
+        this->frameChangeCallback = [](int frame) {};
+        this->loop = true;
+    }
+
+    void addFrame(sf::Vector2i frameRect) {
+        this->frames.push_back(frameRect);
+    }
+
+    void setDuration(float duration) {
+        this->duration = duration;
+    }
+
+    void setLoop(bool loop) {
+        this->loop = loop;
+    }
+
+    virtual void update(float dt) override {
+        if (int((t + dt) / duration) > int(t / duration))
+        {
+            /* Calculate the frame number */
+            int frame = int((t + dt) / duration);
+
+            /* Adjust for looping */
+            if (this->loop)
+                frame %= this->frames.size();
+
+            if (frame != this->currentFrame) {
+                this->frameChangeCallback(frame);
+            }
+
+            this->currentFrame = frame;
+
+            if (this->currentFrame < this->frames.size()) {
+                this->currentPosition = this->frames[this->currentFrame];
+            }
+        }
+
+        // increment the time elapsed
+        this->t += dt;
+
+        if (this->t > this->duration * frames.size()) {
+            // reset time and increment loop count if loop
+            if (this->loop) {
+                this->t = 0.0f;
+                this->l++;
+            } else {
+                this->l = 1;
+            }
+        }
+    }
+};
+
+class SpritesheetHandler {
+    std::vector<Spritesheet*> sheets;
+    int currentSheet;
+public:
+    SpritesheetHandler() {
+        this->currentSheet = 0;
+    }
+    void add(Spritesheet *sheet) {
+        this->sheets.push_back(sheet);
+    }
+
+    void setCurrent(int cur) {
+        this->currentSheet = cur;
+    }
+
+    void update(float dt) {
+        this->sheets[this->currentSheet]->update(dt);
+    }
+
+    sf::IntRect getBoundingRect() {
+        this->sheets[this->currentSheet]->getBoundingRect();
+    }
+};
+
+// TODO: deprecate
 enum class AnimationType {
     Static,
     Timer

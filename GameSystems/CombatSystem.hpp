@@ -15,7 +15,7 @@ public:
 
 			std::vector<Point> points;
 			for (auto &p : player.allFrontPoints) {
-				points.push_back(Point{p.x, p.y});
+				points.push_back(Point{(double)p.x, (double)p.y});
 			}
 			player.allFrontPoints.clear();
 			player.frontPoints.clear();
@@ -40,8 +40,8 @@ public:
 //				std::cout << "Point(" << points[i].x << ", " << points[i].y << "): " << labels[i] << std::endl;
 			}
 
-			for (auto o : points_map) {
-				player.frontPoints.push_back(FrontPoint{sf::Vector2i(o.second.x / points_map_size[o.first], o.second.y / points_map_size[o.first]), points_map_size[o.first]});
+			for (auto pair : points_map) {
+				player.frontPoints.push_back(FrontPoint{sf::Vector2i(pair.second.x / points_map_size[pair.first], pair.second.y / points_map_size[pair.first]), points_map_size[pair.first]});
 			}
 
 			std::sort (player.frontPoints.begin(), player.frontPoints.end(), FrontPointCompare());

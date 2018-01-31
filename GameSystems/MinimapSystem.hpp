@@ -6,7 +6,11 @@ class MinimapSystem : public GameSystem {
 	sf::Uint8* pixels;
 	sf::Texture texture;
 
+	sf::Sprite sprite;
+
 public:
+	sf::FloatRect rect;
+	float size;
 
 	MinimapSystem() {
 		pixels = nullptr;
@@ -23,6 +27,14 @@ public:
 		return texture;
 	}
 
+	void init(sf::Vector2f pos, float s) {
+		texture.create(this->map->width, this->map->height);
+		pixels = new sf::Uint8[this->map->width * this->map->height * 4];
+		rect = sf::FloatRect(pos.x,pos.y,s,s);
+		size = s;
+		sprite.setTexture(texture);
+	}
+
 	inline void setMinimapPixel(int idx, sf::Color color) {
 		pixels[4 * idx] = color.r;
 		pixels[4 * idx + 1] = color.g;
@@ -30,7 +42,7 @@ public:
 		pixels[4 * idx + 3] = color.a;
 	}
 
-	void update(EntityID playerEnt) {
+	void update(EntityID playerEnt, float dt) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 
 		int idx = 0;
@@ -41,7 +53,7 @@ public:
 					EntityID terrainEnt = this->map->terrainsForTransitions.get(x, y);
 					if (terrainEnt) {
 						if (fogSt != FogState::Hidden) {
-							this->setMinimapPixel(idx, sf::Color(0x67,0x51,0x0e,0xff));
+							this->setMinimapPixel(idx, sf::Color(0x67, 0x51, 0x0e, 0xff));
 						} else {
 							this->setMinimapPixel(idx, sf::Color(0x63, 0x4d, 0x0a, 0x7f));
 						}
@@ -64,23 +76,26 @@ public:
 		texture.update(pixels);
 	}
 
-	void drawFrame(sf::RenderWindow &window) {
-		// frame rectangle
-		sf::RectangleShape r;
-		sf::Vector2f rPos(1, 1);
-		r.setSize(sf::Vector2f(this->map->width - 2, this->map->height - 2));
-		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));
-		r.setOutlineThickness(1);
-		r.setPosition(rPos);
-		window.draw(r);
+	void draw(sf::RenderWindow &window, float dt) {
+		sprite.setPosition(sf::Vector2f(rect.left, rect.top));
+		sprite.setScale(sf::Vector2f(this->size / this->map->width, this->size / this->map->height));
+		window.draw(sprite);
+
+		this->drawFrame(window);
 	}
 
-	void drawClip(sf::RenderWindow &window, sf::IntRect clip) {
+
+	void drawClip(sf::RenderWindow &window, sf::View &view, sf::IntRect clip, float dt) {
+		sf::IntRect mClip = clip;
+		mClip.left = (rect.left + (view.getCenter().x / 32.0 - (this->screenWidth) / 32.0 / 2.0) * (this->size / this->map->width));
+		mClip.top = (rect.top + (view.getCenter().y / 32.0 - (this->screenHeight) / 32.0 / 2.0) * (this->size / this->map->height));
+		mClip.width = (int)((float)(this->screenWidth / 32.0) * (this->size / this->map->width));
+		mClip.height = (int)((float)(this->screenHeight / 32.0) * (this->size / this->map->height));
+
 		// clip rectangle
 		sf::RectangleShape clipR;
-		sf::Vector2f clipPos(clip.left, clip.top);
-		clipR.setSize(sf::Vector2f(clip.width, clip.height));
+		sf::Vector2f clipPos(mClip.left, mClip.top);
+		clipR.setSize(sf::Vector2f(mClip.width, mClip.height));
 		clipR.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
 		clipR.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0xff));
 		clipR.setOutlineThickness(1);
@@ -88,4 +103,16 @@ public:
 		window.draw(clipR);
 	}
 
+private:
+	void drawFrame(sf::RenderWindow &window) {
+		// frame rectangle
+		sf::RectangleShape r;
+		sf::Vector2f rPos(rect.left+1, rect.top+1);
+		r.setSize(sf::Vector2f(size - 2, size - 2));
+		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));
+		r.setOutlineThickness(1);
+		r.setPosition(rPos);
+		window.draw(r);
+	}
 };

@@ -14,6 +14,13 @@ public:
 	int screenWidth;
 	int screenHeight;
 
+	void setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight) {
+		this->vault = vault;
+		this->map = map;
+		this->screenWidth = screenWidth;
+		this->screenHeight = screenHeight;
+	}
+
 	sf::Vector2f tileDrawPosition(Tile &tile) {
 		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32,
 		                    tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32
@@ -27,6 +34,7 @@ public:
 
 	std::vector<sf::Vector2i> tileSurface(Tile &tile) {
 		std::vector<sf::Vector2i> surface;
+		surface.reserve(tile.size.x * tile.size.y); // optimize by reserving expected vector size
 		for (int w = 0; w < tile.size.x; ++w) {
 			for (int h = 0; h < tile.size.y; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
@@ -39,6 +47,7 @@ public:
 
 	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) {
 		std::vector<sf::Vector2i> surface;
+		surface.reserve((dist * 2) * (dist * 2)); // optimize by reserving expected vector size
 		for (int w = -dist; w < dist + 1; ++w) {
 			for (int h = -dist; h < dist + 1; ++h) {
 				sf::Vector2i p(pos.x + w, pos.y + h);
@@ -51,6 +60,7 @@ public:
 
 	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) {
 		std::vector<sf::Vector2i> surface;
+		surface.reserve((tile.size.x + dist * 2) * (tile.size.y + dist * 2)); // optimize by reserving expected vector size
 		for (int w = -dist; w < tile.size.x + dist; ++w) {
 			for (int h = -dist; h < tile.size.y + dist; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
@@ -59,6 +69,16 @@ public:
 			}
 		}
 		return surface;
+	}
+
+	sf::IntRect tileSurfaceRect(Tile &tile) {
+		sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(0, 0));
+		return sf::IntRect(p.x, p.y, tile.size.x, tile.size.y);
+	}
+
+	sf::IntRect tileSurfaceExtendedRect(Tile &tile, int dist) {
+		sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(0, 0));
+		return sf::IntRect(p.x - dist, p.y - dist, tile.size.x + dist * 2, tile.size.y + dist * 2);
 	}
 
 	std::vector<sf::Vector2i> tileAround(Tile &tile, int dist) {
@@ -286,8 +306,8 @@ public:
 			for (sf::Vector2i const &p : this->tileAround(tile, 1)) {
 				float rnd = ((float) rand()) / (float) RAND_MAX;
 				if (rnd > 0.85) {
-					if (!this->map->resources.get(p.x, p.y) && 
-						!this->map->objs.get(p.x, p.y) && this->map->staticBuildable.get(p.x, p.y) == 0) {
+					if (!this->map->resources.get(p.x, p.y) &&
+					        !this->map->objs.get(p.x, p.y) && this->map->staticBuildable.get(p.x, p.y) == 0) {
 //					std::cout << " seed "<<(int)type<< " at "<<p.x<<"x"<<p.y<<std::endl;
 						EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, type, p.x, p.y);
 						this->map->resources.set(p.x, p.y, resEnt);

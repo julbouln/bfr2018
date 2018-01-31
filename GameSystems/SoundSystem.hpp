@@ -15,7 +15,6 @@ public:
 
 		while (this->map->sounds.size() > 0) {
 			SoundPlay sndp = this->map->sounds.top();
-
 			if (sndp.name != "") {
 				sf::Sound sound;
 #ifdef SOUND_SYSTEM_DEBUG
@@ -34,7 +33,6 @@ public:
 
 			this->map->sounds.pop();
 		}
-
 	}
 
 	void cleanPlaying(float dt) {
@@ -45,5 +43,4 @@ public:
 			std::cout << "SoundSystem: still playing " << playing.size() << " sounds" << std::endl;
 #endif
 	}
-
 };

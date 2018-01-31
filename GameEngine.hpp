@@ -87,13 +87,6 @@ public:
 	unsigned long ticks;
 	bool markUpdateLayer;
 
-	bool scoreBonus;
-	sf::Text scoreBonusText;
-	sf::Sound scoreSound;
-
-	sf::Sprite minimapSprite;
-	sf::FloatRect minimapRect;
-
 	int debugCorner;
 	int gameSpeed;
 
@@ -171,9 +164,6 @@ public:
 #ifdef GAME_ENGINE_DEBUG
 		std::cout << "GameEngine: loaded !" << std::endl;
 #endif
-
-//		this->game->window.clear(sf::Color::Black);
-
 		this->initEffects();
 		this->fadeIn();
 		this->gameSpeed = 1;
@@ -191,10 +181,10 @@ public:
 	void fadeOutCallback() {
 		switch (this->nextStage)
 		{
-		case 1:
+		case NextStageStr("play_menu"):
 			this->game->pushRegisteredStage("play_menu");
 			break;
-		case 2: {
+		case NextStageStr("game_over"): {
 			this->game->pushRegisteredStage("game_over");
 		}
 		break;
@@ -202,50 +192,22 @@ public:
 	}
 
 	void setVaults(GameVault *vault) {
-		emptyEntity = vault->registry.create();
-
+		emptyEntity = vault->registry.create(); // create Entity 0 as special empty Entity
 		this->setVault(vault);
-		// init systems
-		tileAnim.setVault(vault);
-		tileAnim.map = this->map; // not needed
-		resources.setVault(vault);
-		resources.map = this->map;
-		drawMap.setVault(vault);
-		drawMap.map = this->map;
-		minimap.setVault(vault);
-		minimap.map = this->map;
-		mapLayers.setVault(vault);
-		mapLayers.map = this->map;
-		construction.setVault(vault);
-		construction.map = this->map;
-		pathfinding.setVault(vault);
-		pathfinding.map = this->map;
-		combat.setVault(vault);
-		combat.map = this->map;
-		combat.screenWidth = this->width;
-		combat.screenHeight = this->height;
-		victory.setVault(vault);
-		victory.map = this->map;
-		sound.setVault(vault);
-		sound.map = this->map;
-		fx.setVault(vault);
-		fx.map = this->map;
 
-		ai.setVault(vault);
-		ai.map = this->map;
-		ai.rebelAI.setVault(this->vault);
-		ai.rebelAI.map = this->map;
-		ai.nazAI.setVault(this->vault);
-		ai.nazAI.map = this->map;
-
-		scoreBonusText.setFont(this->vault->factory.fntManager.getRef("samos"));
-		scoreBonusText.setCharacterSize(48);
-#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
-		scoreBonusText.setFillColor(sf::Color::White);
-#else
-		// SFML 2.3
-		scoreBonusText.setColor(sf::Color::White);
-#endif
+		// set shared systems
+		tileAnim.setShared(vault, this->map, this->width, this->height);
+		resources.setShared(vault, this->map, this->width, this->height);
+		drawMap.setShared(vault, this->map, this->width, this->height);
+		minimap.setShared(vault, this->map, this->width, this->height);
+		mapLayers.setShared(vault, this->map, this->width, this->height);
+		construction.setShared(vault, this->map, this->width, this->height);
+		pathfinding.setShared(vault, this->map, this->width, this->height);
+		combat.setShared(vault, this->map, this->width, this->height);
+		victory.setShared(vault, this->map, this->width, this->height);
+		sound.setShared(vault, this->map, this->width, this->height);
+		fx.setShared(vault, this->map, this->width, this->height);
+		ai.setShared(vault, this->map, this->width, this->height);
 	}
 
 	void initView() {
@@ -268,9 +230,6 @@ public:
 	}
 	float scaleY() {
 		return this->height / 600.0;
-	}
-	float minimapSize() {
-		return 96.0 * this->scaleX();
 	}
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
@@ -360,12 +319,9 @@ public:
 
 		mapLayers.initCorpses();
 
-		minimapSprite.setTexture(minimap.createTexture());
-
-		// 128,512
-		// TODO: convert to window dimension relative coord
-//		minimapRect = sf::FloatRect(this->scaleX() * 128 - (this->minimapSize() / 2), this->scaleY() * 520 - (this->minimapSize() / 2), this->minimapSize(), this->minimapSize());
-		minimapRect = sf::FloatRect(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14), this->minimapSize(), this->minimapSize());
+		minimap.init(sf::Vector2f(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14)), 96.0 * this->scaleX());
+		victory.init();
+		pathfinding.init();
 	}
 
 	void menuGui() {
@@ -377,7 +333,7 @@ public:
 			if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("menu_button"),
 			                           this->vault->factory.texManager.getRef("menu_button"),
 			                           this->vault->factory.texManager.getRef("menu_button_down"))) {
-				nextStage = 1;
+				nextStage = NextStageStr("play_menu");
 				fadeOut();
 			}
 			ImGui::End();
@@ -685,7 +641,6 @@ public:
 				}
 			}
 		}
-
 	}
 
 // remove entity from selected is not valid anymore
@@ -704,8 +659,8 @@ public:
 			Player &player = playerView.get(entity);
 
 			int playerObjs = 0;
-			for (auto o : player.objsByType) {
-				playerObjs += o.second.size();
+			for (auto pair : player.objsByType) {
+				playerObjs += pair.second.size();
 			}
 #ifdef GAME_ENGINE_DEBUG
 			std::cout << "Player stats: " << entity << " " << player.team << " objs:" << playerObjs << " resources:" << player.resources << " butchery:" << player.butchery << std::endl;
@@ -724,7 +679,7 @@ public:
 
 				go->player = player;
 
-				nextStage = 2;
+				nextStage = NextStageStr("game_over");
 				fadeOut();
 			}
 		}
@@ -732,53 +687,10 @@ public:
 
 	void updateDecade(float dt) {
 		victory.updateStats(dt);
-
-		auto playerView = this->vault->registry.view<Player>();
-
-		for (EntityID entity : playerView) {
-			Player &player = playerView.get(entity);
-			if (entity == this->currentPlayer) {
-
-				switch (player.kills.size()) {
-				case 0:
-					this->scoreBonus = false;
-					break;
-				case 1:
-					this->scoreBonus = false;
-					// normal
-					break;
-				case 2:
-					this->scoreBonus = true;
-					this->scoreBonusText.setString("COMBO");
-					this->map->sounds.push(SoundPlay{"combo", 1, true, sf::Vector2i{0, 0}});
-					break;
-				case 3:
-					this->scoreBonus = true;
-					this->scoreBonusText.setString("SERIAL KILLER");
-					this->map->sounds.push(SoundPlay{"killer", 1, true, sf::Vector2i{0, 0}});
-					break;
-				case 4:
-					this->scoreBonus = true;
-					this->scoreBonusText.setString("MEGAKILL");
-					this->map->sounds.push(SoundPlay{"megakill", 1, true, sf::Vector2i{0, 0}});
-					break;
-				case 5:
-					this->scoreBonus = true;
-					this->scoreBonusText.setString("BARBARIAN");
-					this->map->sounds.push(SoundPlay{"barbarian", 1, true, sf::Vector2i{0, 0}});
-					break;
-				default: // >= 6
-					this->scoreBonus = true;
-					this->scoreBonusText.setString("BUTCHERY");
-					this->map->sounds.push(SoundPlay{"butchery", 1, true, sf::Vector2i{0, 0}});
-					break;
-				}
-			}
-			// FIMXE: not sure we should clean that there
-			player.kills.clear();
-		}
-
-		minimap.update(this->currentPlayer);
+		victory.updatePlayerBonus(this->currentPlayer);
+		victory.clearStats();
+		
+		minimap.update(this->currentPlayer, dt);
 		combat.updateFront(dt);
 	}
 
@@ -794,7 +706,6 @@ public:
 
 		this->sound.update(dt);
 		this->sound.cleanPlaying(dt);
-
 	}
 
 	sf::IntRect viewClip() {
@@ -956,15 +867,7 @@ public:
 		this->gameStateGui();
 		this->actionGui();
 
-		if (this->scoreBonus) {
-			sf::FloatRect textRect = this->scoreBonusText.getLocalBounds();
-			scoreBonusText.setOrigin(textRect.left + textRect.width / 2.0f,
-			                         textRect.top  + textRect.height / 2.0f);
-			scoreBonusText.setPosition(sf::Vector2f(this->width / 2, this->height / 2));
-
-			this->game->window.draw(scoreBonusText);
-		}
-
+		victory.draw(this->game->window, dt);
 		/*
 				indice_bg.setPosition(sf::Vector2f((this->width - indice_bg.getTexture()->getSize().x)/2.0, 0));
 				indice_bg.setScale(this->width / 800.0, this->height / 600.0);
@@ -977,18 +880,8 @@ public:
 				this->game->window.draw(indice);
 		*/
 
-		sf::IntRect mClip = clip;
-		mClip.left = (minimapRect.left + (this->gameView.getCenter().x / 32.0 - (this->width) / 32.0 / 2.0) * (this->minimapSize() / this->map->width));
-		mClip.top = (minimapRect.top + (this->gameView.getCenter().y / 32.0 - (this->height) / 32.0 / 2.0) * (this->minimapSize() / this->map->height));
-		mClip.width = (int)((float)(this->width / 32.0) * (this->minimapSize() / this->map->width));
-		mClip.height = (int)((float)(this->height / 32.0) * (this->minimapSize() / this->map->height));
-
-		minimapSprite.setPosition(sf::Vector2f(minimapRect.left, minimapRect.top));
-		minimapSprite.setScale(sf::Vector2f(this->minimapSize() / this->map->width, this->minimapSize() / this->map->height));
-		this->game->window.draw(minimapSprite);
-
-//		minimap.drawFrame(this->game->window);
-		minimap.drawClip(this->game->window, mClip);
+		minimap.draw(this->game->window,dt);
+		minimap.drawClip(this->game->window, this->gameView, clip, dt);
 
 		this->updateFading();
 	}
@@ -1004,7 +897,6 @@ public:
 	}
 
 	void destroyObjs(float dt) {
-
 		auto objView = this->vault->registry.persistent<Tile, GameObject>();
 		for (EntityID entity : objView) {
 			Tile &tile = objView.get<Tile>(entity);
@@ -1024,11 +916,9 @@ public:
 						this->vault->factory.destroyEntity(this->vault->registry, building.construction);
 					}
 				}
-
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 			}
 		}
-
 	}
 
 	void update(float dt) {
@@ -1173,6 +1063,14 @@ public:
 			{
 				this->moveView = MoveView::DontMove;
 
+				if (event.key.code == sf::Keyboard::Space) {
+					// pause/unpause
+					if(this->gameSpeed==0) {
+						this->gameSpeed=1;
+					} else {
+						this->gameSpeed=0;
+					}
+				}
 				if (event.key.code == sf::Keyboard::Left)
 					this->moveView = MoveView::MoveWest;
 				if (event.key.code == sf::Keyboard::Right)
@@ -1182,6 +1080,7 @@ public:
 				if (event.key.code == sf::Keyboard::Down)
 					this->moveView = MoveView::MoveSouth;
 				if (event.key.code == sf::Keyboard::Tab) {
+					// debug window
 					if (this->showDebugWindow)
 						this->showDebugWindow = false;
 					else
@@ -1215,7 +1114,7 @@ public:
 			case sf::Event::MouseButtonReleased:
 			{
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
+					if (minimap.rect.contains(sf::Vector2f(mousePos))) {
 						this->clearSelection();
 					} else {
 						if (this->action == Action::Selecting) {
@@ -1247,8 +1146,6 @@ public:
 									}
 								}
 							}
-
-//							std::cout << "END SELECTION " << selectRect.left << "x" << selectRect.top << ":" << selectRect.width << "x" << selectRect.height << std::endl;
 							this->clearSelection();
 						}
 					}
@@ -1259,8 +1156,8 @@ public:
 			{
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					// left click on minimap
-					if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-						sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (this->minimapSize() / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (this->minimapSize() / this->map->width));
+					if (this->minimap.rect.contains(sf::Vector2f(mousePos))) {
+						sf::Vector2f mPos((float)(mousePos.x - this->minimap.rect.left) / (this->minimap.size / this->map->width), (float)(mousePos.y - this->minimap.rect.top) / (this->minimap.size / this->map->width));
 #ifdef GAME_ENGINE_DEBUG
 						std::cout << "GameEngine: minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
 #endif
@@ -1313,8 +1210,8 @@ public:
 						this->markUpdateLayer = true;
 					} else {
 						// right click on minimap
-						if (this->minimapRect.contains(sf::Vector2f(mousePos))) {
-							sf::Vector2f mPos((float)(mousePos.x - this->minimapRect.left) / (this->minimapSize() / this->map->width), (float)(mousePos.y - this->minimapRect.top) / (this->minimapSize() / this->map->width));
+						if (this->minimap.rect.contains(sf::Vector2f(mousePos))) {
+							sf::Vector2f mPos((float)(mousePos.x - this->minimap.rect.left) / (this->minimap.size / this->map->width), (float)(mousePos.y - this->minimap.rect.top) / (this->minimap.size / this->map->width));
 							this->orderSelected(mPos);
 						} else {
 							this->orderSelected(gameMapPos);
