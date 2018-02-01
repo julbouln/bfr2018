@@ -290,6 +290,52 @@ public:
 		return anim;
 	}
 
+	std::vector<int> parseFrames(tinyxml2::XMLElement *animEl) {
+		tinyxml2::XMLElement * framesEl = animEl->FirstChildElement("frames");
+
+		std::vector<int> frames;
+		for (tinyxml2::XMLElement *frameEl : framesEl) {
+			int frame = frameEl->IntAttribute("n");
+			frames.push_back(frame);
+		}
+
+		return frames;
+	}
+
+	void parseAnimatedSpritesheet(AnimatedSpritesheet &spritesheet, tinyxml2::XMLElement *element) {
+		tinyxml2::XMLElement * animsEl = element->FirstChildElement("animations");
+
+		if (animsEl) {
+			int directions = 1;
+			if (element->Attribute("directions"))
+				directions = element->IntAttribute("directions");
+
+			if (animsEl) {
+				for (tinyxml2::XMLElement *animEl : animsEl) {
+					std::string stateNm = animEl->Attribute("name");
+
+					spritesheet.states[stateNm] = std::vector<AnimatedSpriteView>();
+
+					for (int i = 0; i < directions; i++) {
+						AnimatedSpriteView animView;
+						animView.l = 0;
+						animView.t = 0.0;
+						animView.loop = true;
+						animView.currentFrame = 0;
+						animView.frameChangeCallback = [](int frame) {};
+
+						animView.duration = (float)animEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
+
+						for (int n : this->parseFrames(animEl)) {
+							animView.frames.push_back(sf::Vector2i(i, n));
+						}
+						spritesheet.states[stateNm].push_back(animView);
+					}
+				}
+			}
+		}
+	}
+
 	void parse(Tile &tile, tinyxml2::XMLElement *element) {
 		if (element) {
 			tinyxml2::XMLElement * sizeEl = element->FirstChildElement("size");

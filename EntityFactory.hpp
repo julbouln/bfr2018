@@ -79,7 +79,7 @@ public:
 	ParticleEffectParser particleEffectParser;
 	DecorParser decorParser;
 
-	std::map<std::string,int> decorGenerator;
+	std::map<std::string, int> decorGenerator;
 
 	sf::Texture &getTex(std::string name) {
 		return texManager.getRef(name);
@@ -234,8 +234,8 @@ public:
 		tinyxml2::XMLDocument doc;
 		doc.LoadFile(filename.c_str());
 
-		for(tinyxml2::XMLElement *el : doc.RootElement()) {
-			decorGenerator[el->Attribute("group")]=el->IntAttribute("fact");
+		for (tinyxml2::XMLElement *el : doc.RootElement()) {
+			decorGenerator[el->Attribute("group")] = el->IntAttribute("fact");
 		}
 	}
 
@@ -360,6 +360,22 @@ public:
 		return name + std::to_string(rnd + 1);
 	}
 
+
+	void addStaticVerticalSpriteView(std::vector<SpriteView> &states, std::initializer_list<int> frames) {
+		for (int n : frames) {
+			states.push_back(SpriteView{sf::Vector2i(0, n)});
+		}
+	}
+
+
+	void setDefaultSpritesheet(StaticSpritesheet& spritesheet, Tile &tile, int y) {
+		spritesheet.states["idle"] = std::vector<SpriteView>();
+		int frameCount = y / tile.psize.y;
+		for (int n = 0; n < frameCount; n++) {
+			spritesheet.states["idle"].push_back(SpriteView{sf::Vector2i(0, n)});
+		}
+	}
+
 // Terrain
 	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
 		EntityID entity = registry.create();
@@ -398,6 +414,13 @@ public:
 
 		tile.direction = North;
 		tile.state = "idle";
+
+		tile.view = variant;
+
+		StaticSpritesheet spritesheet;
+		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(name).getSize().y);
+
+		registry.assign<StaticSpritesheet>(entity, spritesheet);
 
 		registry.assign<Tile>(entity, tile);
 		return entity;
@@ -440,6 +463,8 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
+		tile.view = South;
+
 		tile.direction = South;
 		this->resetTileAnim(tile, "idle");
 		this->setColorSwapShader(registry, tile, playerEnt);
@@ -468,6 +493,10 @@ public:
 		Effects effects;
 		particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
 		registry.assign<Effects>(entity, effects);
+
+		AnimatedSpritesheet spritesheet;
+		tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(name, "tile"));
+		registry.assign<AnimatedSpritesheet>(entity, spritesheet);
 
 		return entity;
 	}
@@ -533,6 +562,12 @@ public:
 			registry.assign<Unit>(entity, unit);
 		}
 
+		if (!registry.has<AnimatedSpritesheet>(entity)) {
+			AnimatedSpritesheet spritesheet;
+			tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(obj.name, "tile"));
+			registry.assign<AnimatedSpritesheet>(entity, spritesheet);
+		}
+
 		return entity;
 	}
 
@@ -583,6 +618,7 @@ public:
 
 		tile.direction = North;
 		tile.state = "idle";
+		tile.view = 0;
 
 		tile.centerRect = this->getCenterRect(name);
 
@@ -593,6 +629,11 @@ public:
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Resource>(entity, resource);
+
+		StaticSpritesheet spritesheet;
+		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(name).getSize().y);
+
+		registry.assign<StaticSpritesheet>(entity, spritesheet);
 
 		return entity;
 	}
@@ -625,6 +666,7 @@ public:
 
 		tile.direction = North;
 		tile.state = "idle";
+		tile.view = 0;
 
 		tile.centerRect = this->getCenterRect(rname);
 
@@ -634,6 +676,12 @@ public:
 		Effects effects;
 		effects.effects["spend"] = name + "_spend";
 		registry.assign<Effects>(entity, effects);
+
+		StaticSpritesheet spritesheet;
+		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(rname).getSize().y);
+
+		registry.remove<StaticSpritesheet>(entity);
+		registry.assign<StaticSpritesheet>(entity, spritesheet);
 
 		return entity;
 	}
@@ -686,6 +734,11 @@ public:
 				particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
 				registry.assign<Effects>(entity, effects);
 		*/
+
+		AnimatedSpritesheet spritesheet;
+		tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(rname, "tile"));
+		registry.assign<AnimatedSpritesheet>(entity, spritesheet);
+
 		return entity;
 	}
 

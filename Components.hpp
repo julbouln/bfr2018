@@ -41,14 +41,44 @@ struct Tile {
 	sf::Sprite sprite;
 	std::map<std::string, AnimationHandler> animHandlers;
 
-//	std::map<std::string, SpritesheetHandler> spritesheetHandlers;
-
 	std::string state;
 	unsigned int direction;
+
+	unsigned int view;
 
 	bool shader;
 	std::string shaderName;
 	ShaderOptions shaderOptions;
+};
+
+struct SpriteView {
+	sf::Vector2i currentPosition;
+};
+
+struct AnimatedSpriteView {
+	// is looping
+    bool loop;
+    // each frame duration
+    float duration;
+    // frames
+    std::vector<sf::Vector2i> frames;
+    // current frame
+    int currentFrame;
+    // current time since the animation loop started
+    float t;
+    // number of loop since animation started
+    int l;
+
+    std::function<void(int)> frameChangeCallback;
+
+};
+
+struct StaticSpritesheet {
+	std::map<std::string, std::vector<SpriteView>> states;
+};
+
+struct AnimatedSpritesheet {
+	std::map<std::string, std::vector<AnimatedSpriteView>> states;
 };
 
 struct Attack {
