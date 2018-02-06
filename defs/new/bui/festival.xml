@@ -8,7 +8,55 @@
     <offset x="0" y="0"/>
   </tile>
   <spritesheets>
-    <views count="4" name="idle" type="animated">
+    <views name="idle" type="animated">
+      <view>
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="9"/>
+          <frame n="10"/>
+        </frames>
+        <duration value="800"/>
+      </view>
+      <view>
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="9"/>
+          <frame n="10"/>
+        </frames>
+        <duration value="800"/>
+      </view>
+      <view>
+        <frames>
+          <frame n="0"/>
+          <frame n="1"/>
+          <frame n="2"/>
+          <frame n="3"/>
+          <frame n="4"/>
+          <frame n="5"/>
+          <frame n="6"/>
+          <frame n="7"/>
+          <frame n="8"/>
+          <frame n="9"/>
+          <frame n="10"/>
+        </frames>
+        <duration value="800"/>
+      </view>
       <view>
         <frames>
           <frame n="0"/>

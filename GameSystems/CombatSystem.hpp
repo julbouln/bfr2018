@@ -161,13 +161,10 @@ public:
 								}
 								if (this->vault->registry.has<Unit>(unit.destAttack)) {
 									this->changeState(destTile, "die");
-//									AnimationHandler &dieAnim = destTile.animHandlers["die"];
-//									dieAnim.getAnim().repeat = false;
 								}
 
 
 							} else {
-								tile.direction = this->getDirection(tile.pos, destTile.pos);
 								tile.view = this->getDirection(tile.pos, destTile.pos);
 
 								this->changeState(tile, "attack");
@@ -310,11 +307,11 @@ public:
 			}
 		}
 
-		auto buldingView = this->vault->registry.persistent<Tile, GameObject, Building>();
-		for (EntityID entity : buldingView) {
-			Tile &tile = buldingView.get<Tile>(entity);
-			Building &building = buldingView.get<Building>(entity);
-			GameObject &obj = buldingView.get<GameObject>(entity);
+		auto buildingView = this->vault->registry.persistent<Tile, GameObject, Building>();
+		for (EntityID entity : buildingView) {
+			Tile &tile = buildingView.get<Tile>(entity);
+			Building &building = buildingView.get<Building>(entity);
+			GameObject &obj = buildingView.get<GameObject>(entity);
 
 			if (obj.life == 0) {
 
@@ -327,6 +324,14 @@ public:
 
 				obj.destroy = true;
 
+			} else {
+				// change tile view to show damages
+				if(obj.life < obj.maxLife * 0.75)
+					tile.view = 1;
+				if(obj.life < obj.maxLife * 0.50)
+					tile.view = 2;
+				if(obj.life < obj.maxLife * 0.25)
+					tile.view = 3;
 			}
 
 		}

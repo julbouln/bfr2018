@@ -24,11 +24,8 @@ public:
 					if (resource.level == 1) {
 						this->vault->factory.growedResource(this->vault->registry, resource.type, entity);
 						Tile &newTile = this->vault->registry.get<Tile>(entity);
-
-//						std::cout << "NEW RESOURCE "<<tile.animHandlers[tile.state].bounds.left << "x" << tile.animHandlers[tile.state].bounds.top << ":" << tile.animHandlers[tile.state].bounds.width << "x" << tile.animHandlers[tile.state].bounds.height << std::endl;
 					}
 					else {
-//						tile.animHandlers[tile.state].set(resource.level - 1);
 						tile.view = resource.level - 1;
 					}
 				} else {

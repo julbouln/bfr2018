@@ -16,7 +16,6 @@ Game:
 - vautour FX
 - add intro & credits
 - add min/max attack2 distance
-- add building damage level sprites : refactor AnimationHandler
 - add resource trap + explosion FX
 - resources should evolve with case size (4x3 replace 12 1x1 resources), add more resources (forest, etc)
   maybe some resources should be infranchissable

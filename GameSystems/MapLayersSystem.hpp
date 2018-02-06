@@ -391,14 +391,6 @@ public:
 		tile.shader = false;
 		this->vault->factory.setColorSwapShader(this->vault->registry, tile, playerEnt);
 
-/*		AnimationHandler &dieAnim = tile.animHandlers["die"];
-
-		dieAnim.changeColumn(0);
-		int frame = dieAnim.getAnim().getFrame(dieAnim.getAnim().getLength() - 1);
-		dieAnim.getAnim().repeat = false;
-		dieAnim.set(frame);
-*/
-
 		tile.sprite.setTextureRect(sf::IntRect(0,((this->vault->factory.getTex(name).getSize().y/tile.psize.y) - 1)*tile.psize.y,tile.psize.x,tile.psize.y)); // texture need to be updated
 
 		tile.centerRect = this->vault->factory.getCenterRect(name);
@@ -425,27 +417,14 @@ public:
 		ruinTile.pos = sf::Vector2i(0, 0);
 		ruinTile.ppos = sf::Vector2f(ruinTile.pos) * (float)32.0;
 		ruinTile.shader = false;
+		ruinTile.psize = sf::Vector2f(this->vault->factory.getTex("ruin").getSize().x,this->vault->factory.getTex("ruin").getSize().y/2);
 
 		ruinTile.sprite.setTexture(this->vault->factory.getTex("ruin"));
 
 		ruinTile.centerRect = this->vault->factory.getCenterRect("ruin");
 
-		Animation staticAnim({0});
+		ruinTile.sprite.setTextureRect(sf::IntRect(0,0,ruinTile.psize.x,ruinTile.psize.y)); // texture need to be updated
 
-		AnimationHandler idleHandler;
-
-		idleHandler.frameSize = sf::IntRect(0, 0, 192, 128);
-
-		idleHandler.addAnim(staticAnim);
-
-		idleHandler.changeColumn(0);
-		idleHandler.set(0);
-
-		ruinTile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
-
-		ruinTile.animHandlers["idle"] = idleHandler;
-
-		ruinTile.direction = North;
 		ruinTile.state = "idle";
 
 		std::vector<EntityID> tvec;

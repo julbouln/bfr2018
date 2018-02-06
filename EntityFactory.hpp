@@ -320,25 +320,15 @@ public:
 			return nullptr;
 	}
 
-	void resetTileAnim(Tile &tile, std::string state) {
-
-//		AnimationHandler &animHandler = tile.animHandlers[state];
-//		animHandler.changeColumn(tile.direction);
-//		animHandler.set(0);
-//		tile.sprite.setTextureRect(animHandler.bounds); // texture need to be updated
-	}
-
 	void parseTileFromXml(std::string name, Tile &tile) {
 		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
 		tile.sprite.setTexture(texManager.getRef(name));
-//		tile.direction = North;
 		tile.view = 0;
 		tile.state = "idle";
 		tile.shader = false;
 
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y));
 
-//		this->resetTileAnim(tile, "idle");
 		tile.centerRect = this->getCenterRect(name);
 	}
 
@@ -402,22 +392,8 @@ public:
 
 		tile.centerRect = sf::IntRect(0, 0, 32, 32);
 
-		Animation staticAnim({0, 1, 2});
+		tile.sprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); // texture need to be updated
 
-		AnimationHandler idleHandler;
-
-		idleHandler.frameSize = sf::IntRect(0, 0, 32, 32);
-
-		idleHandler.addAnim(staticAnim);
-
-		idleHandler.changeColumn(0);
-		idleHandler.set(variant);
-
-		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
-
-		tile.animHandlers["idle"] = idleHandler;
-
-//		tile.direction = North;
 		tile.state = "idle";
 
 		tile.view = variant;
@@ -457,6 +433,18 @@ public:
 #endif
 	}
 
+	void assignSpritesheets(entt::Registry<EntityID> &registry, EntityID entity, std::string name) {
+		StaticSpritesheet spritesheet;
+		if (this->getXmlComponent(name, "spritesheets") && spritesheetsParser.parseStaticSpritesheets(spritesheet, this->getXmlComponent(name, "spritesheets"))) {
+			registry.accomodate<StaticSpritesheet>(entity, spritesheet);
+		}
+
+		AnimatedSpritesheet animSpritesheet;
+		if (this->getXmlComponent(name, "spritesheets") && spritesheetsParser.parseAnimatedSpritesheets(animSpritesheet, this->getXmlComponent(name, "spritesheets"))) {
+			registry.accomodate<AnimatedSpritesheet>(entity, animSpritesheet);
+		}
+	}
+
 	EntityID createUnit(entt::Registry<EntityID> &registry, EntityID playerEnt, std::string name, int x, int y) {
 		EntityID entity = registry.create();
 #ifdef FACTORY_DEBUG
@@ -470,21 +458,17 @@ public:
 
 		tile.view = South;
 
-//		tile.direction = South;
-//		this->resetTileAnim(tile, "idle");
 		this->setColorSwapShader(registry, tile, playerEnt);
 
 		GameObject obj;
 		this->parseGameObjectFromXml(name, obj);
 
-//		this->addProjectileFromXml(registry, name, obj );
 		obj.player = playerEnt;
 		obj.mapped = true;
 		obj.destroy = false;
 
 		Unit unit;
 		unitParser.parse(unit, this->getXmlComponent(name, "unit"));
-//		this->parseUnitFromXml(name, unit);
 
 		unit.nextpos = tile.pos;
 		unit.destAttack = 0;
@@ -499,11 +483,7 @@ public:
 		particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
 		registry.assign<Effects>(entity, effects);
 
-		AnimatedSpritesheet spritesheet;
-		if (spritesheetsParser.parseAnimatedSpritesheets(spritesheet, this->getXmlComponent(name, "spritesheets"))) {
-//		tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(name, "tile"));
-			registry.assign<AnimatedSpritesheet>(entity, spritesheet);
-		}
+		this->assignSpritesheets(registry, entity, name);
 
 		return entity;
 	}
@@ -569,22 +549,8 @@ public:
 			registry.accomodate<Unit>(entity, unit);
 		}
 
-		StaticSpritesheet spritesheet;
-		if (spritesheetsParser.parseStaticSpritesheets(spritesheet, this->getXmlComponent(obj.name, "spritesheets"))) {
-			registry.accomodate<StaticSpritesheet>(entity, spritesheet);
-		}
+		this->assignSpritesheets(registry, entity, obj.name);
 
-		AnimatedSpritesheet animSpritesheet;
-		if (spritesheetsParser.parseAnimatedSpritesheets(animSpritesheet, this->getXmlComponent(obj.name, "spritesheets"))) {
-			registry.accomodate<AnimatedSpritesheet>(entity, animSpritesheet);
-		}
-/*
-		if (!registry.has<AnimatedSpritesheet>(entity)) {
-			AnimatedSpritesheet spritesheet;
-			tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(obj.name, "tile"));
-			registry.assign<AnimatedSpritesheet>(entity, spritesheet);
-		}
-*/
 		return entity;
 	}
 
@@ -618,23 +584,9 @@ public:
 		tile.shader = false;
 
 		tile.sprite.setTexture(texManager.getRef(name));
-/*
-		Animation staticAnim({0});
-
-		AnimationHandler idleHandler;
-
-		idleHandler.frameSize = sf::IntRect(0, 0, 32, 32);
-
-		idleHandler.addAnim(staticAnim);
-		idleHandler.changeColumn(0);
-		idleHandler.set(0);
-		*/
 
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); // texture need to be updated
 
-//		tile.animHandlers["idle"] = idleHandler;
-
-//		tile.direction = North;
 		tile.state = "idle";
 		tile.view = 0;
 
@@ -647,11 +599,6 @@ public:
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Resource>(entity, resource);
-
-//		StaticSpritesheet spritesheet;
-//		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(name).getSize().y);
-
-//		registry.assign<StaticSpritesheet>(entity, spritesheet);
 
 		return entity;
 	}
@@ -668,21 +615,8 @@ public:
 
 		tile.sprite.setTexture(texManager.getRef(rname));
 
-		Animation staticAnim({0, 1, 2});
+		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y)); // texture need to be updated
 
-		AnimationHandler idleHandler;
-
-		idleHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
-
-		idleHandler.addAnim(staticAnim);
-		idleHandler.changeColumn(0);
-		idleHandler.set(0);
-
-		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
-
-		tile.animHandlers["idle"] = idleHandler;
-
-//		tile.direction = North;
 		tile.state = "idle";
 		tile.view = 0;
 
@@ -695,16 +629,7 @@ public:
 		effects.effects["spend"] = name + "_spend";
 		registry.assign<Effects>(entity, effects);
 
-//		StaticSpritesheet spritesheet;
-//		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(rname).getSize().y);
-
-		StaticSpritesheet spritesheet;
-		if (spritesheetsParser.parseStaticSpritesheets(spritesheet, this->getXmlComponent(rname, "spritesheets"))) {
-			registry.accomodate<StaticSpritesheet>(entity, spritesheet);
-		}
-
-//		registry.remove<StaticSpritesheet>(entity);
-//		registry.assign<StaticSpritesheet>(entity, spritesheet);
+		this->assignSpritesheets(registry, entity, rname);
 
 		return entity;
 	}
@@ -744,23 +669,13 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-//		tile.direction = North;
-
 		Decor decor;
 		this->parseDecorFromXml(rname, decor);
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Decor>(entity, decor);
 
-		/*
-				Effects effects;
-				particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
-				registry.assign<Effects>(entity, effects);
-		*/
-
-		AnimatedSpritesheet spritesheet;
-		tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(rname, "tile"));
-		registry.assign<AnimatedSpritesheet>(entity, spritesheet);
+		this->assignSpritesheets(registry, entity, rname);
 
 		return entity;
 	}

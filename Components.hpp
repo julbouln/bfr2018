@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
-#include "AnimationHandler.hpp"
 #include "Entity.hpp"
 
 #include "Map.hpp"
@@ -39,11 +38,8 @@ struct Tile {
 	sf::IntRect centerRect;
 
 	sf::Sprite sprite;
-	std::map<std::string, AnimationHandler> animHandlers;
 
 	std::string state;
-	unsigned int direction;
-
 	unsigned int view;
 
 	bool shader;

@@ -286,7 +286,6 @@ public:
 	void changeState(Tile & tile, std::string state) {
 		if (tile.state != state) {
 			tile.state = state;
-//			this->vault->factory.resetTileAnim(tile, state);
 		}
 	}
 

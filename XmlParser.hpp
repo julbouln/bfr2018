@@ -271,67 +271,6 @@ public:
 
 class TileParser {
 public:
-	Animation parseAnim(tinyxml2::XMLElement *animEl) {
-		float duration = animEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
-		tinyxml2::XMLElement * framesEl = animEl->FirstChildElement("frames");
-
-		std::vector<int> frames;
-		for (tinyxml2::XMLElement *frameEl : framesEl) {
-			int frame = frameEl->IntAttribute("n");
-			frames.push_back(frame);
-		}
-
-		Animation anim(frames, duration);
-
-#ifdef PARSER_DEBUG
-		std::cout << "TileParser: create animation containing " << frames.size() << " frames" << std::endl;
-#endif
-
-		return anim;
-	}
-
-	std::vector<int> parseFrames(tinyxml2::XMLElement *animEl) {
-		tinyxml2::XMLElement * framesEl = animEl->FirstChildElement("frames");
-
-		std::vector<int> frames;
-		for (tinyxml2::XMLElement *frameEl : framesEl) {
-			int frame = frameEl->IntAttribute("n");
-			frames.push_back(frame);
-		}
-
-		return frames;
-	}
-
-	void parseAnimatedSpritesheet(AnimatedSpritesheet &spritesheet, tinyxml2::XMLElement *element) {
-		tinyxml2::XMLElement * animsEl = element->FirstChildElement("animations");
-
-		if (animsEl) {
-			int directions = 1;
-			if (element->Attribute("directions"))
-				directions = element->IntAttribute("directions");
-
-			if (animsEl) {
-				for (tinyxml2::XMLElement *animEl : animsEl) {
-					std::string stateNm = animEl->Attribute("name");
-
-					spritesheet.states[stateNm] = std::vector<AnimatedSpriteView>();
-
-					for (int i = 0; i < directions; i++) {
-						AnimatedSpriteView animView;
-
-
-						animView.duration = (float)animEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
-
-						for (int n : this->parseFrames(animEl)) {
-							animView.frames.push_back(sf::Vector2i(i, n));
-						}
-						spritesheet.states[stateNm].push_back(animView);
-					}
-				}
-			}
-		}
-	}
-
 	void parse(Tile &tile, tinyxml2::XMLElement *element) {
 		if (element) {
 			tinyxml2::XMLElement * sizeEl = element->FirstChildElement("size");
@@ -356,32 +295,7 @@ public:
 //			if (offsetEl)
 //				tile.offset = sf::Vector2i{offsetEl->IntAttribute("x"), offsetEl->IntAttribute("y")};
 //			else
-			tile.offset = sf::Vector2i{0, 0};
-
-			int directions = 1;
-			if (element->Attribute("directions"))
-				directions = element->IntAttribute("directions");
-
-			if (animsEl) {
-				for (tinyxml2::XMLElement *animEl : animsEl) {
-					std::string stateNm = animEl->Attribute("name");
-
-					AnimationHandler animHandler;
-
-					animHandler.frameSize = sf::IntRect(0, 0, tile.psize.x, tile.psize.y);
-
-					for (int i = 0; i < directions; i++) {
-						Animation anim = this->parseAnim(animEl);
-						animHandler.addAnim(anim);
-					}
-					animHandler.update(0.0f);
-
-					tile.animHandlers[stateNm] = animHandler;
-#ifdef PARSER_DEBUG
-					std::cout << "TileParser: add animation handler " << stateNm << " containing " << directions << " directions" << std::endl;
-#endif
-				}
-			}
+			tile.offset = sf::Vector2i{0, 0};			
 		}
 	}
 };
@@ -402,13 +316,19 @@ static std::map<std::string, SpritesheetType> spritesheetTypes =
 class SpritesheetsParser {
 public:
 
-	std::vector<int> parseFrames(tinyxml2::XMLElement *animEl) {
+	std::vector<sf::Vector2i> parseFrames(tinyxml2::XMLElement *animEl) {
 		tinyxml2::XMLElement * framesEl = animEl->FirstChildElement("frames");
 
-		std::vector<int> frames;
+		std::vector<sf::Vector2i> frames;
 		for (tinyxml2::XMLElement *frameEl : framesEl) {
-			int frame = frameEl->IntAttribute("n");
-			frames.push_back(frame);
+			if (frameEl->Attribute("n")) {
+				int frame = frameEl->IntAttribute("n");
+				frames.push_back(sf::Vector2i(0, frame));
+			} else {
+				int x = frameEl->IntAttribute("x");
+				int y = frameEl->IntAttribute("y");
+				frames.push_back(sf::Vector2i(x, y));
+			}
 		}
 
 		return frames;
@@ -428,8 +348,8 @@ public:
 
 				animView.duration = (float)viewEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
 
-				for (int n : this->parseFrames(viewEl)) {
-					animView.frames.push_back(sf::Vector2i(i, n));
+				for (sf::Vector2i p : this->parseFrames(viewEl)) {
+					animView.frames.push_back(sf::Vector2i(p.x+i, p.y));
 				}
 				spritesheet.states[stateNm].push_back(animView);
 			}

@@ -568,10 +568,10 @@ public:
 					ImGui::Text("Offset: %dx%d", tile.offset.x, tile.offset.y);
 					ImGui::Text("Z: %d", tile.z);
 					ImGui::Text("Center: %dx%d:%dx%d", tile.centerRect.left, tile.centerRect.top, tile.centerRect.width, tile.centerRect.height);
-					ImGui::Text("Direction: %d", tile.direction);
+					ImGui::Text("View: %d", tile.view);
 					ImGui::Text("State: %s", tile.state.c_str());
-					ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
-					ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentColumn());
+//					ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
+//					ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentColumn());
 
 					if (this->vault->registry.has<GameObject>(selectedObj)) {
 						GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);

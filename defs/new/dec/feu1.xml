@@ -3,16 +3,18 @@
 	<tile>
 		<psize x="50" y="36"/>
 		<size x="1" y="1"/>
-		<animations>
-			<animation name="idle">
+	</tile>
+	<spritesheets>
+		<views name="idle" type="animated">
+			<view>
 				<frames>
 					<frame n="0"/>
 					<frame n="1"/>
 				</frames>
 				<duration value="200"/>
-			</animation>
-		</animations>
-	</tile>
+			</view>
+		</views>
+	</spritesheets>
 	<decor>
 		<blocking value="true"/>
 	</decor>

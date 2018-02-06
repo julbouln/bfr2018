@@ -110,7 +110,6 @@ public:
 							if (this->checkAround(entity, npos)) {
 								unit.nextpos = npos;
 
-								tile.direction = this->getDirection(cpos, npos);
 								tile.view = this->getDirection(cpos, npos);
 								this->changeState(tile, "move");
 
@@ -148,7 +147,7 @@ public:
 					//if (tile.state == "move")
 					{
 						float speed = (float)unit.speed / 2.0;
-						tile.ppos += this->dirMovement(tile.direction, speed);
+						tile.ppos += this->dirMovement(tile.view, speed);
 
 					}
 
