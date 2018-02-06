@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
-<entity class="resource" name="pollution2" group="pollution" team="neonaz">
-    <texture mode="with_white_mask" path="medias/resources/pollution2.png"/>
-    <tile>
-      <psize x="64" y="64"/>
-      <size x="2" y="2"/>
-    </tile>
-    <resource>
-      <level value="1"/>
-    </resource>
-  </entity>
+<entity class="resource" group="pollution" name="pollution2" team="neonaz">
+	<texture mode="with_white_mask" path="medias/resources/pollution2.png"/>
+	<tile>
+		<psize x="64" y="64"/>
+		<size x="2" y="2"/>
+	</tile>
+	<spritesheets>
+		<views name="idle" type="static">
+			<view x="0" y="0"/>
+			<view x="0" y="1"/>
+			<view x="0" y="2"/>
+			<view x="0" y="3"/>
+		</views>
+	</spritesheets>
+	<resource>
+		<level value="1"/>
+	</resource>
+</entity>

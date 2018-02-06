@@ -78,6 +78,7 @@ public:
 	BuildingParser buildingParser;
 	ParticleEffectParser particleEffectParser;
 	DecorParser decorParser;
+	SpritesheetsParser spritesheetsParser;
 
 	std::map<std::string, int> decorGenerator;
 
@@ -320,20 +321,24 @@ public:
 	}
 
 	void resetTileAnim(Tile &tile, std::string state) {
-		AnimationHandler &animHandler = tile.animHandlers[state];
-		animHandler.changeColumn(tile.direction);
-		animHandler.set(0);
-		tile.sprite.setTextureRect(animHandler.bounds); // texture need to be updated
+
+//		AnimationHandler &animHandler = tile.animHandlers[state];
+//		animHandler.changeColumn(tile.direction);
+//		animHandler.set(0);
+//		tile.sprite.setTextureRect(animHandler.bounds); // texture need to be updated
 	}
 
 	void parseTileFromXml(std::string name, Tile &tile) {
 		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
 		tile.sprite.setTexture(texManager.getRef(name));
-		tile.direction = North;
+//		tile.direction = North;
+		tile.view = 0;
 		tile.state = "idle";
 		tile.shader = false;
 
-		this->resetTileAnim(tile, "idle");
+		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y));
+
+//		this->resetTileAnim(tile, "idle");
 		tile.centerRect = this->getCenterRect(name);
 	}
 
@@ -412,7 +417,7 @@ public:
 
 		tile.animHandlers["idle"] = idleHandler;
 
-		tile.direction = North;
+//		tile.direction = North;
 		tile.state = "idle";
 
 		tile.view = variant;
@@ -465,8 +470,8 @@ public:
 
 		tile.view = South;
 
-		tile.direction = South;
-		this->resetTileAnim(tile, "idle");
+//		tile.direction = South;
+//		this->resetTileAnim(tile, "idle");
 		this->setColorSwapShader(registry, tile, playerEnt);
 
 		GameObject obj;
@@ -495,8 +500,10 @@ public:
 		registry.assign<Effects>(entity, effects);
 
 		AnimatedSpritesheet spritesheet;
-		tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(name, "tile"));
-		registry.assign<AnimatedSpritesheet>(entity, spritesheet);
+		if (spritesheetsParser.parseAnimatedSpritesheets(spritesheet, this->getXmlComponent(name, "spritesheets"))) {
+//		tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(name, "tile"));
+			registry.assign<AnimatedSpritesheet>(entity, spritesheet);
+		}
 
 		return entity;
 	}
@@ -559,15 +566,25 @@ public:
 			unit.nopath = 0;
 			unit.destpos = tile.pos;
 
-			registry.assign<Unit>(entity, unit);
+			registry.accomodate<Unit>(entity, unit);
 		}
 
+		StaticSpritesheet spritesheet;
+		if (spritesheetsParser.parseStaticSpritesheets(spritesheet, this->getXmlComponent(obj.name, "spritesheets"))) {
+			registry.accomodate<StaticSpritesheet>(entity, spritesheet);
+		}
+
+		AnimatedSpritesheet animSpritesheet;
+		if (spritesheetsParser.parseAnimatedSpritesheets(animSpritesheet, this->getXmlComponent(obj.name, "spritesheets"))) {
+			registry.accomodate<AnimatedSpritesheet>(entity, animSpritesheet);
+		}
+/*
 		if (!registry.has<AnimatedSpritesheet>(entity)) {
 			AnimatedSpritesheet spritesheet;
 			tileParser.parseAnimatedSpritesheet(spritesheet, this->getXmlComponent(obj.name, "tile"));
 			registry.assign<AnimatedSpritesheet>(entity, spritesheet);
 		}
-
+*/
 		return entity;
 	}
 
@@ -601,7 +618,7 @@ public:
 		tile.shader = false;
 
 		tile.sprite.setTexture(texManager.getRef(name));
-
+/*
 		Animation staticAnim({0});
 
 		AnimationHandler idleHandler;
@@ -611,12 +628,13 @@ public:
 		idleHandler.addAnim(staticAnim);
 		idleHandler.changeColumn(0);
 		idleHandler.set(0);
+		*/
 
-		tile.sprite.setTextureRect(idleHandler.bounds); // texture need to be updated
+		tile.sprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); // texture need to be updated
 
-		tile.animHandlers["idle"] = idleHandler;
+//		tile.animHandlers["idle"] = idleHandler;
 
-		tile.direction = North;
+//		tile.direction = North;
 		tile.state = "idle";
 		tile.view = 0;
 
@@ -630,10 +648,10 @@ public:
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Resource>(entity, resource);
 
-		StaticSpritesheet spritesheet;
-		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(name).getSize().y);
+//		StaticSpritesheet spritesheet;
+//		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(name).getSize().y);
 
-		registry.assign<StaticSpritesheet>(entity, spritesheet);
+//		registry.assign<StaticSpritesheet>(entity, spritesheet);
 
 		return entity;
 	}
@@ -664,7 +682,7 @@ public:
 
 		tile.animHandlers["idle"] = idleHandler;
 
-		tile.direction = North;
+//		tile.direction = North;
 		tile.state = "idle";
 		tile.view = 0;
 
@@ -677,11 +695,16 @@ public:
 		effects.effects["spend"] = name + "_spend";
 		registry.assign<Effects>(entity, effects);
 
-		StaticSpritesheet spritesheet;
-		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(rname).getSize().y);
+//		StaticSpritesheet spritesheet;
+//		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(rname).getSize().y);
 
-		registry.remove<StaticSpritesheet>(entity);
-		registry.assign<StaticSpritesheet>(entity, spritesheet);
+		StaticSpritesheet spritesheet;
+		if (spritesheetsParser.parseStaticSpritesheets(spritesheet, this->getXmlComponent(rname, "spritesheets"))) {
+			registry.accomodate<StaticSpritesheet>(entity, spritesheet);
+		}
+
+//		registry.remove<StaticSpritesheet>(entity);
+//		registry.assign<StaticSpritesheet>(entity, spritesheet);
 
 		return entity;
 	}
@@ -721,7 +744,7 @@ public:
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-		tile.direction = North;
+//		tile.direction = North;
 
 		Decor decor;
 		this->parseDecorFromXml(rname, decor);

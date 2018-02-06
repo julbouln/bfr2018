@@ -8,8 +8,10 @@
     <psize x="45" y="55"/>
     <size x="1" y="1"/>
     <offset x="0" y="0"/>
-    <animations>
-      <animation name="idle">
+  </tile>
+  <spritesheets>
+    <views count="8" name="idle" type="animated">
+      <view>
         <frames>
           <frame n="17"/>
           <frame n="17"/>
@@ -81,8 +83,10 @@
           <frame n="16"/>
         </frames>
         <duration value="1300"/>
-      </animation>
-      <animation name="move">
+      </view>
+    </views>
+    <views count="8" name="move" type="animated">
+      <view>
         <frames>
           <frame n="17"/>
           <frame n="18"/>
@@ -90,23 +94,27 @@
           <frame n="19"/>
         </frames>
         <duration value="200"/>
-      </animation>
-      <animation name="attack">
+      </view>
+    </views>
+    <views count="8" name="attack" type="animated">
+      <view>
         <frames>
           <frame n="20"/>
           <frame n="21"/>
         </frames>
         <duration value="400"/>
-      </animation>
-      <animation name="die">
+      </view>
+    </views>
+    <views count="8" name="die" type="animated">
+      <view>
         <frames>
           <frame n="25"/>
           <frame n="26"/>
         </frames>
         <duration value="200"/>
-      </animation>
-    </animations>
-  </tile>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="zork"/>
     <team value="rebel"/>
@@ -116,7 +124,7 @@
   <unit>
     <speed value="3"/>
     <attack1 power="3"/>
-    <attack2 power="0" dist="0"/>
+    <attack2 dist="0" power="0"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/rebels/zork/sounds/zo_selec01.flac"/>

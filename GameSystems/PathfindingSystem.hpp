@@ -111,6 +111,7 @@ public:
 								unit.nextpos = npos;
 
 								tile.direction = this->getDirection(cpos, npos);
+								tile.view = this->getDirection(cpos, npos);
 								this->changeState(tile, "move");
 
 

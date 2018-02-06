@@ -6,8 +6,10 @@
     <psize x="320" y="364"/>
     <size x="6" y="3"/>
     <offset x="0" y="0"/>
-    <animations>
-      <animation name="idle">
+  </tile>
+  <spritesheets>
+    <views count="4" name="idle" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="1"/>
@@ -22,9 +24,9 @@
           <frame n="10"/>
         </frames>
         <duration value="800"/>
-      </animation>
-    </animations>
-  </tile>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="festival"/>
     <team value="rebel"/>

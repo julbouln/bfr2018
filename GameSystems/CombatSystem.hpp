@@ -161,13 +161,15 @@ public:
 								}
 								if (this->vault->registry.has<Unit>(unit.destAttack)) {
 									this->changeState(destTile, "die");
-									AnimationHandler &dieAnim = destTile.animHandlers["die"];
-									dieAnim.getAnim().repeat = false;
+//									AnimationHandler &dieAnim = destTile.animHandlers["die"];
+//									dieAnim.getAnim().repeat = false;
 								}
 
 
 							} else {
 								tile.direction = this->getDirection(tile.pos, destTile.pos);
+								tile.view = this->getDirection(tile.pos, destTile.pos);
+
 								this->changeState(tile, "attack");
 							}
 
@@ -220,7 +222,7 @@ public:
 					altOptions.destPos = tile.ppos;
 					altOptions.direction = 0;
 					// copy shader options from original tile
-					if(tile.shader) {
+					if (tile.shader) {
 						// setting screenSize will create a RenderTexture, only do this for effect needing shader
 						altOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 						altOptions.applyShader = true;
@@ -232,8 +234,12 @@ public:
 					obj.destroy = true;
 				} else {
 					// unit died, destroy after playing anim
-					if (tile.animHandlers[tile.state].l >= 1) {
-						obj.destroy = true;
+					if (this->vault->registry.has<AnimatedSpritesheet>(entity))
+					{
+						AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
+						if (anim.states[tile.state][tile.view].l >= 1) {
+							obj.destroy = true;
+						}
 					}
 				}
 
@@ -244,49 +250,55 @@ public:
 
 			if (tile.state == "attack") {
 				// play sound at frame 1
-				tile.animHandlers["attack"].changeFrameCallback = [this, entity](int frame) {
-					if (vault->registry.valid(entity)) {
-						Unit &unit = vault->registry.get<Unit>(entity);
-						Tile &tile = vault->registry.get<Tile>(entity);
-						if (frame == 1) {
+				if (this->vault->registry.has<AnimatedSpritesheet>(entity))
+				{
+
+					AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
+
+					anim.states[tile.state][tile.view].frameChangeCallback = [this, entity](int frame) {
+						if (vault->registry.valid(entity)) {
+							Unit &unit = vault->registry.get<Unit>(entity);
+							Tile &tile = vault->registry.get<Tile>(entity);
+							if (frame == 1) {
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
+								std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
 #endif
-							if (map->sounds.size() < MAX_SOUNDS)
-								map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
+								if (map->sounds.size() < MAX_SOUNDS)
+									map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
 
-							if (unit.destAttack) {
-								if (this->vault->registry.valid(unit.destAttack)) { // ???
-									Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
-									sf::Vector2f fxPos = destTile.ppos;
-									sf::Vector2i diffPos = tile.pos - destTile.pos;
-									fxPos.x += diffPos.x * 8.0 + 16.0;
-									fxPos.y += diffPos.y * 8.0;
+								if (unit.destAttack) {
+									if (this->vault->registry.valid(unit.destAttack)) { // ???
+										Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
+										sf::Vector2f fxPos = destTile.ppos;
+										sf::Vector2i diffPos = tile.pos - destTile.pos;
+										fxPos.x += diffPos.x * 8.0 + 16.0;
+										fxPos.y += diffPos.y * 8.0;
 
-									ParticleEffectOptions hitOptions;
-									hitOptions.destPos = destTile.ppos;
-									hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
-									hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
+										ParticleEffectOptions hitOptions;
+										hitOptions.destPos = destTile.ppos;
+										hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
+										hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-									this->emitEffect("hit", unit.destAttack, fxPos, 1.0, hitOptions);
+										this->emitEffect("hit", unit.destAttack, fxPos, 1.0, hitOptions);
 
-									ParticleEffectOptions projOptions;
-									projOptions.destPos = destTile.ppos;
-									projOptions.direction = this->getDirection(tile.pos, destTile.pos);
-									projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
+										ParticleEffectOptions projOptions;
+										projOptions.destPos = destTile.ppos;
+										projOptions.direction = this->getDirection(tile.pos, destTile.pos);
+										projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-									this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
-								} else {
-									this->changeState(tile, "idle");
-									unit.destAttack = 0;
-									unit.destpos = tile.pos;
+										this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
+									} else {
+										this->changeState(tile, "idle");
+										unit.destAttack = 0;
+										unit.destpos = tile.pos;
+									}
+
 								}
 
 							}
-
 						}
-					}
-				};
+					};
+				}
 
 				// attacked obj does not exists anymore, stop attacking
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {

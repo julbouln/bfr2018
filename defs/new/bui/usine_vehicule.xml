@@ -6,15 +6,15 @@
     <psize x="224" y="181"/>
     <size x="6" y="4"/>
     <offset x="0" y="2"/>
-    <animations>
-      <animation name="idle">
-        <frames>
-          <frame n="0"/>
-        </frames>
-        <duration value="800"/>
-      </animation>
-    </animations>
   </tile>
+  <spritesheets>
+    <views name="idle" type="static">
+      <view x="0" y="0"/>
+      <view x="0" y="1"/>
+      <view x="0" y="2"/>
+      <view x="0" y="3"/>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="usine_vehicule"/>
     <team value="neonaz"/>

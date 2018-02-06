@@ -271,10 +271,22 @@ public:
 		return obj.life;
 	}
 
+	void resetAnim(EntityID entity, std::string state, int view) {
+		if (this->vault->registry.has<AnimatedSpritesheet>(entity)) {
+			AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
+			AnimatedSpriteView &animSprite = anim.states[state][view];
+			animSprite.l = 0;
+			animSprite.t = 0.0;
+			animSprite.currentFrame = 0;
+			animSprite.frameChangeCallback = [](int frame) {};
+		}
+
+	}
+
 	void changeState(Tile & tile, std::string state) {
 		if (tile.state != state) {
 			tile.state = state;
-			this->vault->factory.resetTileAnim(tile, state);
+//			this->vault->factory.resetTileAnim(tile, state);
 		}
 	}
 

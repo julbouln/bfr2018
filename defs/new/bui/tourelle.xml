@@ -6,22 +6,24 @@
     <psize x="128" y="192"/>
     <size x="3" y="2"/>
     <offset x="0" y="4"/>
-    <animations>
-      <animation name="idle">
-        <frames>
-          <frame n="0"/>
-        </frames>
-        <duration value="800"/>
-      </animation>
-      <animation name="attack">
+  </tile>
+  <spritesheets>
+    <views name="idle" type="static">
+      <view x="0" y="0"/>
+      <view x="0" y="1"/>
+      <view x="0" y="2"/>
+      <view x="0" y="3"/>
+    </views>
+    <views name="attack" type="animated" count="4">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="1"/>
         </frames>
         <duration value="400"/>
-      </animation>
-    </animations>
-  </tile>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="tourelle"/>
     <team value="rebel"/>

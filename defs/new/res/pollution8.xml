@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
-<entity class="resource" name="pollution8" group="pollution" team="neonaz">
-    <texture mode="with_white_mask" path="medias/resources/pollution8.png"/>
-    <tile>
-      <psize x="64" y="128"/>
-      <size x="1" y="1"/>
-    </tile>
-    <resource>
-      <level value="1"/>
-    </resource>
-  </entity>
+<entity class="resource" group="pollution" name="pollution8" team="neonaz">
+	<texture mode="with_white_mask" path="medias/resources/pollution8.png"/>
+	<tile>
+		<psize x="64" y="128"/>
+		<size x="1" y="1"/>
+	</tile>
+	<spritesheets>
+		<views name="idle" type="static">
+			<view x="0" y="0"/>
+			<view x="0" y="1"/>
+			<view x="0" y="2"/>
+			<view x="0" y="3"/>
+		</views>
+	</spritesheets>
+	<resource>
+		<level value="1"/>
+	</resource>
+</entity>

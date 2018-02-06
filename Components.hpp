@@ -57,20 +57,27 @@ struct SpriteView {
 
 struct AnimatedSpriteView {
 	// is looping
-    bool loop;
-    // each frame duration
-    float duration;
-    // frames
-    std::vector<sf::Vector2i> frames;
-    // current frame
-    int currentFrame;
-    // current time since the animation loop started
-    float t;
-    // number of loop since animation started
-    int l;
+	bool loop;
+	// each frame duration
+	float duration;
+	// frames
+	std::vector<sf::Vector2i> frames;
+	// current frame
+	int currentFrame;
+	// current time since the animation loop started
+	float t;
+	// number of loop since animation started
+	int l;
 
-    std::function<void(int)> frameChangeCallback;
+	std::function<void(int)> frameChangeCallback;
 
+	AnimatedSpriteView() {
+		this->l = 0;
+		this->t = 0.0;
+		this->loop = true;
+		this->currentFrame = 0;
+		this->frameChangeCallback = [](int frame) {};
+	}
 };
 
 struct StaticSpritesheet {

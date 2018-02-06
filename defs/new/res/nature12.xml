@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
-<entity class="resource" name="nature12" group="nature" team="rebel">
-    <texture mode="with_white_mask" path="medias/resources/nature12.png"/>
-    <tile>
-      <psize x="197" y="196"/>
-      <size x="3" y="1"/>
-    </tile>
-    <resource>
-      <level value="1"/>
-    </resource>
-  </entity>
+<entity class="resource" group="nature" name="nature12" team="rebel">
+	<texture mode="with_white_mask" path="medias/resources/nature12.png"/>
+	<tile>
+		<psize x="197" y="196"/>
+		<size x="3" y="1"/>
+	</tile>
+	<spritesheets>
+		<views name="idle" type="static">
+			<view x="0" y="0"/>
+			<view x="0" y="1"/>
+			<view x="0" y="2"/>
+			<view x="0" y="3"/>
+		</views>
+	</spritesheets>
+	<resource>
+		<level value="1"/>
+	</resource>
+</entity>

@@ -391,14 +391,15 @@ public:
 		tile.shader = false;
 		this->vault->factory.setColorSwapShader(this->vault->registry, tile, playerEnt);
 
-		AnimationHandler &dieAnim = tile.animHandlers["die"];
+/*		AnimationHandler &dieAnim = tile.animHandlers["die"];
 
 		dieAnim.changeColumn(0);
 		int frame = dieAnim.getAnim().getFrame(dieAnim.getAnim().getLength() - 1);
 		dieAnim.getAnim().repeat = false;
 		dieAnim.set(frame);
+*/
 
-		tile.sprite.setTextureRect(dieAnim.bounds); // texture need to be updated
+		tile.sprite.setTextureRect(sf::IntRect(0,((this->vault->factory.getTex(name).getSize().y/tile.psize.y) - 1)*tile.psize.y,tile.psize.x,tile.psize.y)); // texture need to be updated
 
 		tile.centerRect = this->vault->factory.getCenterRect(name);
 

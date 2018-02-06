@@ -318,11 +318,7 @@ public:
 
 					for (int i = 0; i < directions; i++) {
 						AnimatedSpriteView animView;
-						animView.l = 0;
-						animView.t = 0.0;
-						animView.loop = true;
-						animView.currentFrame = 0;
-						animView.frameChangeCallback = [](int frame) {};
+
 
 						animView.duration = (float)animEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
 
@@ -388,6 +384,100 @@ public:
 			}
 		}
 	}
+};
+
+
+enum class SpritesheetType {
+	Static,
+	Animated,
+};
+
+static std::map<std::string, SpritesheetType> spritesheetTypes =
+{
+	{ "static", SpritesheetType::Static },
+	{ "animated", SpritesheetType::Animated },
+};
+
+
+class SpritesheetsParser {
+public:
+
+	std::vector<int> parseFrames(tinyxml2::XMLElement *animEl) {
+		tinyxml2::XMLElement * framesEl = animEl->FirstChildElement("frames");
+
+		std::vector<int> frames;
+		for (tinyxml2::XMLElement *frameEl : framesEl) {
+			int frame = frameEl->IntAttribute("n");
+			frames.push_back(frame);
+		}
+
+		return frames;
+	}
+
+	void parseAnimatedSpritesheet(AnimatedSpritesheet &spritesheet, tinyxml2::XMLElement *element) {
+		int count = 1;
+		if (element->Attribute("count"))
+			count = element->IntAttribute("count");
+
+		std::string stateNm = element->Attribute("name");
+		spritesheet.states[stateNm] = std::vector<AnimatedSpriteView>();
+
+		for (tinyxml2::XMLElement *viewEl : element) {
+			for (int i = 0; i < count; i++) {
+				AnimatedSpriteView animView;
+
+				animView.duration = (float)viewEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
+
+				for (int n : this->parseFrames(viewEl)) {
+					animView.frames.push_back(sf::Vector2i(i, n));
+				}
+				spritesheet.states[stateNm].push_back(animView);
+			}
+		}
+	}
+
+	void parseStaticSpritesheet(StaticSpritesheet &spritesheet, tinyxml2::XMLElement *element) {
+		std::string stateNm = element->Attribute("name");
+
+		for (tinyxml2::XMLElement *viewEl : element) {
+			SpriteView view;
+			view.currentPosition = sf::Vector2i(viewEl->IntAttribute("x"), viewEl->IntAttribute("y"));
+
+			spritesheet.states[stateNm].push_back(view);
+		}
+
+	}
+
+	bool parseAnimatedSpritesheets(AnimatedSpritesheet &spritesheet, tinyxml2::XMLElement *element) {
+		int viewsCount = 0;
+		tinyxml2::XMLElement * spritesheetsEl = element->FirstChildElement("spritesheets");
+
+		for (tinyxml2::XMLElement *views : element) {
+			if (spritesheetTypes[views->Attribute("type")] == SpritesheetType::Animated)
+			{
+				this->parseAnimatedSpritesheet(spritesheet, views);
+				viewsCount++;
+			}
+		}
+
+		return (viewsCount > 0);
+	}
+
+	bool parseStaticSpritesheets(StaticSpritesheet &spritesheet, tinyxml2::XMLElement *element) {
+		int viewsCount = 0;
+		tinyxml2::XMLElement * spritesheetsEl = element->FirstChildElement("spritesheets");
+
+		for (tinyxml2::XMLElement *views : element) {
+			if (spritesheetTypes[views->Attribute("type")] == SpritesheetType::Static)
+			{
+				this->parseStaticSpritesheet(spritesheet, views);
+				viewsCount++;
+			}
+		}
+
+		return (viewsCount > 0);
+	}
+
 };
 
 class GameObjectParser {

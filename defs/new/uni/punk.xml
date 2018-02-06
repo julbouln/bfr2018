@@ -8,8 +8,10 @@
     <psize x="70" y="70"/>
     <size x="1" y="1"/>
     <offset x="0" y="0"/>
-    <animations>
-      <animation name="idle">
+  </tile>
+  <spritesheets>
+    <views count="8" name="idle" type="animated">
+      <view>
         <frames>
           <frame n="1"/>
           <frame n="2"/>
@@ -27,8 +29,10 @@
           <frame n="2"/>
         </frames>
         <duration value="5000"/>
-      </animation>
-      <animation name="move">
+      </view>
+    </views>
+    <views count="8" name="move" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="4"/>
@@ -36,25 +40,29 @@
           <frame n="5"/>
         </frames>
         <duration value="200"/>
-      </animation>
-      <animation name="attack">
+      </view>
+    </views>
+    <views count="8" name="attack" type="animated">
+      <view>
         <frames>
           <frame n="6"/>
           <frame n="7"/>
           <frame n="8"/>
         </frames>
         <duration value="300"/>
-      </animation>
-      <animation name="die">
+      </view>
+    </views>
+    <views count="8" name="die" type="animated">
+      <view>
         <frames>
           <frame n="15"/>
           <frame n="16"/>
           <frame n="16"/>
         </frames>
         <duration value="200"/>
-      </animation>
-    </animations>
-  </tile>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="punk"/>
     <team value="rebel"/>
@@ -64,7 +72,7 @@
   <unit>
     <speed value="3"/>
     <attack1 power="5"/>
-    <attack2 power="0" dist="0"/>
+    <attack2 dist="0" power="0"/>
     <sound_actions/>
   </unit>
   <effects>

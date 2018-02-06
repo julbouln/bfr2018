@@ -7,22 +7,28 @@
     <psize x="92" y="64"/>
     <size x="1" y="1"/>
     <offset x="0" y="0"/>
-    <animations>
-      <animation name="idle">
+  </tile>
+  <spritesheets>
+    <views count="8" name="idle" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="0"/>
         </frames>
         <duration value="800"/>
-      </animation>
-      <animation name="move">
+      </view>
+    </views>
+    <views count="8" name="move" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="1"/>
         </frames>
         <duration value="200"/>
-      </animation>
-      <animation name="attack">
+      </view>
+    </views>
+    <views count="8" name="attack" type="animated">
+      <view>
         <frames>
           <frame n="2"/>
           <frame n="3"/>
@@ -42,8 +48,10 @@
           <frame n="1"/>
         </frames>
         <duration value="400"/>
-      </animation>
-      <animation name="die">
+      </view>
+    </views>
+    <views count="8" name="die" type="animated">
+      <view>
         <frames>
           <frame n="13"/>
           <frame n="14"/>
@@ -54,9 +62,9 @@
           <frame n="19"/>
         </frames>
         <duration value="100"/>
-      </animation>
-    </animations>
-  </tile>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="super_guerrier"/>
     <team value="neonaz"/>

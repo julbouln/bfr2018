@@ -28,7 +28,8 @@ public:
 //						std::cout << "NEW RESOURCE "<<tile.animHandlers[tile.state].bounds.left << "x" << tile.animHandlers[tile.state].bounds.top << ":" << tile.animHandlers[tile.state].bounds.width << "x" << tile.animHandlers[tile.state].bounds.height << std::endl;
 					}
 					else {
-						tile.animHandlers[tile.state].set(resource.level - 1);
+//						tile.animHandlers[tile.state].set(resource.level - 1);
+						tile.view = resource.level - 1;
 					}
 				} else {
 					// max

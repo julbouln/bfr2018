@@ -6,15 +6,18 @@
     <psize x="256" y="256"/>
     <size x="7" y="3"/>
     <offset x="0" y="4"/>
-    <animations>
-      <animation name="idle">
+  </tile>
+  <spritesheets>
+    <views count="4" name="idle" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
+<!--          <frame n="1"/> -->
         </frames>
-        <duration value="800"/>
-      </animation>
-    </animations>
-  </tile>
+        <duration value="1000"/>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="caserne"/>
     <team value="neonaz"/>

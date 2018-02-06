@@ -8,15 +8,19 @@
     <psize x="60" y="65"/>
     <size x="1" y="1"/>
     <offset x="0" y="0"/>
-    <animations>
-      <animation name="idle">
+  </tile>
+  <spritesheets>
+    <views count="8" name="idle" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="0"/>
         </frames>
         <duration value="800"/>
-      </animation>
-      <animation name="move">
+      </view>
+    </views>
+    <views count="8" name="move" type="animated">
+      <view>
         <frames>
           <frame n="0"/>
           <frame n="1"/>
@@ -24,25 +28,29 @@
           <frame n="4"/>
         </frames>
         <duration value="200"/>
-      </animation>
-      <animation name="attack">
+      </view>
+    </views>
+    <views count="8" name="attack" type="animated">
+      <view>
         <frames>
           <frame n="5"/>
           <frame n="6"/>
           <frame n="7"/>
         </frames>
         <duration value="400"/>
-      </animation>
-      <animation name="die">
+      </view>
+    </views>
+    <views count="8" name="die" type="animated">
+      <view>
         <frames>
           <frame n="8"/>
           <frame n="9"/>
           <frame n="10"/>
         </frames>
         <duration value="100"/>
-      </animation>
-    </animations>
-  </tile>
+      </view>
+    </views>
+  </spritesheets>
   <game_object>
     <name value="abdel"/>
     <team value="rebel"/>
@@ -53,7 +61,7 @@
   <unit>
     <speed value="5"/>
     <attack1 power="6"/>
-    <attack2 power="0" dist="0"/>
+    <attack2 dist="0" power="0"/>
     <sound_actions/>
     <sound_attack name="sword">
       <sound_buffer global="sword" path="medias/extra/sounds/sword.flac"/>
