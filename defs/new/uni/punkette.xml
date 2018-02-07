@@ -48,6 +48,7 @@
           <frame n="8"/>
         </frames>
         <duration value="200"/>
+        <loop value="false"/>
       </view>
     </views>
   </spritesheets>

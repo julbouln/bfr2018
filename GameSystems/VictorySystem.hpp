@@ -32,27 +32,27 @@ public:
 		case 2:
 			this->scoreBonus = true;
 			this->scoreBonusText.setString("COMBO");
-			this->map->sounds.push(SoundPlay{"combo", 1, true, sf::Vector2i{0, 0}});
+			this->map->sounds.push(SoundPlay{"combo", 5, true, sf::Vector2i{0, 0}});
 			break;
 		case 3:
 			this->scoreBonus = true;
 			this->scoreBonusText.setString("SERIAL KILLER");
-			this->map->sounds.push(SoundPlay{"killer", 1, true, sf::Vector2i{0, 0}});
+			this->map->sounds.push(SoundPlay{"killer", 5, true, sf::Vector2i{0, 0}});
 			break;
 		case 4:
 			this->scoreBonus = true;
 			this->scoreBonusText.setString("MEGAKILL");
-			this->map->sounds.push(SoundPlay{"megakill", 1, true, sf::Vector2i{0, 0}});
+			this->map->sounds.push(SoundPlay{"megakill", 5, true, sf::Vector2i{0, 0}});
 			break;
 		case 5:
 			this->scoreBonus = true;
 			this->scoreBonusText.setString("BARBARIAN");
-			this->map->sounds.push(SoundPlay{"barbarian", 1, true, sf::Vector2i{0, 0}});
+			this->map->sounds.push(SoundPlay{"barbarian", 5, true, sf::Vector2i{0, 0}});
 			break;
 		default: // >= 6
 			this->scoreBonus = true;
 			this->scoreBonusText.setString("BUTCHERY");
-			this->map->sounds.push(SoundPlay{"butchery", 1, true, sf::Vector2i{0, 0}});
+			this->map->sounds.push(SoundPlay{"butchery", 5, true, sf::Vector2i{0, 0}});
 			break;
 		}
 	}

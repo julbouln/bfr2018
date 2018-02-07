@@ -45,6 +45,13 @@ struct Tile {
 	bool shader;
 	std::string shaderName;
 	ShaderOptions shaderOptions;
+
+	Tile() {
+		this->z = 0;
+		this->view = 0;
+		this->state = "idle";
+		this->shader = false;
+	}
 };
 
 struct SpriteView {
@@ -68,9 +75,9 @@ struct AnimatedSpriteView {
 	std::function<void(int)> frameChangeCallback;
 
 	AnimatedSpriteView() {
+		this->loop = true;
 		this->l = 0;
 		this->t = 0.0;
-		this->loop = true;
 		this->currentFrame = 0;
 		this->frameChangeCallback = [](int frame) {};
 	}
@@ -172,7 +179,6 @@ public:
 		return l.priority < r.priority;
 	}
 };
-
 
 struct Player {
 	std::string team;

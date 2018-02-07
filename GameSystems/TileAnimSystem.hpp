@@ -5,8 +5,9 @@
 class TileAnimSystem : public GameSystem {
 public:
 	void update(float dt) {
-		updateStaticSpritesheets(dt);
-		updateAnimatedSpritesheets(dt);
+		float realDt = 0.033 / dt * 0.033;
+		updateStaticSpritesheets(realDt);
+		updateAnimatedSpritesheets(realDt);
 	}
 
 	void updateStaticSpritesheets(float dt) {
@@ -16,7 +17,6 @@ public:
 			StaticSpritesheet &spritesheet = view.get<StaticSpritesheet>(entity);
 			if (spritesheet.states.count(tile.state) > 0) {
 				SpriteView &staticView = spritesheet.states[tile.state][tile.view];
-//			std::cout << "static sprite "<<tile.state<<" "<<tile.view << " "<< spritesheet.states.count(tile.state) << " " << spritesheet.states[tile.state].size() << " " << (void*)&staticView << std::endl;
 				sf::Vector2i pos(staticView.currentPosition.x * tile.psize.x, staticView.currentPosition.y * tile.psize.y);
 				sf::IntRect boundingRect(pos, sf::Vector2i(tile.psize));
 				tile.sprite.setTextureRect(boundingRect);
@@ -46,7 +46,6 @@ public:
 					}
 
 					animView.currentFrame = frame;
-
 				}
 
 				if (animView.currentFrame < animView.frames.size()) {

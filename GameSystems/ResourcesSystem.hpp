@@ -16,7 +16,6 @@ public:
 			resource.grow += 0.1;
 
 			if (resource.grow > 10) {
-//				std::cout << "RESOURCE " << entity << " grow" << std::endl;
 				resource.grow = 0.0;
 
 				if (resource.level < 3) {

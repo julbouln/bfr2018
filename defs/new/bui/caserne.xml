@@ -12,7 +12,7 @@
       <view>
         <frames>
           <frame n="0"/>
-<!--          <frame n="1"/> -->
+          <frame n="1"/>
         </frames>
         <duration value="1000"/>
       </view>

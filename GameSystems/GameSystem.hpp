@@ -283,8 +283,29 @@ public:
 
 	}
 
+	void resetAnim(AnimatedSpritesheet &spritesheet, Tile &tile) {
+		if (spritesheet.states.count(tile.state) > 0) {
+			AnimatedSpriteView &view = spritesheet.states[tile.state][tile.view];
+			view.l = 0;
+			view.t = 0.0;
+			view.currentFrame = 0;
+			view.frameChangeCallback = [](int frame) {};
+		}
+	}
+
 	void changeState(Tile & tile, std::string state) {
 		if (tile.state != state) {
+			tile.state = state;
+		}
+	}
+
+	void changeState(EntityID entity, std::string state) {
+		Tile &tile = this->vault->registry.get<Tile>(entity);
+		if (tile.state != state) {
+			if (this->vault->registry.has<AnimatedSpritesheet>(entity)) {
+				AnimatedSpritesheet &spritesheet = this->vault->registry.get<AnimatedSpritesheet>(entity);
+				this->resetAnim(spritesheet, tile);
+			}
 			tile.state = state;
 		}
 	}
@@ -305,8 +326,7 @@ public:
 		if (unit.soundActions[state] > 0) {
 			int rnd = rand() % unit.soundActions[state];
 			std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
-			if (this->map->sounds.size() < MAX_SOUNDS)
-				this->map->sounds.push(SoundPlay{sname, 1, true, sf::Vector2i{0, 0}});
+			this->map->sounds.push(SoundPlay{sname, 3, true, sf::Vector2i{0, 0}});
 		}
 	}
 

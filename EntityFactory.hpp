@@ -216,6 +216,8 @@ public:
 		texManager.load("dirt", terrains, sf::IntRect{96, 0, 32, 96});
 		texManager.load("concrete", terrains, sf::IntRect{128, 0, 32, 96});
 
+		texManager.load("terrains", "medias/tiles/terrains.png");
+
 		sf::Image transitions;
 		transitions.loadFromFile("medias/new/transitions.png");
 		transitions.createMaskFromColor(sf::Color::White);
@@ -226,6 +228,8 @@ public:
 		texManager.load("water_transition", transitions, sf::IntRect{32, 0, 32, 1024});
 		texManager.load("dirt_transition", transitions, sf::IntRect{96, 0, 32, 1024});
 		texManager.load("concrete_transition", transitions, sf::IntRect{128, 0, 32, 1024});
+
+		texManager.load("terrains_transitions", transitions, sf::IntRect{0,0,160,1024});
 
 		texManager.load("fog_transition", "medias/new/fog.png");
 		texManager.load("debug_transition", "medias/new/debug_transitions256.png");

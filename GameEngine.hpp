@@ -728,6 +728,7 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 
+		mapLayers.drawLayers(this->game->window, dt);
 		drawMap.draw(this->game->window, clip, dt);
 		if (this->gameSpeed < 2)
 			fx.draw(this->game->window, clip, dt);

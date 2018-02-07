@@ -111,14 +111,14 @@ public:
 								unit.nextpos = npos;
 
 								tile.view = this->getDirection(cpos, npos);
-								this->changeState(tile, "move");
+								this->changeState(entity, "move");
 
 
 #ifdef PATHFINDING_DEBUG
 								std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
 #endif
 							} else {
-								this->changeState(tile, "idle");
+								this->changeState(entity, "idle");
 #ifdef PATHFINDING_DEBUG
 								std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
 #endif
@@ -127,7 +127,7 @@ public:
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
-							this->changeState(tile, "idle");
+							this->changeState(entity, "idle");
 							unit.nopath++;
 							if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
 								sf::Vector2i fp = this->firstFreePosition(unit.destpos);
@@ -141,7 +141,7 @@ public:
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
 #endif
-						this->changeState(tile, "idle");
+						this->changeState(entity, "idle");
 					}
 				} else {
 					//if (tile.state == "move")

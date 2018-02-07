@@ -346,6 +346,10 @@ public:
 			for (int i = 0; i < count; i++) {
 				AnimatedSpriteView animView;
 
+				if(viewEl->FirstChildElement("loop")) {
+					animView.loop = viewEl->FirstChildElement("loop")->BoolAttribute("value");
+				}
+
 				animView.duration = (float)viewEl->FirstChildElement("duration")->IntAttribute("value") / 1000.0;
 
 				for (sf::Vector2i p : this->parseFrames(viewEl)) {

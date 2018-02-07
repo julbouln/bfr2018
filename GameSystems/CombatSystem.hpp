@@ -160,18 +160,18 @@ public:
 									player.kills.insert(unit.destAttack);
 								}
 								if (this->vault->registry.has<Unit>(unit.destAttack)) {
-									this->changeState(destTile, "die");
+									this->changeState(unit.destAttack, "die");
 								}
 
 
 							} else {
 								tile.view = this->getDirection(tile.pos, destTile.pos);
 
-								this->changeState(tile, "attack");
+								this->changeState(entity, "attack");
 							}
 
 							if (destObj.life == 0) {
-								this->changeState(tile, "idle");
+								this->changeState(entity, "idle");
 								unit.destAttack = 0;
 								unit.destpos = tile.pos;
 							} else {
@@ -240,7 +240,7 @@ public:
 					}
 				}
 
-				this->changeState(tile, "die");
+				this->changeState(entity, "die");
 				unit.destAttack = 0;
 				unit.destpos = tile.pos;
 			}
@@ -249,7 +249,6 @@ public:
 				// play sound at frame 1
 				if (this->vault->registry.has<AnimatedSpritesheet>(entity))
 				{
-
 					AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
 
 					anim.states[tile.state][tile.view].frameChangeCallback = [this, entity](int frame) {
@@ -260,8 +259,7 @@ public:
 #ifdef COMBAT_DEBUG
 								std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
 #endif
-								if (map->sounds.size() < MAX_SOUNDS)
-									map->sounds.push(SoundPlay{unit.attackSound, 1, false, tile.pos});
+								map->sounds.push(SoundPlay {unit.attackSound, 1, false, tile.pos});
 
 								if (unit.destAttack) {
 									if (this->vault->registry.valid(unit.destAttack)) { // ???
@@ -285,13 +283,11 @@ public:
 
 										this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
 									} else {
-										this->changeState(tile, "idle");
+										this->changeState(entity, "idle");
 										unit.destAttack = 0;
 										unit.destpos = tile.pos;
 									}
-
 								}
-
 							}
 						}
 					};
@@ -299,7 +295,7 @@ public:
 
 				// attacked obj does not exists anymore, stop attacking
 				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
-					this->changeState(tile, "idle");
+					this->changeState(entity, "idle");
 					unit.destAttack = 0;
 					unit.destpos = tile.pos;
 				}
@@ -320,17 +316,17 @@ public:
 				projOptions.direction = 0;
 
 				this->emitEffect("destroy", entity, tile.ppos, 1.0, projOptions);
-				map->sounds.push(SoundPlay{"explosion", 1, true, tile.pos});
+				map->sounds.push(SoundPlay{"explosion", 2, true, tile.pos});
 
 				obj.destroy = true;
 
 			} else {
 				// change tile view to show damages
-				if(obj.life < obj.maxLife * 0.75)
+				if (obj.life < obj.maxLife * 0.75)
 					tile.view = 1;
-				if(obj.life < obj.maxLife * 0.50)
+				if (obj.life < obj.maxLife * 0.50)
 					tile.view = 2;
-				if(obj.life < obj.maxLife * 0.25)
+				if (obj.life < obj.maxLife * 0.25)
 					tile.view = 3;
 			}
 

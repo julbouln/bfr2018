@@ -3,6 +3,34 @@
 #include <queue>
 #include <vector>
 
+
+enum TileType {
+	Sand,
+	SandAlt1,
+	SandAlt2,
+	Water,
+	WaterAlt1,
+	WaterAlt2,
+	Grass,
+	GrassAlt1,
+	GrassAlt2,
+	Dirt,
+	DirtAlt1,
+	DirtAlt2,
+	Concrete,
+	ConcreteAlt1,
+	ConcreteAlt2
+};
+
+enum TransitionLayer {
+	GrassConcrete,
+	SandWater,
+	GrassSand,
+	ConcreteSand,
+	AnyDirt,
+};
+
+
 class Layer {
 public:
 	std::vector<EntityID> entitiesGrid;

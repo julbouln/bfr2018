@@ -68,10 +68,10 @@ public:
 	}
 
 	void drawTileLayers(sf::RenderTarget & target, sf::IntRect clip, float dt) {
-		this->drawLayer(target, this->map->terrains, clip, dt);
-		for (Layer &transitionLayer : this->map->transitions) {
-			this->drawLayer(target, transitionLayer, clip, dt);
-		}
+//		this->drawLayer(target, this->map->terrains, clip, dt);
+//		for (Layer &transitionLayer : this->map->transitions) {
+//			this->drawLayer(target, transitionLayer, clip, dt);
+//		}
 
 		this->drawLayer(target, this->map->corpses, clip, dt);
 	}
