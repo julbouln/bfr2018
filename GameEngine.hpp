@@ -8,9 +8,6 @@
 #include "System.hpp"
 #include "Map.hpp"
 
-#include "SimplexNoise.h"
-#include "JPS.h"
-
 #include "Components.hpp"
 
 #include "GameSystems/GameSystem.hpp"
@@ -702,7 +699,7 @@ public:
 		}
 
 		this->tileAnim.update(dt);
-		this->pathfinding.update(dt);
+		this->pathfinding.updateMovement(dt);
 
 		this->sound.update(dt);
 		this->sound.cleanPlaying(dt);
@@ -959,6 +956,8 @@ public:
 			this->updateDecade(updateDt * 10);
 		}
 
+		this->pathfinding.update(dt);
+
 		this->updatePlayers(updateDt);
 
 		this->construction.update(updateDt);
@@ -971,8 +970,6 @@ public:
 
 		this->mapLayers.updateSpectatorFog(this->currentPlayer, dt);
 		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, sf::IntRect(0, 0, this->map->width, this->map->height), dt);
-//		sf::IntRect clip = this->viewClip();
-//		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, clip, dt);
 
 		// AI
 		auto playerView = this->vault->registry.view<Player>();
@@ -987,9 +984,6 @@ public:
 		sf::Vector2f viewPos = this->gameView.getCenter();
 //		std::cout << "GameEngine: set listener position to " << viewPos.x / 32.0 << "x" << viewPos.y / 32.0 << std::endl;
 		sf::Listener::setPosition(viewPos.x / 32.0, 0.f, viewPos.y / 32.0);
-
-//		sf::IntRect clip = this->viewClip();
-//		drawMap.updateObjsDrawList(this->game->window, clip, updateDt);
 	}
 
 	void updateMoveView(float dt) {

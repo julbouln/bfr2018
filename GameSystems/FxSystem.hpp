@@ -30,7 +30,6 @@ public:
 	}
 
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
-
 		auto view = this->vault->registry.view<ParticleEffect>();
 		for (EntityID entity : view) {
 			ParticleEffect &effect = view.get(entity);

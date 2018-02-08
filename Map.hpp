@@ -22,7 +22,8 @@ enum TileType {
 	ConcreteAlt2
 };
 
-enum TransitionLayer {
+enum TerrainLayer {
+	Terrain,
 	GrassConcrete,
 	SandWater,
 	GrassSand,
@@ -161,10 +162,9 @@ public:
 	unsigned int width;
 	unsigned int height;
 
-	Layer terrains;
 	Layer terrainsForTransitions;
 
-	std::vector<Layer> transitions;
+	std::vector<Layer> terrains;
 
 	Layer fogHidden;
 	Layer fogUnvisited;
@@ -192,13 +192,14 @@ public:
 	}
 
 	void setSize(unsigned int width, unsigned int height) {
-		this->terrains.setSize(width, height);
+//		this->terrains.setSize(width, height);
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 6; i++) {
 			Layer layer;
 			layer.setSize(width, height);
-			this->transitions.push_back(layer);
+			this->terrains.push_back(layer);
 		}
+
 		this->terrainsForTransitions.setSize(width, height);
 		this->objs.setSize(width, height);
 		this->resources.setSize(width, height);
@@ -230,8 +231,8 @@ public:
 	{
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
-//			std::cout << "PATHFINDING "<< x << "x" << y << " " << objs.entitiesGrid[x + width * y] << std::endl;
-			if (staticPathfinding.entitiesGrid[x + width * y] == 0 && pathfinding.entitiesGrid[x + width * y] == 0)
+			unsigned int idx = x + width * y;
+			if (staticPathfinding.entitiesGrid[idx] == 0 && pathfinding.entitiesGrid[idx] == 0)
 				return true;
 		}
 		return false;

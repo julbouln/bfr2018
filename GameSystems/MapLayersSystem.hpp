@@ -3,6 +3,8 @@
 #include "GameSystem.hpp"
 #include "TileMap.hpp"
 
+#include "SimplexNoise.h"
+
 #define ALT_TILES 3
 
 class MapLayersSystem : public GameSystem {
@@ -32,6 +34,8 @@ class MapLayersSystem : public GameSystem {
 public:
 	void update(float dt) {
 		this->updateLayer(dt);
+		this->updateTransitions(dt);
+		this->updateTileMap(dt);
 		this->updateObjsLayer(dt);
 		this->updatePlayersFog(dt);
 	}
@@ -68,7 +72,7 @@ public:
 						}
 
 						if (this->map->staticBuildable.get(p.x, p.y) == 0) {
-							this->map->terrains.set(p.x, p.y, newEnt);
+							this->map->terrains[Terrain].set(p.x, p.y, newEnt);
 							this->map->terrainsForTransitions.set(p.x, p.y, newEnt);
 						}
 					}
@@ -97,35 +101,34 @@ public:
 					}
 
 					if (this->map->staticBuildable.get(p.x, p.y) == 0) {
-						this->map->terrains.set(p.x, p.y, newEnt);
+						this->map->terrains[Terrain].set(p.x, p.y, newEnt);
 						this->map->terrainsForTransitions.set(p.x, p.y, newEnt);
 					}
 				}
-
 			}
-
 		}
 
-		this->updateTransitions();
+	}
 
+	void updateTileMap(float dt) {
 		for(auto &layer : tileMap.layers) {
 			layer.clear();
 		}
 
 		for (int y = 0; y < this->map->height; y++) {
 			for (int x = 0; x < this->map->width; x++) {
-				tileMap.layers[TerrainLayer].addPosition(this->map->terrains.get(x, y), sf::Vector2i(x, y));
+				tileMap.layers[Terrain].addPosition(this->map->terrains[Terrain].get(x, y), sf::Vector2i(x, y));
 
-				if(this->map->transitions[GrassConcrete].get(x, y))
-					tileMap.layers[GrassConcreteLayer].addPosition(this->map->transitions[GrassConcrete].get(x, y), sf::Vector2i(x, y));
-				if(this->map->transitions[SandWater].get(x, y))
-					tileMap.layers[SandWaterLayer].addPosition(this->map->transitions[SandWater].get(x, y), sf::Vector2i(x, y));
-				if(this->map->transitions[GrassSand].get(x, y))
-					tileMap.layers[GrassSandLayer].addPosition(this->map->transitions[GrassSand].get(x, y), sf::Vector2i(x, y));
-				if(this->map->transitions[ConcreteSand].get(x, y))
-					tileMap.layers[ConcreteSandLayer].addPosition(this->map->transitions[ConcreteSand].get(x, y), sf::Vector2i(x, y));
-				if(this->map->transitions[AnyDirt].get(x, y))		
-					tileMap.layers[AnyDirtLayer].addPosition(this->map->transitions[AnyDirt].get(x, y), sf::Vector2i(x, y));
+				if(this->map->terrains[GrassConcrete].get(x, y))
+					tileMap.layers[GrassConcrete].addPosition(this->map->terrains[GrassConcrete].get(x, y), sf::Vector2i(x, y));
+				if(this->map->terrains[SandWater].get(x, y))
+					tileMap.layers[SandWater].addPosition(this->map->terrains[SandWater].get(x, y), sf::Vector2i(x, y));
+				if(this->map->terrains[GrassSand].get(x, y))
+					tileMap.layers[GrassSand].addPosition(this->map->terrains[GrassSand].get(x, y), sf::Vector2i(x, y));
+				if(this->map->terrains[ConcreteSand].get(x, y))
+					tileMap.layers[ConcreteSand].addPosition(this->map->terrains[ConcreteSand].get(x, y), sf::Vector2i(x, y));
+				if(this->map->terrains[AnyDirt].get(x, y))		
+					tileMap.layers[AnyDirt].addPosition(this->map->terrains[AnyDirt].get(x, y), sf::Vector2i(x, y));
 			}
 		}
 	}
@@ -298,44 +301,37 @@ public:
 	}
 
 	void initTerrains() {
-		tileMap.layers.push_back(TileLayer());
+		tileMap.resize(6);
 
 		for (int i = 0; i < 15; i++) {
-			tileMap.layers[TerrainLayer].addTileRect(sf::IntRect((i / 3) * 32, (i % 3) * 32, 32, 32));
+			tileMap.layers[Terrain].addTileRect(sf::IntRect((i / 3) * 32, (i % 3) * 32, 32, 32));
 		}
-		tileMap.layers[TerrainLayer].init(&this->vault->factory.getTex("terrains"));
-
-		tileMap.layers.push_back(TileLayer());
-		tileMap.layers.push_back(TileLayer());
-		tileMap.layers.push_back(TileLayer());
-		tileMap.layers.push_back(TileLayer());
-		tileMap.layers.push_back(TileLayer());
-
-		std::cout << "INIT TILE LAYERS"<<std::endl;
-		for (int i = 0; i < 32; i++) {
-			tileMap.layers[GrassConcreteLayer].addTileRect(sf::IntRect(128, i * 32, 32, 32));
-		}
-		tileMap.layers[GrassConcreteLayer].init(&this->vault->factory.getTex("terrains_transitions"));
+		tileMap.layers[Terrain].init(&this->vault->factory.getTex("terrains"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[SandWaterLayer].addTileRect(sf::IntRect(32, i * 32, 32, 32));
+			tileMap.layers[GrassConcrete].addTileRect(sf::IntRect(128, i * 32, 32, 32));
 		}
-		tileMap.layers[SandWaterLayer].init(&this->vault->factory.getTex("terrains_transitions"));
+		tileMap.layers[GrassConcrete].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[GrassSandLayer].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			tileMap.layers[SandWater].addTileRect(sf::IntRect(32, i * 32, 32, 32));
 		}
-		tileMap.layers[GrassSandLayer].init(&this->vault->factory.getTex("terrains_transitions"));
+		tileMap.layers[SandWater].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[ConcreteSandLayer].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			tileMap.layers[GrassSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
 		}
-		tileMap.layers[ConcreteSandLayer].init(&this->vault->factory.getTex("terrains_transitions"));
+		tileMap.layers[GrassSand].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[AnyDirtLayer].addTileRect(sf::IntRect(96, i * 32, 32, 32));
+			tileMap.layers[ConcreteSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
 		}
-		tileMap.layers[AnyDirtLayer].init(&this->vault->factory.getTex("terrains_transitions"));
+		tileMap.layers[ConcreteSand].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		for (int i = 0; i < 32; i++) {
+			tileMap.layers[AnyDirt].addTileRect(sf::IntRect(96, i * 32, 32, 32));
+		}
+		tileMap.layers[AnyDirt].init(&this->vault->factory.getTex("terrains_transitions"));
 
 	}
 
@@ -535,45 +531,41 @@ public:
 
 	void updateGrassConcreteTransition(int x, int y) {
 		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Grass, Concrete, x, y);
-
-		bitmask = this->updateTransition(bitmask, this->map->transitions[GrassConcrete], Concrete, concreteTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->terrains[GrassConcrete], Concrete, concreteTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->transitions[GrassConcrete].set(x, y, 0);
+			this->map->terrains[GrassConcrete].set(x, y, 0);
 		}
 	}
 
 	void updateSandWaterTransition(int x, int y) {
 		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Sand, Water, x, y);
-
-		bitmask = this->updateTransition(bitmask, this->map->transitions[SandWater], Water, waterTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->terrains[SandWater], Water, waterTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->transitions[SandWater].set(x, y, 0);
+			this->map->terrains[SandWater].set(x, y, 0);
 		}
 	}
 
 	void updateGrassSandTransition(int x, int y) {
 		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Grass, Sand, x, y);
-
-		bitmask = this->updateTransition(bitmask, this->map->transitions[GrassSand], Sand, sandTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->terrains[GrassSand], Sand, sandTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->transitions[GrassSand].set(x, y, 0);
+			this->map->terrains[GrassSand].set(x, y, 0);
 		}
 	}
 
 	void updateConcreteSandTransition(int x, int y) {
 		int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Concrete, Sand, x, y);
-
-		bitmask = this->updateTransition(bitmask, this->map->transitions[ConcreteSand], Sand, sandTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->terrains[ConcreteSand], Sand, sandTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->transitions[ConcreteSand].set(x, y, 0);
+			this->map->terrains[ConcreteSand].set(x, y, 0);
 		}
 	}
 
 	void updateDirtTransition(int x, int y) {
 		int bitmask = this->voidTransitionBitmask(this->map->terrainsForTransitions, Dirt, x, y);
-		bitmask = this->updateTransition(bitmask, this->map->transitions[AnyDirt], Dirt, dirtTransitions, terrainTransitionsMapping, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->terrains[AnyDirt], Dirt, dirtTransitions, terrainTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->transitions[AnyDirt].set(x, y, 0);
+			this->map->terrains[AnyDirt].set(x, y, 0);
 		}
 	}
 
@@ -589,7 +581,7 @@ public:
 		}
 	}
 
-	void updateTransitions() {
+	void updateTransitions(float dt) {
 #ifdef TRANSITIONS_DEBUG
 		std::cout << "Transitions: update " << this->markUpdateTerrainTransitions.size() << " terrain transitions" << std::endl;
 #endif
@@ -654,7 +646,7 @@ public:
 					this->map->terrainsForTransitions.set(x, y, Water);
 				}
 
-				this->map->terrains.set(x, y, t);
+				this->map->terrains[Terrain].set(x, y, t);
 
 				// add some random ressources
 				if (res > 0.6 && res < 0.61) {

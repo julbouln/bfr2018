@@ -1,5 +1,5 @@
 Optimizations
-- for zoom: uses vertex to render tile layers or uses multiple cached RenderTextures ?
+- for zoom: uses vertex to render tile layers (FOG, corpses)
 
 Bug:
 - unit looking for each other fight sometimes stuck together

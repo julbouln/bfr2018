@@ -30,7 +30,7 @@ public:
 	void init(sf::Vector2f pos, float s) {
 		texture.create(this->map->width, this->map->height);
 		pixels = new sf::Uint8[this->map->width * this->map->height * 4];
-		rect = sf::FloatRect(pos.x,pos.y,s,s);
+		rect = sf::FloatRect(pos.x, pos.y, s, s);
 		size = s;
 		sprite.setTexture(texture);
 	}
@@ -50,13 +50,10 @@ public:
 			for (int x = 0; x < this->map->width; ++x) {
 				FogState fogSt = player.fog.get(x, y);
 				if (fogSt != FogState::Unvisited) {
-					EntityID terrainEnt = this->map->terrainsForTransitions.get(x, y);
-					if (terrainEnt) {
-						if (fogSt != FogState::Hidden) {
-							this->setMinimapPixel(idx, sf::Color(0x67, 0x51, 0x0e, 0xff));
-						} else {
-							this->setMinimapPixel(idx, sf::Color(0x63, 0x4d, 0x0a, 0x7f));
-						}
+					if (fogSt != FogState::Hidden) {
+						this->setMinimapPixel(idx, sf::Color(0x67, 0x51, 0x0e, 0xff));
+					} else {
+						this->setMinimapPixel(idx, sf::Color(0x63, 0x4d, 0x0a, 0x7f));
 					}
 
 					if (fogSt != FogState::Hidden) {
@@ -107,7 +104,7 @@ private:
 	void drawFrame(sf::RenderWindow &window) {
 		// frame rectangle
 		sf::RectangleShape r;
-		sf::Vector2f rPos(rect.left+1, rect.top+1);
+		sf::Vector2f rPos(rect.left + 1, rect.top + 1);
 		r.setSize(sf::Vector2f(size - 2, size - 2));
 		r.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
 		r.setOutlineColor(sf::Color(0x66, 0x66, 0x66, 0xff));

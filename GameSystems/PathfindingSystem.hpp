@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameSystem.hpp"
+#include "JPS.h"
 
 //#define PATHFINDING_DEBUG
 
@@ -14,12 +15,14 @@ public:
 	}
 
 	~PathfindingSystem() {
-		if(search)
+		if (search)
 			delete search;
 	}
+	
 	void init() {
 		search = new JPS::Searcher<Map>(*this->map);
 	}
+
 	void updatePathfindingLayer(float dt) {
 		this->map->pathfinding.clear();
 		auto buildingView = this->vault->registry.persistent<Tile, Building>();
@@ -77,6 +80,30 @@ public:
 		return true;
 	}
 
+	bool unitInCase(Unit &unit, Tile &tile) {
+		int diffx = abs(tile.ppos.x - unit.nextpos.x * 32);
+		int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
+		if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	void updateMovement(float dt) {
+		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
+			Unit &unit = view.get<Unit>(entity);
+
+			if (tile.pos != unit.destpos && obj.life > 0 && !this->unitInCase(unit, tile)) {
+				float speed = (float)unit.speed / 2.0;
+				tile.ppos += this->dirMovement(tile.view, speed);
+			}
+		}
+	}
+
 	void update(float dt) {
 		this->updatePathfindingLayer(dt);
 
@@ -86,78 +113,71 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			if (tile.pos != unit.destpos && obj.life > 0) {
-				int diffx = abs(tile.ppos.x - unit.nextpos.x * 32);
-				int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
-				if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
-					tile.pos = unit.nextpos;
-					this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
-					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+			if (tile.pos != unit.destpos && obj.life > 0 && this->unitInCase(unit, tile)) {
 
-					if (tile.pos != unit.destpos) {
+				tile.pos = unit.nextpos;
+				this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
+				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
-						JPS::PathVector path;
+				if (tile.pos != unit.destpos) {
+
+					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
-						bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
+					bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
 
-						if (found) {
-							sf::Vector2i cpos(tile.pos.x, tile.pos.y);
-							sf::Vector2i npos(path.front().x, path.front().y);
-
-#ifdef PATHFINDING_DEBUG
-							std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
-#endif
-							if (this->checkAround(entity, npos)) {
-								unit.nextpos = npos;
-
-								tile.view = this->getDirection(cpos, npos);
-								this->changeState(entity, "move");
-
+					if (found) {
+						sf::Vector2i cpos(tile.pos.x, tile.pos.y);
+						sf::Vector2i npos(path.front().x, path.front().y);
 
 #ifdef PATHFINDING_DEBUG
-								std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
+						std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
-							} else {
-								this->changeState(entity, "idle");
+						if (this->checkAround(entity, npos)) {
+							unit.nextpos = npos;
+
+							tile.view = this->getDirection(cpos, npos);
+							this->changeState(entity, "move");
+
+
 #ifdef PATHFINDING_DEBUG
-								std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
+							std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
 #endif
-							}
 						} else {
-#ifdef PATHFINDING_DEBUG
-							std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
-#endif
 							this->changeState(entity, "idle");
-							unit.nopath++;
-							if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
-								sf::Vector2i fp = this->firstFreePosition(unit.destpos);
 #ifdef PATHFINDING_DEBUG
-								std::cout << "Pathfinding: " << entity << " go to first free position " << fp.x << "x" << fp.y << std::endl;
+							std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
 #endif
-								this->goTo(unit, fp);
-							}
 						}
 					} else {
 #ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
+						std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
 						this->changeState(entity, "idle");
+						unit.nopath++;
+
+						if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
+							sf::Vector2i fp = this->firstFreePosition(unit.destpos);
+#ifdef PATHFINDING_DEBUG
+							std::cout << "Pathfinding: " << entity << " go to first free position " << fp.x << "x" << fp.y << std::endl;
+#endif
+							this->goTo(unit, fp);
+						}
 					}
 				} else {
-					//if (tile.state == "move")
-					{
-						float speed = (float)unit.speed / 2.0;
-						tile.ppos += this->dirMovement(tile.view, speed);
+#ifdef PATHFINDING_DEBUG
+					std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
+#endif
+					this->changeState(entity, "idle");
+				}
+			} else {
+//					float speed = (float)unit.speed / 2.0;
+//					tile.ppos += this->dirMovement(tile.view, speed);
 
-					}
-
-					if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
-						// something wrong, realign
-						GameObject &obj = this->vault->registry.get<GameObject>(entity);
-						std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " " << tile.pos.x << "x" << tile.pos.y << " -> " << unit.nextpos.x << "x" << unit.nextpos.y << std::endl;
-						tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-//						unit.nextpos = tile.pos;
-					}
+				if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
+					// something wrong, realign
+					GameObject &obj = this->vault->registry.get<GameObject>(entity);
+					std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " " << tile.pos.x << "x" << tile.pos.y << " -> " << unit.nextpos.x << "x" << unit.nextpos.y << std::endl;
+					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 				}
 			}
 		}
