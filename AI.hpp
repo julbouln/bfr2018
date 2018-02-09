@@ -697,8 +697,8 @@ public:
 	AIParser nazAI;
 
 	AI() {
-		rebelAI.load("defs/new/ai/rebel.xml");
-		nazAI.load("defs/new/ai/neonaz.xml");
+		rebelAI.load("defs/ai/rebel.xml");
+		nazAI.load("defs/ai/neonaz.xml");
 	}
 
 	void setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight) {

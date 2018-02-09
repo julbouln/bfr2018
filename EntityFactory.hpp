@@ -96,9 +96,9 @@ public:
 
 	void loadMisc() {
 #ifdef SHADER_ENABLE
-		shrManager.load("color_swap", "defs/new/shaders/color_swap.frag");
-		shrManager.load("pixelation", "defs/new/shaders/pixelation.frag");
-		shrManager.load("outline", "defs/new/shaders/outline.frag");
+		shrManager.load("color_swap", "defs/shaders/color_swap.frag");
+		shrManager.load("pixelation", "defs/shaders/pixelation.frag");
+		shrManager.load("outline", "defs/shaders/outline.frag");
 #endif
 
 		texLoader.loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel.png");
@@ -694,7 +694,7 @@ public:
 
 	void load() {
 		if (!this->loaded) {
-			this->loadManifest("defs/new/manifest.xml");
+			this->loadManifest("defs/manifest.xml");
 
 			this->loadTerrains();
 
@@ -702,7 +702,7 @@ public:
 
 			this->loadMisc();
 			this->loadTechTrees();
-			this->loadDecorGenerator("defs/new/dec/decor_generator.xml");
+			this->loadDecorGenerator("defs/dec/decor_generator.xml");
 			this->loaded = true;
 		}
 	}

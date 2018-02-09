@@ -133,6 +133,15 @@
 		<Train type="abdel"/>
 	</Sequence>
 	<Sequence>
+		<Probability frac="50" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="squat"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="200"/>
+		<HasLessObjectsTypeThan qty="5" type="punk"/>
+		<Train type="punk"/>
+	</Sequence>
+	<Sequence>
 		<Probability frac="100" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan qty="1" type="festival"/>

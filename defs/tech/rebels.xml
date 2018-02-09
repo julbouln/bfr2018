@@ -2,7 +2,6 @@
 <tech_tree team="rebels">
   <building type="taverne">
     <char type="zork"/>
-    <char type="punk"/>
     <building type="ferme">
       <resource type="nature"/>
     </building>
@@ -12,11 +11,12 @@
       <char type="guerrier_bud"/>
       <building type="tourelle"/>
       <building type="squat">
-	<char type="abdel"/>
-      </building>      
+        <char type="abdel"/>
+        <char type="punk"/>
+      </building>
       <building type="raffinerie_bud">
-       <char type="guerrier_bud_powerhead"/>
+        <char type="guerrier_bud_powerhead"/>
       </building>
     </building>
-  </building>  
+  </building>
 </tech_tree>
