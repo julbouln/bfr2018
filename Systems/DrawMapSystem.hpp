@@ -19,10 +19,6 @@ public:
 		if (showDebugLayer)
 			this->drawDebug(window, clip, dt);
 
-		this->drawLayer(window, this->map->fogHidden, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		this->drawLayer(window, this->map->fogUnvisited, clip, dt, sf::Color(0x00, 0x00, 0x00));
-		this->drawLayer(window, this->map->fogHiddenTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00, 0x7f));
-		this->drawLayer(window, this->map->fogUnvisitedTransitions, clip, dt, sf::Color(0x00, 0x00, 0x00));
 	}
 
 	void drawSpriteWithShader(sf::RenderTarget & target, sf::Sprite & sprite, std::string shaderName, ShaderOptions & options) {
@@ -31,7 +27,7 @@ public:
 		target.draw(sprite, shader);
 	}
 
-	void drawLayer(sf::RenderTarget & target, Layer & layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
+	void drawEntityLayer(sf::RenderTarget & target, EntityLayer & layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		// UGLY: add one line of tile to draw to avoid half tile crop
 		if (clip.top + clip.height + 1 < this->map->height)
 			clip.height++;
@@ -68,12 +64,8 @@ public:
 	}
 
 	void drawTileLayers(sf::RenderTarget & target, sf::IntRect clip, float dt) {
-//		this->drawLayer(target, this->map->terrains, clip, dt);
-//		for (Layer &transitionLayer : this->map->transitions) {
-//			this->drawLayer(target, transitionLayer, clip, dt);
-//		}
 
-		this->drawLayer(target, this->map->corpses, clip, dt);
+		this->drawEntityLayer(target, this->map->corpses, clip, dt);
 	}
 
 	inline bool clipped(sf::IntRect & clip, sf::Vector2i const & p) const {
@@ -92,7 +84,7 @@ public:
 			Tile &tile = resView.get<Tile>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				if (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0) {
+				if (this->map->fogHidden.get(p.x, p.y) == Visible && this->map->fogUnvisited.get(p.x, p.y) == Visible) {
 					if (this->clipped(clip, p))
 						this->entitiesDrawList.push_back(entity);
 				}
@@ -107,7 +99,7 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				if (!obj.mapped || (this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0)) {
+				if (!obj.mapped || (this->map->fogHidden.get(p.x, p.y) == Visible && this->map->fogUnvisited.get(p.x, p.y) == Visible)) {
 					if (this->clipped(clip, p))
 						this->entitiesDrawList.push_back(entity);
 				}
@@ -122,7 +114,7 @@ public:
 			Decor &decor = decorView.get<Decor>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				if ((this->map->fogHidden.get(p.x, p.y) == 0 && this->map->fogUnvisited.get(p.x, p.y) == 0)) {
+				if ((this->map->fogHidden.get(p.x, p.y) == Visible && this->map->fogUnvisited.get(p.x, p.y) == Visible)) {
 					if (this->clipped(clip, p))
 						this->entitiesDrawList.push_back(entity);
 				}

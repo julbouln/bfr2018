@@ -31,16 +31,69 @@ enum TerrainLayer {
 	AnyDirt,
 };
 
+enum FogType {
+	NotVisible = 0,
+	Visible = 15
+};
 
 class Layer {
 public:
-	std::vector<EntityID> entitiesGrid;
+	std::vector<int> grid;
 
 	unsigned int width;
 	unsigned int height;
 	Layer() {}
 
 	Layer(unsigned int width, unsigned int height) : width(width), height(height)  {
+		this->fill();
+	}
+
+	void setSize(unsigned int w, unsigned int h) {
+		this->width = w;
+		this->height = h;
+		this->fill();
+	}
+
+	void fill()
+	{
+		grid.clear();
+		while (grid.size() < width * height) {
+			grid.push_back(0);
+		}
+	}
+
+	void clear() {
+		for (int i = 0; i < grid.size(); i++) {
+			grid[i] = 0;
+		}
+	}
+
+	inline int index(int x, int y) const { return x + width * y; }
+
+	int get(int x, int y) const {
+		return grid[this->index(x, y)];
+	}
+
+	void set(int x, int y, EntityID ent) {
+		grid[this->index(x, y)] = ent;
+	}
+
+	void del(int x, int y) {
+		grid[this->index(x, y)] = 0;
+	}
+
+};
+
+
+class EntityLayer {
+public:
+	std::vector<EntityID> entitiesGrid;
+
+	unsigned int width;
+	unsigned int height;
+	EntityLayer() {}
+
+	EntityLayer(unsigned int width, unsigned int height) : width(width), height(height)  {
 		this->fill();
 	}
 
@@ -172,18 +225,18 @@ public:
 	Layer fogHiddenTransitions;
 	Layer fogUnvisitedTransitions;
 
-	Layer objs;
-	Layer resources;
-	Layer decors;
+	EntityLayer objs;
+	EntityLayer resources;
+	EntityLayer decors;
 
-	Layer effects;
+	EntityLayer effects;
 
-	Layer corpses;
+	EntityLayer corpses;
 
-	Layer staticBuildable;
+	EntityLayer staticBuildable;
 
-	Layer staticPathfinding;
-	Layer pathfinding;
+	EntityLayer staticPathfinding;
+	EntityLayer pathfinding;
 
 	// not sure if sound must be there
 	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;

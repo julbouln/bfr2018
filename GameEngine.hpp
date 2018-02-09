@@ -221,7 +221,7 @@ public:
 	}
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
-		mapLayers.initTerrains();
+		mapLayers.initTileMaps();
 		mapLayers.initTransitions();
 		mapLayers.generate(mapWidth, mapHeight);
 
@@ -716,10 +716,12 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 
-		mapLayers.drawLayers(this->game->window, dt);
+		mapLayers.drawTerrainTileMap(this->game->window, dt);
 		drawMap.draw(this->game->window, clip, dt);
 		if (this->gameSpeed < 2)
 			fx.draw(this->game->window, clip, dt);
+
+		mapLayers.drawFogTileMap(this->game->window, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {

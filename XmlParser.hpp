@@ -462,7 +462,6 @@ public:
 	}
 };
 
-
 class DecorParser {
 public:
 	void parse(Decor &decor, tinyxml2::XMLElement *element) {
@@ -493,7 +492,6 @@ enum class VelocityGeneratorMode {
 	Aimed
 };
 
-
 static std::map<std::string, ParticleSystemMode> partSysModes =
 {
 	{ "points", ParticleSystemMode::Points },
@@ -503,7 +501,6 @@ static std::map<std::string, ParticleSystemMode> partSysModes =
 	{ "metaball", ParticleSystemMode::Metaball },
 };
 
-
 static std::map<std::string, SpawnerMode> spawnModes =
 {
 	{ "point", SpawnerMode::Point },
@@ -511,7 +508,6 @@ static std::map<std::string, SpawnerMode> spawnModes =
 	{ "circle", SpawnerMode::Circle },
 	{ "disk", SpawnerMode::Disk },
 };
-
 
 static std::map<std::string, VelocityGeneratorMode> velGenModes =
 {
@@ -763,5 +759,4 @@ public:
 			}
 		}
 	}
-
 };

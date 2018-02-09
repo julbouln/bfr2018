@@ -326,9 +326,6 @@ public:
 	void parseTileFromXml(std::string name, Tile &tile) {
 		tileParser.parse(tile, this->getXmlComponent(name, "tile"));
 		tile.sprite.setTexture(texManager.getRef(name));
-		tile.view = 0;
-		tile.state = "idle";
-		tile.shader = false;
 
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y));
 
@@ -338,7 +335,6 @@ public:
 	void parseGameObjectFromXml(std::string name, GameObject &obj) {
 		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
 	}
-
 
 	void parseDecorFromXml(std::string name, Decor &decor) {
 		decorParser.parse(decor, this->getXmlComponent(name, "decor"));
@@ -358,13 +354,11 @@ public:
 		return name + std::to_string(rnd + 1);
 	}
 
-
 	void addStaticVerticalSpriteView(std::vector<SpriteView> &states, std::initializer_list<int> frames) {
 		for (int n : frames) {
 			states.push_back(SpriteView{sf::Vector2i(0, n)});
 		}
 	}
-
 
 	void setDefaultSpritesheet(StaticSpritesheet& spritesheet, Tile &tile, int y) {
 		spritesheet.states["idle"] = std::vector<SpriteView>();
@@ -372,42 +366,6 @@ public:
 		for (int n = 0; n < frameCount; n++) {
 			spritesheet.states["idle"].push_back(SpriteView{sf::Vector2i(0, n)});
 		}
-	}
-
-// Terrain
-	EntityID createTerrain(entt::Registry<EntityID> &registry, std::string name, int variant) {
-		EntityID entity = registry.create();
-
-#ifdef FACTORY_DEBUG
-		std::cout << "EntityFactory: create terrain " << entity << " " << name << " " << variant << std::endl;
-#endif
-
-		Tile tile;
-		tile.psize = sf::Vector2f{32, 32};
-		tile.size = sf::Vector2i{1, 1};
-
-		tile.pos = sf::Vector2i(0, 0);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = 0;
-		tile.shader = false;
-
-		tile.sprite.setTexture(texManager.getRef(name));
-
-		tile.centerRect = sf::IntRect(0, 0, 32, 32);
-
-		tile.sprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); // texture need to be updated
-
-		tile.state = "idle";
-
-		tile.view = variant;
-
-		StaticSpritesheet spritesheet;
-		this->setDefaultSpritesheet(spritesheet, tile, texManager.getRef(name).getSize().y);
-
-		registry.assign<StaticSpritesheet>(entity, spritesheet);
-
-		registry.assign<Tile>(entity, tile);
-		return entity;
 	}
 
 // Unit
@@ -498,7 +456,6 @@ public:
 		std::cout << "EntityFactory: start building " << entity << " " << name << " constructed by " << constructedBy << std::endl;
 #endif
 		Building building;
-//		this->parseBuildingFromXml(name, building);
 		buildingParser.parse(building, this->getXmlComponent(name, "building"));
 		building.construction = 0;
 		building.constructedBy = constructedBy;
@@ -583,16 +540,9 @@ public:
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-		tile.z = 0;
-		tile.shader = false;
 
 		tile.sprite.setTexture(texManager.getRef(name));
-
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); // texture need to be updated
-
-		tile.state = "idle";
-		tile.view = 0;
-
 		tile.centerRect = this->getCenterRect(name);
 
 		Resource resource;
@@ -617,12 +567,7 @@ public:
 		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
 		tile.sprite.setTexture(texManager.getRef(rname));
-
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y)); // texture need to be updated
-
-		tile.state = "idle";
-		tile.view = 0;
-
 		tile.centerRect = this->getCenterRect(rname);
 
 		registry.remove<Tile>(entity);
@@ -654,10 +599,7 @@ public:
 		registry.assign<ParticleEffect>(entity, effect);
 
 		return entity;
-
 	}
-
-
 
 	EntityID createDecor(entt::Registry<EntityID> &registry, std::string name, int x, int y) {
 		std::string rname = this->randGroupName(name);

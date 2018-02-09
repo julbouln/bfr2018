@@ -19,7 +19,7 @@ class MapLayersSystem : public GameSystem {
 	std::vector<EntityID> fogTransitions;
 	std::map<int, int> fogTransitionsMapping;
 
-	std::vector<EntityID> debugTransitions;
+//	std::vector<EntityID> debugTransitions;
 
 	// transitions calculation optimization
 	// maintain a list of position to update instead of updating every transitions
@@ -29,7 +29,8 @@ class MapLayersSystem : public GameSystem {
 
 	std::map<EntityID, EntityID> altTerrains;
 
-	TileMap tileMap;
+	TileMap terrainsTileMap;
+	TileMap fogTileMap;
 
 public:
 	void update(float dt) {
@@ -111,24 +112,41 @@ public:
 	}
 
 	void updateTileMap(float dt) {
-		for(auto &layer : tileMap.layers) {
+		for (auto &layer : terrainsTileMap.layers) {
 			layer.clear();
 		}
 
 		for (int y = 0; y < this->map->height; y++) {
 			for (int x = 0; x < this->map->width; x++) {
-				tileMap.layers[Terrain].addPosition(this->map->terrains[Terrain].get(x, y), sf::Vector2i(x, y));
+				terrainsTileMap.layers[Terrain].addPosition(this->map->terrains[Terrain].get(x, y), sf::Vector2i(x, y));
 
-				if(this->map->terrains[GrassConcrete].get(x, y))
-					tileMap.layers[GrassConcrete].addPosition(this->map->terrains[GrassConcrete].get(x, y), sf::Vector2i(x, y));
-				if(this->map->terrains[SandWater].get(x, y))
-					tileMap.layers[SandWater].addPosition(this->map->terrains[SandWater].get(x, y), sf::Vector2i(x, y));
-				if(this->map->terrains[GrassSand].get(x, y))
-					tileMap.layers[GrassSand].addPosition(this->map->terrains[GrassSand].get(x, y), sf::Vector2i(x, y));
-				if(this->map->terrains[ConcreteSand].get(x, y))
-					tileMap.layers[ConcreteSand].addPosition(this->map->terrains[ConcreteSand].get(x, y), sf::Vector2i(x, y));
-				if(this->map->terrains[AnyDirt].get(x, y))		
-					tileMap.layers[AnyDirt].addPosition(this->map->terrains[AnyDirt].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[GrassConcrete].get(x, y))
+					terrainsTileMap.layers[GrassConcrete].addPosition(this->map->terrains[GrassConcrete].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[SandWater].get(x, y))
+					terrainsTileMap.layers[SandWater].addPosition(this->map->terrains[SandWater].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[GrassSand].get(x, y))
+					terrainsTileMap.layers[GrassSand].addPosition(this->map->terrains[GrassSand].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[ConcreteSand].get(x, y))
+					terrainsTileMap.layers[ConcreteSand].addPosition(this->map->terrains[ConcreteSand].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[AnyDirt].get(x, y))
+					terrainsTileMap.layers[AnyDirt].addPosition(this->map->terrains[AnyDirt].get(x, y), sf::Vector2i(x, y));
+			}
+		}
+
+		for (auto &layer : fogTileMap.layers) {
+			layer.clear();
+		}
+
+		for (int y = 0; y < this->map->height; y++) {
+			for (int x = 0; x < this->map->width; x++) {
+				if (this->map->fogHidden.get(x, y) != 15)
+					fogTileMap.layers[0].addPosition(this->map->fogHidden.get(x, y), sf::Vector2i(x, y));
+				if (this->map->fogHiddenTransitions.get(x, y) != 15)
+					fogTileMap.layers[1].addPosition(this->map->fogHiddenTransitions.get(x, y), sf::Vector2i(x, y));
+				if (this->map->fogUnvisited.get(x, y) != 15)
+					fogTileMap.layers[2].addPosition(this->map->fogUnvisited.get(x, y), sf::Vector2i(x, y));
+				if (this->map->fogUnvisitedTransitions.get(x, y) != 15)
+					fogTileMap.layers[3].addPosition(this->map->fogUnvisitedTransitions.get(x, y), sf::Vector2i(x, y));
 			}
 		}
 	}
@@ -227,12 +245,13 @@ public:
 				sf::Vector2i p = sf::Vector2i(x, y);
 				FogState st = player.fog.get(x, y);
 				bool markUpdate = false;
-				EntityID newEnt = 0;
+				int newEnt = 0;
 
 				if (st == FogState::Unvisited) {
-					newEnt = fogTransitions[0];
+//					newEnt = fogTransitions[0];
+					newEnt = NotVisible;
 				} else {
-					newEnt = 0;
+					newEnt = Visible;
 				}
 
 				if (this->map->fogUnvisited.get(x, y) != newEnt)
@@ -243,9 +262,9 @@ public:
 				this->map->fogUnvisited.set(x, y, newEnt);
 
 				if (st == FogState::Hidden) {
-					newEnt = fogTransitions[0];
+					newEnt = NotVisible;
 				} else {
-					newEnt = 0;
+					newEnt = Visible;
 				}
 
 				if (this->map->fogHidden.get(x, y) != newEnt) {
@@ -280,58 +299,64 @@ public:
 
 // Terrains/Transitions
 
-	std::vector<EntityID> initTerrain(std::string name) {
-		std::vector<EntityID> tileVariants;
-		EntityID origTerrain = this->vault->factory.createTerrain(this->vault->registry, name, 0);
-		tileVariants.push_back(origTerrain);
-		this->altTerrains[origTerrain] = origTerrain;
-
-		for (int i = 1; i < 3; i++) {
-			EntityID altTerrain = this->vault->factory.createTerrain(this->vault->registry, name, i);
-			tileVariants.push_back(altTerrain);
-			this->altTerrains[altTerrain] = origTerrain;
-		}
-		return tileVariants;
-	}
-
-	void drawLayers(sf::RenderWindow &window, float dt) {
-		for (auto &layer : tileMap.layers) {
+	void drawTerrainTileMap(sf::RenderWindow &window, float dt) {
+		for (auto &layer : terrainsTileMap.layers) {
 			window.draw(layer);
 		}
 	}
 
-	void initTerrains() {
-		tileMap.resize(6);
+	void drawFogTileMap(sf::RenderWindow &window, float dt) {
+		for (auto &layer : fogTileMap.layers) {
+			window.draw(layer);
+		}
+	}
+
+	void initTileMaps() {
+		terrainsTileMap.resize(6);
 
 		for (int i = 0; i < 15; i++) {
-			tileMap.layers[Terrain].addTileRect(sf::IntRect((i / 3) * 32, (i % 3) * 32, 32, 32));
+			terrainsTileMap.layers[Terrain].addTileRect(sf::IntRect((i / 3) * 32, (i % 3) * 32, 32, 32));
 		}
-		tileMap.layers[Terrain].init(&this->vault->factory.getTex("terrains"));
+		terrainsTileMap.layers[Terrain].init(&this->vault->factory.getTex("terrains"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[GrassConcrete].addTileRect(sf::IntRect(128, i * 32, 32, 32));
+			terrainsTileMap.layers[GrassConcrete].addTileRect(sf::IntRect(128, i * 32, 32, 32));
 		}
-		tileMap.layers[GrassConcrete].init(&this->vault->factory.getTex("terrains_transitions"));
+		terrainsTileMap.layers[GrassConcrete].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[SandWater].addTileRect(sf::IntRect(32, i * 32, 32, 32));
+			terrainsTileMap.layers[SandWater].addTileRect(sf::IntRect(32, i * 32, 32, 32));
 		}
-		tileMap.layers[SandWater].init(&this->vault->factory.getTex("terrains_transitions"));
+		terrainsTileMap.layers[SandWater].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[GrassSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			terrainsTileMap.layers[GrassSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
 		}
-		tileMap.layers[GrassSand].init(&this->vault->factory.getTex("terrains_transitions"));
+		terrainsTileMap.layers[GrassSand].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[ConcreteSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			terrainsTileMap.layers[ConcreteSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
 		}
-		tileMap.layers[ConcreteSand].init(&this->vault->factory.getTex("terrains_transitions"));
+		terrainsTileMap.layers[ConcreteSand].init(&this->vault->factory.getTex("terrains_transitions"));
 
 		for (int i = 0; i < 32; i++) {
-			tileMap.layers[AnyDirt].addTileRect(sf::IntRect(96, i * 32, 32, 32));
+			terrainsTileMap.layers[AnyDirt].addTileRect(sf::IntRect(96, i * 32, 32, 32));
 		}
-		tileMap.layers[AnyDirt].init(&this->vault->factory.getTex("terrains_transitions"));
+		terrainsTileMap.layers[AnyDirt].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		// FOG
+		fogTileMap.resize(4);
+
+		for (int i = 0; i < 13; i++) {
+			fogTileMap.layers[0].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			fogTileMap.layers[1].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			fogTileMap.layers[2].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			fogTileMap.layers[3].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+		}
+		fogTileMap.layers[0].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0x7f));
+		fogTileMap.layers[1].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0x7f));
+		fogTileMap.layers[2].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0xff));
+		fogTileMap.layers[3].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0xff));
 
 	}
 
@@ -385,7 +410,7 @@ public:
 
 
 		for (int i = 0; i < 13; i++) {
-			fogTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "fog_transition", i));
+			fogTransitions.push_back(i);
 		}
 
 		altTerrains[fogTransitions[0]] = fogTransitions[0];
@@ -405,9 +430,9 @@ public:
 		fogTransitionsMapping[0x40] = 11;
 		fogTransitionsMapping[0x80] = 12;
 
-		for (int i = 0; i < 256; i++) {
-			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
-		}
+//		for (int i = 0; i < 256; i++) {
+//			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
+//		}
 
 	}
 
@@ -511,18 +536,17 @@ public:
 		if (bitmask) {
 			if (bitmask & 0xf) {
 				if (mapping.count(bitmask & 0xf) > 0) {
-					int trans = transitions[mapping[bitmask & 0xf]];
+					int trans = mapping[bitmask & 0xf];
 					outLayer.set(x, y, trans);
 				} else {
-					outLayer.set(x, y, debugTransitions[bitmask & 0xf]);
-
+//					outLayer.set(x, y, debugTransitions[bitmask & 0xf]);
 				}
 			} else {
 				if (mapping.count(bitmask) > 0) {
-					int trans = transitions[mapping[bitmask]];
+					int trans = mapping[bitmask];
 					outLayer.set(x, y, trans);
 				} else {
-					outLayer.set(x, y, debugTransitions[bitmask]);
+//					outLayer.set(x, y, debugTransitions[bitmask]);
 				}
 			}
 		}
@@ -599,20 +623,18 @@ public:
 	// FOG transition
 
 	void updateFogUnvisitedTransition(int x, int y) {
-		EntityID fogEnt = fogTransitions[0];
-		int bitmask = this->voidTransitionBitmask(this->map->fogUnvisited, fogEnt, x, y);
-		bitmask = this->updateTransition(bitmask, this->map->fogUnvisitedTransitions, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
+		int bitmask = this->voidTransitionBitmask(this->map->fogUnvisited, NotVisible, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->fogUnvisitedTransitions, NotVisible, fogTransitions, fogTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->fogUnvisitedTransitions.set(x, y, 0);
+			this->map->fogUnvisitedTransitions.set(x, y, Visible);
 		}
 	}
 
 	void updateFogHiddenTransition(int x, int y) {
-		EntityID fogEnt = fogTransitions[0];
-		int bitmask = this->voidTransitionBitmask(this->map->fogHidden, fogEnt, x, y);
-		bitmask = this->updateTransition(bitmask, this->map->fogHiddenTransitions, fogEnt, fogTransitions, fogTransitionsMapping, x, y);
+		int bitmask = this->voidTransitionBitmask(this->map->fogHidden, NotVisible, x, y);
+		bitmask = this->updateTransition(bitmask, this->map->fogHiddenTransitions, NotVisible, fogTransitions, fogTransitionsMapping, x, y);
 		if (!bitmask) {
-			this->map->fogHiddenTransitions.set(x, y, 0);
+			this->map->fogHiddenTransitions.set(x, y, Visible);
 		}
 	}
 
