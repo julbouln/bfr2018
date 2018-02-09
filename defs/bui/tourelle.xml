@@ -28,7 +28,7 @@
     <name value="tourelle"/>
     <team value="rebel"/>
     <view value="6"/>
-    <life value="6"/>
+    <life value="24"/>
   </game_object>
   <building>
     <build_time value="6"/>

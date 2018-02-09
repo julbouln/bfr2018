@@ -19,10 +19,10 @@
     <name value="squat"/>
     <team value="rebel"/>
     <view value="2"/>
-    <life value="9"/>
+    <life value="36"/>
   </game_object>
   <building>
-    <build_time value="7"/>
+    <build_time value="32"/>
   </building>
   <effects>
     <effect name="hit" ref="building_hit"/>

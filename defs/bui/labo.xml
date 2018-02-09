@@ -19,7 +19,7 @@
     <name value="labo"/>
     <team value="neonaz"/>
     <view value="2"/>
-    <life value="10"/>
+    <life value="40"/>
   </game_object>
   <building>
     <build_time value="4"/>

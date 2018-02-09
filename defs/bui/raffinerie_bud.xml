@@ -19,10 +19,10 @@
     <name value="raffinerie_bud"/>
     <team value="rebel"/>
     <view value="5"/>
-    <life value="10"/>
+    <life value="40"/>
   </game_object>
   <building>
-    <build_time value="10"/>
+    <build_time value="28"/>
   </building>
   <effects>
     <effect name="hit" ref="building_hit"/>

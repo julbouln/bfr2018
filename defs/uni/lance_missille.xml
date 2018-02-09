@@ -67,7 +67,7 @@
   <unit>
     <speed value="3"/>
     <attack1 power="1"/>
-    <attack2 dist="3" power="5"/>
+    <attack2 dist="3" power="6"/>
     <sound_actions/>
     <sound_attack name="rockette"/>
   </unit>

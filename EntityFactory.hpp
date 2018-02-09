@@ -465,7 +465,6 @@ public:
 		obj.player = 0;
 		obj.mapped = false;
 		obj.destroy = false;
-		obj.life = obj.life * 4;
 		obj.maxLife = obj.life;
 
 		registry.assign<GameObject>(entity, obj);

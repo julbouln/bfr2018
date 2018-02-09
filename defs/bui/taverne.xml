@@ -19,7 +19,7 @@
     <name value="taverne"/>
     <team value="rebel"/>
     <view value="5"/>
-    <life value="10"/>
+    <life value="40"/>
   </game_object>
   <building>
     <build_time value="10"/>

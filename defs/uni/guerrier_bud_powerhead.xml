@@ -61,7 +61,7 @@
   <unit>
     <speed value="4"/>
     <attack1 power="3"/>
-    <attack2 dist="2" power="6"/>
+    <attack2 dist="2" power="8"/>
     <sound_actions/>
     <sound_attack name="bud"/>
   </unit>

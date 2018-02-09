@@ -19,10 +19,10 @@
     <name value="gymnaz"/>
     <team value="neonaz"/>
     <view value="1"/>
-    <life value="10"/>
+    <life value="40"/>
   </game_object>
   <building>
-    <build_time value="4"/>
+    <build_time value="8"/>
   </building>
   <effects>
     <effect name="hit" ref="building_hit"/>

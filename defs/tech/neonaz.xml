@@ -9,14 +9,14 @@
       <char type="patrouilleur"/>
       <char type="mitrailleur"/>
       <char type="bazooka"/>
-            <building type="mirador"/>
+      <building type="mirador"/>
       <building type="usine_vehicule">
-	<char type="super_guerrier"/>
-      </building>      
+        <char type="super_guerrier"/>
+      </building>
     </building>
     <building type="artillerie">
-     <char type="lance_missille"/>
-     <char type="grosnaz"/>
+      <char type="lance_missille"/>
+      <char type="grosnaz"/>
     </building>
-  </building>  
+  </building>
 </tech_tree>
