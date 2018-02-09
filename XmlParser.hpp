@@ -4,8 +4,8 @@
 
 #include "Components.hpp"
 
-#include "tinyxml2.h"
-#include "tixml2ex.h"
+#include "third_party/tinyxml2.h"
+#include "third_party/tixml2ex.h"
 
 enum class TextureLoadMode {
 	Default,

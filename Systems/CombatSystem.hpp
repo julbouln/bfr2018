@@ -48,9 +48,9 @@ public:
 //			for (FrontPoint &p : player.frontPoints) {
 //				std::cout << player.team << " front point " << p.pos.x << "x" << p.pos.y << " " << p.priority << std::endl;
 //			}
-
 		}
 	}
+
 	void update(float dt) {
 		// pass 1, if an ennemy is in sight, then attack
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
@@ -81,9 +81,7 @@ public:
 					std::random_shuffle ( targets.begin(), targets.end() );
 					this->attack(unit, targets.front());
 				}
-
 			}
-
 		}
 
 		// pass 2, calculate combat
@@ -329,10 +327,6 @@ public:
 				if (obj.life < obj.maxLife * 0.25)
 					tile.view = 3;
 			}
-
 		}
-
-
 	}
-
 };

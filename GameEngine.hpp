@@ -2,26 +2,25 @@
 
 #include "Game.hpp"
 
-#include "GameStage.hpp"
-#include "GameOver.hpp"
+#include "Stages/GameStage.hpp"
+#include "Stages/GameOver.hpp"
 
-#include "System.hpp"
 #include "Map.hpp"
 
 #include "Components.hpp"
 
-#include "GameSystems/GameSystem.hpp"
-#include "GameSystems/TileAnimSystem.hpp"
-#include "GameSystems/MapLayersSystem.hpp"
-#include "GameSystems/DrawMapSystem.hpp"
-#include "GameSystems/MinimapSystem.hpp"
-#include "GameSystems/ResourcesSystem.hpp"
-#include "GameSystems/ConstructionSystem.hpp"
-#include "GameSystems/PathfindingSystem.hpp"
-#include "GameSystems/CombatSystem.hpp"
-#include "GameSystems/VictorySystem.hpp"
-#include "GameSystems/SoundSystem.hpp"
-#include "GameSystems/FxSystem.hpp"
+#include "Systems/GameSystem.hpp"
+#include "Systems/TileAnimSystem.hpp"
+#include "Systems/MapLayersSystem.hpp"
+#include "Systems/DrawMapSystem.hpp"
+#include "Systems/MinimapSystem.hpp"
+#include "Systems/ResourcesSystem.hpp"
+#include "Systems/ConstructionSystem.hpp"
+#include "Systems/PathfindingSystem.hpp"
+#include "Systems/CombatSystem.hpp"
+#include "Systems/VictorySystem.hpp"
+#include "Systems/SoundSystem.hpp"
+#include "Systems/FxSystem.hpp"
 
 #include "AI.hpp"
 
@@ -93,14 +92,6 @@ public:
 	bool showDebugWindow;
 
 	float zoomLevel;
-
-	GameEngine(Game *game) {
-		this->game = game;
-		this->init();
-		this->generate(64, 64, "rebel");
-		this->moveView = MoveView::DontMove;
-		this->zoomLevel = 1.0;
-	}
 
 	GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		this->game = game;

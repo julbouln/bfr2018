@@ -3,7 +3,7 @@
 #include "GameSystem.hpp"
 #include "TileMap.hpp"
 
-#include "SimplexNoise.h"
+#include "third_party/SimplexNoise.h"
 
 #define ALT_TILES 3
 
@@ -685,7 +685,6 @@ public:
 			}
 
 		}
-
 
 		this->updateAllTransitions();
 	}

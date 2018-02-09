@@ -1,10 +1,10 @@
 #include "GameEngine.hpp"
-#include "MainMenu.hpp"
-#include "PlayMenu.hpp"
-#include "GameOver.hpp"
 #include "Game.hpp"
+#include "Stages/MainMenu.hpp"
+#include "Stages/PlayMenu.hpp"
+#include "Stages/GameOver.hpp"
 
-#include "argagg.hpp"
+#include "third_party/argagg.hpp"
 
 int main(int argc, char *argv[])
 {

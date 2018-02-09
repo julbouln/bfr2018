@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameSystem.hpp"
-#include "JPS.h"
+#include "third_party/JPS.h"
 
 //#define PATHFINDING_DEBUG
 

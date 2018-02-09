@@ -5,7 +5,6 @@
 class FxSystem : public GameSystem {
 public:
 	void update(sf::Time &elapsed) {
-
 		auto view = this->vault->registry.view<ParticleEffect>();
 		for (EntityID entity : view) {
 			ParticleEffect &effect = view.get(entity);

@@ -34,7 +34,6 @@ public:
 #ifdef SOUND_SYSTEM_DEBUG
 					std::cout << "SoundSystem: too many sound playing, drop " << sndp.name << std::endl;
 #endif
-
 				}
 
 			}

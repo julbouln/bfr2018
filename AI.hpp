@@ -1,9 +1,9 @@
 #pragma once
 
-#include "tinyxml2.h"
-#include "tixml2ex.h"
+#include "third_party/tinyxml2.h"
+#include "third_party/tixml2ex.h"
 
-#include "GameSystems/GameSystem.hpp"
+#include "Systems/GameSystem.hpp"
 #include "BrainTree/BrainTree.h"
 
 enum class AITag {

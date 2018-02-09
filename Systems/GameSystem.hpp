@@ -236,7 +236,6 @@ public:
 #endif
 			}
 		}
-
 	}
 
 	void spendResources(EntityID playerEnt, std::string type, int val) {
@@ -427,12 +426,8 @@ public:
 					this->clearTarget(entity);
 
 				}
-
 				break;
-
-
 			}
-
 		}
 	}
 

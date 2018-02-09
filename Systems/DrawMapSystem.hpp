@@ -83,7 +83,6 @@ public:
 
 	// reduce object list to visible entities
 	void updateObjsDrawList(sf::RenderWindow & window, sf::IntRect clip, float dt) {
-
 		this->entitiesDrawList.clear();
 
 		// resources draw list
@@ -255,7 +254,6 @@ public:
 						window.draw(lifeBar);
 					}
 				}
-
 			}
 		}
 	}
@@ -302,5 +300,4 @@ public:
 			}
 		}
 	}
-
 };

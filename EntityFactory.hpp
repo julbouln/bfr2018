@@ -8,9 +8,8 @@
 #include "FontManager.hpp"
 #include "ShaderManager.hpp"
 
-#include "tinyxml2.h"
-#include "tixml2ex.h"
-
+#include "third_party/tinyxml2.h"
+#include "third_party/tixml2ex.h"
 #include "XmlParser.hpp"
 
 enum class TechComponent {

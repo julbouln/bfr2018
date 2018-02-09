@@ -14,7 +14,7 @@
 #include "gui/imgui-sfml.h"
 #include "gui/imgui-sfml-extra.h"
 
-#include "Stage.hpp"
+#include "Stages/Stage.hpp"
 #include "GameVault.hpp"
 
 class Game {

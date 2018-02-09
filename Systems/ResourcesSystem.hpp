@@ -4,7 +4,6 @@
 
 class ResourcesSystem : public GameSystem {
 public:
-
 	void update(float dt) {
 		int natureResources = 0;
 		int pollutionResources = 0;

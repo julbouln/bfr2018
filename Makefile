@@ -3,7 +3,7 @@ INCLUDES = -I.
 DBSCAN_OBJS = dbscan/dbscan.o
 IMGUI_OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o
 PARTICLES_OBJS = Particles/ParticleData.o Particles/ParticleSpawner.o Particles/ParticleUpdater.o Particles/ParticleGenerator.o Particles/ParticleSystem.o
-OBJS = tinyxml2.o SimplexNoise.o ShaderOptions.o bfr.o
+OBJS = third_party/tinyxml2.o third_party/SimplexNoise.o ShaderOptions.o bfr.o
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ -c $<
@@ -19,6 +19,7 @@ particle_demo: $(PARTICLES_OBJS) $(IMGUI_OBJS)
 clean:
 	rm -fr Particles/*.o
 	rm -fr gui/*.o
+	rm -fr third_party/*.o
 	rm -fr *.o
 	rm -f bfr
 	rm -f tests/demo

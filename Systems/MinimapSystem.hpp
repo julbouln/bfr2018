@@ -81,7 +81,6 @@ public:
 		this->drawFrame(window);
 	}
 
-
 	void drawClip(sf::RenderWindow &window, sf::View &view, sf::IntRect clip, float dt) {
 		sf::IntRect mClip = clip;
 		mClip.left = (rect.left + (view.getCenter().x / 32.0 - (this->screenWidth) / 32.0 / 2.0) * (this->size / this->map->width));
