@@ -710,4 +710,33 @@ public:
 		this->rebelAI.setShared(this->vault, map, screenWidth, screenHeight);
 		this->nazAI.setShared(this->vault, map, screenWidth, screenHeight);
 	}
+
+	void generate() {
+		auto view = this->vault->registry.view<Player>();
+		for (EntityID entity : view) {
+			Player &player = view.get(entity);
+
+			if (player.team == "rebel")
+			{
+				if (player.ai) {
+					this->rebelAI.parse(player.team, player.aiTree, entity);
+				}
+			} else if (player.team == "neonaz") {
+				if (player.ai) {
+					this->nazAI.parse(player.team, player.aiTree, entity);
+				}
+			}
+
+		}
+	}
+
+	void update(float dt) {
+		auto playerView = this->vault->registry.view<Player>();
+		for (EntityID entity : playerView) {
+			Player &player = playerView.get(entity);
+			if (player.ai)
+				player.aiTree.update();
+		}
+	}
+
 };

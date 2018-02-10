@@ -158,7 +158,18 @@ struct Building {
 struct Resource {
 	std::string type;
 	unsigned int level;
+	unsigned int maxLevel;
 	float grow;
+	float maxGrow;
+	float growRate;
+
+	Resource() {
+		this->level = 1;
+		this->maxLevel = 3;
+		this->grow = 0.0;
+		this->maxGrow = 10.0;
+		this->growRate = 0.1;
+	}
 };
 
 struct Decor {

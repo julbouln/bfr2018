@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<entity class="resource" group="nature" name="nature5" team="rebel">
+<entity class="resource" group="nature" name="champignon" team="rebel">
 	<texture mode="with_white_mask" path="medias/resources/nature5.png"/>
 	<tile>
 		<psize x="32" y="32"/>

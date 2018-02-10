@@ -10,6 +10,7 @@
 #include "Components.hpp"
 
 #include "Systems/GameSystem.hpp"
+#include "Systems/GameGeneratorSystem.hpp"
 #include "Systems/TileAnimSystem.hpp"
 #include "Systems/MapLayersSystem.hpp"
 #include "Systems/DrawMapSystem.hpp"
@@ -40,6 +41,7 @@ enum class MoveView {
 
 class GameEngine : public GameSystem, public GameStage {
 public:
+	GameGeneratorSystem gameGenerator;
 	ResourcesSystem resources;
 	TileAnimSystem tileAnim;
 	DrawMapSystem drawMap;
@@ -184,6 +186,7 @@ public:
 		this->setVault(vault);
 
 		// set shared systems
+		gameGenerator.setShared(vault, this->map, this->width, this->height);
 		tileAnim.setShared(vault, this->map, this->width, this->height);
 		resources.setShared(vault, this->map, this->width, this->height);
 		drawMap.setShared(vault, this->map, this->width, this->height);
@@ -223,79 +226,16 @@ public:
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 		mapLayers.initTileMaps();
 		mapLayers.initTransitions();
-		mapLayers.generate(mapWidth, mapHeight);
 
-		std::vector<int> colorIndices;
-		for (int i = 0; i < 12; i++ ) {
-			colorIndices.push_back(i);
-		}
-		std::random_shuffle ( colorIndices.begin(), colorIndices.end() );
+		this->currentPlayer = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
 
-		std::vector<sf::Vector2i> initialPositions;
-		initialPositions.push_back(sf::Vector2i(10, 10));
-		initialPositions.push_back(sf::Vector2i(10, mapHeight - 10));
-		initialPositions.push_back(sf::Vector2i(mapHeight - 10, 10));
-		initialPositions.push_back(sf::Vector2i(mapWidth - 10, mapHeight - 10));
-		std::random_shuffle ( initialPositions.begin(), initialPositions.end() );
+		mapLayers.updateAllTransitions();
 
-		if (playerTeam == "rebel") {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "rebel", false);
-			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
-
-			this->centerMapView(sf::Vector2i(8, 8));
-		} else if (playerTeam == "neonaz") {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neonaz", false);
-			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
-		} else {
-			this->currentPlayer = this->vault->factory.createPlayer(this->vault->registry, "neutral", false);
-			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
-			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
-
-			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
-			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
-
-			this->centerMapView(sf::Vector2i(mapWidth / 2, mapHeight / 2));
-		}
-
-		auto view = this->vault->registry.view<Player>();
-		for (EntityID entity : view) {
-			Player &player = view.get(entity);
-			sf::Color refCol = sf::Color(3, 255, 205);
-
-			player.colorIdx = colorIndices.back();
-			player.color = this->vault->factory.getPlayerColor(refCol, player.colorIdx);
-			colorIndices.pop_back();
-
-			if (player.team == "rebel")
-			{
-				player.initialPos = initialPositions.back();
-				initialPositions.pop_back();
-
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x, player.initialPos.y);
-
-				if (player.ai) {
-					ai.rebelAI.parse(player.team, player.aiTree, entity);
-				}
-			} else if (player.team == "neonaz") {
-				player.initialPos = initialPositions.back();
-				initialPositions.pop_back();
-
-				this->vault->factory.createUnit(this->vault->registry, entity, "brad_lab", player.initialPos.x, player.initialPos.y);
-
-				if (player.ai) {
-					ai.nazAI.parse(player.team, player.aiTree, entity);
-				}
-			}
-
-			player.fog.width = mapWidth;
-			player.fog.height = mapHeight;
-			player.fog.fill();
-		}
+		ai.generate();
 
 		Player &player = this->vault->registry.get<Player>(this->currentPlayer);
 		if (player.team != "neutral") {
 			this->centerMapView(player.initialPos);
-
 			iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
 			box.setTexture(this->vault->factory.getTex("box_" + player.team));
 			box_w = this->vault->factory.getTex("box_" + player.team).getSize().x;
@@ -303,6 +243,8 @@ public:
 			minimap_bg_h = this->vault->factory.getTex("minimap_" + player.team).getSize().y;
 			indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
 			indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
+		} else {
+			this->centerMapView(sf::Vector2i(this->map->width / 2, this->map->height / 2));
 		}
 
 		mapLayers.initCorpses();
@@ -677,7 +619,7 @@ public:
 		victory.updateStats(dt);
 		victory.updatePlayerBonus(this->currentPlayer);
 		victory.clearStats();
-		
+
 		minimap.update(this->currentPlayer, dt);
 		combat.updateFront(dt);
 	}
@@ -871,7 +813,7 @@ public:
 				this->game->window.draw(indice);
 		*/
 
-		minimap.draw(this->game->window,dt);
+		minimap.draw(this->game->window, dt);
 		minimap.drawClip(this->game->window, this->gameView, clip, dt);
 
 		this->updateFading();
@@ -964,13 +906,7 @@ public:
 		this->mapLayers.updateSpectatorFog(this->currentPlayer, dt);
 		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, sf::IntRect(0, 0, this->map->width, this->map->height), dt);
 
-		// AI
-		auto playerView = this->vault->registry.view<Player>();
-		for (EntityID entity : playerView) {
-			Player &player = playerView.get(entity);
-			if (player.ai)
-				player.aiTree.update();
-		}
+		ai.update(updateDt);
 
 		this->updateSelected(updateDt);
 
@@ -1053,10 +989,10 @@ public:
 
 				if (event.key.code == sf::Keyboard::Space) {
 					// pause/unpause
-					if(this->gameSpeed==0) {
-						this->gameSpeed=1;
+					if (this->gameSpeed == 0) {
+						this->gameSpeed = 1;
 					} else {
-						this->gameSpeed=0;
+						this->gameSpeed = 0;
 					}
 				}
 				if (event.key.code == sf::Keyboard::Left)

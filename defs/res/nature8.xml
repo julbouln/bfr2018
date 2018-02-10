@@ -15,5 +15,6 @@
 	</spritesheets>
 	<resource>
 		<level value="1"/>
+		<max_level value="4"/>
 	</resource>
 </entity>

@@ -54,6 +54,10 @@ public:
 						std::cout << "TextureLoader: " << name << " center rect " << centerRect.left << "x" << centerRect.top << ":" << centerRect.width << "x" << centerRect.height << std::endl;
 #endif
 						centerRects[name] = centerRect;
+
+						// clear special pixels
+						image.setPixel(centerRect.left,centerRect.top, sf::Color(255,255,255,0));
+						image.setPixel(centerRect.left+centerRect.width,centerRect.top+centerRect.height, sf::Color(255,255,255,0));
 					}
 
 					found++;
@@ -458,6 +462,18 @@ public:
 		if (element) {
 			building.buildTime = (float)element->FirstChildElement("build_time")->IntAttribute("value");
 			building.maxBuildTime = building.buildTime;
+		}
+	}
+};
+
+
+class ResourceParser {
+public:
+	void parse(Resource &resource, tinyxml2::XMLElement *element) {
+		if (element) {
+			resource.level = element->FirstChildElement("level")->IntAttribute("value");
+			if(element->FirstChildElement("max_level"))
+				resource.maxLevel = element->FirstChildElement("max_level")->IntAttribute("value");
 		}
 	}
 };

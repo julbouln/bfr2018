@@ -3,10 +3,6 @@
 #include "GameSystem.hpp"
 #include "TileMap.hpp"
 
-#include "third_party/SimplexNoise.h"
-
-#define ALT_TILES 3
-
 class MapLayersSystem : public GameSystem {
 	std::map<std::string, std::vector<EntityID>> tiles;
 
@@ -636,79 +632,6 @@ public:
 		if (!bitmask) {
 			this->map->fogHiddenTransitions.set(x, y, Visible);
 		}
-	}
-
-	void generate(unsigned int width, unsigned int height) {
-		this->map->setSize(width, height);
-
-		float random_w = ((float) rand()) / (float) RAND_MAX;
-		float random_h = ((float) rand()) / (float) RAND_MAX;
-
-		SimplexNoise simpl(width / 64.0, height / 64.0, 2.0, 0.5);
-
-		for (float y = 0; y < height; y++) {
-			for (float x = 0; x < width; x++) {
-				float res = (simpl.fractal(64, x / (width) + random_w * width, y / (height) + random_h * height));
-
-				EntityID t;
-
-				t = Dirt + (rand() % ALT_TILES);
-				this->map->terrainsForTransitions.set(x, y, Dirt);
-
-				if (res < -0.3) {
-					t = Sand + (rand() % ALT_TILES);
-					this->map->staticBuildable.set(x, y, t);
-					this->map->terrainsForTransitions.set(x, y, Sand);
-				}
-				if (res < -0.5) {
-					t = Water + (rand() % ALT_TILES);
-
-					this->map->staticBuildable.set(x, y, t);
-					this->map->staticPathfinding.set(x, y, t);
-					this->map->terrainsForTransitions.set(x, y, Water);
-				}
-
-				this->map->terrains[Terrain].set(x, y, t);
-
-				// add some random ressources
-				if (res > 0.6 && res < 0.61) {
-					float rnd = ((float) rand()) / (float) RAND_MAX;
-					if (rnd > 0.5) {
-						this->vault->factory.plantResource(this->vault->registry, "nature", x, y);
-					} else {
-						this->vault->factory.plantResource(this->vault->registry, "pollution", x, y);
-					}
-				}
-			}
-		}
-
-		for (auto pair : this->vault->factory.decorGenerator) {
-			for (int i = 0; i < (this->map->width * this->map->height) / pair.second; i++) {
-				int rx = rand() % this->map->width;
-				int ry = rand() % this->map->height;
-				if (this->map->terrainsForTransitions.get(rx, ry) != Water) {
-					this->vault->factory.createDecor(this->vault->registry, pair.first, rx, ry);
-				}
-			}
-
-		}
-
-		// set decor layer
-		auto decorView = this->vault->registry.persistent<Tile, Decor>();
-
-		for (EntityID entity : decorView) {
-			Tile &tile = decorView.get<Tile>(entity);
-			Decor &decor = decorView.get<Decor>(entity);
-
-			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				this->map->decors.set(p.x, p.y, entity);
-				if (decor.blocking)
-					this->map->staticBuildable.set(p.x, p.y, entity);
-			}
-
-		}
-
-		this->updateAllTransitions();
 	}
 
 };

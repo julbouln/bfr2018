@@ -112,17 +112,17 @@ public:
 		return nearest;
 	}
 
-	sf::Vector2i firstFreePosition(sf::Vector2i src) {
+	sf::Vector2i firstFreePosition(sf::Vector2i src, EntityLayer &layer, int maxDist) {
 		sf::Vector2i fp;
 		int dist = 1;
-		while (dist < 16) {
+		while (dist < maxDist) {
 			for (int w = -dist; w < dist + 1; ++w) {
 				for (int h = -dist; h < dist + 1; ++h) {
 					if (w == -dist || h == -dist || w == dist || h == dist) {
 						int x = w + src.x;
 						int y = h + src.y;
 						if (this->map->bound(x, y)) {
-							if (!this->map->objs.get(x, y))
+							if (!layer.get(x, y))
 								return sf::Vector2i(x, y);
 						}
 					}
@@ -333,7 +333,7 @@ public:
 	void seedResources(std::string type, EntityID entity) {
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Tile &tile = this->vault->registry.get<Tile>(entity);
-			for (sf::Vector2i const &p : this->tileAround(tile, 1)) {
+			for (sf::Vector2i const &p : this->tileAround(tile, 2)) {
 				float rnd = ((float) rand()) / (float) RAND_MAX;
 				if (rnd > 0.85) {
 					if (!this->map->resources.get(p.x, p.y) &&

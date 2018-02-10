@@ -156,7 +156,7 @@ public:
 						unit.nopath++;
 
 						if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
-							sf::Vector2i fp = this->firstFreePosition(unit.destpos);
+							sf::Vector2i fp = this->firstFreePosition(unit.destpos, this->map->objs, 16);
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " go to first free position " << fp.x << "x" << fp.y << std::endl;
 #endif

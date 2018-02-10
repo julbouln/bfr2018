@@ -55,6 +55,7 @@ class EntityFactory {
 	std::map<std::string, tinyxml2::XMLDocument *> loadedXmlDocs;
 
 	std::map<std::string, int> groupCount;
+	std::map<std::string, std::vector<std::string>> groups;
 
 	std::map<std::string, TechNode> techTrees;
 
@@ -76,6 +77,7 @@ public:
 	UnitParser unitParser;
 	BuildingParser buildingParser;
 	ParticleEffectParser particleEffectParser;
+	ResourceParser resourceParser;
 	DecorParser decorParser;
 	SpritesheetsParser spritesheetsParser;
 
@@ -336,6 +338,10 @@ public:
 		gameObjectParser.parse(obj, this->getXmlComponent(name, "game_object"));
 	}
 
+	void parseResourceFromXml(std::string name, Resource &resource) {
+		resourceParser.parse(resource, this->getXmlComponent(name, "resource"));
+	}
+
 	void parseDecorFromXml(std::string name, Decor &decor) {
 		decorParser.parse(decor, this->getXmlComponent(name, "decor"));
 	}
@@ -350,8 +356,10 @@ public:
 	}
 
 	std::string randGroupName(std::string name) {
-		int rnd = rand() % groupCount[name];
-		return name + std::to_string(rnd + 1);
+		std::vector<std::string> groupMembers = this->groups[name];
+
+		int rnd = rand() % groupMembers.size();
+		return groupMembers[rnd];
 	}
 
 	void addStaticVerticalSpriteView(std::vector<SpriteView> &states, std::initializer_list<int> frames) {
@@ -572,6 +580,9 @@ public:
 		registry.remove<Tile>(entity);
 		registry.assign<Tile>(entity, tile);
 
+		Resource &resource = registry.get<Resource>(entity);
+		this->parseResourceFromXml(rname, resource);
+
 		Effects effects;
 		effects.effects["spend"] = name + "_spend";
 		registry.assign<Effects>(entity, effects);
@@ -676,6 +687,13 @@ public:
 
 			if (sdoc->RootElement()->Attribute("group")) {
 				std::string entGroup = sdoc->RootElement()->Attribute("group");
+				if(this->groups.count(entGroup) == 0) {
+					this->groups[entGroup]=std::vector<std::string>();
+					this->groups[entGroup].push_back(entName);
+				} else {
+					this->groups[entGroup].push_back(entName);					
+				}
+
 				if (this->groupCount.count(entGroup) == 0) {
 					this->groupCount[entGroup] = 1;
 				} else {
