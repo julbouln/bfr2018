@@ -24,6 +24,17 @@ enum {
 	SouthWest
 };
 
+static const sf::Vector2f directionVectors[8] = {
+	sf::Vector2f(0.0,-1.0),
+	sf::Vector2f(1.0,-1.0),
+	sf::Vector2f(1.0,0.0),
+	sf::Vector2f(1.0,1.0),
+	sf::Vector2f(0.0,1.0),
+	sf::Vector2f(-1.0,-1.0),
+	sf::Vector2f(-1.0,0.0),
+	sf::Vector2f(-1.0,1.0)
+};
+
 struct Tile {
 	sf::Vector2f psize; // pixel size
 	sf::Vector2i size; // map size

@@ -160,7 +160,7 @@ public:
 	}
 
 	sf::Vector2f dirMovement(int direction, float speed) {
-		sf::Vector2f mov(0.0, 0.0);
+/*		sf::Vector2f mov(0.0, 0.0);
 		switch (direction) {
 		case North:
 			mov.y -= speed;
@@ -194,6 +194,8 @@ public:
 			break;
 		}
 		return mov;
+*/
+		return directionVectors[direction] * speed;
 	}
 
 

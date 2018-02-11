@@ -3,6 +3,7 @@
 #include <queue>
 #include <vector>
 
+#include "Helpers.hpp"
 
 enum TileType {
 	Sand,
@@ -192,20 +193,6 @@ public:
 	bool operator() (SoundPlay &l, SoundPlay &r)
 	{
 		return l.priority < r.priority;
-	}
-};
-
-
-struct CompareVector2i
-{
-	bool operator()(sf::Vector2i a, sf::Vector2i b) const
-	{
-		if (a.x < b.x)
-			return true;
-		else if (b.x < a.x)
-			return false;
-		else
-			return a.y < b.y;
 	}
 };
 
