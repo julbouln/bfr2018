@@ -42,15 +42,21 @@ public:
 				}
 			}
 
+		}
+
+		for (EntityID delEnt : markDelete) {
+			if (this->vault->registry.valid(delEnt))
+				this->vault->registry.destroy(delEnt);
+		}
+
+		auto resView = this->vault->registry.view<Resource>();
+		for (EntityID entity : resView) {
+			Resource &resource = resView.get(entity);
 			if (resource.type == "nature")
 				natureResources += resource.level;
 			else
 				pollutionResources += resource.level;
-		}
 
-		for (EntityID delEnt : markDelete) {
-			if(this->vault->registry.valid(delEnt))
-				this->vault->registry.destroy(delEnt);
 		}
 
 		auto playerView = this->vault->registry.view<Player>();

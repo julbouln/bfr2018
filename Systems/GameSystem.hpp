@@ -143,6 +143,29 @@ public:
 		return 0;
 	}
 
+	bool ennemyInRange(Tile &tile, Tile &destTile, int range)
+	{
+		bool inRange = false;
+		for (sf::Vector2i const &p : this->tileAround(destTile, range)) {
+			if (tile.pos == p)
+				inRange = true;
+		}
+		return inRange;
+	}
+
+	void addPlayerFrontPoint(EntityID playerEnt, EntityID ent, sf::Vector2i pos) {
+		Player &player = this->vault->registry.get<Player>(playerEnt);
+		if (this->vault->registry.has<Unit>(ent)) {
+			if (this->approxDistance(player.initialPos, pos) < this->approxDistance(sf::Vector2i(0, 0), sf::Vector2i(this->map->width, this->map->height)) / 4) {
+				player.allFrontPoints.push_back(pos);
+			}
+		} else {
+			if (this->vault->registry.has<Building>(ent)) {
+				player.allFrontPoints.push_back(pos);
+			}
+		}
+	}
+
 	std::vector<sf::Vector2i> canBuild(EntityID playerEnt, EntityID entity) {
 		Tile &tile = this->vault->registry.get<Tile>(entity);
 		Player &player = this->vault->registry.get<Player>(playerEnt);
@@ -159,61 +182,12 @@ public:
 		return restrictedPos;
 	}
 
-	sf::Vector2f dirMovement(int direction, float speed) {
-/*		sf::Vector2f mov(0.0, 0.0);
-		switch (direction) {
-		case North:
-			mov.y -= speed;
-			break;
-		case NorthEast:
-			mov.x += speed;
-			mov.y -= speed;
-			break;
-		case East:
-			mov.x += speed;
-			break;
-		case SouthEast:
-			mov.x += speed;
-			mov.y += speed;
-			break;
-		case South:
-			mov.y += speed;
-			break;
-		case NorthWest:
-			mov.x -= speed;
-			mov.y -= speed;
-			break;
-		case West:
-			mov.x -= speed;
-			break;
-		case SouthWest:
-			mov.x -= speed;
-			mov.y += speed;
-			break;
-		default:
-			break;
-		}
-		return mov;
-*/
+	sf::Vector2f dirVelocity(int direction, float speed) {
 		return directionVectors[direction] * speed;
 	}
 
-
-	std::vector<sf::Vector2f> lineTrajectory( int x0, int y0, int x1, int y1)
-	{
-		std::vector<sf::Vector2f> points;
-		float dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-		float dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-		float err = (dx > dy ? dx : -dy) / 2, e2;
-
-		for (;;) {
-			points.push_back(sf::Vector2f(x0, y0));
-			if (x0 == x1 && y0 == y1) break;
-			e2 = err;
-			if (e2 > -dx) { err -= dy; x0 += sx; }
-			if (e2 < dy) { err += dx; y0 += sy; }
-		}
-		return points;
+	sf::Vector2i dirVector2i(int direction) {
+		return sf::Vector2i(directionVectors[direction]);
 	}
 
 	bool canSpendResources(EntityID playerEnt, std::string type, int val) {
@@ -281,7 +255,6 @@ public:
 			animSprite.currentFrame = 0;
 			animSprite.frameChangeCallback = [](int frame) {};
 		}
-
 	}
 
 	void resetAnim(AnimatedSpritesheet &spritesheet, Tile &tile) {
@@ -434,7 +407,7 @@ public:
 	}
 
 	void clearTarget(Unit & unit) {
-		unit.destAttack = 0;
+		unit.targetEnt = 0;
 	}
 
 	void clearTarget(EntityID entity) {
@@ -445,6 +418,7 @@ public:
 	void goTo(Unit & unit, sf::Vector2i destpos) {
 		unit.destpos = destpos;
 		unit.nopath = 0;
+		unit.steeringState = SteeringState::FollowPath;
 	}
 
 	void goTo(EntityID entity, sf::Vector2i destpos) {
@@ -453,7 +427,8 @@ public:
 	}
 
 	void attack(Unit & unit, EntityID destEnt) {
-		unit.destAttack = destEnt;
+		unit.targetEnt = destEnt;
+//		unit.steeringState = SteeringState::Pursue;
 	}
 
 	void attack(EntityID entity, EntityID destEnt) {

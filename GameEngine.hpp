@@ -517,7 +517,7 @@ public:
 						ImGui::Text("Unit: ");
 						ImGui::Text("Next pos: %dx%d", unit.nextpos.x, unit.nextpos.y);
 						ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
-						ImGui::Text("Dest attack: %d", (int)unit.destAttack);
+						ImGui::Text("Dest attack: %d", (int)unit.targetEnt);
 					}
 					if (this->vault->registry.has<Resource>(selectedObj)) {
 						Resource &resource = this->vault->registry.get<Resource>(selectedObj);

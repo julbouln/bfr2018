@@ -440,7 +440,7 @@ public:
 		unitParser.parse(unit, this->getXmlComponent(name, "unit"));
 
 		unit.nextpos = tile.pos;
-		unit.destAttack = 0;
+		unit.targetEnt = 0;
 		unit.nopath = 0;
 		unit.destpos = tile.pos;
 
@@ -509,7 +509,7 @@ public:
 			unitParser.parse(unit, this->getXmlComponent(obj.name, "unit"));
 
 			unit.nextpos = tile.pos;
-			unit.destAttack = 0;
+			unit.targetEnt = 0;
 			unit.nopath = 0;
 			unit.destpos = tile.pos;
 

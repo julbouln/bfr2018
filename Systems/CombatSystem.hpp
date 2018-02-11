@@ -58,7 +58,7 @@ public:
 			Tile &tile = view.get<Tile>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
-			if (!unit.destAttack) {
+			if (!unit.targetEnt) {
 				std::vector<EntityID>targets;
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
@@ -89,117 +89,91 @@ public:
 			Tile &tile = view.get<Tile>(entity);
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
-			if (unit.destAttack && obj.life > 0 && this->vault->registry.valid(unit.destAttack)) {
+			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
 				int dist = 1;
 				if (unit.attack2.distance)
 					dist = unit.attack2.distance;
 
-				Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
-				GameObject &destObj = this->vault->registry.get<GameObject>(unit.destAttack);
+				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-				bool inRange = false;
-				for (sf::Vector2i const &p : this->tileAround(destTile, dist)) {
-					if (tile.pos == p)
-						inRange = true;
-				}
+				bool inRange = this->ennemyInRange(tile, destTile, dist);
 
-				if (!inRange && tile.pos == unit.destAttackPos && tile.pos == unit.nextpos) {
-#ifdef COMBAT_DEBUG
-					std::cout << "CombatSystem: " << entity << " arrived but enemy is not in range anymore, wait a bit" << std::endl;
-#endif
-					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
-					unit.destAttackPos = dpos;
-					this->goTo(unit, dpos);
-				} else {
-
-					if (inRange) {
-						if (tile.pos == unit.nextpos) { // unit must be arrived at a position
-							int attackPower = unit.attack1.power;
+				if (inRange) {
+					if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+						unit.steeringState = SteeringState::None;
+						int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: " << entity << " arrived at target, fight " << unit.destAttack << std::endl;
+						std::cout << "CombatSystem: " << entity << " arrived at target, fight " << unit.targetEnt << std::endl;
 #endif
-							sf::Vector2i distDiff = (destTile.pos - tile.pos);
-							// use attack2 if in correct range
-							if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
-#ifdef COMBAT_DEBUG
-								std::cout << "CombatSystem: " << entity << " " << obj.name << " use attack2 on " << unit.destAttack << " " << destObj.name << std::endl;
-#endif
-								attackPower = unit.attack2.power;
-							}
-							unit.destpos = tile.pos;
-							unit.destAttackPos = tile.pos;
-
-							float damage = (float)attackPower / 100.0;
-#ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.destAttack << std::endl;
-#endif
-							destObj.life -= damage;
-
-//							if(tile.state!="attack") {
-							if (destObj.player) {
-								Player &destPlayer = this->vault->registry.get<Player>(destObj.player);
-								if (this->vault->registry.has<Unit>(unit.destAttack)) {
-									if (this->approxDistance(destPlayer.initialPos, destTile.pos) < this->approxDistance(sf::Vector2i(0, 0), sf::Vector2i(this->map->width, this->map->height)) / 4) {
-										destPlayer.allFrontPoints.push_back(destTile.pos);
-									}
-								} else {
-									if (this->vault->registry.has<Building>(unit.destAttack)) {
-										destPlayer.allFrontPoints.push_back(destTile.pos);
-									}
-								}
-							}
-//							}
-
-							if (destObj.life <= 0) {
-								destObj.life = 0;
-								if (destTile.state != "die") {
-									Player &player = this->vault->registry.get<Player>(obj.player);
-									player.kills.insert(unit.destAttack);
-								}
-								if (this->vault->registry.has<Unit>(unit.destAttack)) {
-									this->changeState(unit.destAttack, "die");
-								}
-
-
-							} else {
-								tile.view = this->getDirection(tile.pos, destTile.pos);
-
-								this->changeState(entity, "attack");
-							}
-
-							if (destObj.life == 0) {
-								this->changeState(entity, "idle");
-								unit.destAttack = 0;
-								unit.destpos = tile.pos;
-							} else {
-								if (this->vault->registry.has<Unit>(unit.destAttack)) {
-									Unit &destUnit = this->vault->registry.get<Unit>(unit.destAttack);
-									if (destTile.state == "idle" || destTile.state == "move") {
-										// if ennemy is idle, he will fight back
-										this->attack(destUnit, entity);
-
-									} else if (destTile.state == "attack" && destUnit.destAttack) {
-										// if ennemy is attacking a building, he will fight back
-										if (this->vault->registry.valid(destUnit.destAttack) && this->vault->registry.has<Building>(destUnit.destAttack)) {
-											this->attack(destUnit, entity);
-										}
-									}
-								}
-
-							}
+						sf::Vector2i distDiff = (destTile.pos - tile.pos);
+						// use attack2 if in correct range
+						if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
+							attackPower = unit.attack2.power;
 						}
-					} else {
-						sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+						unit.destpos = tile.pos;
+						unit.targetPos = tile.pos;
+
+						float damage = (float)attackPower / 100.0;
 #ifdef COMBAT_DEBUG
-						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
+						std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
 #endif
-						unit.destAttackPos = dpos;
-						this->goTo(unit, dpos);
+						destObj.life -= damage;
+
+						if (destObj.player) {
+							this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
+						}
+
+						if (destObj.life <= 0) {
+							// mark as dead
+							destObj.life = 0;
+							if (destTile.state != "die") {
+								Player &player = this->vault->registry.get<Player>(obj.player);
+								player.kills.insert(unit.targetEnt);
+							}
+							if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+								this->changeState(unit.targetEnt, "die");
+							}
+						} else {
+							// start/continue attacking
+							tile.view = this->getDirection(tile.pos, destTile.pos);
+							this->changeState(entity, "attack");
+						}
+
+						if (destObj.life == 0) {
+							// target is dead, become idle
+							this->changeState(entity, "idle");
+							unit.targetEnt = 0;
+							unit.destpos = tile.pos;
+						} else {
+							if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+								Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
+								if (destTile.state == "idle" || destTile.state == "move") {
+									// if ennemy is idle, he will fight back
+									this->attack(destUnit, entity);
+
+								} else if (destTile.state == "attack" && destUnit.targetEnt) {
+									// if ennemy is attacking a building, he will fight back
+									if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
+										this->attack(destUnit, entity);
+									}
+								}
+							}
+
+						}
 					}
 				}
+				else {
+					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+#ifdef COMBAT_DEBUG
+					std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
+#endif
+					unit.targetPos = dpos;
+					this->goTo(unit, dpos);
+				}
 			} else {
-				unit.destAttack = 0;
+				unit.targetEnt = 0;
 			}
 		}
 
@@ -211,7 +185,7 @@ public:
 
 			if (obj.life == 0) {
 
-				if (tile.state == "die" && (rand() % 8) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
+				if (tile.state == "die" && (rand() % 16) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
 					// alt die FX
 					ParticleEffectOptions altOptions;
 					altOptions.destPos = tile.ppos;
@@ -239,7 +213,7 @@ public:
 				}
 
 				this->changeState(entity, "die");
-				unit.destAttack = 0;
+				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
 			}
 
@@ -259,9 +233,9 @@ public:
 #endif
 								map->sounds.push(SoundPlay {unit.attackSound, 1, false, tile.pos});
 
-								if (unit.destAttack) {
-									if (this->vault->registry.valid(unit.destAttack)) { // ???
-										Tile &destTile = this->vault->registry.get<Tile>(unit.destAttack);
+								if (unit.targetEnt) {
+									if (this->vault->registry.valid(unit.targetEnt)) { // ???
+										Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 										sf::Vector2f fxPos = destTile.ppos;
 										sf::Vector2i diffPos = tile.pos - destTile.pos;
 										fxPos.x += diffPos.x * 8.0 + 16.0;
@@ -272,7 +246,7 @@ public:
 										hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
 										hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-										this->emitEffect("hit", unit.destAttack, fxPos, 1.0, hitOptions);
+										this->emitEffect("hit", unit.targetEnt, fxPos, 1.0, hitOptions);
 
 										ParticleEffectOptions projOptions;
 										projOptions.destPos = destTile.ppos;
@@ -282,7 +256,7 @@ public:
 										this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
 									} else {
 										this->changeState(entity, "idle");
-										unit.destAttack = 0;
+										unit.targetEnt = 0;
 										unit.destpos = tile.pos;
 									}
 								}
@@ -292,9 +266,9 @@ public:
 				}
 
 				// attacked obj does not exists anymore, stop attacking
-				if (!unit.destAttack || !this->vault->registry.valid(unit.destAttack)) {
+				if (!unit.targetEnt || !this->vault->registry.valid(unit.targetEnt)) {
 					this->changeState(entity, "idle");
-					unit.destAttack = 0;
+					unit.targetEnt = 0;
 					unit.destpos = tile.pos;
 				}
 

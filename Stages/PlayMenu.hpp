@@ -31,7 +31,7 @@ public:
 			ImGui::RadioButton("Neonaz", &team, 1); ImGui::SameLine();
 			ImGui::RadioButton("Spectator", &team, 2);
 
-			const char* mapSizes[] = { "Small", "Medium", "Large"};
+			const char* mapSizes[] = { "Tiny", "Small", "Medium", "Large", "Huge"};
 			ImGui::Text("Map size"); ImGui::SameLine();
 			ImGui::Combo("", &mapSize, mapSizes, IM_ARRAYSIZE(mapSizes));   // Combo using proper array. You can also pass a callback to retrieve array value, no need to create/copy an array just for that.
 
@@ -84,7 +84,7 @@ public:
 		background.setTexture(this->game->vault.factory.getTex("intro_background"));
 
 		this->team = 0;
-		this->mapSize = 0;
+		this->mapSize = 2;
 	}
 
 	void reset() {
@@ -120,16 +120,20 @@ public:
 				mapHeight = 48;
 				break;
 			case 1:
-				mapWidth = 64;
-				mapHeight = 64;
+				mapWidth = 72;
+				mapHeight = 72;
 				break;
 			case 2:
-				mapWidth = 128;
-				mapHeight = 128;
+				mapWidth = 96;
+				mapHeight = 96;
 				break;
 			case 3:
-				mapWidth = 256;
-				mapHeight = 256;
+				mapWidth = 120;
+				mapHeight = 120;
+				break;
+			case 4:
+				mapWidth = 144;
+				mapHeight = 144;
 				break;
 			}
 

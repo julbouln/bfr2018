@@ -1,4 +1,4 @@
-CFLAGS = -g -std=c++14
+CFLAGS = -O3 -std=c++14
 INCLUDES = -I.
 DBSCAN_OBJS = dbscan/dbscan.o
 IMGUI_OBJS = gui/imgui.o gui/imgui_draw.o gui/imgui-sfml.o

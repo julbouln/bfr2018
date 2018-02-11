@@ -26,12 +26,15 @@ public:
 				t = Dirt + (rand() % ALT_TILES);
 				this->map->terrainsForTransitions.set(x, y, Dirt);
 
-				if (res < -0.3) {
+				// sand
+				if (res < -0.2) {
 					t = Sand + (rand() % ALT_TILES);
 					this->map->staticBuildable.set(x, y, t);
 					this->map->terrainsForTransitions.set(x, y, Sand);
 				}
-				if (res < -0.5) {
+
+				// water
+				if (res < -0.4) {
 					t = Water + (rand() % ALT_TILES);
 
 					this->map->staticBuildable.set(x, y, t);
@@ -61,7 +64,6 @@ public:
 					this->vault->factory.createDecor(this->vault->registry, pair.first, rx, ry);
 				}
 			}
-
 		}
 
 		// set decor layer
@@ -76,16 +78,13 @@ public:
 				if (decor.blocking)
 					this->map->staticBuildable.set(p.x, p.y, entity);
 			}
-
 		}
-
 	}
-
 
 	EntityID generate(int mapWidth, int mapHeight, std::string playerTeam) {
 		EntityID currentPlayer;
 
-		this->generateMap(mapWidth,mapHeight);
+		this->generateMap(mapWidth, mapHeight);
 
 		std::vector<int> colorIndices = this->generateColorIndices();
 		std::vector<sf::Vector2i> initialPositions = this->generateInitialPositions();
@@ -104,7 +103,6 @@ public:
 			this->vault->factory.createPlayer(this->vault->registry, "rebel", true);
 			this->vault->factory.createPlayer(this->vault->registry, "neonaz", true);
 		}
-
 
 		auto view = this->vault->registry.view<Player>();
 		for (EntityID entity : view) {
@@ -159,5 +157,4 @@ private:
 		std::random_shuffle ( initialPositions.begin(), initialPositions.end() );
 		return initialPositions;
 	}
-
 };

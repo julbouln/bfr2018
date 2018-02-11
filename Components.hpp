@@ -141,22 +141,38 @@ enum class GroupFormation {
 	OneLine
 };
 
+enum class SteeringState {
+	None,	
+	Seek,
+	Flee,
+	Pursue,
+	FollowPath
+};
+
 struct Unit {
 	unsigned int speed;
 	Attack attack1;
 	Attack attack2;
 
-	EntityID destAttack;
-	sf::Vector2i destAttackPos;
+	EntityID targetEnt;
+	sf::Vector2i targetPos;
 
 	sf::Vector2i destpos;
 	sf::Vector2i nextpos;
+	sf::Vector2f velocity;
+	SteeringState steeringState;
+
 	unsigned int nopath;
 
 	std::string sound;
 	std::map<std::string, int> soundActions;
 
 	std::string attackSound;
+
+	Unit() {
+		steeringState = SteeringState::None;
+
+	}
 };
 
 struct Building {

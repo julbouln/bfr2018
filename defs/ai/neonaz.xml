@@ -160,15 +160,20 @@
 		<Train type="grosnaz"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="25" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan qty="1" type="gymnaz"/>
 		</Inverter>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="patrouilleur"/>
+		</Inverter>
 		<Selector>
-			<HasFoundEnemy/>
+			<Inverter>
+				<HasFoundEnemy/>
+			</Inverter>
 			<HasExploredLessThan per="50"/>
 		</Selector>
-		<Explore type="brad_lab"/>
+		<Explore type="patrouilleur"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>

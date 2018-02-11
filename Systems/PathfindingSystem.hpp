@@ -3,11 +3,14 @@
 #include "GameSystem.hpp"
 #include "third_party/JPS.h"
 
+#include "Steering.hpp"
+
 //#define PATHFINDING_DEBUG
 
 #define PATHFINDING_MAX_NO_PATH 16
 
 class PathfindingSystem : public GameSystem {
+	Steering steering;
 	JPS::Searcher<Map> *search;
 public:
 	PathfindingSystem() {
@@ -18,7 +21,7 @@ public:
 		if (search)
 			delete search;
 	}
-	
+
 	void init() {
 		search = new JPS::Searcher<Map>(*this->map);
 	}
@@ -97,9 +100,58 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			if (tile.pos != unit.destpos && obj.life > 0 && !this->unitInCase(unit, tile)) {
-				float speed = (float)unit.speed / 2.0;
-				tile.ppos += this->dirMovement(tile.view, speed);
+			if (obj.life > 0 && tile.pos != unit.destpos && !this->unitInCase(unit, tile)) {
+//				float speed = (float)unit.speed / 2.0;
+//				tile.ppos += this->dirMovement(tile.view, speed);
+				tile.ppos += unit.velocity;
+			}
+		}
+	}
+
+	void updateSteering(float dt) {
+		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
+			Unit &unit = view.get<Unit>(entity);
+
+			switch (unit.steeringState) {
+			case SteeringState::Pursue: {
+				if (this->unitInCase(unit, tile)) {
+					tile.pos = unit.nextpos;
+					if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+						Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+
+						sf::Vector2f velocity;
+						if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+							Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
+							velocity = steering.pursue(tile, destTile, unit, destUnit );
+						} else {
+							velocity = steering.seek(tile, destTile);
+						}
+
+						if (vectorLength(velocity) > 0) {
+							sf::Vector2i nextpos = tile.pos + sf::Vector2i(vectorRound(vectorNormalize(velocity)));
+							if (destTile.pos != nextpos) {
+								unit.nextpos = nextpos;
+								unit.velocity = velocity;
+								tile.view = this->getDirection(tile.pos, tile.pos + sf::Vector2i(unit.velocity));
+								this->changeState(entity, "move");
+								std::cout << "Steering pursue " << entity << " " << tile.pos.x << "x" << tile.pos.y << " " << unit.nextpos.x << "x" << unit.nextpos.y << std::endl;
+							} else {
+								unit.steeringState = SteeringState::None;
+								this->changeState(entity, "idle");
+							}
+						}
+
+					}
+				}
+			}
+			break;
+			case SteeringState::FollowPath:
+				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -113,8 +165,7 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			if (tile.pos != unit.destpos && obj.life > 0 && this->unitInCase(unit, tile)) {
-
+			if (obj.life > 0 && tile.pos != unit.destpos && this->unitInCase(unit, tile)) {
 				tile.pos = unit.nextpos;
 				this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
 				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
@@ -136,6 +187,7 @@ public:
 							unit.nextpos = npos;
 
 							tile.view = this->getDirection(cpos, npos);
+							unit.velocity = this->dirVelocity(tile.view, unit.speed / 2.0);
 							this->changeState(entity, "move");
 
 
@@ -180,6 +232,7 @@ public:
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 				}
 			}
+
 		}
 
 	}

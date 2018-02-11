@@ -160,15 +160,20 @@
 		<Train type="guerrier_bud_powerhead"/>
 	</Sequence>
 	<Sequence>
-		<Probability frac="25" per="1"/>
+		<Probability frac="50" per="1"/>
 		<Inverter>
 			<HasLessObjectsTypeThan qty="1" type="taverne"/>
 		</Inverter>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="punkette"/>
+		</Inverter>
 		<Selector>
-			<HasFoundEnemy/>
+			<Inverter>
+				<HasFoundEnemy/>
+			</Inverter>
 			<HasExploredLessThan per="50"/>
 		</Selector>
-		<Explore type="zork"/>
+		<Explore type="punkette"/>
 	</Sequence>
 	<Sequence>
 		<Probability frac="10" per="1"/>
