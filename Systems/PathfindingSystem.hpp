@@ -49,28 +49,28 @@ public:
 		std::map<int, int> points_map_size;
 
 		for (int i = 0; i < (int)points.size(); i++) {
-			if(clusters.count(labels[i])==0) 
+			if (clusters.count(labels[i]) == 0)
 			{
-				clusters[labels[i]]=std::vector<Point>();
+				clusters[labels[i]] = std::vector<Point>();
 				clusters[labels[i]].push_back(points[i]);
 			} else {
 				clusters[labels[i]].push_back(points[i]);
 			}
 //							std::cout << "DBSCAN Point(" << points[i].x << ", " << points[i].y << "): " << labels[i] << std::endl;
-/*
-			if (points_map.count(labels[i]) == 0) {
-				points_map[labels[i]] = points[i];
-				points_map_size[labels[i]] = 1;
-			} else {
-				points_map[labels[i]].x = points_map[labels[i]].x + points[i].x;
-				points_map[labels[i]].y = points_map[labels[i]].y + points[i].y;
-				points_map_size[labels[i]] = points_map_size[labels[i]] + 1;
-			}
-			*/
+			/*
+						if (points_map.count(labels[i]) == 0) {
+							points_map[labels[i]] = points[i];
+							points_map_size[labels[i]] = 1;
+						} else {
+							points_map[labels[i]].x = points_map[labels[i]].x + points[i].x;
+							points_map[labels[i]].y = points_map[labels[i]].y + points[i].y;
+							points_map_size[labels[i]] = points_map_size[labels[i]] + 1;
+						}
+						*/
 		}
 
 		for (auto pair : clusters) {
-			std::cout << "DBSCAN cluster "<<pair.first << " " << pair.second.size() <<std::endl;
+			std::cout << "DBSCAN cluster " << pair.first << " " << pair.second.size() << std::endl;
 		}
 
 	}
@@ -228,8 +228,8 @@ public:
 #ifdef PATHFINDING_FLOWFIELD
 					bool found = true;
 					unit.flowFieldPathFinder.setFlowFields(&flowFields);
-					unit.flowFieldPathFinder.startFindPath(tile.pos.x,tile.pos.y, unit.destpos.x,unit.destpos.y);
-					unit.flowFieldPathFinder.next(tile.pos.x,tile.pos.y, unit.destpos.x,unit.destpos.y);
+					unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+					unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);

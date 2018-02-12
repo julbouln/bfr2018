@@ -43,7 +43,7 @@ public:
 	}
 
 	bool pathAvailable(int x, int y) const {
-		return map->pathAvailable(x + rect.left, y + rect.top);
+		return map->pathAvailable(x + rect.left, y + rect.top) && x < rect.width && y < rect.height;
 	}
 
 	bool bound(int x, int y) const {
@@ -68,7 +68,7 @@ public:
 		_dir.clear();
 		_fields.reserve(_grid.width * _grid.height);
 		while (_fields.size() < _grid.width * _grid.height) {
-			_fields.push_back(std::numeric_limits<short int>::max());
+			_fields.push_back(std::numeric_limits<field_t>::max());
 		}
 		_dir.reserve(_grid.width * _grid.height);
 		while (_dir.size() < _grid.width * _grid.height) {
@@ -137,7 +137,7 @@ public:
 // find the index of the neighbor with the lowest cost
 // -------------------------------------------------------------
 	int findLowestCost(int x, int y) {
-		int m = std::numeric_limits<short int>::max();
+		int m = std::numeric_limits<field_t>::max();
 		int ret = 14;
 		for (int i = 0; i < 8; ++i) {
 			sf::Vector2i c = sf::Vector2i(x, y) + DIRECTIONS[i];
@@ -231,8 +231,9 @@ public:
 // -------------------------------------------------------------
 // get the next field based on the direction of the current cell
 // -------------------------------------------------------------
-	sf::Vector2i next(const sf::Vector2i & current) {
+	sf::Vector2i next(sf::Vector2i current) {
 		int dir = get(current.x, current.y);
+		std::cout << "FlowField next dir:"<<dir<<" "<<current.x << "x"<<current.y<<std::endl;
 		return current + DIRECTIONS[dir];
 	}
 
@@ -291,20 +292,20 @@ public:
 			for (int x = 0; x < this->width; ++x) {
 				fields.push_back(std::vector<FlowField>());
 				fields.back().reserve(PER_SECTOR * PER_SECTOR);
+			}
+		}
+		for (int y = 0; y < this->height; ++y) {
+			for (int x = 0; x < this->width; ++x) {
 				this->update(x, y);
 			}
 		}
-
 	}
-
-
-
-
 };
 
 class FlowFieldPathFinder {
 	FlowFields *flowFields;
 	std::vector<BorderPosition> borders;
+	sf::Vector2i dest;
 public:
 	void setFlowFields(FlowFields *f) {
 		flowFields = f;
@@ -313,52 +314,62 @@ public:
 	sf::Vector2i next(int cx, int cy, int dx, int dy) {
 		int curpartx = cx / PER_SECTOR;
 		int curparty = cy / PER_SECTOR;
+		int cgrx = cx % PER_SECTOR;
+		int cgry = cy % PER_SECTOR;
 
 		int partx = dx / PER_SECTOR;
 		int party = dy / PER_SECTOR;
 		int grx = dx % PER_SECTOR;
 		int gry = dy % PER_SECTOR;
 
+			int partIdx = partx + party * flowFields->width;
+			int grIdx = grx + gry * PER_SECTOR;
+
+		std::cout << "FlowFieldPathFinder next "<<cx<<"x"<<cy<<" "<<dx<<"x"<<dy<<std::endl;
+
 		sf::Vector2i npos;
 		// on same part
 		if (curpartx == partx && curparty == party) {
-			int partIdx = partx + party * flowFields->width;
-			int grIdx = grx + gry * PER_SECTOR;
-			std::cout << "FlowFieldPathFinder at "<<partIdx<<" "<<grIdx<< " "<<flowFields->fields.size()<<std::endl;
+			std::cout << "FlowFieldPathFinder at " << partIdx << " " << grIdx << " " << flowFields->fields.size() << std::endl;
 			FlowField &flowField = flowFields->fields[partIdx][grIdx];
 
-			npos = flowField.next(sf::Vector2i(cx, cy));
-			std::cout << "FlowFieldPathFinder nexpos "<<npos.x<<"x"<<npos.y<<std::endl;
+			npos = flowField.next(sf::Vector2i(cgrx, cgry));
+			std::cout << "FlowFieldPathFinder nexpos " << npos.x << "x" << npos.y << std::endl;
+		} else {
+			std::cout << "FlowFieldPathFinder need to pass through " << partIdx << std::endl;
+
 		}
-		// TODO else
 		return npos;
 	}
 
 	bool startFindPath(int sx, int sy, int dx, int dy) {
-		borders.clear();
-		std::cout << "FlowFieldPathFinder findPath " << sx << "x" << sy << " -> " << dx << "x" << dy << std::endl;
-		JPS::PathVector path;
-		bool found = flowFields->search->findPath(path, JPS::Pos(sx, sy), JPS::Pos(dx, dy), 1);
-		if (found) {
-			// find border pos
-			for (auto &p : path) {
-				int partx = p.x / PER_SECTOR;
-				int party = p.y / PER_SECTOR;
-				int partIdx = partx + party * flowFields->width;
-				int grx = p.x % PER_SECTOR;
-				int gry = p.y % PER_SECTOR;
-				// border
-				if (grx == 1 || gry == 1 || grx == PER_SECTOR - 1 || gry == PER_SECTOR - 1)
-				{
-					borders.push_back(BorderPosition{grx, gry, partIdx});
+		if (sf::Vector2i(dx, dy) != dest) {
+			dest = sf::Vector2i(dx, dy);
+			borders.clear();
+			std::cout << "FlowFieldPathFinder findPath " << sx << "x" << sy << " -> " << dx << "x" << dy << std::endl;
+			JPS::PathVector path;
+			bool found = flowFields->search->findPath(path, JPS::Pos(sx, sy), JPS::Pos(dx, dy), 1);
+			if (found) {
+				// find border pos
+				for (auto &p : path) {
+					int partx = p.x / PER_SECTOR;
+					int party = p.y / PER_SECTOR;
+					int partIdx = partx + party * flowFields->width;
+					int grx = p.x % PER_SECTOR;
+					int gry = p.y % PER_SECTOR;
+					// border
+					if (grx == 1 || gry == 1 || grx == PER_SECTOR - 1 || gry == PER_SECTOR - 1)
+					{
+						borders.push_back(BorderPosition{grx, gry, partIdx});
+					}
 				}
-			}
 
-			for (auto &p : borders) {
-				std::cout << "FlowFields should traverse " << p.partIdx << " -> " << p.x << "x" << p.y << std::endl;
-			}
+				for (auto &p : borders) {
+					std::cout << "FlowFields should traverse " << p.partIdx << " -> " << p.x << "x" << p.y << std::endl;
+				}
 
-			return true;
+				return true;
+			}
 		}
 		return false;
 	}
