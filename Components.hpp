@@ -13,6 +13,8 @@
 
 #include "ShaderOptions.hpp"
 
+#include "FlowField.hpp"
+
 enum {
 	North,
 	NorthEast,
@@ -169,9 +171,11 @@ struct Unit {
 
 	std::string attackSound;
 
+#ifdef PATHFINDING_FLOWFIELD
+	FlowField flowField;
+#endif
 	Unit() {
 		steeringState = SteeringState::None;
-
 	}
 };
 

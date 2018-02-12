@@ -3,6 +3,7 @@
 #include "GameSystem.hpp"
 #include "third_party/JPS.h"
 
+#include "FlowField.hpp"
 #include "Steering.hpp"
 
 //#define PATHFINDING_DEBUG
@@ -44,7 +45,7 @@ public:
 			Unit &unit = unitView.get<Unit>(entity);
 
 			if (tile.pos == unit.destpos) {
-				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
+//				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			}
 		}
 
@@ -100,7 +101,7 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			if (obj.life > 0 && tile.pos != unit.destpos && !this->unitInCase(unit, tile)) {
+			if (obj.life > 0 && !this->unitInCase(unit, tile)) {
 //				float speed = (float)unit.speed / 2.0;
 //				tile.ppos += this->dirMovement(tile.view, speed);
 				tile.ppos += unit.velocity;
@@ -172,13 +173,31 @@ public:
 
 				if (tile.pos != unit.destpos) {
 
+//					JPS::PathVector path;
+//						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
+//					bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
+
+#ifdef PATHFINDING_FLOWFIELD
+					bool found = true;
+#else
 					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
 					bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
 
-					if (found) {
+#endif
+
+					if (found)
+					{
 						sf::Vector2i cpos(tile.pos.x, tile.pos.y);
+#ifdef PATHFINDING_FLOWFIELD
+						sf::Vector2i npos = unit.flowField.next(tile.pos);
+#else
 						sf::Vector2i npos(path.front().x, path.front().y);
+#endif
+
+#ifdef PATHFINDING_DEBUG
+						std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
+#endif
 
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
@@ -191,16 +210,15 @@ public:
 							this->changeState(entity, "move");
 
 
-#ifdef PATHFINDING_DEBUG
-							std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
-#endif
 						} else {
 							this->changeState(entity, "idle");
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
 #endif
 						}
-					} else {
+					}
+
+					else {
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
@@ -215,6 +233,7 @@ public:
 							this->goTo(unit, fp);
 						}
 					}
+
 				} else {
 #ifdef PATHFINDING_DEBUG
 					std::cout << "Pathfinding: " << entity << " at destination" << std::endl;

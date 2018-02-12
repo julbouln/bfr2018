@@ -556,6 +556,7 @@ public:
 		resource.type = name;
 		resource.level = 0;
 		resource.grow = 0.0;
+		resource.growRate = 0.05 + (rand() % 5)/100.0;
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<Resource>(entity, resource);

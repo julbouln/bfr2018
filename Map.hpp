@@ -266,9 +266,7 @@ public:
 		return (x >= 0 && y >= 0 && x < this->width && y < this->height);
 	}
 
-	// pathfinding blocking method
-	inline bool operator()(unsigned x, unsigned y) const
-	{
+	inline bool pathAvailable(unsigned x, unsigned y) const {
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 			unsigned int idx = x + width * y;
@@ -276,6 +274,12 @@ public:
 				return true;
 		}
 		return false;
+	}
+
+	// pathfinding blocking method
+	inline bool operator()(unsigned x, unsigned y) const
+	{
+		return this->pathAvailable(x,y);
 	}
 
 };

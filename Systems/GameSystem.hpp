@@ -132,6 +132,28 @@ public:
 		}
 	}
 
+	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int maxDist) {
+		sf::Vector2i fp;
+		int dist = 1;
+		while (dist < maxDist) {
+			for (int w = -dist; w < dist + 1; ++w) {
+				for (int h = -dist; h < dist + 1; ++h) {
+					if (w == -dist || h == -dist || w == dist || h == dist) {
+						int x = w + src.x;
+						int y = h + src.y;
+						if (this->map->bound(x, y)) {
+							if (this->map->pathAvailable(x, y))
+								return sf::Vector2i(x, y);
+						}
+					}
+				}
+			}
+			dist++;
+		}
+		std::cout << "BUG: no available position for "<<src.x<<"x"<<src.y<<std::endl;
+		return src;
+	}
+
 	EntityID ennemyAtPosition(EntityID playerEnt, int x, int y) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		EntityID destEnt = this->map->objs.get(x, y);
@@ -416,9 +438,17 @@ public:
 	}
 
 	void goTo(Unit & unit, sf::Vector2i destpos) {
-		unit.destpos = destpos;
+		if (this->map->pathAvailable(destpos.x, destpos.y))
+			unit.destpos = destpos;
+		else
+			unit.destpos = this->firstAvailablePosition(destpos, 16);
+
 		unit.nopath = 0;
 		unit.steeringState = SteeringState::FollowPath;
+#ifdef PATHFINDING_FLOWFIELD
+		unit.flowField.setGrid(this->map);
+		unit.flowField.build(unit.destpos);
+#endif
 	}
 
 	void goTo(EntityID entity, sf::Vector2i destpos) {
