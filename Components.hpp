@@ -173,6 +173,7 @@ struct Unit {
 
 #ifdef PATHFINDING_FLOWFIELD
 	FlowField flowField;
+	FlowFieldPathFinder flowFieldPathFinder;
 #endif
 	Unit() {
 		steeringState = SteeringState::None;
