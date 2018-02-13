@@ -149,6 +149,9 @@ public:
 
 		texLoader.loadTextureWithWhiteMask("baril_fx", "medias/extra/baril.png");
 		texLoader.loadTextureWithWhiteMask("pepino_fx", "medias/extra/pepino.png");
+
+		texManager.load("arrow", "medias/new/fleche.png");
+
 	}
 
 	void autoTransition(sf::Image &img) {

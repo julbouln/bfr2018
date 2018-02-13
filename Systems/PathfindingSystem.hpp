@@ -298,7 +298,7 @@ public:
 				if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
 					// something wrong, realign
 					GameObject &obj = this->vault->registry.get<GameObject>(entity);
-					std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " " << tile.pos.x << "x" << tile.pos.y << " -> " << unit.nextpos.x << "x" << unit.nextpos.y << std::endl;
+					std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " pos:" << tile.pos.x << "x" << tile.pos.y << " nextpos" << unit.nextpos.x << "x" << unit.nextpos.y << " destpos:"<<unit.destpos.x<<"x"<<unit.destpos.y<< std::endl;
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 				}
 			}

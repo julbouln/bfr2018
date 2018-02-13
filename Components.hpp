@@ -172,7 +172,7 @@ struct Unit {
 	std::string attackSound;
 
 #ifdef PATHFINDING_FLOWFIELD
-	FlowField flowField;
+//	FlowField flowField;
 	FlowFieldPathFinder flowFieldPathFinder;
 #endif
 	Unit() {

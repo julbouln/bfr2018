@@ -75,8 +75,10 @@ public:
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				this->map->decors.set(p.x, p.y, entity);
-				if (decor.blocking)
+				if (decor.blocking) {
 					this->map->staticBuildable.set(p.x, p.y, entity);
+					this->map->staticPathfinding.set(p.x, p.y, entity);
+				}
 			}
 		}
 	}
