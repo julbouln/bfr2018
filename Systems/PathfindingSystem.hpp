@@ -228,8 +228,7 @@ public:
 #ifdef PATHFINDING_FLOWFIELD
 					bool found = true;
 					unit.flowFieldPathFinder.setFlowFields(&flowFields);
-					unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
-					unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+					found = unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
@@ -241,7 +240,8 @@ public:
 					{
 						sf::Vector2i cpos(tile.pos.x, tile.pos.y);
 #ifdef PATHFINDING_FLOWFIELD
-						sf::Vector2i npos = unit.flowField.next(tile.pos);
+//						sf::Vector2i npos = unit.flowField.next(tile.pos);
+						sf::Vector2i npos = unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 						sf::Vector2i npos(path.front().x, path.front().y);
 #endif
