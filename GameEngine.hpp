@@ -748,6 +748,64 @@ public:
 				crect.setOutlineThickness(2);
 				crect.setPosition(cpos);
 				this->game->window.draw(crect);
+
+#ifdef PATHFINDING_FLOWFIELD
+				// draw FlowFields
+				if (this->vault->registry.has<Unit>(this->selectedDebugObj)) {
+					Tile &tile = this->vault->registry.get<Tile>(this->selectedDebugObj);
+					Unit &unit = this->vault->registry.get<Unit>(this->selectedDebugObj);
+					if (tile.pos != unit.destpos) {
+						FlowField *field = unit.flowFieldPathFinder.getCurrentFlowField(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+						if (field) {
+							sf::Vector2i fsize = field->getSize();
+							for (int dx = 0; dx < fsize.x; dx++) {
+								for (int dy = 0; dy < fsize.y; dy++) {
+									int dir = field->get(dx, dy);
+									if (dir < 8) {
+//										std::cout << "DRAW DIR "<<dx<<"x"<<dy<<std::endl;
+										sf::Sprite dirSprite;
+//										dirSprite.setSize(sf::Vector2f(32,32));
+										dirSprite.setColor(sf::Color(0xff, 0xff, 0xff, 0xff));
+										dirSprite.setTexture(this->vault->factory.getTex("arrow"));
+										dirSprite.setOrigin(sf::Vector2f(16, 16));
+										switch (dir) {
+										case 0:
+											dirSprite.setRotation(90);
+											break;
+										case 1:
+											dirSprite.setRotation(135);
+											break;
+										case 2:
+											dirSprite.setRotation(180);
+											break;
+										case 3:
+											dirSprite.setRotation(225);
+											break;
+										case 4:
+											dirSprite.setRotation(270);
+											break;
+										case 5:
+											dirSprite.setRotation(315);
+											break;
+										case 6:
+											dirSprite.setRotation(0);
+											break;
+										case 7:
+											dirSprite.setRotation(45);
+											break;
+										}
+
+										sf::Vector2f dppos(((tile.pos.x / PER_SECTOR)*PER_SECTOR + dx) * 32, ((tile.pos.y / PER_SECTOR)*PER_SECTOR + dy) * 32);
+										dirSprite.setPosition(dppos);
+										this->game->window.draw(dirSprite);
+									}
+								}
+							}
+						}
+					}
+				}
+#endif
+
 			} else {
 				this->selectedDebugObj = 0;
 			}

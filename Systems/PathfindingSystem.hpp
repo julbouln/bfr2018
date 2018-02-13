@@ -76,13 +76,27 @@ public:
 	}
 
 	void updatePathfindingLayer(float dt) {
-		this->map->pathfinding.clear();
+		std::set<int> markFlowFieldsUpdate;
+
+
 		auto buildingView = this->vault->registry.persistent<Tile, Building>();
+		for (EntityID entity : buildingView) {
+			Tile &tile = buildingView.get<Tile>(entity);
+
+			for (sf::Vector2i const &p : this->tileSurface(tile)) {
+				if (!this->map->pathfinding.get(p.x, p.y)) {
+					markFlowFieldsUpdate.insert(flowFields.sectorIdx(p.x, p.y));
+				}
+			}
+		}
+
+		this->map->pathfinding.clear();
 
 		for (EntityID entity : buildingView) {
 			Tile &tile = buildingView.get<Tile>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
+
 				this->map->pathfinding.set(p.x, p.y, entity);
 			}
 		}
@@ -107,6 +121,10 @@ public:
 					this->map->pathfinding.set(p.x, p.y, entity);
 				}
 			}
+		}
+
+		for (int sectorIdx : markFlowFieldsUpdate) {
+			flowFields.updateSector(sectorIdx);
 		}
 
 	}
@@ -298,7 +316,7 @@ public:
 				if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
 					// something wrong, realign
 					GameObject &obj = this->vault->registry.get<GameObject>(entity);
-					std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " pos:" << tile.pos.x << "x" << tile.pos.y << " nextpos" << unit.nextpos.x << "x" << unit.nextpos.y << " destpos:"<<unit.destpos.x<<"x"<<unit.destpos.y<< std::endl;
+					std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " pos:" << tile.pos.x << "x" << tile.pos.y << " nextpos" << unit.nextpos.x << "x" << unit.nextpos.y << " destpos:" << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 				}
 			}

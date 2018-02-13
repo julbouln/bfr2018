@@ -246,7 +246,7 @@ public:
 	}
 
 	sf::Vector2i getSize() {
-		return sf::Vector2i(_grid.width,_grid.height);
+		return sf::Vector2i(_grid.width, _grid.height);
 	}
 
 };
@@ -289,8 +289,45 @@ public:
 	FlowFields() {
 	}
 
-	void update(int x, int y) {
-		int idx = x + y * this->width;
+	int sectorIdx(int x, int y) {
+		int px = x / PER_SECTOR;
+		int py = y / PER_SECTOR;
+		return px + py * this->width;
+	}
+
+	int gridIdx(int x, int y) {
+		int gx = x % PER_SECTOR;
+		int gy = y % PER_SECTOR;
+		return gx + gy * PER_SECTOR;
+	}
+
+	sf::Vector2i gridPos(int x, int y) {
+		return sf::Vector2i(x % PER_SECTOR, y % PER_SECTOR);
+	}
+
+	sf::Vector2i sectorPos(int x, int y) {
+		return sf::Vector2i(x / PER_SECTOR, y / PER_SECTOR);
+	}
+
+	void updateSector(int idx) {
+		clock.restart();
+		sf::Time elapsed1 = clock.getElapsedTime();
+		for (int dy = 0; dy < PER_SECTOR; ++dy) {
+			for (int dx = 0; dx < PER_SECTOR; ++dx) {
+//						std::cout << "BUILD FIELD " << x << "x" << y << " : " << gx << "x" << gy << " "<<map->pathAvailable(x*PER_SECTOR+gx,y*PER_SECTOR+gy) << std::endl;
+//				std::cout << "SET GRID " << x * PER_SECTOR << "x" << y * PER_SECTOR << std::endl;
+				FlowField &field = fields[idx][dx+dy*PER_SECTOR];
+				field.build(sf::Vector2i(dx, dy));
+			}
+		}
+
+		sf::Time elapsed2 = clock.getElapsedTime();
+		std::cout << "FlowFields update sector " <<  idx << " " << (elapsed2 - elapsed1).asSeconds() << std::endl;
+// x * PER_SECTOR << "x" << y * PER_SECTOR << " " << x << "x" << y <<
+	}
+
+	void initSector(int x, int y) {
+		int idx = x + y * this->width;		
 		clock.restart();
 		sf::Time elapsed1 = clock.getElapsedTime();
 		for (int dy = 0; dy < PER_SECTOR; ++dy) {
@@ -306,8 +343,7 @@ public:
 		}
 
 		sf::Time elapsed2 = clock.getElapsedTime();
-		std::cout << "TIME " <<  x * PER_SECTOR << "x" << y * PER_SECTOR << " " << x << "x" << y << " " << (elapsed2 - elapsed1).asSeconds() << std::endl;
-
+		std::cout << "FlowFields init sector " <<  idx << " " << (elapsed2 - elapsed1).asSeconds() << std::endl;
 	}
 
 	void init(Map *map) {
@@ -326,7 +362,7 @@ public:
 		}
 		for (int y = 0; y < this->height; ++y) {
 			for (int x = 0; x < this->width; ++x) {
-				this->update(x, y);
+				this->initSector(x, y);
 			}
 		}
 	}
@@ -338,6 +374,7 @@ class FlowFieldPathFinder {
 	FlowFields *flowFields;
 	std::vector<SectorPathPosition> sectorPaths;
 	std::vector<BorderTransition> transitions;
+	std::map<int, BorderTransition> transitionsMap;
 	sf::Vector2i dest;
 	bool found;
 public:
@@ -345,96 +382,95 @@ public:
 		flowFields = f;
 	}
 
-	int sectorIdx(int x, int y) {
-		int px = x / PER_SECTOR;
-		int py = y / PER_SECTOR;
-		return px + py * flowFields->width;
-	}
 
-	int gridIdx(int x, int y) {
-		int gx = x % PER_SECTOR;
-		int gy = y % PER_SECTOR;
-		return gx + gy * PER_SECTOR;
-	}
-
-	sf::Vector2i gridPos(int x, int y) {
-		return sf::Vector2i(x % PER_SECTOR, y % PER_SECTOR);
-	}
-
-	sf::Vector2i sectorPos(int x, int y) {
-		return sf::Vector2i(x / PER_SECTOR, y / PER_SECTOR);
-	}
-
-	FlowField &getFlowField(int x, int y) {
-		return flowFields->fields[this->sectorIdx(x, y)][this->gridIdx(x, y)];
-	}
-
-	FlowField &getCurrentFlowField(int cx, int cy, int dx, int dy) {
-		int curPartIdx = this->sectorIdx(cx, cy);
-		int partIdx = this->sectorIdx(dx, dy);
-		int grIdx = this->gridIdx(dx, dy);
+	FlowField *getCurrentFlowField(int cx, int cy, int dx, int dy) {
+		FlowField *flowField = nullptr;
+		int curPartIdx = this->flowFields->sectorIdx(cx, cy);
+		int partIdx = this->flowFields->sectorIdx(dx, dy);
+		int curGrIdx = this->flowFields->gridIdx(cx, cy);
+		int grIdx = this->flowFields->gridIdx(dx, dy);
 
 		if (partIdx == curPartIdx) {
 			std::vector<FlowField> &sectorFields = flowFields->fields[partIdx];
-//			std::cout << "FlowFieldPathFinder at " << partIdx << "/" << flowFields->fields.size() << " " << grIdx << "/" << sectorFields.size() << std::endl;
-			FlowField &flowField = sectorFields[grIdx];
-
-			return flowField;
+//			std::cout << "FlowFieldPathFinder at " << partIdx << " " << grIdx << std::endl;
+			flowField = &sectorFields[grIdx];
 		} else {
 			for (BorderTransition trans : transitions) {
 				if (trans.partIdx == curPartIdx) {
-					int lIdx = this->gridIdx(trans.sPos.x,trans.sPos.y);
-					//std::cout << "FlowFieldPathFinder traverse dest " << p.x << "x" << p.y << " " << lx << "x" << ly << std::endl;
-					FlowField &flowField = flowFields->fields[curPartIdx][lIdx];
-					return flowField;
+					int lIdx = this->flowFields->gridIdx(trans.sPos.x, trans.sPos.y);
+					std::cout << "FlowFieldPathFinder traverse dest " << trans.sPos.x << "x" << trans.sPos.y << " " << lIdx << std::endl;
+					flowField = &flowFields->fields[curPartIdx][lIdx];
+					break;
 				}
 
 			}
-			std::cout << "BUG: cannot found flowfield" << std::endl;;
 		}
+		if (!flowField) {
+			std::cout << "BUG: cannot found flowfield " << partIdx << "/" << curPartIdx << " " << cx << "x" << cy << "->" << dx << "x" << dy << std::endl;;
+			for (BorderTransition trans : transitions) {
+				std::cout << "BUG transition " << trans.sPos.x << "x" << trans.sPos.y << " " << trans.partIdx << std::endl;
+
+			}
+
+			std::vector<FlowField> &sectorFields = flowFields->fields[curPartIdx];
+			std::cout << "FlowFieldPathFinder (fix) at " << curPartIdx << " " << curGrIdx << std::endl;
+			flowField = &sectorFields[curGrIdx];
+		}
+
+		return flowField;
 	}
 
 	sf::Vector2i next(int cx, int cy, int dx, int dy) {
-		sf::Vector2i cpos = this->gridPos(cx, cy);
+		sf::Vector2i cpos = this->flowFields->gridPos(cx, cy);
 
-		int curPartIdx = this->sectorIdx(cx, cy);
-		int partIdx = this->sectorIdx(dx, dy);
-		int grIdx = this->gridIdx(dx, dy);
+		int curPartIdx = this->flowFields->sectorIdx(cx, cy);
+		int partIdx = this->flowFields->sectorIdx(dx, dy);
+		int grIdx = this->flowFields->gridIdx(dx, dy);
 
 		std::cout << "FlowFieldPathFinder next " << cx << "x" << cy << " " << dx << "x" << dy << std::endl;
 
-		sf::Vector2i npos;
+		sf::Vector2i npos(cx, cy);
 		// on same part
-		FlowField &flowField = this->getCurrentFlowField(cx,cy,dx,dy);
-		npos = flowField.next(cpos);
+		FlowField *flowField = this->getCurrentFlowField(cx, cy, dx, dy);
+		if (flowField) {
+			npos = flowField->next(cpos);
 
-		if (partIdx != curPartIdx) {
-			int border = this->onSectorBorder(cpos.x, cpos.y);
-			if (border) {
-				for (BorderTransition trans : transitions) {
-//					std::cout << "FlowFieldPathFinder check border "<<trans.partIdx << " "<<trans.border << " : "<<curPartIdx << " "<<border << std::endl;
-					if (trans.partIdx == curPartIdx && trans.border == border) {
-						std::cout << "FlowFieldPathFinder ON BORDER " << trans.dir.x << "x" << trans.dir.y << std::endl;;
-						npos.x = cpos.x + trans.dir.x;
-						npos.y = cpos.y + trans.dir.y;
+			if (partIdx != curPartIdx) {
+				int border = this->onSectorBorder(cpos.x, cpos.y);
+				if (border) {
+
+					if (transitionsMap.count(curPartIdx)) {
+						BorderTransition trans = transitionsMap[curPartIdx];
+						if (trans.border == border) {
+							std::cout << "FlowFieldPathFinder ON BORDER " << trans.dir.x << "x" << trans.dir.y << std::endl;;
+							npos.x = cpos.x + trans.dir.x;
+							npos.y = cpos.y + trans.dir.y;
+						}
 					}
+					/*					for (BorderTransition trans : transitions) {
+					//					std::cout << "FlowFieldPathFinder check border "<<trans.partIdx << " "<<trans.border << " : "<<curPartIdx << " "<<border << std::endl;
+											if (trans.partIdx == curPartIdx && trans.border == border) {
+												std::cout << "FlowFieldPathFinder ON BORDER " << trans.dir.x << "x" << trans.dir.y << std::endl;;
+												npos.x = cpos.x + trans.dir.x;
+												npos.y = cpos.y + trans.dir.y;
+											}
+										}
+										*/
 				}
-			}
 //			npos = flowField.next(sf::Vector2i(cgrx, cgry));
-			std::cout << "FlowFieldPathFinder need to pass through " << partIdx << std::endl;
+				std::cout << "FlowFieldPathFinder need to pass through " << partIdx << std::endl;
 
+			}
+
+
+			sf::Vector2i spos = this->flowFields->sectorPos(cx, cy) * PER_SECTOR;
+			npos += spos;
+			std::cout << "FlowFieldPathFinder nextpos " << npos.x << "x" << npos.y << std::endl;
 		}
-
-
-		sf::Vector2i spos = this->sectorPos(cx, cy) * PER_SECTOR;
-		npos += spos;
-		std::cout << "FlowFieldPathFinder nextpos " << npos.x << "x" << npos.y << std::endl;
-
 		return npos;
 	}
 
 	int onSectorBorder(int x, int y) {
-//		return (x == 0 || y == 0 || x == PER_SECTOR - 1 || y == PER_SECTOR - 1);
 		if (x == 0)
 			return Left;
 		if (y == 0)
@@ -447,45 +483,56 @@ public:
 		return None;
 	}
 
+	int onBorder(int x, int y) {
+		int grx = x % PER_SECTOR;
+		int gry = y % PER_SECTOR;
+		return this->onSectorBorder(grx, gry);
+	}
+
 	bool startFindPath(int sx, int sy, int dx, int dy) {
 		if (sf::Vector2i(dx, dy) != dest) {
 			dest = sf::Vector2i(dx, dy);
 			sectorPaths.clear();
 			transitions.clear();
+			transitionsMap.clear();
 			std::cout << "FlowFieldPathFinder findPath " << sx << "x" << sy << " -> " << dx << "x" << dy << std::endl;
 			JPS::PathVector path;
 			this->found = flowFields->search->findPath(path, JPS::Pos(sx, sy), JPS::Pos(dx, dy), 1);
+			int sPartIdx = this->flowFields->sectorIdx(sx, sy);
+			int sBorder = this->onBorder(sx, sy);
+
+			if (sBorder) {
+				std::cout << "FlowFieldPathFinder should traverse (source) " << sPartIdx << " -> " << sx << "x" << sy << std::endl;
+				sectorPaths.push_back(SectorPathPosition{sx, sy, sPartIdx, sBorder});
+			}
+
 			if (this->found) {
 				// find border pos
 				for (auto &p : path) {
-					int partx = p.x / PER_SECTOR;
-					int party = p.y / PER_SECTOR;
-					int partIdx = partx + party * flowFields->width;
-					int grx = p.x % PER_SECTOR;
-					int gry = p.y % PER_SECTOR;
-					// border
-					int border = this->onSectorBorder(grx, gry);
+					sf::Vector2i vp((int)p.x, (int)p.y);
+					int partIdx = this->flowFields->sectorIdx(vp.x, vp.y);
+					int border = this->onBorder(vp.x, vp.y);
 					if (border)
 					{
 						if (sectorPaths.size() > 0) {
 							SectorPathPosition prevPos = sectorPaths.back();
 							if (prevPos.partIdx != partIdx) {
-								sf::Vector2i dir(p.x - prevPos.x, p.y - prevPos.y);
-								std::cout << "FlowFieldPathFinder prev " << prevPos.partIdx << " -> " << partIdx << " " << prevPos.x << "x" << prevPos.y << " " << p.x << "x" << p.y << " " << dir.x << "x" << dir.y << std::endl;
-								transitions.push_back(BorderTransition{prevPos.partIdx, prevPos.border, dir, sf::Vector2i(prevPos.x,prevPos.y)});
+								sf::Vector2i dir(vp.x - prevPos.x, vp.y - prevPos.y);
+								std::cout << "FlowFieldPathFinder prev " << prevPos.partIdx << " -> " << partIdx << " " << prevPos.x << "x" << prevPos.y << " " << vp.x << "x" << vp.y << " " << dir.x << "x" << dir.y << std::endl;
+								transitions.push_back(BorderTransition{prevPos.partIdx, prevPos.border, dir, sf::Vector2i(prevPos.x, prevPos.y)});
+								transitionsMap[prevPos.partIdx] = BorderTransition{prevPos.partIdx, prevPos.border, dir, sf::Vector2i(prevPos.x, prevPos.y)};
 							}
 						}
-
-						sectorPaths.push_back(SectorPathPosition{(int)p.x, (int)p.y, partIdx, border});
+						std::cout << "FlowFieldPathFinder should traverse " << partIdx << " -> " << vp.x << "x" << vp.y << std::endl;
+						sectorPaths.push_back(SectorPathPosition{vp.x, vp.y, partIdx, border});
+					} else {
+//						std::cout << "FlowFields should traverse (ignored) " << partIdx << " -> " << vp.x << "x" << vp.y << std::endl;
 					}
 				}
 
-				for (auto &p : sectorPaths) {
-					std::cout << "FlowFields should traverse " << p.partIdx << " -> " << p.x << "x" << p.y << std::endl;
-				}
 			}
 			else {
-				std::cout << "FlowFieldPathFinder path not found "<<sx<<"x"<<sy<<" -> "<<dx<<"x"<<dy<<std::endl;
+				std::cout << "FlowFieldPathFinder path not found " << sx << "x" << sy << " -> " << dx << "x" << dy << std::endl;
 			}
 
 		}

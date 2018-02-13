@@ -273,58 +273,6 @@ public:
 
 					window.draw(rectangle);
 
-					if (this->vault->registry.has<Unit>(objEnt)) {
-						Tile &tile = this->vault->registry.get<Tile>(objEnt);
-						Unit &unit = this->vault->registry.get<Unit>(objEnt);
-						if (tile.pos != unit.destpos) {
-							FlowField &field = unit.flowFieldPathFinder.getCurrentFlowField(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
-							sf::Vector2i fsize = field.getSize();
-							for (int dx = 0; dx < fsize.x; dx++) {
-								for (int dy = 0; dy < fsize.y; dy++) {
-									int dir = field.get(dx, dy);
-									if (dir < 8) {
-//										std::cout << "DRAW DIR "<<dx<<"x"<<dy<<std::endl;
-										sf::Sprite dirSprite;
-//										dirSprite.setSize(sf::Vector2f(32,32));
-										dirSprite.setColor(sf::Color(0xff, 0xff, 0xff, 0xff));
-										dirSprite.setTexture(this->vault->factory.getTex("arrow"));
-										dirSprite.setOrigin(sf::Vector2f(16,16));
-										switch (dir) {
-										case 0:
-											dirSprite.setRotation(90);
-											break;
-										case 1:
-											dirSprite.setRotation(135);
-											break;
-										case 2:
-											dirSprite.setRotation(180);
-											break;
-										case 3:
-											dirSprite.setRotation(225);
-											break;
-										case 4:
-											dirSprite.setRotation(270);
-											break;
-										case 5:
-											dirSprite.setRotation(315);
-											break;
-										case 6:
-											dirSprite.setRotation(0);
-											break;
-										case 7:
-											dirSprite.setRotation(45);
-											break;
-										}
-
-										sf::Vector2f dppos(((x / PER_SECTOR)*PER_SECTOR + dx) * 32, ((y / PER_SECTOR)*PER_SECTOR + dy) * 32);
-										dirSprite.setPosition(dppos);
-										window.draw(dirSprite);
-									}
-								}
-							}
-						}
-					}
-
 				}
 
 				// resources

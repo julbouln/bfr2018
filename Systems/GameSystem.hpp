@@ -445,10 +445,6 @@ public:
 
 		unit.nopath = 0;
 		unit.steeringState = SteeringState::FollowPath;
-#ifdef PATHFINDING_FLOWFIELD
-//		unit.flowField.setGrid(this->map);
-//		unit.flowField.build(unit.destpos);
-#endif
 	}
 
 	void goTo(EntityID entity, sf::Vector2i destpos) {
