@@ -4,19 +4,18 @@
 #include "third_party/JPS.h"
 
 #include "FlowField.hpp"
-#include "Steering.hpp"
 
 #include "dbscan/dbscan.h"
 
 #define PATHFINDING_MAX_NO_PATH 16
 
 class PathfindingSystem : public GameSystem {
-	Steering steering;
+//	Steering steering;
 	JPS::Searcher<Map> *search;
 
+public:
 	FlowFields flowFields;
 
-public:
 	PathfindingSystem() {
 		search = nullptr;
 	}
@@ -76,20 +75,19 @@ public:
 	}
 
 	void updatePathfindingLayer(float dt) {
-		std::set<int> markFlowFieldsUpdate;
-
-
 		auto buildingView = this->vault->registry.persistent<Tile, Building>();
+
+#ifdef PATHFINDING_FLOWFIELD
 		for (EntityID entity : buildingView) {
 			Tile &tile = buildingView.get<Tile>(entity);
 
 			for (sf::Vector2i const &p : this->tileSurface(tile)) {
 				if (!this->map->pathfinding.get(p.x, p.y)) {
-					markFlowFieldsUpdate.insert(flowFields.sectorIdx(p.x, p.y));
+					flowFields.markUpdate(p.x,p.y);
 				}
 			}
 		}
-
+#endif
 		this->map->pathfinding.clear();
 
 		for (EntityID entity : buildingView) {
@@ -101,13 +99,19 @@ public:
 			}
 		}
 
+		this->map->dynamicPathfinding.clear();
+		this->map->movingPathfinding.clear();
+
 		auto unitView = this->vault->registry.persistent<Tile, Unit>();
 		for (EntityID entity : unitView) {
 			Tile &tile = unitView.get<Tile>(entity);
 			Unit &unit = unitView.get<Unit>(entity);
 
 			if (tile.pos == unit.destpos) {
-//				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
+				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, entity);
+			} else {
+				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);				
+				this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);				
 			}
 		}
 
@@ -122,11 +126,6 @@ public:
 				}
 			}
 		}
-
-		for (int sectorIdx : markFlowFieldsUpdate) {
-			flowFields.updateSector(sectorIdx);
-		}
-
 	}
 
 	bool checkAround(EntityID entity, sf::Vector2i npos) {
@@ -175,6 +174,7 @@ public:
 		}
 	}
 
+#if 0
 	void updateSteering(float dt) {
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
@@ -222,7 +222,7 @@ public:
 			}
 		}
 	}
-
+#endif
 	void update(float dt) {
 		this->updatePathfindingLayer(dt);
 
@@ -239,14 +239,9 @@ public:
 
 				if (tile.pos != unit.destpos) {
 
-//					JPS::PathVector path;
-//						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
-//					bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
-
 #ifdef PATHFINDING_FLOWFIELD
-					bool found = true;
 					unit.flowFieldPathFinder.setFlowFields(&flowFields);
-					found = unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+					bool found = unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);

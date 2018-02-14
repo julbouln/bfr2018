@@ -225,6 +225,9 @@ public:
 	EntityLayer staticPathfinding;
 	EntityLayer pathfinding;
 
+	EntityLayer dynamicPathfinding;
+	EntityLayer movingPathfinding;
+
 	// not sure if sound must be there
 	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
 
@@ -255,8 +258,14 @@ public:
 
 		this->staticBuildable.setSize(width, height);
 
+		// water & decors
 		this->staticPathfinding.setSize(width, height);
+		// buildings
 		this->pathfinding.setSize(width, height);
+
+		// units
+		this->dynamicPathfinding.setSize(width, height);
+		this->movingPathfinding.setSize(width, height);
 
 		this->width = width;
 		this->height = height;

@@ -902,6 +902,14 @@ public:
 				if (this->vault->registry.has<Building>(entity)) {
 					Building &building = this->vault->registry.get<Building>(entity);
 					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
+
+#ifdef PATHFINDING_FLOWFIELD
+					for (sf::Vector2i const &p : this->tileSurface(tile)) {
+						this->map->pathfinding.set(p.x, p.y, 0); // need to clear pathfinding layer now for correct flow fields update
+						pathfinding.flowFields.markUpdate(p.x, p.y);
+					}
+#endif
+
 					if (building.construction) {
 						// destroy currently building cons
 						this->vault->factory.destroyEntity(this->vault->registry, building.construction);
@@ -910,6 +918,7 @@ public:
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 			}
 		}
+
 	}
 
 	void update(float dt) {
@@ -957,6 +966,10 @@ public:
 
 		this->combat.update(updateDt);
 		this->destroyObjs(updateDt);
+
+#ifdef PATHFINDING_FLOWFIELD
+		pathfinding.flowFields.applyUpdateSectors();
+#endif
 
 		this->resources.update(updateDt);
 		this->mapLayers.update(updateDt);

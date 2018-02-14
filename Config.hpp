@@ -14,6 +14,7 @@
 //#define PARSER_DEBUG
 //#define BUG_DEBUG
 //#define PATHFINDING_DEBUG
+//#define FLOWFIELDS_DEBUG
 
 #define ZOOMLEVEL_ENABLE
 #define SHADER_ENABLE
