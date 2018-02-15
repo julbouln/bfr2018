@@ -138,7 +138,6 @@ public:
 #ifdef GAME_ENGINE_DEBUG
 		std::cout << "GameEngine: loading ..." << std::endl;
 #endif
-
 		// show loading screen
 		this->game->window.clear(sf::Color::Black);
 		this->text.setString("LOADING");
@@ -312,7 +311,6 @@ public:
 				if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
 				                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
 				                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built_down"))) {
-//					std::cout << "built clicked " << std::endl;
 					this->action = Action::Building;
 					this->currentBuild = this->vault->factory.finishBuilding(this->vault->registry, consEnt, this->currentPlayer, 8, 8, false);
 				}
@@ -500,8 +498,6 @@ public:
 					ImGui::Text("Center: %dx%d:%dx%d", tile.centerRect.left, tile.centerRect.top, tile.centerRect.width, tile.centerRect.height);
 					ImGui::Text("View: %d", tile.view);
 					ImGui::Text("State: %s", tile.state.c_str());
-//					ImGui::Text("Current frame: %d", tile.animHandlers[tile.state].getCurrentFrame());
-//					ImGui::Text("Current anim: %d", tile.animHandlers[tile.state].getCurrentColumn());
 
 					if (this->vault->registry.has<GameObject>(selectedObj)) {
 						GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
@@ -755,7 +751,6 @@ public:
 					Tile &tile = this->vault->registry.get<Tile>(this->selectedDebugObj);
 					Unit &unit = this->vault->registry.get<Unit>(this->selectedDebugObj);
 					if (tile.pos != unit.destpos) {
-//						FlowField *field = unit.flowFieldPathFinder.getCurrentFlowField(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 						sf::Vector2i fOffset = unit.flowFieldPath.offset(tile.pos);
 						FlowField *field = unit.flowFieldPath.getCurrentFlowField();
 						if (field) {
@@ -764,9 +759,7 @@ public:
 								for (int dy = 0; dy < fsize.y; dy++) {
 									int dir = field->get(dx, dy);
 									if (dir < 8) {
-//										std::cout << "DRAW DIR "<<dx<<"x"<<dy<<std::endl;
 										sf::Sprite dirSprite;
-//										dirSprite.setSize(sf::Vector2f(32,32));
 										dirSprite.setColor(sf::Color(0xff, 0xff, 0xff, 0xff));
 										dirSprite.setTexture(this->vault->factory.getTex("arrow"));
 										dirSprite.setOrigin(sf::Vector2f(16, 16));
@@ -807,9 +800,9 @@ public:
 							for (sf::Vector2i p : unit.flowFieldPath.inRangePathPoints(tile.pos)) {
 								sf::RectangleShape rectangle;
 
-								sf::Vector2f pos(p.x*32,p.y*32);
+								sf::Vector2f pos(p.x * 32, p.y * 32);
 
-								rectangle.setSize(sf::Vector2f(32,32));
+								rectangle.setSize(sf::Vector2f(32, 32));
 								rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
 								rectangle.setOutlineColor(sf::Color::Red);
 								rectangle.setOutlineThickness(2);
@@ -914,7 +907,11 @@ public:
 				}
 				if (this->vault->registry.has<Building>(entity)) {
 					Building &building = this->vault->registry.get<Building>(entity);
-					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
+					if (obj.team == "rebel") {
+						this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
+					} else {
+						this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 1));
+					}
 
 					if (building.construction) {
 						// destroy currently building cons
@@ -924,7 +921,6 @@ public:
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 			}
 		}
-
 	}
 
 	void update(float dt) {
@@ -943,8 +939,7 @@ public:
 
 		if (this->gameSpeed < 2) {
 			this->fx.update(elapsed);
-		}
-		else {
+		} else {
 			this->fx.clear();
 		}
 
@@ -984,7 +979,6 @@ public:
 		this->updateSelected(updateDt);
 
 		sf::Vector2f viewPos = this->gameView.getCenter();
-//		std::cout << "GameEngine: set listener position to " << viewPos.x / 32.0 << "x" << viewPos.y / 32.0 << std::endl;
 		sf::Listener::setPosition(viewPos.x / 32.0, 0.f, viewPos.y / 32.0);
 	}
 

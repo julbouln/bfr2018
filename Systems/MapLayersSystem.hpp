@@ -467,23 +467,24 @@ public:
 			}
 		}
 
-		Tile ruinTile;
-		ruinTile.pos = sf::Vector2i(0, 0);
-		ruinTile.ppos = sf::Vector2f(ruinTile.pos) * (float)32.0;
-		ruinTile.shader = false;
-		ruinTile.psize = sf::Vector2f(this->vault->factory.getTex("ruin").getSize().x, this->vault->factory.getTex("ruin").getSize().y / 2);
-
-		ruinTile.sprite.setTexture(this->vault->factory.getTex("ruin"));
-
-		ruinTile.centerRect = this->vault->factory.getCenterRect("ruin");
-
-		ruinTile.sprite.setTextureRect(sf::IntRect(0, 0, ruinTile.psize.x, ruinTile.psize.y)); // texture need to be updated
-
-		ruinTile.state = "idle";
-
 		std::vector<EntityID> tvec;
-		tvec.push_back(this->vault->registry.create());
-		this->vault->registry.assign<Tile>(tvec.front(), ruinTile);
+
+		for (int i = 0; i < 2; i++) {
+			int ruinHeight = this->vault->factory.getTex("ruin").getSize().y / 2;
+			Tile ruinTile;
+			ruinTile.pos = sf::Vector2i(0, 0);
+			ruinTile.ppos = sf::Vector2f(ruinTile.pos) * (float)32.0;
+			ruinTile.shader = false;
+			ruinTile.psize = sf::Vector2f(this->vault->factory.getTex("ruin").getSize().x, ruinHeight);
+			ruinTile.sprite.setTexture(this->vault->factory.getTex("ruin"));
+			ruinTile.centerRect = this->vault->factory.getCenterRect("ruin");
+			ruinTile.sprite.setTextureRect(sf::IntRect(0, i*ruinHeight, ruinTile.psize.x, ruinTile.psize.y)); // texture need to be updated
+
+			ruinTile.state = "idle";
+
+			tvec.push_back(this->vault->registry.create());
+			this->vault->registry.assign<Tile>(tvec.back(), ruinTile);
+		}
 		tiles["ruin"] = tvec;
 
 	}

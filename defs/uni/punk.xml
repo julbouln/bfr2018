@@ -75,6 +75,9 @@
     <attack1 power="5"/>
     <attack2 dist="0" power="0"/>
     <sound_actions/>
+    <sound_attack name="hache">
+      <sound_buffer global="hache" path="medias/extra/sounds/hache.flac"/>
+    </sound_attack>
   </unit>
   <effects>
     <effect name="hit" ref="blood_hit"/>

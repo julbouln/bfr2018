@@ -4,8 +4,6 @@
 #include "Map.hpp"
 #include "third_party/JPS.h"
 
-#include "Steering.hpp"
-
 typedef short int field_t;
 typedef signed char dir_t;
 
@@ -47,7 +45,6 @@ public:
 
 	bool localBound(int x, int y) const {
 		return (x >= 0 && y >= 0 && x < rect.width && y < rect.height);
-//		return true;
 	}
 
 	bool pathAvailable(int x, int y) const {
@@ -108,9 +105,6 @@ public:
 	~FlowField() {
 	}
 
-// -------------------------------------------------------------
-// Checks whether the index is already in the list
-// -------------------------------------------------------------
 	bool checkIfContains(unsigned int idx, const std::list<unsigned int>& lst) const {
 		std::list<unsigned int>::const_iterator it = lst.begin();
 		while (it != lst.end()) {
@@ -122,9 +116,7 @@ public:
 		return false;
 	}
 
-// -------------------------------------------------------------
 // get neighbors (N, S, W and E). Will return the indices
-// -------------------------------------------------------------
 	int getNeighbors(int x, int y, int * ret) {
 		int cnt = 0;
 		if (_grid.bound(x, y - 1) && _grid.pathAvailable(x, y - 1)) {
@@ -156,9 +148,6 @@ public:
 		return cnt;
 	}
 
-// -------------------------------------------------------------
-// find the index of the neighbor with the lowest cost
-// -------------------------------------------------------------
 	int findLowestCost(int x, int y) {
 		int m = std::numeric_limits<field_t>::max();
 		int ret = 14;
@@ -175,16 +164,10 @@ public:
 		return ret;
 	}
 
-// -------------------------------------------------------------
-// reset fields and directions
-// -------------------------------------------------------------
 	void resetFields() {
 		this->resize();
 	}
 
-// -------------------------------------------------------------
-// build the flow field
-// -------------------------------------------------------------
 	void build(const sf::Vector2i & end) {
 		// simple Dijstra flood fill first
 		unsigned int targetID = end.y * _grid.width + end.x;
@@ -216,7 +199,6 @@ public:
 #endif
 				if (endNodeCost < _fields[neighbors[i]]) {
 					if (!checkIfContains(neighbors[i], openList)) {
-//						std::cout << "ADD neighbor "<<neighbors[i]<<std::endl;
 						openList.push_back(neighbors[i]);
 					}
 					_fields[neighbors[i]] = endNodeCost;
@@ -228,37 +210,25 @@ public:
 		for (int x = 0; x < _grid.width; ++x) {
 			for (int y = 0; y < _grid.height; ++y) {
 				if (_grid.pathAvailable(x, y)) {
-//					std::cout << "FlowField path available " << x << "x" << y << std::endl;
 					_dir[x + _grid.width * y] = findLowestCost(x, y);
 				}
 				else {
-//					std::cout << "FlowField path not available "<<x<<"x"<<y<<std::endl;
 					_dir[x + _grid.width * y] = 16;
 				}
 			}
 		}
-//		std::cout << "FlowField: built " << end.x << "x" << end.y << std::endl;
 	}
 
-// -------------------------------------------------------------
-// get direction
-// -------------------------------------------------------------
 	int get(int x, int y) const {
 		int idx = x + y * _grid.width;
 		return _dir[idx];
 	}
 
-// -------------------------------------------------------------
-// get cost of cell
-// -------------------------------------------------------------
 	int getCost(int x, int y) const {
 		int idx = x + y * _grid.width;
 		return _fields[idx];
 	}
 
-// -------------------------------------------------------------
-// get the next field based on the direction of the current cell
-// -------------------------------------------------------------
 	sf::Vector2i next(sf::Vector2i current) {
 		int dir = get(current.x, current.y);
 		if (!this->found(current)) {
@@ -289,6 +259,15 @@ class FlowFieldPathFind {
 	JPS::Searcher<Map> *search;
 public:
 	Map *map;
+
+	~FlowFieldPathFind() {
+		if(!search)
+			delete search;
+	}
+
+	FlowFieldPathFind() {
+		search = nullptr;
+	}
 
 	void init(Map *map) {
 		search = new JPS::Searcher<Map>(*map);
@@ -398,27 +377,6 @@ public:
 #ifdef FLOWFIELDS_DEBUG
 			std::cout << "FlowFieldPath dest out of sector " << dest.x << "x" << dest.y << " (" << pathPoints.size() << ")" << std::endl;
 #endif
-			/*
-						std::vector<sf::Vector2i> possibleDest;
-						for (sf::Vector2i np : pathPoints) {
-							if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
-			#ifdef FLOWFIELDS_DEBUG
-								std::cout << "FlowFieldPath add possible dest " << np.x << "x" << np.y << std::endl;
-			#endif
-								possibleDest.push_back(np);
-							}
-						}
-						float distance = std::numeric_limits<float>::max();
-						for (sf::Vector2i np : possibleDest) {
-							if (vectorLength(dpos - np) < distance) {
-			#ifdef FLOWFIELDS_DEBUG
-								std::cout << "FlowFieldPath best found " << " " << vectorLength(dpos - np) << " < " << distance << std::endl;
-			#endif
-								distance = vectorLength(dpos - np);
-								ndpos = np;
-							}
-						}
-			*/
 			ndpos = this->farestPathPoint(cpos);
 #ifdef FLOWFIELDS_DEBUG
 			std::cout << "FlowFieldPath best local dest " << ndpos.x << "x" << ndpos.y << std::endl;

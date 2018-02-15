@@ -10,7 +10,6 @@
 #define PATHFINDING_MAX_NO_PATH 16
 
 class PathfindingSystem : public GameSystem {
-//	Steering steering;
 	JPS::Searcher<Map> *search;
 
 public:
@@ -152,55 +151,6 @@ public:
 		}
 	}
 
-#if 0
-	void updateSteering(float dt) {
-		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
-		for (EntityID entity : view) {
-			Tile &tile = view.get<Tile>(entity);
-			GameObject &obj = view.get<GameObject>(entity);
-			Unit &unit = view.get<Unit>(entity);
-
-			switch (unit.steeringState) {
-			case SteeringState::Pursue: {
-				if (this->unitInCase(unit, tile)) {
-					tile.pos = unit.nextpos;
-					if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-						Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-
-						sf::Vector2f velocity;
-						if (this->vault->registry.has<Unit>(unit.targetEnt)) {
-							Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
-							velocity = steering.pursue(tile, destTile, unit, destUnit );
-						} else {
-							velocity = steering.seek(tile, destTile);
-						}
-
-						if (vectorLength(velocity) > 0) {
-							sf::Vector2i nextpos = tile.pos + sf::Vector2i(vectorRound(vectorNormalize(velocity)));
-							if (destTile.pos != nextpos) {
-								unit.nextpos = nextpos;
-								unit.velocity = velocity;
-								tile.view = this->getDirection(tile.pos, tile.pos + sf::Vector2i(unit.velocity));
-								this->changeState(entity, "move");
-								std::cout << "Steering pursue " << entity << " " << tile.pos.x << "x" << tile.pos.y << " " << unit.nextpos.x << "x" << unit.nextpos.y << std::endl;
-							} else {
-								unit.steeringState = SteeringState::None;
-								this->changeState(entity, "idle");
-							}
-						}
-
-					}
-				}
-			}
-			break;
-			case SteeringState::FollowPath:
-				break;
-			default:
-				break;
-			}
-		}
-	}
-#endif
 	void update(float dt) {
 		this->updatePathfindingLayer(dt);
 
@@ -218,24 +168,18 @@ public:
 				if (tile.pos != unit.destpos) {
 
 #ifdef PATHFINDING_FLOWFIELD
-//					unit.flowFieldPathFinder.setFlowFields(&flowFields);
-//					bool found = unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
-
 					unit.flowFieldPath.setPathFind(&flowFieldPathFind);
 					bool found = unit.flowFieldPath.start(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
 					bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
-
 #endif
 
 					if (found)
 					{
 						sf::Vector2i cpos(tile.pos.x, tile.pos.y);
 #ifdef PATHFINDING_FLOWFIELD
-//						sf::Vector2i npos = unit.flowField.next(tile.pos);
-//						sf::Vector2i npos = unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 						sf::Vector2i npos = unit.flowFieldPath.next(tile.pos.x, tile.pos.y);
 #else
 						sf::Vector2i npos(path.front().x, path.front().y);

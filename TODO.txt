@@ -14,10 +14,9 @@ Game:
 - add intro & credits
 - add min/max attack2 distance
 - add resource trap + explosion FX
-- resources should evolve with case size (4x3 replace 12 1x1 resources), add more resources (forest, etc)
-  maybe some resources should be infranchissable
 - ruins should be tilable ?
 
 Interface:
 - add mouse cursors
 - add settings
+- add pause text + sound
