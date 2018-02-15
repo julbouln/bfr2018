@@ -206,7 +206,11 @@ public:
 					if (this->vault->registry.has<AnimatedSpritesheet>(entity))
 					{
 						AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
-						if (anim.states[tile.state][tile.view].l >= 1) {
+						if (anim.states.count("die") > 0) {
+							if (anim.states["die"][tile.view].l >= 1) {
+								obj.destroy = true;
+							}
+						} else {
 							obj.destroy = true;
 						}
 					}

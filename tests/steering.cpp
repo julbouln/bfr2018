@@ -84,7 +84,6 @@ sf::Vector2f collisionAvoid(Agent ag, std::vector<Agent> others) {
 
 		if (vectorLength(direction) != 0.f)  // check for check the agent itself
 		{
-
 			if (fabs(vectorDot(orientation, direction)) > ag.view && vectorLength(direction) < 50.0f)
 				//if (direction.dot(nb.getorientation().asVector()) > agent.getFOV() && direction.getLength() < agent.getseparationRadius())
 			{

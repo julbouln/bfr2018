@@ -150,17 +150,19 @@ public:
 			}
 			dist++;
 		}
-		std::cout << "BUG: no available position for "<<src.x<<"x"<<src.y<<std::endl;
+		std::cout << "BUG: no available position for " << src.x << "x" << src.y << std::endl;
 		return src;
 	}
 
 	EntityID ennemyAtPosition(EntityID playerEnt, int x, int y) {
-		Player &player = this->vault->registry.get<Player>(playerEnt);
-		EntityID destEnt = this->map->objs.get(x, y);
-		if (destEnt) {
-			GameObject &obj = this->vault->registry.get<GameObject>(destEnt);
-			if (obj.team != player.team)
-				return destEnt;
+		if (this->map->bound(x, y)) {
+			Player &player = this->vault->registry.get<Player>(playerEnt);
+			EntityID destEnt = this->map->objs.get(x, y);
+			if (destEnt) {
+				GameObject &obj = this->vault->registry.get<GameObject>(destEnt);
+				if (obj.team != player.team)
+					return destEnt;
+			}
 		}
 		return 0;
 	}

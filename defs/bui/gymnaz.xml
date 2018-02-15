@@ -18,7 +18,7 @@
   <game_object>
     <name value="gymnaz"/>
     <team value="neonaz"/>
-    <view value="1"/>
+    <view value="4"/>
     <life value="40"/>
   </game_object>
   <building>
