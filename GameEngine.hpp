@@ -803,6 +803,20 @@ public:
 									}
 								}
 							}
+
+							for (sf::Vector2i p : unit.flowFieldPath.inRangePathPoints(tile.pos)) {
+								sf::RectangleShape rectangle;
+
+								sf::Vector2f pos(p.x*32,p.y*32);
+
+								rectangle.setSize(sf::Vector2f(32,32));
+								rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+								rectangle.setOutlineColor(sf::Color::Red);
+								rectangle.setOutlineThickness(2);
+								rectangle.setPosition(pos);
+
+								this->game->window.draw(rectangle);
+							}
 						}
 					}
 				}
@@ -816,9 +830,6 @@ public:
 
 		if (this->action == Action::Selecting) {
 			sf::RectangleShape rectangle;
-
-			sf::Vector2f pos;
-
 			rectangle.setSize(this->selectionEnd - this->selectionStart);
 			rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
 			rectangle.setOutlineColor(sf::Color::Blue);

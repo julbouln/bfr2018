@@ -236,7 +236,7 @@ public:
 #ifdef PATHFINDING_FLOWFIELD
 //						sf::Vector2i npos = unit.flowField.next(tile.pos);
 //						sf::Vector2i npos = unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
-						sf::Vector2i npos = unit.flowFieldPath.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+						sf::Vector2i npos = unit.flowFieldPath.next(tile.pos.x, tile.pos.y);
 #else
 						sf::Vector2i npos(path.front().x, path.front().y);
 #endif

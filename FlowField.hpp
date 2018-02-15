@@ -322,7 +322,55 @@ public:
 		return sf::Vector2i(x - PER_SECTOR / 2, y - PER_SECTOR / 2);
 	}
 
-	sf::Vector2i next(int cx, int cy, int dx, int dy) {
+	sf::Vector2f seek(sf::Vector2i cpos, sf::Vector2i dpos) {
+		sf::Vector2f seekVel = vectorNormalize(sf::Vector2f(dpos - cpos));
+//		std::cout << "FlowFieldPath: seek " << seekVel.x << "x" << seekVel.y << std::endl;
+		return seekVel;
+	}
+
+	std::vector<sf::Vector2i> inRangePathPoints(sf::Vector2i cpos) {
+		sf::Vector2i offset = this->offset(cpos);
+		std::vector<sf::Vector2i> points;
+		for (sf::Vector2i np : this->pathPoints) {
+			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
+				points.push_back(np);
+			}
+		}
+		return points;
+	}
+
+	sf::Vector2i nearestPathPoint(sf::Vector2i cpos) {
+		sf::Vector2i offset = this->offset(cpos);
+		sf::Vector2i point = cpos;
+		for (sf::Vector2i np : this->pathPoints) {
+			float distance = std::numeric_limits<float>::max();
+			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
+				if (vectorLength(np - cpos) < distance) {
+					distance = vectorLength(np - cpos);
+					point = np;
+//						std::cout << "FlowFieldPath fallback "<<ndpos.x<<"x"<<ndpos.y<<std::endl;
+				}
+			}
+		}
+		return point;
+	}
+
+	sf::Vector2i farestPathPoint(sf::Vector2i cpos) {
+		sf::Vector2i offset = this->offset(cpos);
+		sf::Vector2i point = cpos;
+		for (sf::Vector2i np : this->pathPoints) {
+			float distance = std::numeric_limits<float>::max();
+			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
+				if (vectorLength(dest - np) < distance) {
+					distance = vectorLength(dest - np);
+					point = np;
+				}
+			}
+		}
+		return point;
+	}
+
+	sf::Vector2i next(int cx, int cy) {
 		sf::Vector2i cpos(cx, cy);
 		if (cur != cpos) {
 			traversed.push_back(cur);
@@ -332,7 +380,6 @@ public:
 		}
 
 		sf::Vector2i npos(cx, cy);
-		sf::Vector2i dpos(dx, dy);
 
 		sf::Vector2i offset = this->offset(cpos);
 		sf::Vector2i cgpos = cpos - offset;
@@ -341,35 +388,38 @@ public:
 
 		this->currentFlowField.setGrid(pathFind->map, ffRect);
 
-		sf::Vector2i ndpos(dx, dy);
+		sf::Vector2i ndpos = dest;
 
-		if (ffRect.contains(dpos)) {
+		if (ffRect.contains(dest)) {
 #ifdef FLOWFIELDS_DEBUG
-			std::cout << "FlowFieldPath dest in sector " << dpos.x << "x" << dpos.y << std::endl;
+			std::cout << "FlowFieldPath dest in sector " << dest.x << "x" << dest.y << std::endl;
 #endif
 		} else {
 #ifdef FLOWFIELDS_DEBUG
-			std::cout << "FlowFieldPath dest out of sector " << dpos.x << "x" << dpos.y << " (" << pathPoints.size() << ")" << std::endl;
+			std::cout << "FlowFieldPath dest out of sector " << dest.x << "x" << dest.y << " (" << pathPoints.size() << ")" << std::endl;
 #endif
-			std::vector<sf::Vector2i> possibleDest;
-			for (sf::Vector2i np : pathPoints) {
-				if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
-#ifdef FLOWFIELDS_DEBUG
-					std::cout << "FlowFieldPath add possible dest " << np.x << "x" << np.y << std::endl;
-#endif
-					possibleDest.push_back(np);
-				}
-			}
-			float distance = std::numeric_limits<float>::max();
-			for (sf::Vector2i np : possibleDest) {
-				if (vectorLength(dpos - np) < distance) {
-#ifdef FLOWFIELDS_DEBUG
-					std::cout << "FlowFieldPath best found " << " " << vectorLength(dpos - np) << " < " << distance << std::endl;
-#endif
-					distance = vectorLength(dpos - np);
-					ndpos = np;
-				}
-			}
+			/*
+						std::vector<sf::Vector2i> possibleDest;
+						for (sf::Vector2i np : pathPoints) {
+							if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
+			#ifdef FLOWFIELDS_DEBUG
+								std::cout << "FlowFieldPath add possible dest " << np.x << "x" << np.y << std::endl;
+			#endif
+								possibleDest.push_back(np);
+							}
+						}
+						float distance = std::numeric_limits<float>::max();
+						for (sf::Vector2i np : possibleDest) {
+							if (vectorLength(dpos - np) < distance) {
+			#ifdef FLOWFIELDS_DEBUG
+								std::cout << "FlowFieldPath best found " << " " << vectorLength(dpos - np) << " < " << distance << std::endl;
+			#endif
+								distance = vectorLength(dpos - np);
+								ndpos = np;
+							}
+						}
+			*/
+			ndpos = this->farestPathPoint(cpos);
 #ifdef FLOWFIELDS_DEBUG
 			std::cout << "FlowFieldPath best local dest " << ndpos.x << "x" << ndpos.y << std::endl;
 #endif
@@ -383,38 +433,33 @@ public:
 			npos += offset;
 		} else {
 			// follow JPS path if no flow field found
-			ndpos = cpos;
-			for (sf::Vector2i np : pathPoints) {
-				float distance = std::numeric_limits<float>::max();
-				if (np.x >= offset.x && np.x < offset.x + PER_SECTOR && np.y >= offset.y && np.y < offset.y + PER_SECTOR && np != cpos) {
-					if (vectorLength(np - cpos) < distance) {
-						distance = vectorLength(np - cpos);
-						ndpos = np;
-//						std::cout << "FlowFieldPath fallback "<<ndpos.x<<"x"<<ndpos.y<<std::endl;
+			bool foundNearPath = false;
+			for (std::list<sf::Vector2i>::iterator it = pathPoints.begin(); it != pathPoints.end(); ++it) {
+				if (*it == cpos) {
+					std::list<sf::Vector2i>::iterator nposIt = std::next(it);
+					if (nposIt != pathPoints.end()) {
+						npos = *nposIt;
+						foundNearPath = true;
+						break;
 					}
 				}
 			}
 
-			ndpos -= offset;
-			this->currentFlowField.build(ndpos);
+			if (!foundNearPath) {
+				sf::Vector2i nearPathPoint = this->nearestPathPoint(cpos);
+				 ndpos = nearPathPoint;
+				ndpos -= offset;
+				this->currentFlowField.build(ndpos);
 
-			if (this->currentFlowField.found(cgpos)) {
-				npos = this->currentFlowField.next(cgpos);
-				npos += offset;
-			} else {
-//				std::cout << "FlowFieldPath really cannot found next pos " << cpos.x << "x" << cpos.y << " " << dpos.x << "x" << dpos.y << std::endl;
+				if (this->currentFlowField.found(cgpos)) {
+					npos = this->currentFlowField.next(cgpos);
+					npos += offset;
+				} else {
+					sf::Vector2i steer = sf::Vector2i(vectorRound(this->seek(cpos,nearPathPoint)));
+					npos = cpos+steer;
+//					std::cout << "FlowFieldPath really cannot found next pos " << cpos.x << "x" << cpos.y << " " << dest.x << "x" << dest.y << " "<<npos.x<<"x"<<npos.y << std::endl;
+				}
 			}
-
-
-			/*
-						 for (std::list<sf::Vector2i>::iterator it=pathPoints.begin(); it != pathPoints.end(); ++it) {
-						 	if(*it == cpos) {
-						 		std::list<sf::Vector2i>::iterator nposIt = std::next(it);
-						 		if(nposIt != pathPoints.end())
-						 			npos = *nposIt;
-						 	}
-						 }
-						 */
 		}
 
 #ifdef FLOWFIELDS_DEBUG
