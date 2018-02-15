@@ -755,7 +755,9 @@ public:
 					Tile &tile = this->vault->registry.get<Tile>(this->selectedDebugObj);
 					Unit &unit = this->vault->registry.get<Unit>(this->selectedDebugObj);
 					if (tile.pos != unit.destpos) {
-						FlowField *field = unit.flowFieldPathFinder.getCurrentFlowField(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+//						FlowField *field = unit.flowFieldPathFinder.getCurrentFlowField(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+						sf::Vector2i fOffset = unit.flowFieldPath.offset(tile.pos);
+						FlowField *field = unit.flowFieldPath.getCurrentFlowField();
 						if (field) {
 							sf::Vector2i fsize = field->getSize();
 							for (int dx = 0; dx < fsize.x; dx++) {
@@ -795,7 +797,7 @@ public:
 											break;
 										}
 
-										sf::Vector2f dppos(((tile.pos.x / PER_SECTOR)*PER_SECTOR + dx) * 32, ((tile.pos.y / PER_SECTOR)*PER_SECTOR + dy) * 32);
+										sf::Vector2f dppos((fOffset.x + dx) * 32 + 16, (fOffset.y + dy) * 32 + 16);
 										dirSprite.setPosition(dppos);
 										this->game->window.draw(dirSprite);
 									}
@@ -903,13 +905,6 @@ public:
 					Building &building = this->vault->registry.get<Building>(entity);
 					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
 
-#ifdef PATHFINDING_FLOWFIELD
-					for (sf::Vector2i const &p : this->tileSurface(tile)) {
-						this->map->pathfinding.set(p.x, p.y, 0); // need to clear pathfinding layer now for correct flow fields update
-						pathfinding.flowFields.markUpdate(p.x, p.y);
-					}
-#endif
-
 					if (building.construction) {
 						// destroy currently building cons
 						this->vault->factory.destroyEntity(this->vault->registry, building.construction);
@@ -966,10 +961,6 @@ public:
 
 		this->combat.update(updateDt);
 		this->destroyObjs(updateDt);
-
-#ifdef PATHFINDING_FLOWFIELD
-		pathfinding.flowFields.applyUpdateSectors();
-#endif
 
 		this->resources.update(updateDt);
 		this->mapLayers.update(updateDt);

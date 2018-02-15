@@ -172,8 +172,7 @@ struct Unit {
 	std::string attackSound;
 
 #ifdef PATHFINDING_FLOWFIELD
-//	FlowField flowField;
-	FlowFieldPathFinder flowFieldPathFinder;
+	FlowFieldPath flowFieldPath;
 #endif
 	Unit() {
 		steeringState = SteeringState::None;

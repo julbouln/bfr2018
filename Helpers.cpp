@@ -17,6 +17,10 @@ float vectorLength(sf::Vector2f v) {
 	return sqrt(v.x * v.x + v.y * v.y);
 }
 
+float vectorLength(sf::Vector2i v) {
+	return sqrt(v.x * v.x + v.y * v.y);
+}
+
 sf::Vector2f vectorRound(sf::Vector2f v) {
 	sf::Vector2f rv = v;
 	rv.x = round(rv.x);

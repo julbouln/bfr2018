@@ -14,8 +14,8 @@ class PathfindingSystem : public GameSystem {
 	JPS::Searcher<Map> *search;
 
 public:
-	FlowFields flowFields;
-
+	FlowFieldPathFind flowFieldPathFind;
+	
 	PathfindingSystem() {
 		search = nullptr;
 	}
@@ -28,7 +28,7 @@ public:
 	void init() {
 		search = new JPS::Searcher<Map>(*this->map);
 //		this->testDbscan();
-		flowFields.init(this->map);
+		flowFieldPathFind.init(this->map);
 	}
 
 	void testDbscan() {
@@ -55,17 +55,6 @@ public:
 			} else {
 				clusters[labels[i]].push_back(points[i]);
 			}
-//							std::cout << "DBSCAN Point(" << points[i].x << ", " << points[i].y << "): " << labels[i] << std::endl;
-			/*
-						if (points_map.count(labels[i]) == 0) {
-							points_map[labels[i]] = points[i];
-							points_map_size[labels[i]] = 1;
-						} else {
-							points_map[labels[i]].x = points_map[labels[i]].x + points[i].x;
-							points_map[labels[i]].y = points_map[labels[i]].y + points[i].y;
-							points_map_size[labels[i]] = points_map_size[labels[i]] + 1;
-						}
-						*/
 		}
 
 		for (auto pair : clusters) {
@@ -77,17 +66,6 @@ public:
 	void updatePathfindingLayer(float dt) {
 		auto buildingView = this->vault->registry.persistent<Tile, Building>();
 
-#ifdef PATHFINDING_FLOWFIELD
-		for (EntityID entity : buildingView) {
-			Tile &tile = buildingView.get<Tile>(entity);
-
-			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				if (!this->map->pathfinding.get(p.x, p.y)) {
-					flowFields.markUpdate(p.x,p.y);
-				}
-			}
-		}
-#endif
 		this->map->pathfinding.clear();
 
 		for (EntityID entity : buildingView) {
@@ -108,7 +86,7 @@ public:
 			Unit &unit = unitView.get<Unit>(entity);
 
 			if (tile.pos == unit.destpos) {
-				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, entity);
+				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			} else {
 				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);				
 				this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);				
@@ -240,8 +218,11 @@ public:
 				if (tile.pos != unit.destpos) {
 
 #ifdef PATHFINDING_FLOWFIELD
-					unit.flowFieldPathFinder.setFlowFields(&flowFields);
-					bool found = unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+//					unit.flowFieldPathFinder.setFlowFields(&flowFields);
+//					bool found = unit.flowFieldPathFinder.startFindPath(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+
+					unit.flowFieldPath.setPathFind(&flowFieldPathFind);
+					bool found = unit.flowFieldPath.start(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 					JPS::PathVector path;
 //						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
@@ -254,7 +235,8 @@ public:
 						sf::Vector2i cpos(tile.pos.x, tile.pos.y);
 #ifdef PATHFINDING_FLOWFIELD
 //						sf::Vector2i npos = unit.flowField.next(tile.pos);
-						sf::Vector2i npos = unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+//						sf::Vector2i npos = unit.flowFieldPathFinder.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+						sf::Vector2i npos = unit.flowFieldPath.next(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
 #else
 						sf::Vector2i npos(path.front().x, path.front().y);
 #endif
@@ -311,7 +293,7 @@ public:
 				if (abs(tile.ppos.x / 32.0 - tile.pos.x) > 1 || abs(tile.ppos.y / 32.0 - tile.pos.y) > 1) {
 					// something wrong, realign
 					GameObject &obj = this->vault->registry.get<GameObject>(entity);
-					std::cout << "Pathfinding: SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " pos:" << tile.pos.x << "x" << tile.pos.y << " nextpos" << unit.nextpos.x << "x" << unit.nextpos.y << " destpos:" << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+					std::cout << "Pathfinding: BUG SOMETHING WRONG WITH " << entity << " state:" << tile.state << " life:" << obj.life << " pos:" << tile.pos.x << "x" << tile.pos.y << " nextpos:" << unit.nextpos.x << "x" << unit.nextpos.y << " destpos:" << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 					tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 				}
 			}
