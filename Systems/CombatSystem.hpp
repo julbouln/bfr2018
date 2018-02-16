@@ -2,7 +2,7 @@
 
 #include "GameSystem.hpp"
 
-#include "dbscan/dbscan.h"
+#include "third_party/dbscan/dbscan.h"
 
 class CombatSystem : public GameSystem {
 public:

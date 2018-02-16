@@ -2,9 +2,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Particles/ParticleGenerator.h"
-#include "Particles/ParticleSpawner.h"
-#include "Particles/ParticleUpdater.h"
+#include "ParticleGenerator.h"
+#include "ParticleSpawner.h"
+#include "ParticleUpdater.h"
 
 #include "ShaderOptions.hpp"
 

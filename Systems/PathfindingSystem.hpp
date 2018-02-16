@@ -1,11 +1,10 @@
 #pragma once
 
-#include "GameSystem.hpp"
 #include "third_party/JPS.h"
+#include "third_party/dbscan/dbscan.h"
 
+#include "GameSystem.hpp"
 #include "FlowField.hpp"
-
-#include "dbscan/dbscan.h"
 
 #define PATHFINDING_MAX_NO_PATH 16
 

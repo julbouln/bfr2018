@@ -10,9 +10,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "gui/imgui.h"
-#include "gui/imgui-sfml.h"
-#include "gui/imgui-sfml-extra.h"
+#include "third_party/imgui/imgui.h"
+#include "third_party/imgui/imgui-sfml.h"
+#include "third_party/imgui/imgui-sfml-extra.h"
 
 #include "Stages/Stage.hpp"
 #include "GameVault.hpp"

@@ -27,7 +27,7 @@ public:
 		target.draw(sprite, shader);
 	}
 
-	void drawEntityLayer(sf::RenderTarget & target, EntityLayer & layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
+	void drawEntityLayer(sf::RenderTarget & target, Layer<EntityID> & layer, sf::IntRect clip, float dt, sf::Color colorVariant = sf::Color(0xff, 0xff, 0xff)) {
 		// UGLY: add one line of tile to draw to avoid half tile crop
 		if (clip.top + clip.height + 1 < this->map->height)
 			clip.height++;

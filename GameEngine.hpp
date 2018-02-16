@@ -119,7 +119,6 @@ public:
 		this->markUpdateLayer = false;
 
 		this->currentPlayer = 0;
-		this->map = new Map();
 
 		this->setSize(this->game->width, this->game->height);
 		this->setVaults(&(this->game->vault));
@@ -180,9 +179,16 @@ public:
 		}
 	}
 
+//	EntityID gameEnt;
+
 	void setVaults(GameVault *vault) {
 		emptyEntity = vault->registry.create(); // create Entity 0 as special empty Entity
 		this->setVault(vault);
+
+//		gameEnt = this->vault->registry.create();
+//		this->vault->registry.assign<Map>(gameEnt);
+
+		this->map = new Map();
 
 		// set shared systems
 		gameGenerator.setShared(vault, this->map, this->width, this->height);

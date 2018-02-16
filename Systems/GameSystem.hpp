@@ -112,7 +112,7 @@ public:
 		return nearest;
 	}
 
-	sf::Vector2i firstFreePosition(sf::Vector2i src, EntityLayer &layer, int maxDist) {
+	sf::Vector2i firstFreePosition(sf::Vector2i src, Layer<EntityID> &layer, int maxDist) {
 		sf::Vector2i fp;
 		int dist = 1;
 		while (dist < maxDist) {

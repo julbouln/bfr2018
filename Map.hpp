@@ -37,9 +37,10 @@ enum FogType {
 	Visible = 15
 };
 
+template <typename T, T Empty = 0> 
 class Layer {
 public:
-	std::vector<int> grid;
+	std::vector<T> grid;
 
 	unsigned int width;
 	unsigned int height;
@@ -59,79 +60,25 @@ public:
 	{
 		grid.clear();
 		while (grid.size() < width * height) {
-			grid.push_back(0);
+			grid.push_back(Empty);
 		}
 	}
 
 	void clear() {
 		for (int i = 0; i < grid.size(); i++) {
-			grid[i] = 0;
+			grid[i] = Empty;
 		}
 	}
 
 	inline int index(int x, int y) const { return x + width * y; }
 
-	int get(int x, int y) const {
+	T get(int x, int y) const {
 		return grid[this->index(x, y)];
 	}
 
-	void set(int x, int y, EntityID ent) {
+	void set(int x, int y, T ent) {
 		grid[this->index(x, y)] = ent;
 	}
-
-	void del(int x, int y) {
-		grid[this->index(x, y)] = 0;
-	}
-
-};
-
-
-class EntityLayer {
-public:
-	std::vector<EntityID> entitiesGrid;
-
-	unsigned int width;
-	unsigned int height;
-	EntityLayer() {}
-
-	EntityLayer(unsigned int width, unsigned int height) : width(width), height(height)  {
-		this->fill();
-	}
-
-	void setSize(unsigned int w, unsigned int h) {
-		this->width = w;
-		this->height = h;
-		this->fill();
-	}
-
-	void fill()
-	{
-		entitiesGrid.clear();
-		while (entitiesGrid.size() < width * height) {
-			entitiesGrid.push_back(0);
-		}
-	}
-
-	void clear() {
-		for (int i = 0; i < entitiesGrid.size(); i++) {
-			entitiesGrid[i] = 0;
-		}
-	}
-
-	inline int index(int x, int y) const { return x + width * y; }
-
-	EntityID get(int x, int y) const {
-		return entitiesGrid[this->index(x, y)];
-	}
-
-	void set(int x, int y, EntityID ent) {
-		entitiesGrid[this->index(x, y)] = ent;
-	}
-
-	void del(int x, int y) {
-		entitiesGrid[this->index(x, y)] = 0;
-	}
-
 };
 
 enum class FogState {
@@ -140,25 +87,8 @@ enum class FogState {
 	InSight
 };
 
-class Fog {
+class Fog : public Layer<FogState,FogState::Unvisited> {
 public:
-	std::vector<FogState> grid;
-	unsigned int width;
-	unsigned int height;
-	Fog() {}
-
-	Fog(unsigned int width, unsigned int height) : width(width), height(height)  {
-		this->fill();
-	}
-
-	void fill()
-	{
-		grid.clear();
-		while (grid.size() < width * height) {
-			grid.push_back(FogState::Unvisited);
-		}
-	}
-
 	int visited() {
 		int visited = 0;
 		for (FogState st : grid) {
@@ -167,17 +97,6 @@ public:
 		}
 		return visited;
 	}
-
-	inline int index(int x, int y) const { return x + width * y; }
-
-	FogState get(int x, int y) const {
-		return grid[this->index(x, y)];
-	}
-
-	void set(int x, int y, FogState st) {
-		grid[this->index(x, y)] = st;
-	}
-
 };
 
 struct SoundPlay {
@@ -202,31 +121,31 @@ public:
 	unsigned int width;
 	unsigned int height;
 
-	Layer terrainsForTransitions;
+	Layer<int> terrainsForTransitions;
 
-	std::vector<Layer> terrains;
+	std::vector<Layer<int>> terrains;
 
-	Layer fogHidden;
-	Layer fogUnvisited;
+	Layer<int> fogHidden;
+	Layer<int> fogUnvisited;
 
-	Layer fogHiddenTransitions;
-	Layer fogUnvisitedTransitions;
+	Layer<int> fogHiddenTransitions;
+	Layer<int> fogUnvisitedTransitions;
 
-	EntityLayer objs;
-	EntityLayer resources;
-	EntityLayer decors;
+	Layer<EntityID> objs;
+	Layer<EntityID> resources;
+	Layer<EntityID> decors;
 
-	EntityLayer effects;
+	Layer<EntityID> effects;
 
-	EntityLayer corpses;
+	Layer<EntityID> corpses;
 
-	EntityLayer staticBuildable;
+	Layer<EntityID> staticBuildable;
 
-	EntityLayer staticPathfinding;
-	EntityLayer pathfinding;
+	Layer<EntityID> staticPathfinding;
+	Layer<EntityID> pathfinding;
 
-	EntityLayer dynamicPathfinding;
-	EntityLayer movingPathfinding;
+	Layer<EntityID> dynamicPathfinding;
+	Layer<EntityID> movingPathfinding;
 
 	// not sure if sound must be there
 	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
@@ -238,7 +157,7 @@ public:
 //		this->terrains.setSize(width, height);
 
 		for (int i = 0; i < 6; i++) {
-			Layer layer;
+			Layer<int> layer;
 			layer.setSize(width, height);
 			this->terrains.push_back(layer);
 		}
@@ -279,7 +198,7 @@ public:
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 			unsigned int idx = x + width * y;
-			if (staticPathfinding.entitiesGrid[idx] == 0 && pathfinding.entitiesGrid[idx] == 0)
+			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0)
 				return true;
 		}
 		return false;

@@ -4,12 +4,12 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
+#include "third_party/Particles/ParticleSystem.h"
+
 #include "Entity.hpp"
 
 #include "Map.hpp"
 #include "BrainTree/BrainTree.h"
-
-#include "Particles/ParticleSystem.h"
 
 #include "ShaderOptions.hpp"
 

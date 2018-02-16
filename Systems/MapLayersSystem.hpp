@@ -490,7 +490,7 @@ public:
 	}
 
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
-	int transitionBitmask(Layer & layer, EntityID ent, int x, int y) {
+	int transitionBitmask(Layer<int> & layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (this->map->bound(x, y - 1))
 			bitmask += 1 * ((layer.get(x, y - 1) == ent) ? 1 : 0);
@@ -513,7 +513,7 @@ public:
 		return bitmask;
 	}
 
-	int voidTransitionBitmask(Layer & layer, EntityID ent, int x, int y) {
+	int voidTransitionBitmask(Layer<int> & layer, EntityID ent, int x, int y) {
 		int bitmask = 0;
 		if (layer.get(x, y) != ent) {
 			bitmask = this->transitionBitmask(layer, ent, x, y);
@@ -521,7 +521,7 @@ public:
 		return bitmask;
 	}
 
-	int pairTransitionBitmask(Layer & layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
+	int pairTransitionBitmask(Layer<int> & layer, EntityID srcEnt, EntityID dstEnt, int x, int y) {
 		int bitmask = 0;
 		if (layer.get(x, y) == srcEnt) {
 			bitmask = this->transitionBitmask(layer, dstEnt, x, y);
@@ -529,7 +529,7 @@ public:
 		return bitmask;
 	}
 
-	int updateTransition(int bitmask, Layer & outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
+	int updateTransition(int bitmask, Layer<int> & outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
 		if (bitmask) {
 			if (bitmask & 0xf) {
 				if (mapping.count(bitmask & 0xf) > 0) {

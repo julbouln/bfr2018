@@ -3,10 +3,11 @@
 #include "Config.hpp"
 
 #include "Components.hpp"
-#include "TextureManager.hpp"
-#include "SoundBufferManager.hpp"
-#include "FontManager.hpp"
-#include "ShaderManager.hpp"
+
+#include "Managers/TextureManager.hpp"
+#include "Managers/SoundBufferManager.hpp"
+#include "Managers/FontManager.hpp"
+#include "Managers/ShaderManager.hpp"
 
 #include "third_party/tinyxml2.h"
 #include "third_party/tixml2ex.h"

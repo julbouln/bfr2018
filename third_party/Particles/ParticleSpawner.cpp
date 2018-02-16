@@ -1,7 +1,7 @@
-#include "Particles/ParticleSpawner.h"
+#include "ParticleSpawner.h"
 
-#include "Particles/ParticleData.h"
-#include "Particles/ParticleHelpers.h"
+#include "ParticleData.h"
+#include "ParticleHelpers.h"
 
 namespace particles {
 
