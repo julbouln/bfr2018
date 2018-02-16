@@ -340,8 +340,8 @@ void save(std::string filename) {
 		auto gen = dynamic_cast<particles::AngledVelocityGenerator *>(velocityGenerator);
 		velGenElement->SetAttribute("min_angle", gen->minAngle);
 		velGenElement->SetAttribute("max_angle", gen->maxAngle);
-		velGenElement->SetAttribute("min_speed", gen->minStartSpeed);
-		velGenElement->SetAttribute("max_speed", gen->maxStartSpeed);
+		velGenElement->SetAttribute("min_start_speed", gen->minStartSpeed);
+		velGenElement->SetAttribute("max_start_speed", gen->maxStartSpeed);
 	}
 	else if (velocityGeneratorMode == VelocityGeneratorMode::Vector) {
 		auto gen = dynamic_cast<particles::VectorVelocityGenerator *>(velocityGenerator);
