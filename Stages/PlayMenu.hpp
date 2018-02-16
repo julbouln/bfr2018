@@ -24,7 +24,6 @@ public:
 		{
 			ImVec2 sz(128, 32);
 
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(0, 0, 0, 255) );
 
 			ImGui::Text("Team"); ImGui::SameLine();
 			ImGui::RadioButton("Rebel", &team, 0); ImGui::SameLine();
@@ -53,8 +52,6 @@ public:
 				this->fadeOut();
 			}
 //			ImGui::PopStyleVar();
-
-			ImGui::PopStyleColor();
 
 			ImGui::End();
 		}

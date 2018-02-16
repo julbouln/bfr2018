@@ -21,7 +21,6 @@ public:
 		{
 			ImVec2 sz(192, 64);
 
-			ImGui::PushStyleColor(ImGuiCol_Text, (ImVec4)ImColor(0, 0, 0, 255) );
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
 			if (ImGui::Button("Play", sz)) {
 				nextStage = NextStageStr("play_menu");
@@ -41,7 +40,6 @@ public:
 				this->game->window.close();
 			}
 			ImGui::PopStyleVar();
-			ImGui::PopStyleColor();
 
 			ImGui::End();
 		}

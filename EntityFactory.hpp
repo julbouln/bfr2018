@@ -151,10 +151,12 @@ public:
 		sndManager.load("barbarian", "medias/misc/barbarian.flac");
 		sndManager.load("butchery", "medias/misc/butchery.flac");
 
-		texLoader.loadTextureWithWhiteMask("baril_fx", "medias/extra/baril.png");
-		texLoader.loadTextureWithWhiteMask("pepino_fx", "medias/extra/pepino.png");
+		texLoader.loadTextureWithWhiteMask("pollution_spend", "medias/extra/baril.png");
+		texLoader.loadTextureWithWhiteMask("nature_spend", "medias/extra/pepino.png");
 
 		texManager.load("arrow", "medias/new/fleche.png");
+
+		texManager.load("time", "medias/extra/temps.png");
 
 	}
 
@@ -339,6 +341,11 @@ public:
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y));
 
 		tile.centerRect = this->getCenterRect(name);
+	}
+
+
+	void parseBuildingFromXml(std::string name, Building &building) {
+		buildingParser.parse(building, this->getXmlComponent(name, "building"));
 	}
 
 	void parseGameObjectFromXml(std::string name, GameObject &obj) {

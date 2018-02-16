@@ -426,6 +426,33 @@ public:
 											break;
 										}
 									}
+									if (ImGui::IsItemHovered()) {
+										switch (node.comp) {
+										case TechComponent::Building: {
+											ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+											ImGui::BeginTooltip();
+											ImGui::Image(this->vault->factory.getTex("time")); ImGui::SameLine();
+											ImGui::Text("%d", (int)this->buildTime(node.type));
+											ImGui::EndTooltip();
+											ImGui::PopFont();
+										}
+										break;
+										case TechComponent::Character: {
+											ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+											ImGui::BeginTooltip();
+											ImGui::Image(this->vault->factory.getTex(player.resourceType + "_spend")); ImGui::SameLine();
+											ImGui::Text("%d", (int)this->trainCost(node.type));
+											ImGui::EndTooltip();
+											ImGui::PopFont();
+										}
+										break;
+										case TechComponent::Resource: {
+											ImGui::SetTooltip("Plant resources");
+										}
+										break;
+										}
+									}
+
 									if (buts % 3 != 2)
 										ImGui::SameLine();
 									buts++;
@@ -453,6 +480,15 @@ public:
 								if (!player.rootConstruction)
 									player.rootConstruction = this->vault->factory.startBuilding(this->vault->registry, node->type, 0);
 							}
+							if (ImGui::IsItemHovered()) {
+								ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+								ImGui::BeginTooltip();
+								ImGui::Image(this->vault->factory.getTex("time")); ImGui::SameLine();
+								ImGui::Text("%d", (int)this->buildTime(node->type));
+								ImGui::EndTooltip();
+								ImGui::PopFont();
+							}
+
 						}
 					}
 				}
@@ -474,7 +510,7 @@ public:
 		ImVec2 window_pos_pivot = ImVec2((debugCorner & 1) ? 1.0f : 0.0f, (debugCorner & 2) ? 1.0f : 0.0f);
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
-		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
+		ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
 		if (ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
 			ImGui::Text("FPS: %.2f", 1 / dt);
@@ -932,7 +968,7 @@ public:
 	void update(float dt) {
 	}
 
-	void update(sf::Time &elapsed) {
+	void update(sf::Time & elapsed) {
 		float dt = elapsed.asSeconds();
 
 		float updateDt = dt;
@@ -1041,7 +1077,7 @@ public:
 		}
 	}
 
-	void handleEvent(sf::Event &event) {
+	void handleEvent(sf::Event & event) {
 		ImGuiIO& io = ImGui::GetIO();
 
 		if (!io.WantCaptureMouse) { /* do not enable map interface if gui used */

@@ -263,11 +263,21 @@ public:
 		}
 	}
 
+	float buildTime(std::string type) {
+		Building building;
+		this->vault->factory.parseBuildingFromXml(type, building);
+		return building.maxBuildTime;
+	}
+
+	float trainCost(std::string type) {
+		return 2 * this->objTypeLife(type);
+	}
+
 	// get object initial life from XML
 	float objTypeLife(std::string type) {
 		GameObject obj;
 		this->vault->factory.parseGameObjectFromXml(type, obj);
-		return obj.life;
+		return obj.maxLife;
 	}
 
 	void resetAnim(EntityID entity, std::string state, int view) {
@@ -354,7 +364,7 @@ public:
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Player &player = this->vault->registry.get<Player>(playerEnt);
 			Tile &tile = this->vault->registry.get<Tile>(entity);
-			float cost = 2 * this->objTypeLife(type);
+			float cost = this->trainCost(type);
 
 			if (this->canSpendResources(playerEnt, player.resourceType, cost)) {
 				for (sf::Vector2i const &p : this->tileAround(tile, 1)) {

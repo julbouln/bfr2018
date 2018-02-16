@@ -137,6 +137,7 @@ public:
 
 		io.Fonts->Clear(); // clear fonts if you loaded some before (even if only default one was loaded)
 		io.Fonts->AddFontFromFileTTF("medias/fonts/samos.ttf", 16.f);
+		io.Fonts->AddFontFromFileTTF("medias/fonts/samos.ttf", 32.f);
 		io.Fonts->AddFontFromFileTTF("medias/fonts/Vera.ttf", 14.f);
 		io.Fonts->AddFontDefault(); // this will load default font as well
 		ImGui::SFML::UpdateFontTexture();
