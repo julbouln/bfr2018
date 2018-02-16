@@ -7,7 +7,7 @@
 
 #include "Map.hpp"
 
-#include "Components.hpp"
+#include "Components/Components.hpp"
 
 #include "Systems/GameSystem.hpp"
 #include "Systems/GameGeneratorSystem.hpp"

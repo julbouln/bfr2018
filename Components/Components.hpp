@@ -4,8 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
-#include "third_party/Particles/ParticleSystem.h"
-
 #include "Entity.hpp"
 
 #include "Map.hpp"
@@ -14,6 +12,8 @@
 #include "ShaderOptions.hpp"
 
 #include "FlowField.hpp"
+
+#include "ParticleEffect.hpp"
 
 enum {
 	North,
@@ -109,19 +109,6 @@ struct Attack {
 	unsigned int distance;
 };
 
-struct ParticleEffect {
-	particles::ParticleSystem *particleSystem;
-	particles::ParticleSpawner *spawner;
-	float lifetime;
-	float currentTime;
-	int particles;
-	bool continuous;
-};
-
-struct Effects {
-	std::map<std::string, std::string> effects;
-};
-
 // unit or building
 struct GameObject {
 	std::string name;
@@ -143,14 +130,6 @@ enum class GroupFormation {
 	OneLine
 };
 
-enum class SteeringState {
-	None,	
-	Seek,
-	Flee,
-	Pursue,
-	FollowPath
-};
-
 struct Unit {
 	unsigned int speed;
 	Attack attack1;
@@ -162,7 +141,6 @@ struct Unit {
 	sf::Vector2i destpos;
 	sf::Vector2i nextpos;
 	sf::Vector2f velocity;
-	SteeringState steeringState;
 
 	unsigned int nopath;
 
@@ -174,9 +152,6 @@ struct Unit {
 #ifdef PATHFINDING_FLOWFIELD
 	FlowFieldPath flowFieldPath;
 #endif
-	Unit() {
-		steeringState = SteeringState::None;
-	}
 };
 
 struct Building {

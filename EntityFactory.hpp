@@ -2,7 +2,7 @@
 
 #include "Config.hpp"
 
-#include "Components.hpp"
+#include "Components/Components.hpp"
 
 #include "Managers/TextureManager.hpp"
 #include "Managers/SoundBufferManager.hpp"
@@ -11,7 +11,10 @@
 
 #include "third_party/tinyxml2.h"
 #include "third_party/tixml2ex.h"
-#include "XmlParser.hpp"
+
+#include "XmlParsers/ParticleEffectParser.hpp"
+#include "XmlParsers/XmlLoaders.hpp"
+#include "XmlParsers/XmlParser.hpp"
 
 enum class TechComponent {
 	Building,

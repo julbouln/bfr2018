@@ -16,3 +16,5 @@ Included third-party:
 - argagg : https://github.com/vietjtnguyen/argagg (MIT)
 - particles : https://github.com/tizian/particles (MIT)
 - dbscan : https://github.com/buresu/DBSCAN (MIT)
+Extra:
+- ImguiWindowsFileIO : https://github.com/gileoo/Imgui-IGS-Snippets

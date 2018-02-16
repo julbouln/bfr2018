@@ -1,21 +1,20 @@
+#include <iostream>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/System/Clock.hpp>
 #include <SFML/Window/Event.hpp>
 
 #include <third_party/imgui/imgui.h>
 #include <third_party/imgui/imgui-sfml.h>
+#include <third_party/imgui/ImguiWindowsFileIO.hpp>
 #include "imgui-custom.h"
 
 #include <third_party/Particles/ParticleSystem.h>
 
-#include <iostream>
+#include "third_party/tinyxml2.h"
+#include "third_party/tixml2ex.h"
 
-const int WINDOW_WIDTH = 1280;
-const int WINDOW_HEIGHT = 720;
 
-const int MAX_PARTICLE_COUNT = 100000;
-
-enum ParticleSystemMode {
+enum class ParticleSystemMode {
 	Points,
 	Texture,
 	Spritesheet,
@@ -23,18 +22,75 @@ enum ParticleSystemMode {
 	Metaball
 };
 
-enum SpawnerMode {
+enum class SpawnerMode {
 	Point,
 	Box,
 	Circle,
 	Disk
 };
 
-enum VelocityGeneratorMode {
+enum class VelocityGeneratorMode {
 	Angled,
 	Vector,
 	Aimed
 };
+
+
+static std::map<std::string, ParticleSystemMode> partSysModes =
+{
+	{ "points", ParticleSystemMode::Points },
+	{ "texture", ParticleSystemMode::Texture },
+	{ "spritesheet", ParticleSystemMode::Spritesheet },
+	{ "animated_spritesheet", ParticleSystemMode::AnimatedSpritesheet },
+	{ "metaball", ParticleSystemMode::Metaball },
+};
+
+static std::map<std::string, SpawnerMode> spawnModes =
+{
+	{ "point", SpawnerMode::Point },
+	{ "box", SpawnerMode::Box },
+	{ "circle", SpawnerMode::Circle },
+	{ "disk", SpawnerMode::Disk },
+};
+
+static std::map<std::string, VelocityGeneratorMode> velGenModes =
+{
+	{ "angled", VelocityGeneratorMode::Angled },
+	{ "vector", VelocityGeneratorMode::Vector },
+	{ "aimed", VelocityGeneratorMode::Aimed },
+};
+
+
+
+static std::map<ParticleSystemMode, std::string> revPartSysModes =
+{
+	{ ParticleSystemMode::Points, "points" },
+	{ ParticleSystemMode::Texture, "texture" },
+	{ ParticleSystemMode::Spritesheet, "spritesheet" },
+	{ ParticleSystemMode::AnimatedSpritesheet, "animated_spritesheet" },
+	{ ParticleSystemMode::Metaball, "metaball" },
+};
+
+static std::map<SpawnerMode, std::string> revSpawnModes =
+{
+	{ SpawnerMode::Point, "point" },
+	{ SpawnerMode::Box, "box" },
+	{ SpawnerMode::Circle, "circle" },
+	{ SpawnerMode::Disk, "disk" },
+};
+
+static std::map<VelocityGeneratorMode, std::string> revVelGenModes =
+{
+	{ VelocityGeneratorMode::Angled, "angled" },
+	{ VelocityGeneratorMode::Vector, "vector" },
+	{ VelocityGeneratorMode::Aimed, "aimed" },
+};
+
+
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
+
+const int MAX_PARTICLE_COUNT = 100000;
 
 void initParticleSystem();
 void setSpawnMode();
@@ -75,17 +131,17 @@ void initParticleSystem() {
 	if (particleSystem) delete particleSystem;
 
 	switch (particleSystemMode) {
-	case Points:
+	case ParticleSystemMode::Points:
 		particleSystem = new particles::PointParticleSystem(MAX_PARTICLE_COUNT);
 		break;
-	case Spritesheet:
-	case AnimatedSpritesheet:
+	case ParticleSystemMode::Spritesheet:
+	case ParticleSystemMode::AnimatedSpritesheet:
 		particleSystem = new particles::SpriteSheetParticleSystem(MAX_PARTICLE_COUNT, spritesheetTexture);
 		break;
-	case Metaball:
+	case ParticleSystemMode::Metaball:
 		particleSystem = new particles::MetaballParticleSystem(MAX_PARTICLE_COUNT, blobTexture, WINDOW_WIDTH, WINDOW_HEIGHT);
 		break;
-	case Texture:
+	case ParticleSystemMode::Texture:
 	default:
 		particleSystem = new particles::TextureParticleSystem(MAX_PARTICLE_COUNT, circleTexture);
 		break;
@@ -154,28 +210,28 @@ void setSpawnMode() {
 	if (spawner) particleSystem->removeSpawner(spawner);
 
 	switch (spawnerMode) {
-	case Box: {
+	case SpawnerMode::Box: {
 		auto boxSpawner = particleSystem->addSpawner<particles::BoxSpawner>();
 		boxSpawner->size = sf::Vector2f(160.f, 160.f);
 		spawner = boxSpawner;
 	}
 	break;
 
-	case Circle: {
+	case SpawnerMode::Circle: {
 		auto circleSpawner = particleSystem->addSpawner<particles::CircleSpawner>();
 		circleSpawner->radius = sf::Vector2f(70.f, 40.f);
 		spawner = circleSpawner;
 	}
 	break;
 
-	case Disk: {
+	case SpawnerMode::Disk: {
 		auto diskSpawner = particleSystem->addSpawner<particles::DiskSpawner>();
 		diskSpawner->radius = sf::Vector2f(70.f, 40.f);
 		spawner = diskSpawner;
 	}
 	break;
 
-	case Point:
+	case SpawnerMode::Point:
 	default: {
 		spawner = particleSystem->addSpawner<particles::PointSpawner>();
 	}
@@ -187,7 +243,7 @@ void setVelocityGeneratorMode() {
 	if (velocityGenerator) particleSystem->removeGenerator(velocityGenerator);
 
 	switch (velocityGeneratorMode) {
-	case Vector: {
+	case VelocityGeneratorMode::Vector: {
 		auto vectorGenerator = particleSystem->addGenerator<particles::VectorVelocityGenerator>();
 		vectorGenerator->minStartVel = sf::Vector2f(20.f, -20.f);
 		vectorGenerator->maxStartVel = sf::Vector2f(40.f, -40.f);
@@ -195,7 +251,7 @@ void setVelocityGeneratorMode() {
 	}
 	break;
 
-	case Aimed: {
+	case VelocityGeneratorMode::Aimed: {
 		auto aimedGenerator = particleSystem->addGenerator<particles::AimedVelocityGenerator>();
 		aimedGenerator->goal = sf::Vector2f(0.5f * WINDOW_WIDTH, 0.5f * WINDOW_HEIGHT);
 		aimedGenerator->minStartSpeed = 100.f;
@@ -204,7 +260,7 @@ void setVelocityGeneratorMode() {
 	}
 	break;
 
-	case Angled:
+	case VelocityGeneratorMode::Angled:
 	default: {
 		auto angledGenerator = particleSystem->addGenerator<particles::AngledVelocityGenerator>();
 		angledGenerator->minAngle = -20.f;
@@ -217,10 +273,181 @@ void setVelocityGeneratorMode() {
 	}
 }
 
+bool showSave = false;
+std::vector<std::string> recentFiles;
+
+void save(std::string filename) {
+	tinyxml2::XMLDocument xmlDoc;
+	tinyxml2::XMLNode * pRoot = xmlDoc.NewElement("entity");
+	xmlDoc.InsertFirstChild(pRoot);
+
+	tinyxml2::XMLElement * pElement = xmlDoc.NewElement("particle");
+	pElement->SetAttribute("name", "noname");
+	pElement->SetAttribute("count", int(particleSystem->emitRate));
+	pElement->SetAttribute("max", int(MAX_PARTICLE_COUNT));
+	pElement->SetAttribute("type", revPartSysModes[particleSystemMode].c_str());
+	switch (particleSystemMode) {
+	case ParticleSystemMode::Metaball:
+		auto ps = dynamic_cast<particles::MetaballParticleSystem *>(particleSystem);
+
+		pElement->SetAttribute("a", ps->color.a);
+		pElement->SetAttribute("r", ps->color.r);
+		pElement->SetAttribute("g", ps->color.g);
+		pElement->SetAttribute("b", ps->color.b);
+		break;
+	}
+
+	// spawner
+	tinyxml2::XMLElement * spawnerElement = xmlDoc.NewElement("spawner");
+	spawnerElement->SetAttribute("type", revSpawnModes[spawnerMode].c_str());
+	if (spawnerMode == SpawnerMode::Point) {
+		// nop
+	}
+	else if (spawnerMode == SpawnerMode::Box) {
+		auto sp = dynamic_cast<particles::BoxSpawner *>(spawner);
+		spawnerElement->SetAttribute("x", sp->size.x);
+		spawnerElement->SetAttribute("y", sp->size.y);
+	}
+	else if (spawnerMode == SpawnerMode::Circle) {
+		auto sp = dynamic_cast<particles::CircleSpawner *>(spawner);
+		spawnerElement->SetAttribute("x", sp->radius.x);
+		spawnerElement->SetAttribute("y", sp->radius.y);
+	}
+	else if (spawnerMode == SpawnerMode::Disk) {
+		auto sp = dynamic_cast<particles::DiskSpawner *>(spawner);
+		spawnerElement->SetAttribute("x", sp->radius.x);
+		spawnerElement->SetAttribute("y", sp->radius.y);
+	}
+
+	// time generator
+	tinyxml2::XMLElement * timeGenElement = xmlDoc.NewElement("time_generator");
+	timeGenElement->SetAttribute("min_time", timeGenerator->minTime);
+	timeGenElement->SetAttribute("max_time", timeGenerator->maxTime);
+
+	// size generator
+	tinyxml2::XMLElement * sizeGenElement = xmlDoc.NewElement("size_generator");
+	sizeGenElement->SetAttribute("min_start_size", sizeGenerator->minStartSize);
+	sizeGenElement->SetAttribute("max_start_size", sizeGenerator->maxStartSize);
+	sizeGenElement->SetAttribute("min_end_size", sizeGenerator->minEndSize);
+	sizeGenElement->SetAttribute("max_end_size", sizeGenerator->maxEndSize);
+
+	// velocity generator
+	tinyxml2::XMLElement * velGenElement = xmlDoc.NewElement("velocity_generator");
+
+	velGenElement->SetAttribute("type", revVelGenModes[velocityGeneratorMode].c_str());
+
+	if (velocityGeneratorMode == VelocityGeneratorMode::Angled) {
+		auto gen = dynamic_cast<particles::AngledVelocityGenerator *>(velocityGenerator);
+		velGenElement->SetAttribute("min_angle", gen->minAngle);
+		velGenElement->SetAttribute("max_angle", gen->maxAngle);
+		velGenElement->SetAttribute("min_speed", gen->minStartSpeed);
+		velGenElement->SetAttribute("max_speed", gen->maxStartSpeed);
+	}
+	else if (velocityGeneratorMode == VelocityGeneratorMode::Vector) {
+		auto gen = dynamic_cast<particles::VectorVelocityGenerator *>(velocityGenerator);
+		velGenElement->SetAttribute("min_start_vel_x", gen->minStartVel.x);
+		velGenElement->SetAttribute("min_start_vel_y", gen->minStartVel.y);
+		velGenElement->SetAttribute("max_start_vel_x", gen->maxStartVel.x);
+		velGenElement->SetAttribute("max_start_vel_y", gen->maxStartVel.y);
+	}
+	else if (velocityGeneratorMode == VelocityGeneratorMode::Aimed) {
+		auto gen = dynamic_cast<particles::AimedVelocityGenerator *>(velocityGenerator);
+		velGenElement->SetAttribute("min_start_speed", gen->minStartSpeed);
+		velGenElement->SetAttribute("max_start_speed", gen->maxStartSpeed);
+	}
+
+
+	pElement->InsertEndChild(spawnerElement);
+	pElement->InsertEndChild(timeGenElement);
+	pElement->InsertEndChild(sizeGenElement);
+	pElement->InsertEndChild(velGenElement);
+
+	if (particleSystemMode != ParticleSystemMode::Points) {
+		tinyxml2::XMLElement * rotGenElement = xmlDoc.NewElement("rotation_generator");
+		rotGenElement->SetAttribute("min_start_angle", rotationGenerator->minStartAngle);
+		rotGenElement->SetAttribute("max_start_angle", rotationGenerator->maxStartAngle);
+		rotGenElement->SetAttribute("min_end_angle", rotationGenerator->minEndAngle);
+		rotGenElement->SetAttribute("max_end_angle", rotationGenerator->maxEndAngle);
+		pElement->InsertEndChild(rotGenElement);
+
+		tinyxml2::XMLElement * eulerUpElement = xmlDoc.NewElement("euler_updater");
+		eulerUpElement->SetAttribute("accel_x", eulerUpdater->globalAcceleration.x);
+		eulerUpElement->SetAttribute("accel_y", eulerUpdater->globalAcceleration.y);
+		pElement->InsertEndChild(eulerUpElement);
+
+	}
+
+	if (particleSystemMode != ParticleSystemMode::Metaball) {
+
+// color generator
+		tinyxml2::XMLElement * colGenElement = xmlDoc.NewElement("color_generator");
+
+		tinyxml2::XMLElement * minSCol = xmlDoc.NewElement("min_start_col");
+		tinyxml2::XMLElement * maxSCol = xmlDoc.NewElement("max_start_col");
+		tinyxml2::XMLElement * minECol = xmlDoc.NewElement("min_end_col");
+		tinyxml2::XMLElement * maxECol = xmlDoc.NewElement("max_end_col");
+
+		minSCol->SetAttribute("a", colorGenerator->minStartCol.a);
+		minSCol->SetAttribute("r", colorGenerator->minStartCol.r);
+		minSCol->SetAttribute("g", colorGenerator->minStartCol.g);
+		minSCol->SetAttribute("b", colorGenerator->minStartCol.b);
+		colGenElement->InsertEndChild(minSCol);
+
+		maxSCol->SetAttribute("a", colorGenerator->maxStartCol.a);
+		maxSCol->SetAttribute("r", colorGenerator->maxStartCol.r);
+		maxSCol->SetAttribute("g", colorGenerator->maxStartCol.g);
+		maxSCol->SetAttribute("b", colorGenerator->maxStartCol.b);
+		colGenElement->InsertEndChild(maxSCol);
+
+		minECol->SetAttribute("a", colorGenerator->minEndCol.a);
+		minECol->SetAttribute("r", colorGenerator->minEndCol.r);
+		minECol->SetAttribute("g", colorGenerator->minEndCol.g);
+		minECol->SetAttribute("b", colorGenerator->minEndCol.b);
+		colGenElement->InsertEndChild(minECol);
+
+		maxECol->SetAttribute("a", colorGenerator->maxEndCol.a);
+		maxECol->SetAttribute("r", colorGenerator->maxEndCol.r);
+		maxECol->SetAttribute("g", colorGenerator->maxEndCol.g);
+		maxECol->SetAttribute("b", colorGenerator->maxEndCol.b);
+		colGenElement->InsertEndChild(maxECol);
+
+		pElement->InsertEndChild(colGenElement);
+
+	}
+
+
+	pRoot->InsertEndChild(pElement);
+
+	xmlDoc.SaveFile(filename.c_str());
+}
+
+
+void saveGui() {
+	if (showSave) {
+		std::string save_file;
+		if ( fileIOWindow( save_file, recentFiles, "Save", {"*.xml", "*.*"} ) )
+		{
+			recentFiles.push_back( save_file );
+			showSave = false;
+			if ( !save_file.empty() )
+			{
+				save(save_file);
+			}
+		}
+	}
+}
+
+
 void gui() {
 	ImGui::SetNextWindowSize(ImVec2(380, 630), ImGuiSetCond_FirstUseEver);
 
 	ImGui::Begin("Particles Demo");
+
+	if (ImGui::Button("Save")) {
+//		save();
+		showSave = true;
+	}
+		saveGui();
 
 	if (ImGui::CollapsingHeader("Particle System", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const char* particleSystemItems[] = { "Points", "Textured", "Spritesheet", "Animated Spritesheet", "Metaball" };
@@ -347,15 +574,16 @@ void gui() {
 	ImGui::End();
 }
 
+
 int main() {
 	circleTexture = new sf::Texture();
 	blobTexture = new sf::Texture();
 	starTexture = new sf::Texture();
 	spritesheetTexture = new sf::Texture();
-	circleTexture->loadFromFile("res/circleTexture.png");
-	blobTexture->loadFromFile("res/blobTexture.png");
-	starTexture->loadFromFile("res/starTexture.png");
-	spritesheetTexture->loadFromFile("res/spritesheetTexture.png");
+	circleTexture->loadFromFile("medias/extra/circleTexture.png");
+	blobTexture->loadFromFile("medias/extra/blobTexture.png");
+	starTexture->loadFromFile("medias/extra/starTexture.png");
+	spritesheetTexture->loadFromFile("medias/extra/spritesheetTexture.png");
 	circleTexture->setSmooth(true);
 	blobTexture->setSmooth(true);
 	starTexture->setSmooth(true);
@@ -375,7 +603,7 @@ int main() {
 			ImGui::SFML::ProcessEvent(event);
 
 			if (event.type == sf::Event::Closed ||
-				(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
+			        (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)) {
 				window.close();
 			}
 		}
@@ -386,7 +614,7 @@ int main() {
 		spawner->center = pos;
 
 		sf::Time dt = clock.restart();
-		ImGui::SFML::Update(window,dt);
+		ImGui::SFML::Update(window, dt);
 		particleSystem->update(dt);
 
 		gui();

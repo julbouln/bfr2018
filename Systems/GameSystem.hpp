@@ -446,7 +446,6 @@ public:
 			unit.destpos = this->firstAvailablePosition(destpos, 16);
 
 		unit.nopath = 0;
-		unit.steeringState = SteeringState::FollowPath;
 	}
 
 	void goTo(EntityID entity, sf::Vector2i destpos) {
@@ -456,7 +455,6 @@ public:
 
 	void attack(Unit & unit, EntityID destEnt) {
 		unit.targetEnt = destEnt;
-//		unit.steeringState = SteeringState::Pursue;
 	}
 
 	void attack(EntityID entity, EntityID destEnt) {

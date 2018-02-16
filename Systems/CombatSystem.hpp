@@ -101,7 +101,6 @@ public:
 
 				if (inRange) {
 					if (tile.pos == unit.nextpos) { // unit must be arrived at a position
-						unit.steeringState = SteeringState::None;
 						int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
