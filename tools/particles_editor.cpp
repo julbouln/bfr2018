@@ -16,6 +16,7 @@
 
 enum class ParticleSystemMode {
 	Points,
+	Lines,
 	Texture,
 	Spritesheet,
 	AnimatedSpritesheet,
@@ -39,6 +40,7 @@ enum class VelocityGeneratorMode {
 static std::map<std::string, ParticleSystemMode> partSysModes =
 {
 	{ "points", ParticleSystemMode::Points },
+	{ "lines", ParticleSystemMode::Lines },
 	{ "texture", ParticleSystemMode::Texture },
 	{ "spritesheet", ParticleSystemMode::Spritesheet },
 	{ "animated_spritesheet", ParticleSystemMode::AnimatedSpritesheet },
@@ -65,6 +67,7 @@ static std::map<std::string, VelocityGeneratorMode> velGenModes =
 static std::map<ParticleSystemMode, std::string> revPartSysModes =
 {
 	{ ParticleSystemMode::Points, "points" },
+	{ ParticleSystemMode::Lines, "lines" },
 	{ ParticleSystemMode::Texture, "texture" },
 	{ ParticleSystemMode::Spritesheet, "spritesheet" },
 	{ ParticleSystemMode::AnimatedSpritesheet, "animated_spritesheet" },
@@ -133,6 +136,9 @@ void initParticleSystem() {
 	switch (particleSystemMode) {
 	case ParticleSystemMode::Points:
 		particleSystem = new particles::PointParticleSystem(MAX_PARTICLE_COUNT);
+		break;
+	case ParticleSystemMode::Lines:
+		particleSystem = new particles::LineParticleSystem(MAX_PARTICLE_COUNT);
 		break;
 	case ParticleSystemMode::Spritesheet:
 	case ParticleSystemMode::AnimatedSpritesheet:
@@ -544,6 +550,11 @@ void load(std::string filename) {
 			rotationGenerator->maxStartAngle = rotGenEl->FloatAttribute("max_start_angle");
 			rotationGenerator->minEndAngle = rotGenEl->FloatAttribute("min_end_angle");
 			rotationGenerator->maxEndAngle = rotGenEl->FloatAttribute("max_end_angle");
+		} else {
+			rotationGenerator->minStartAngle = 0.0;
+			rotationGenerator->maxStartAngle = 0.0;
+			rotationGenerator->minEndAngle = 0.0;
+			rotationGenerator->maxEndAngle = 0.0;
 		}
 
 		tinyxml2::XMLElement *colGenEl = particleEl->FirstChildElement("color_generator");
@@ -647,9 +658,11 @@ void gui() {
 	ImGui::Begin("Particles Editor");
 
 	if (ImGui::CollapsingHeader("Particle System", ImGuiTreeNodeFlags_DefaultOpen)) {
-		const char* particleSystemItems[] = { "Points", "Textured", "Spritesheet", "Animated Spritesheet", "Metaball" };
-		static int particleSystemItem = 1;
-		if (ImGui::Combo("Render Mode", &particleSystemItem, particleSystemItems, 5)) {
+		const char* particleSystemItems[] = { "Points", "Lines", "Textured", "Spritesheet", "Animated Spritesheet", "Metaball" };
+		static int particleSystemItem = 2;
+		particleSystemItem=(int)particleSystemMode;
+
+		if (ImGui::Combo("Render Mode", &particleSystemItem, particleSystemItems, 6)) {
 			particleSystemMode = static_cast<ParticleSystemMode>(particleSystemItem);
 			initParticleSystem();
 		}
@@ -678,6 +691,18 @@ void gui() {
 					ps->setTexture(starTexture);
 				}
 			}
+		}
+
+		if (particleSystemMode == ParticleSystemMode::Lines) {
+			auto ps = dynamic_cast<particles::LineParticleSystem *>(particleSystem);
+
+            static float pointVec1[4] = { 0, 0, 8, 8 };
+            static float pointVec2[4] = { 0, 1, 8, 8 };
+
+            ImGui::InputFloat2("point 1", pointVec1);
+            ImGui::InputFloat2("point 2", pointVec2);
+
+			ps->setPoints(sf::Vector2f(pointVec1[0],pointVec1[1]),sf::Vector2f(pointVec2[0],pointVec2[1]));
 		}
 
 		if (particleSystemMode == ParticleSystemMode::Metaball) {

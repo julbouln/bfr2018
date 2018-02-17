@@ -139,6 +139,58 @@ void PointParticleSystem::updateVertices() {
 }
 
 
+/* LineParticleSystem */
+
+LineParticleSystem::LineParticleSystem(int maxCount) : ParticleSystem(maxCount) {
+	m_vertices = sf::VertexArray(sf::Lines, maxCount * 2);
+	point1 = sf::Vector2f(0.0, 0.0);
+	point1 = sf::Vector2f(0.0, 1.0);
+}
+
+void LineParticleSystem::render(sf::RenderTarget &renderTarget) {
+	updateVertices();
+
+	if (m_particles->countAlive <= 0) return;
+
+	sf::RenderStates states = sf::RenderStates::Default;
+
+	const sf::Vertex *ver = &m_vertices[0];
+	renderTarget.draw(ver, m_particles->countAlive, sf::Lines, states);
+}
+
+void LineParticleSystem::setPoints(sf::Vector2f p1, sf::Vector2f p2) {
+	point1 = p1;
+	point2 = p2;
+}
+
+void LineParticleSystem::updateVertices() {
+	for (int i = 0; i < m_particles->countAlive; i++) {
+		float size = 0.5f * m_particles->size[i].x;
+		float angle = m_particles->angle[i].x;
+
+		m_vertices[2 * i].position = m_particles->pos[i] + point1;
+		m_vertices[2 * i].color = m_particles->col[i];
+
+		m_vertices[2 * i + 1].position = point2 * size;
+		m_vertices[2 * i + 1].color = m_particles->col[i];
+
+		if (angle != 0.f) {
+			float sin = std::sin(angle);
+			float cos = std::cos(angle);
+
+			float x = m_vertices[2 * i + 1].position.x;
+			float y = m_vertices[2 * i + 1].position.y;
+
+			m_vertices[2 * i + 1].position.x = cos * x - sin * y;
+			m_vertices[2 * i + 1].position.y = sin * x + cos * y;
+		}
+
+		m_vertices[2 * i + 1].position += m_particles->pos[i];
+
+
+	}
+}
+
 /* TextureParticleSystem */
 
 TextureParticleSystem::TextureParticleSystem(int maxCount, sf::Texture *texture) : ParticleSystem(maxCount), m_texture(texture) {
@@ -165,7 +217,7 @@ TextureParticleSystem::TextureParticleSystem(int maxCount, sf::Texture *texture)
 }
 
 TextureParticleSystem::TextureParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight) : TextureParticleSystem(maxCount, texture) {
-	if(windowWidth > 0 && windowHeight > 0)
+	if (windowWidth > 0 && windowHeight > 0)
 		m_renderTexture.create(windowWidth, windowHeight);
 }
 
@@ -261,7 +313,7 @@ void TextureParticleSystem::drawWithShader(sf::RenderTarget &renderTarget) {
 
 void TextureParticleSystem::render(sf::RenderTarget &renderTarget) {
 	updateVertices();
-	if(applyShader)
+	if (applyShader)
 		this->drawWithShader(renderTarget);
 	else
 		this->draw(renderTarget);
@@ -271,7 +323,7 @@ void TextureParticleSystem::render(sf::RenderTarget &renderTarget) {
 
 void SpriteSheetParticleSystem::render(sf::RenderTarget &renderTarget) {
 	updateVertices();
-	if(applyShader)
+	if (applyShader)
 		this->drawWithShader(renderTarget);
 	else
 		this->draw(renderTarget);
@@ -375,7 +427,7 @@ void MetaballParticleSystem::render(sf::RenderTarget &renderTarget) {
 	renderTarget.setView(defaultView);
 	renderTarget.draw(m_sprite, &m_shader);
 	renderTarget.setView(oldView);
-	#endif
+#endif
 }
 
 }

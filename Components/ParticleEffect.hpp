@@ -9,6 +9,7 @@ struct ParticleEffect {
 	float currentTime;
 	int particles;
 	bool continuous;
+	bool alwaysVisible;
 };
 
 struct Effects {

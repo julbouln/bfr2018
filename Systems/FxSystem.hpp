@@ -32,8 +32,8 @@ public:
 		auto view = this->vault->registry.view<ParticleEffect>();
 		for (EntityID entity : view) {
 			ParticleEffect &effect = view.get(entity);
-			if (effect.spawner->center.x / 32 > clip.left && effect.spawner->center.y / 32 > clip.top &&
-			        effect.spawner->center.x / 32 < clip.left + clip.width && effect.spawner->center.y / 32 < clip.top + clip.height)
+			if (effect.alwaysVisible || (effect.spawner->center.x / 32 > clip.left && effect.spawner->center.y / 32 > clip.top &&
+			        effect.spawner->center.x / 32 < clip.left + clip.width && effect.spawner->center.y / 32 < clip.top + clip.height))
 				effect.particleSystem->render(window);
 		}
 	}

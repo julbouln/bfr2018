@@ -9,6 +9,7 @@
 
 enum class ParticleSystemMode {
 	Points,
+	Lines,
 	Texture,
 	Spritesheet,
 	AnimatedSpritesheet,
@@ -31,6 +32,7 @@ enum class VelocityGeneratorMode {
 static std::map<std::string, ParticleSystemMode> partSysModes =
 {
 	{ "points", ParticleSystemMode::Points },
+	{ "lines", ParticleSystemMode::Lines },
 	{ "texture", ParticleSystemMode::Texture },
 	{ "spritesheet", ParticleSystemMode::Spritesheet },
 	{ "animated_spritesheet", ParticleSystemMode::AnimatedSpritesheet },
@@ -101,6 +103,12 @@ public:
 			case ParticleSystemMode::Points:
 				effect.particleSystem = new particles::PointParticleSystem(max);
 				break;
+			case ParticleSystemMode::Lines: {
+				auto lineSystem = new particles::LineParticleSystem(max);
+				lineSystem->setPoints(sf::Vector2f(0, 0), sf::Vector2f(particleEl->FloatAttribute("x"), particleEl->FloatAttribute("y")));
+				effect.particleSystem = lineSystem;
+			}
+			break;
 			case ParticleSystemMode::Texture:
 				effect.particleSystem = new particles::TextureParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
 				break;
@@ -173,6 +181,7 @@ public:
 			}
 
 			effect.continuous = particleEl->BoolAttribute("continuous");
+			effect.alwaysVisible = particleEl->BoolAttribute("always_visible");
 
 			if (effect.continuous)
 				effect.particleSystem->emitRate = (float)count; // Particles per second. Use emitRate <= (maxNumberParticles / averageParticleLifetime) for constant streams

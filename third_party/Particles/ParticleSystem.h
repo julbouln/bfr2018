@@ -114,6 +114,26 @@ protected:
 };
 
 
+class LineParticleSystem : public ParticleSystem {
+public:
+	LineParticleSystem(int maxCount);
+	virtual ~LineParticleSystem() {}
+
+	LineParticleSystem(const LineParticleSystem &) = delete;
+	LineParticleSystem &operator=(const LineParticleSystem &) = delete;
+
+	virtual void render(sf::RenderTarget& renderTarget) override;
+
+	void setPoints(sf::Vector2f p1, sf::Vector2f p2);
+
+protected:
+	void updateVertices();
+	sf::Vector2f point1;
+	sf::Vector2f point2;
+};
+
+
+
 class TextureParticleSystem : public ParticleSystem {
 public:
 	TextureParticleSystem(int maxCount, sf::Texture *texture);

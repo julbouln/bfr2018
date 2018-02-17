@@ -170,14 +170,14 @@ public:
 	bool ennemyInRange(Tile &tile, Tile &destTile, float range, float maxRange)
 	{
 		bool inRange = false;
-/*		for (sf::Vector2i const &p : this->tileAround(destTile, range)) {
-			if (tile.pos == p)
-				inRange = true;
-		}
-		*/
+		/*		for (sf::Vector2i const &p : this->tileAround(destTile, range)) {
+					if (tile.pos == p)
+						inRange = true;
+				}
+				*/
 
 		float dist = vectorLength(tile.pos - destTile.pos);
-		if(dist >= range && dist <= maxRange)
+		if (dist >= range && dist <= maxRange)
 			inRange = true;
 
 		return inRange;
@@ -228,7 +228,18 @@ public:
 			return false;
 	}
 
-	void emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions()) {
+	EntityID emitEffect(std::string name, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions()) {
+		EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, name, lifetime, options);
+		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
+		effect.spawner->center = ppos;
+		if (!effect.continuous)
+			effect.particleSystem->emitParticles(effect.particles);
+
+		return entity;
+	}
+
+
+	EntityID emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions()) {
 		if (this->vault->registry.has<Effects>(emitter)) {
 			Effects &effects = this->vault->registry.get<Effects>(emitter);
 			if (effects.effects.count(name) > 0) {
@@ -240,8 +251,10 @@ public:
 #ifdef GAME_SYSTEM_DEBUG
 				std::cout << "GameSystem: emit effect " << name << " at " << ppos.x << "x" << ppos.y << std::endl;
 #endif
+				return entity;
 			}
 		}
+		return 0;
 	}
 
 	void spendResources(EntityID playerEnt, std::string type, int val) {

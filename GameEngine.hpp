@@ -257,6 +257,12 @@ public:
 		minimap.init(sf::Vector2f(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14)), 96.0 * this->scaleX());
 		victory.init();
 		pathfinding.init();
+
+
+//		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0), 60);
+//		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);
+
+
 	}
 
 	void menuGui() {
