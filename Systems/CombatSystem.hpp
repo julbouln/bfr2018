@@ -90,14 +90,17 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-				int dist = 1;
+				float dist = 1.0;
+				float maxDist = 1.5;
 				if (unit.attack2.distance)
 					dist = unit.attack2.distance;
+				if (unit.attack2.maxDistance)
+					maxDist = 1.5 * unit.attack2.maxDistance;
 
 				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-				bool inRange = this->ennemyInRange(tile, destTile, dist);
+				bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist);
 
 				if (inRange) {
 					if (tile.pos == unit.nextpos) { // unit must be arrived at a position

@@ -151,8 +151,8 @@ public:
 		sndManager.load("barbarian", "medias/misc/barbarian.flac");
 		sndManager.load("butchery", "medias/misc/butchery.flac");
 
-		texLoader.loadTextureWithWhiteMask("pollution_spend", "medias/extra/baril.png");
-		texLoader.loadTextureWithWhiteMask("nature_spend", "medias/extra/pepino.png");
+		texLoader.loadTextureWithWhiteMask("pollution_cost", "medias/extra/baril_ico.png");
+		texLoader.loadTextureWithWhiteMask("nature_cost", "medias/extra/pepino_ico.png");
 
 		texManager.load("arrow", "medias/new/fleche.png");
 
@@ -346,6 +346,10 @@ public:
 
 	void parseBuildingFromXml(std::string name, Building &building) {
 		buildingParser.parse(building, this->getXmlComponent(name, "building"));
+	}
+
+	void parseUnitFromXml(std::string name, Unit &unit) {
+		unitParser.parse(unit, this->getXmlComponent(name, "unit"));
 	}
 
 	void parseGameObjectFromXml(std::string name, GameObject &obj) {

@@ -107,6 +107,7 @@ struct AnimatedSpritesheet {
 struct Attack {
 	unsigned int power;
 	unsigned int distance;
+	unsigned int maxDistance;	
 };
 
 // unit or building
@@ -131,6 +132,7 @@ enum class GroupFormation {
 };
 
 struct Unit {
+	unsigned int cost;
 	unsigned int speed;
 	Attack attack1;
 	Attack attack2;

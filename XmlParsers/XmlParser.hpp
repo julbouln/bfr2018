@@ -159,10 +159,19 @@ public:
 	void parse(Unit &unit, tinyxml2::XMLElement *element) {
 		if (element) {
 
+			unit.cost = element->FirstChildElement("cost")->IntAttribute("value");
 			unit.speed = element->FirstChildElement("speed")->IntAttribute("value");
 
-			unit.attack1 = Attack{(unsigned int)element->FirstChildElement("attack1")->IntAttribute("power"), 0};
-			unit.attack2 = Attack{(unsigned int)element->FirstChildElement("attack2")->IntAttribute("power"), (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist")};
+			unsigned int attack1_power = (unsigned int)element->FirstChildElement("attack1")->IntAttribute("power");
+
+			unsigned int attack2_power = (unsigned int)element->FirstChildElement("attack2")->IntAttribute("power");
+			unsigned int attack2_dist = (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist");
+			unsigned int attack2_maxDist = attack2_dist;
+			if(element->FirstChildElement("attack2")->Attribute("maxDist"))
+				attack2_maxDist=(unsigned int)element->FirstChildElement("attack2")->IntAttribute("max_dist");
+
+			unit.attack1 = Attack{attack1_power, 0, 0};
+			unit.attack2 = Attack{attack2_power, attack2_dist, attack2_maxDist };
 
 			tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
 			if (soundsEl) {

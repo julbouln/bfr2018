@@ -60,8 +60,9 @@
     <effects/>
   </game_object>
   <unit>
+    <cost value="24"/>
     <speed value="5"/>
-    <attack1 power="6"/>
+    <attack1 power="8"/>
     <attack2 dist="0" power="0"/>
     <sound_actions/>
     <sound_attack name="sword">

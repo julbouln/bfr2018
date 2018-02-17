@@ -1,12 +1,10 @@
 <entity class="effect" name="explosion">
     <texture path="medias/extra/circleTexture.png"/>
-    <particle name="explosion" count="206" max="100000" type="texture">
-        <texture path="medias/extra/circleTexture.png"/>
-        <psize x="128" y="128"/>
-        <spawner type="circle" x="18.692001" y="18.692001"/>
-        <time_generator min_time="1.034" max_time="1.034"/>
-        <size_generator min_start_size="12.500001" max_start_size="14.655001" min_end_size="31.466002" max_end_size="49.138"/>
-        <velocity_generator type="angled" min_angle="-180.00002" max_angle="180.00002" min_start_speed="56.034004" max_start_speed="86.207001"/>
+    <particle name="explosion" count="200" max="1000" type="texture">
+        <spawner type="circle" x="20" y="20"/>
+        <time_generator min_time="1" max_time="1"/>
+        <size_generator min_start_size="12" max_start_size="15" min_end_size="30" max_end_size="50"/>
+        <velocity_generator type="angled" min_angle="-180.00002" max_angle="180.00002" min_start_speed="60" max_start_speed="90"/>
         <rotation_generator min_start_angle="-20" max_start_angle="-20" min_end_angle="90" max_end_angle="90"/>
         <euler_updater accel_x="0" accel_y="0"/>
         <color_generator>
@@ -18,39 +16,3 @@
     </particle>
     <sound_buffer path="medias/misc/explosion.flac"/>
 </entity>
-<!--
-<entity class="effect" name="explosion">
-    <texture mode="with_white_mask" path="medias/misc/explosion.png"/>
-    <particle count="1" max="1" name="explosion" type="animated_spritesheet">
-        <psize x="288" y="280"/>
-        <animation loop="false">
-            <frames>
-                <frame n="0"/>
-                <frame n="1"/>
-                <frame n="2"/>
-                <frame n="3"/>
-                <frame n="4"/>
-                <frame n="5"/>
-                <frame n="6"/>
-                <frame n="7"/>
-                <frame n="8"/>
-                <frame n="9"/>
-                <frame n="10"/>
-                <frame n="11"/>
-            </frames>
-            <duration value="100"/>
-        </animation>
-        <spawner type="point"/>
-        <time_generator max_time="4.0" min_time="4.0"/>
-        <size_generator max_end_size="280.0" max_start_size="280.0" min_end_size="280.0" min_start_size="280.0"/>
-        <velocity_generator type="angled" max_angle="0.0" max_start_speed="0.0" min_angle="0.0" min_start_speed="0.0"/>
-        <color_generator>
-            <min_start_col a="255" b="255" g="255" r="255"/>
-            <max_start_col a="255" b="255" g="255" r="255"/>
-            <min_end_col a="255" b="255" g="255" r="255"/>
-            <max_end_col a="255" b="255" g="255" r="255"/>
-        </color_generator>
-    </particle>
-    <sound_buffer path="medias/misc/explosion.flac"/>
-</entity>
--->

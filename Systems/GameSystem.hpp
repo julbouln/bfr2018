@@ -167,13 +167,19 @@ public:
 		return 0;
 	}
 
-	bool ennemyInRange(Tile &tile, Tile &destTile, int range)
+	bool ennemyInRange(Tile &tile, Tile &destTile, float range, float maxRange)
 	{
 		bool inRange = false;
-		for (sf::Vector2i const &p : this->tileAround(destTile, range)) {
+/*		for (sf::Vector2i const &p : this->tileAround(destTile, range)) {
 			if (tile.pos == p)
 				inRange = true;
 		}
+		*/
+
+		float dist = vectorLength(tile.pos - destTile.pos);
+		if(dist >= range && dist <= maxRange)
+			inRange = true;
+
 		return inRange;
 	}
 
@@ -270,7 +276,10 @@ public:
 	}
 
 	float trainCost(std::string type) {
-		return 2 * this->objTypeLife(type);
+		Unit unit;
+		this->vault->factory.parseUnitFromXml(type, unit);
+//		return 2 * this->objTypeLife(type);
+		return unit.cost;
 	}
 
 	// get object initial life from XML

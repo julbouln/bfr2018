@@ -273,9 +273,6 @@ void setVelocityGeneratorMode() {
 	}
 }
 
-bool showSave = false;
-std::vector<std::string> recentFiles;
-
 void save(std::string filename) {
 	tinyxml2::XMLDocument xmlDoc;
 	tinyxml2::XMLNode * pRoot = xmlDoc.NewElement("entity");
@@ -356,7 +353,6 @@ void save(std::string filename) {
 		velGenElement->SetAttribute("max_start_speed", gen->maxStartSpeed);
 	}
 
-
 	pElement->InsertEndChild(spawnerElement);
 	pElement->InsertEndChild(timeGenElement);
 	pElement->InsertEndChild(sizeGenElement);
@@ -415,23 +411,190 @@ void save(std::string filename) {
 
 	}
 
-
 	pRoot->InsertEndChild(pElement);
-
 	xmlDoc.SaveFile(filename.c_str());
 }
 
+
+sf::Color parseColor(tinyxml2::XMLElement *element) {
+	return sf::Color(element->IntAttribute("r"), element->IntAttribute("g"), element->IntAttribute("b"), element->IntAttribute("a"));
+}
+
+void load(std::string filename) {
+	tinyxml2::XMLDocument xmlDoc;
+	xmlDoc.LoadFile(filename.c_str());
+	tinyxml2::XMLElement *element = xmlDoc.RootElement()->FirstChildElement("particle");
+	tinyxml2::XMLElement * particleEl = element;
+
+	if (particleEl) {
+		sf::Vector2f spriteSize(0, 0);
+
+		tinyxml2::XMLElement * psizeEl = element->FirstChildElement("psize");
+		if (psizeEl)
+			spriteSize = sf::Vector2f{(float)psizeEl->IntAttribute("x"), (float)psizeEl->IntAttribute("y")};
+
+		particleSystemMode = partSysModes[particleEl->Attribute("type")];
+
+		initParticleSystem();
+		particleSystem->emitRate = particleEl->IntAttribute("count");
+
+		switch (particleSystemMode) {
+		case ParticleSystemMode::Points:
+			break;
+		case ParticleSystemMode::Texture:
+			break;
+		case ParticleSystemMode::Spritesheet: {
+//			auto texCoordGen = spriteSystem->addGenerator<particles::TexCoordsGenerator>();
+//			texCoordGen->texCoords = sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y);
+		}
+		break;
+		case ParticleSystemMode::AnimatedSpritesheet:
+			break;
+		case ParticleSystemMode::Metaball: {
+			// FIXME size == screen size
+			auto metaball = dynamic_cast<particles::MetaballParticleSystem *>(particleSystem);
+			metaball->color = parseColor(particleEl);
+		}
+		break;
+		default:
+			break;
+		}
+
+		tinyxml2::XMLElement *spawnerEl = particleEl->FirstChildElement("spawner");
+
+		spawnerMode = spawnModes[spawnerEl->Attribute("type")];
+		setSpawnMode();
+
+		switch (spawnerMode) {
+		case SpawnerMode::Point:
+			break;
+		case SpawnerMode::Box: {
+			auto boxSpawner = dynamic_cast<particles::BoxSpawner *>(spawner);
+			sf::Vector2f size(spawnerEl->FloatAttribute("x"), spawnerEl->FloatAttribute("y"));
+			boxSpawner->size = size;
+		}
+		break;
+		case SpawnerMode::Circle: {
+			auto circleSpawner = dynamic_cast<particles::CircleSpawner *>(spawner);
+			sf::Vector2f radius(spawnerEl->FloatAttribute("x"), spawnerEl->FloatAttribute("y"));
+			circleSpawner->radius = radius;
+		}
+		break;
+		case SpawnerMode::Disk: {
+			auto diskSpawner = dynamic_cast<particles::DiskSpawner *>(spawner);
+			sf::Vector2f radius(spawnerEl->FloatAttribute("x"), spawnerEl->FloatAttribute("y"));
+			diskSpawner->radius = radius;
+		}
+		break;
+		default:
+			break;
+		}
+
+		tinyxml2::XMLElement *timeGenEl = particleEl->FirstChildElement("time_generator");
+
+		timeGenerator->minTime = timeGenEl->FloatAttribute("min_time");
+		timeGenerator->maxTime = timeGenEl->FloatAttribute("max_time");
+
+		tinyxml2::XMLElement *sizeGenEl = particleEl->FirstChildElement("size_generator");
+
+		if (sizeGenEl) {
+			sizeGenerator->minStartSize = sizeGenEl->FloatAttribute("min_start_size");
+			sizeGenerator->maxStartSize = sizeGenEl->FloatAttribute("max_start_size");
+			sizeGenerator->minEndSize = sizeGenEl->FloatAttribute("min_end_size");
+			sizeGenerator->maxEndSize = sizeGenEl->FloatAttribute("max_end_size");
+		}
+
+		tinyxml2::XMLElement *velGenEl = particleEl->FirstChildElement("velocity_generator");
+
+		velocityGeneratorMode = velGenModes[velGenEl->Attribute("type")];
+		setVelocityGeneratorMode();
+
+		switch (velocityGeneratorMode) {
+		case VelocityGeneratorMode::Vector:
+		{
+			auto vectorGenerator = dynamic_cast<particles::VectorVelocityGenerator *>(velocityGenerator);
+			vectorGenerator->minStartVel = sf::Vector2f(velGenEl->FloatAttribute("min_start_vel_x"), velGenEl->FloatAttribute("min_start_vel_y"));
+			vectorGenerator->maxStartVel = sf::Vector2f(velGenEl->FloatAttribute("max_start_vel_x"), velGenEl->FloatAttribute("max_start_vel_y"));
+		}
+		break;
+		case VelocityGeneratorMode::Angled:
+		{
+			auto angledGenerator = dynamic_cast<particles::AngledVelocityGenerator *>(velocityGenerator);
+			angledGenerator->minAngle = velGenEl->FloatAttribute("min_angle");
+			angledGenerator->maxAngle = velGenEl->FloatAttribute("max_angle");
+			angledGenerator->minStartSpeed = velGenEl->FloatAttribute("min_start_speed");
+			angledGenerator->maxStartSpeed = velGenEl->FloatAttribute("max_start_speed");
+		}
+		break;
+		case VelocityGeneratorMode::Aimed:
+		{
+			auto aimedGenerator = dynamic_cast<particles::AimedVelocityGenerator *>(velocityGenerator);
+//			aimedGenerator->goal = options.destPos;
+			aimedGenerator->minStartSpeed = velGenEl->FloatAttribute("min_start_speed");
+			aimedGenerator->maxStartSpeed = velGenEl->FloatAttribute("max_start_speed");
+		}
+		break;
+		default:
+			break;
+		}
+
+		tinyxml2::XMLElement *rotGenEl = particleEl->FirstChildElement("rotation_generator");
+		if (rotGenEl) {
+			rotationGenerator->minStartAngle = rotGenEl->FloatAttribute("min_start_angle");
+			rotationGenerator->maxStartAngle = rotGenEl->FloatAttribute("max_start_angle");
+			rotationGenerator->minEndAngle = rotGenEl->FloatAttribute("min_end_angle");
+			rotationGenerator->maxEndAngle = rotGenEl->FloatAttribute("max_end_angle");
+		}
+
+		tinyxml2::XMLElement *colGenEl = particleEl->FirstChildElement("color_generator");
+
+		colorGenerator->minStartCol = parseColor(colGenEl->FirstChildElement("min_start_col"));
+		colorGenerator->maxStartCol = parseColor(colGenEl->FirstChildElement("max_start_col"));
+		colorGenerator->minEndCol = parseColor(colGenEl->FirstChildElement("min_end_col"));
+		colorGenerator->maxEndCol = parseColor(colGenEl->FirstChildElement("max_end_col"));
+
+		tinyxml2::XMLElement *eulUpEl = particleEl->FirstChildElement("euler_updater");
+		if (eulUpEl) {
+			eulerUpdater->globalAcceleration = sf::Vector2f(eulUpEl->FloatAttribute("accel_x"), eulUpEl->FloatAttribute("accel_y"));
+		}
+
+	}
+}
+
+std::vector<std::string> recentFiles;
+bool showSave = false;
+bool saveCurrent = true;
+std::string currentFile = "";
+bool showLoad = false;
 
 void saveGui() {
 	if (showSave) {
 		std::string save_file;
 		if ( fileIOWindow( save_file, recentFiles, "Save", {"*.xml", "*.*"} ) )
 		{
-			recentFiles.push_back( save_file );
-			showSave = false;
+			showSave = false;			
 			if ( !save_file.empty() )
 			{
+				currentFile = save_file;
+				recentFiles.push_back( save_file );
 				save(save_file);
+			}
+		}
+	}
+}
+
+void loadGui() {
+	if ( showLoad )
+	{
+		std::string open_file;
+		if ( fileIOWindow( open_file, recentFiles, "Open", {"*.xml", "*.*"}, true  ) )
+		{
+			showLoad = false;
+			if ( !open_file.empty() )
+			{
+				currentFile = open_file;
+				recentFiles.push_back( open_file );
+				load( open_file );
 			}
 		}
 	}
@@ -439,15 +602,49 @@ void saveGui() {
 
 
 void gui() {
-	ImGui::SetNextWindowSize(ImVec2(380, 630), ImGuiSetCond_FirstUseEver);
-
-	ImGui::Begin("Particles Demo");
-
-	if (ImGui::Button("Save")) {
-//		save();
-		showSave = true;
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Open")) {
+				showLoad = true;
+			}
+			if (ImGui::MenuItem("Save")) {
+				if(currentFile.empty()) {
+					showSave = true;
+				} else {
+					save(currentFile);
+				}
+			}
+			if (ImGui::MenuItem("Save as")) {
+				showSave = true;
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Quit")) {
+				exit(1);
+			}
+			ImGui::EndMenu();
+		}
+		/*
+		        if (ImGui::BeginMenu("Edit"))
+		        {
+		            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
+		            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+		            ImGui::Separator();
+		            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
+		            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
+		            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+		            ImGui::EndMenu();
+		        }
+		        */
+		ImGui::EndMainMenuBar();
 	}
-		saveGui();
+
+	saveGui();
+	loadGui();
+
+	ImGui::SetNextWindowSize(ImVec2(380, 630), ImGuiSetCond_FirstUseEver);
+	ImGui::Begin("Particles Editor");
 
 	if (ImGui::CollapsingHeader("Particle System", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const char* particleSystemItems[] = { "Points", "Textured", "Spritesheet", "Animated Spritesheet", "Metaball" };
@@ -457,7 +654,9 @@ void gui() {
 			initParticleSystem();
 		}
 
-		ImGui::SliderFloat("emit rate", &particleSystem->emitRate, 0.f, 1500.f);
+//		ImGui::SliderFloat("emit rate", &particleSystem->emitRate, 0.f, 1500.f);
+		ImGui::InputFloat("emit rate", &particleSystem->emitRate, 1.0f, 1500.0f);
+
 		if (particleSystemMode == ParticleSystemMode::Texture || particleSystemMode == ParticleSystemMode::Spritesheet || particleSystemMode == ParticleSystemMode::AnimatedSpritesheet) {
 			auto ps = dynamic_cast<particles::TextureParticleSystem *>(particleSystem);
 			ImGui::Checkbox("Additive blending", &ps->additiveBlendMode);
@@ -502,14 +701,17 @@ void gui() {
 		else if (spawnerMode == SpawnerMode::Box) {
 			auto sp = dynamic_cast<particles::BoxSpawner *>(spawner);
 			ImGui::SliderFloat2("size", &sp->size, 0.f, 500.f);
+//            ImGui::DragFloatRange2("size", &sp->size.x, &sp->size.y, 0.5f, 0.0f, 500.0f, "X: %.1f", "Y: %.1f");
 		}
 		else if (spawnerMode == SpawnerMode::Circle) {
 			auto sp = dynamic_cast<particles::CircleSpawner *>(spawner);
 			ImGui::SliderFloat2("size", &sp->radius, 0.f, 500.f);
+//            ImGui::DragFloatRange2("size", &sp->radius.x, &sp->radius.y, 0.5f, 0.0f, 500.0f, "X: %.1f", "Y: %.1f");
 		}
 		else if (spawnerMode == SpawnerMode::Disk) {
 			auto sp = dynamic_cast<particles::DiskSpawner *>(spawner);
 			ImGui::SliderFloat2("size", &sp->radius, 0.f, 500.f);
+//            ImGui::DragFloatRange2("size", &sp->radius.x, &sp->radius.y, 0.5f, 0.0f, 500.0f, "X: %.1f", "Y: %.1f");
 		}
 	}
 
@@ -591,7 +793,7 @@ int main() {
 
 	initParticleSystem();
 
-	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Particles Demo");
+	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Particles Editor");
 	window.setVerticalSyncEnabled(true);
 
 	ImGui::SFML::Init(window);

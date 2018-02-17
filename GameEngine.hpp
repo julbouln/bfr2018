@@ -440,7 +440,7 @@ public:
 										case TechComponent::Character: {
 											ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
 											ImGui::BeginTooltip();
-											ImGui::Image(this->vault->factory.getTex(player.resourceType + "_spend")); ImGui::SameLine();
+											ImGui::Image(this->vault->factory.getTex(player.resourceType + "_cost")); ImGui::SameLine();
 											ImGui::Text("%d", (int)this->trainCost(node.type));
 											ImGui::EndTooltip();
 											ImGui::PopFont();

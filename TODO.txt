@@ -12,7 +12,6 @@ Game:
 - add projectile explosion FX
 - vautour FX
 - add intro & credits
-- add min/max attack2 distance
 - add resource trap + explosion FX
 - ruins should be tilable ?
 

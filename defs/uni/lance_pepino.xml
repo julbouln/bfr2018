@@ -60,9 +60,10 @@
     <life value="4"/>
   </game_object>
   <unit>
+    <cost value="12"/>
     <speed value="2"/>
     <attack1 power="1"/>
-    <attack2 dist="2" power="3"/>
+    <attack2 dist="2" max_dist="3" power="4"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/rebels/lance_pepino/sounds/lp_selec01.flac"/>

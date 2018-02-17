@@ -64,6 +64,7 @@
     <life value="3"/>
   </game_object>
   <unit>
+    <cost value="4"/>
     <speed value="4"/>
     <attack1 power="2"/>
     <attack2 dist="0" power="0"/>

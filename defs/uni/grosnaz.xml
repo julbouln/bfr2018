@@ -54,13 +54,14 @@
   <game_object>
     <name value="grosnaz"/>
     <team value="neonaz"/>
-    <view value="4"/>
+    <view value="5"/>
     <life value="5"/>
   </game_object>
   <unit>
+    <cost value="20"/>
     <speed value="3"/>
     <attack1 power="3"/>
-    <attack2 dist="4" power="4"/>
+    <attack2 dist="4" max_dist="5" power="4"/>
     <sound_actions/>
     <sound_attack name="petrole"/>
   </unit>
