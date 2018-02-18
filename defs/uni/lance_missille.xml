@@ -71,6 +71,7 @@
     <attack2 dist="3" max_dist="4" power="6"/>
     <sound_actions/>
     <sound_attack name="rockette"/>
+    <can_destroy_resources value="true"/>
   </unit>
   <effects>
     <effect name="hit" ref="blood_hit"/>

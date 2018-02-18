@@ -1,0 +1,14 @@
+<entity class="effect" name="pluit">
+    <particle name="pluit" count="800" max="100000" type="lines" x="0" y="1" continuous="true" always_visible="true">
+        <spawner type="disk" x="1536" y="8"/>
+        <time_generator min_time="1" max_time="60"/>
+        <size_generator min_start_size="20" max_start_size="60" min_end_size="10" max_end_size="30"/>
+        <velocity_generator type="angled" min_angle="180.00002" max_angle="180.00002" min_start_speed="100" max_start_speed="150"/>
+        <color_generator>
+            <min_start_col a="255" r="16" g="124" b="167"/>
+            <max_start_col a="255" r="30" g="150" b="255"/>
+            <min_end_col a="255" r="0" g="11" b="255"/>
+            <max_end_col a="255" r="0" g="3" b="157"/>
+        </color_generator>
+    </particle>
+</entity>

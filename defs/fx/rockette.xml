@@ -1,6 +1,6 @@
 <entity class="effect" name="rockette">
     <texture mode="with_directions" path="medias/projectiles/rockette.png"/>
-    <particle count="1" max="1" name="rockette" type="animated_spritesheet">
+    <particle count="1" lifetime="3.0" max="1" name="rockette" type="animated_spritesheet">
         <psize x="64" y="64"/>
         <animation>
             <frames>
@@ -27,4 +27,7 @@
         </color_generator>
     </particle>
     <sound_buffer path="medias/projectiles/rockette.flac"/>
+    <effects>
+        <effect name="next" ref="explosion_rockette"/>
+    </effects>
 </entity>

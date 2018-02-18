@@ -80,6 +80,7 @@
       </sound_action>
     </sound_actions>
     <sound_attack name="bud"/>
+    <can_destroy_resources value="true"/>
   </unit>
   <effects>
     <effect name="hit" ref="blood_hit"/>

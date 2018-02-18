@@ -33,6 +33,12 @@ public:
         return;
     }
 
+    void load(std::string name, const std::string &vertexShader, const std::string &fragmentShader) {
+        sf::Shader *shader = new sf::Shader();
+        shader->loadFromMemory(vertexShader, fragmentShader);
+        this->shaders[name] = shader;
+    }
+
     sf::Shader* getRef(std::string name)
     {
         return this->shaders.at(name);

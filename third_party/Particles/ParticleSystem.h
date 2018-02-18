@@ -23,7 +23,7 @@ public:
 
 	void reset();
 
-	virtual void update(const sf::Time &dt);
+	virtual void update(float dt);
 	virtual void render(sf::RenderTarget &renderTarget) = 0;
 
 	template<typename T>
@@ -183,9 +183,35 @@ protected:
 };
 
 
+static const std::string metaballVertexShader = \
+                                 "void main()" \
+                                 "{" \
+                                 "    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;" \
+                                 "    gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;" \
+                                 "    gl_FrontColor = gl_Color;" \
+                                 "}";
+
+static const std::string metaballFragmentShader = \
+                                   "uniform sampler2D texture;" \
+                                   "uniform vec4 customColor;" \
+                                   "uniform float threshold;" \
+                                   "" \
+                                   "void main()" \
+                                   "{" \
+                                   "    vec4 pixel = texture2D(texture, gl_TexCoord[0].xy);" \
+                                   "    if (pixel.a > threshold) {" \
+                                   "        gl_FragColor = customColor;" \
+                                   "    }" \
+                                   "    else {" \
+                                   "        gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);" \
+                                   "    }" \
+                                   "}";
+
+
 class MetaballParticleSystem : public TextureParticleSystem {
 public:
 	MetaballParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight);
+	MetaballParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight, sf::Shader *pShader);
 	virtual ~MetaballParticleSystem() {}
 
 	MetaballParticleSystem(const MetaballParticleSystem &) = delete;

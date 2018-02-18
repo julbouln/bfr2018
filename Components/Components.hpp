@@ -154,6 +154,12 @@ struct Unit {
 #ifdef PATHFINDING_FLOWFIELD
 	FlowFieldPath flowFieldPath;
 #endif
+
+	bool canDestroyResources;
+
+	Unit() {
+		this->canDestroyResources = false;
+	}
 };
 
 struct Building {

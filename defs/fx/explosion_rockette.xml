@@ -1,9 +1,9 @@
-<entity class="effect" name="explosion">
+<entity name="explosion_rockette" class="effect">
     <texture path="medias/extra/circleTexture.png"/>
-    <particle name="explosion" count="200" lifetime="3.0" max="1000" type="texture">
-        <spawner type="circle" x="20" y="20"/>
-        <time_generator min_time="1" max_time="1"/>
-        <size_generator min_start_size="12" max_start_size="15" min_end_size="30" max_end_size="50"/>
+    <particle name="explosion_rockette" count="200" lifetime="3.0" max="500" type="texture">
+        <spawner type="circle" x="4" y="4"/>
+        <time_generator min_time="0.25" max_time="0.25"/>
+        <size_generator min_start_size="6" max_start_size="8" min_end_size="15" max_end_size="25"/>
         <velocity_generator type="angled" min_angle="-180.00002" max_angle="180.00002" min_start_speed="60" max_start_speed="90"/>
         <rotation_generator min_start_angle="-20" max_start_angle="-20" min_end_angle="90" max_end_angle="90"/>
         <euler_updater accel_x="0" accel_y="0"/>
@@ -14,5 +14,4 @@
             <max_end_col a="109" r="22" g="22" b="22"/>
         </color_generator>
     </particle>
-    <sound_buffer path="medias/misc/explosion.flac"/>
 </entity>

@@ -18,18 +18,18 @@ ParticleData::ParticleData(int maxSize) : count(maxSize), countAlive(0) {
 }
 
 ParticleData::~ParticleData() {
-	delete pos;
-	delete vel;
-	delete acc;
-	delete time;
-	delete size;
-	delete angle;
-	delete col;
-	delete startCol;
-	delete endCol;
-	delete texCoords;
-	delete frame;
-	delete frameTimer;
+	delete[] pos;
+	delete[] vel;
+	delete[] acc;
+	delete[] time;
+	delete[] size;
+	delete[] angle;
+	delete[] col;
+	delete[] startCol;
+	delete[] endCol;
+	delete[] texCoords;
+	delete[] frame;
+	delete[] frameTimer;
 }
 
 void ParticleData::kill(int id) {

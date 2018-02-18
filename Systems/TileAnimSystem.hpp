@@ -5,9 +5,9 @@
 class TileAnimSystem : public GameSystem {
 public:
 	void update(float dt) {
-		float realDt = 0.033 / dt * 0.033;
-		updateStaticSpritesheets(realDt);
-		updateAnimatedSpritesheets(realDt);
+		float gameDt = 0.033 / dt * 0.033;
+		updateStaticSpritesheets(gameDt);
+		updateAnimatedSpritesheets(gameDt);
 	}
 
 	void updateStaticSpritesheets(float dt) {

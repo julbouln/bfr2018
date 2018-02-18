@@ -53,6 +53,8 @@
 	<!--
 	<resource path="defs/res/pollution10.xml"/><resource path="defs/res/pollution11.xml"/>-->
 	<effect path="defs/fx/explosion.xml"/>
+	<effect path="defs/fx/explosion_rockette.xml"/>
+	<effect path="defs/fx/explosion_bud.xml"/>
 	<effect path="defs/fx/bud.xml"/>
 	<effect path="defs/fx/pepino.xml"/>
 	<effect path="defs/fx/petrole.xml"/>
@@ -68,6 +70,8 @@
 	<effect path="defs/fx/punkette_alt_die.xml"/>
 	<effect path="defs/fx/lance_pepino_alt_die.xml"/>
 	<effect path="defs/fx/guerrier_bud_alt_die.xml"/>
+
+	<effect path="defs/fx/pluit.xml"/>
 
 	<decor path="defs/dec/petit_caillou1.xml"/>
 	<decor path="defs/dec/petit_caillou2.xml"/>

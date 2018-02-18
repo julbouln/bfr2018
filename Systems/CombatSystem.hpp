@@ -100,7 +100,7 @@ public:
 				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-				bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist);
+				bool inRange = this->ennemyInRange(tile, destTile, 1, maxDist);
 
 				if (inRange) {
 					if (tile.pos == unit.nextpos) { // unit must be arrived at a position
@@ -111,7 +111,8 @@ public:
 #endif
 						sf::Vector2i distDiff = (destTile.pos - tile.pos);
 						// use attack2 if in correct range
-						if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
+//						if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
+						if (unit.attack2.distance && this->ennemyInRange(tile, destTile, dist, maxDist)) {
 							attackPower = unit.attack2.power;
 						}
 						unit.destpos = tile.pos;
@@ -202,7 +203,7 @@ public:
 						altOptions.shaderOptions = tile.shaderOptions;
 					}
 
-					this->emitEffect("alt_die", entity, tile.ppos, 2.0, altOptions);
+					this->emitEffect("alt_die", entity, tile.ppos, altOptions);
 					obj.destroy = true;
 				} else {
 					// unit died, destroy after playing anim
@@ -253,14 +254,27 @@ public:
 										hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
 										hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-										this->emitEffect("hit", unit.targetEnt, fxPos, 1.0, hitOptions);
+										this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
 
 										ParticleEffectOptions projOptions;
 										projOptions.destPos = destTile.ppos;
 										projOptions.direction = this->getDirection(tile.pos, destTile.pos);
 										projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-										this->emitEffect("projectile", entity, tile.ppos, 3.0, projOptions);
+										EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
+										if (projEnt && unit.canDestroyResources) {											
+											ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
+											sf::Vector2i projDestPos = destTile.pos;
+											proj.effectEndCallback = [this, projDestPos]() {
+												EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+												if (resEnt) {
+													this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+													this->vault->registry.destroy(resEnt);
+													std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+												}
+											};
+										}
+
 									} else {
 										this->changeState(entity, "idle");
 										unit.targetEnt = 0;
@@ -294,7 +308,7 @@ public:
 				projOptions.destPos = tile.ppos;
 				projOptions.direction = 0;
 
-				this->emitEffect("destroy", entity, tile.ppos, 1.0, projOptions);
+				this->emitEffect("destroy", entity, tile.ppos, projOptions);
 				map->sounds.push(SoundPlay{"explosion", 2, true, tile.pos});
 
 				obj.destroy = true;

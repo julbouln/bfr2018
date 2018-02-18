@@ -1,6 +1,6 @@
 <entity class="effect" name="rotten_hit">
     <texture path="medias/extra/blobTexture.png"/>
-    <particle name="blood_hit" count="100" max="200" type="metaball" a="255" b="45" g="60" r="93">
+    <particle name="blood_hit" count="100" lifetime="1.0" max="200" type="metaball" a="255" b="45" g="60" r="93">
         <spawner type="disk" x="8.0" y="8.0"/>
         <time_generator max_time="1.0" min_time="0.5"/>
         <size_generator max_end_size="8.0" max_start_size="4.0" min_end_size="8.0" min_start_size="4.0"/>

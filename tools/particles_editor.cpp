@@ -279,13 +279,20 @@ void setVelocityGeneratorMode() {
 	}
 }
 
+// save/load
+
+std::string entName = "noname";
+
 void save(std::string filename) {
 	tinyxml2::XMLDocument xmlDoc;
-	tinyxml2::XMLNode * pRoot = xmlDoc.NewElement("entity");
+	tinyxml2::XMLElement * pRoot = xmlDoc.NewElement("entity");
+	pRoot->SetAttribute("name", entName.c_str());
+	pRoot->SetAttribute("class", "effect");
+
 	xmlDoc.InsertFirstChild(pRoot);
 
 	tinyxml2::XMLElement * pElement = xmlDoc.NewElement("particle");
-	pElement->SetAttribute("name", "noname");
+	pElement->SetAttribute("name", entName.c_str());
 	pElement->SetAttribute("count", int(particleSystem->emitRate));
 	pElement->SetAttribute("max", int(MAX_PARTICLE_COUNT));
 	pElement->SetAttribute("type", revPartSysModes[particleSystemMode].c_str());
@@ -432,6 +439,9 @@ void load(std::string filename) {
 	tinyxml2::XMLElement *element = xmlDoc.RootElement()->FirstChildElement("particle");
 	tinyxml2::XMLElement * particleEl = element;
 
+	if (particleEl->Attribute("name"))
+		entName = particleEl->Attribute("name");
+
 	if (particleEl) {
 		sf::Vector2f spriteSize(0, 0);
 
@@ -559,11 +569,12 @@ void load(std::string filename) {
 
 		tinyxml2::XMLElement *colGenEl = particleEl->FirstChildElement("color_generator");
 
-		colorGenerator->minStartCol = parseColor(colGenEl->FirstChildElement("min_start_col"));
-		colorGenerator->maxStartCol = parseColor(colGenEl->FirstChildElement("max_start_col"));
-		colorGenerator->minEndCol = parseColor(colGenEl->FirstChildElement("min_end_col"));
-		colorGenerator->maxEndCol = parseColor(colGenEl->FirstChildElement("max_end_col"));
-
+		if (colGenEl) {
+			colorGenerator->minStartCol = parseColor(colGenEl->FirstChildElement("min_start_col"));
+			colorGenerator->maxStartCol = parseColor(colGenEl->FirstChildElement("max_start_col"));
+			colorGenerator->minEndCol = parseColor(colGenEl->FirstChildElement("min_end_col"));
+			colorGenerator->maxEndCol = parseColor(colGenEl->FirstChildElement("max_end_col"));
+		}
 		tinyxml2::XMLElement *eulUpEl = particleEl->FirstChildElement("euler_updater");
 		if (eulUpEl) {
 			eulerUpdater->globalAcceleration = sf::Vector2f(eulUpEl->FloatAttribute("accel_x"), eulUpEl->FloatAttribute("accel_y"));
@@ -583,7 +594,7 @@ void saveGui() {
 		std::string save_file;
 		if ( fileIOWindow( save_file, recentFiles, "Save", {"*.xml", "*.*"} ) )
 		{
-			showSave = false;			
+			showSave = false;
 			if ( !save_file.empty() )
 			{
 				currentFile = save_file;
@@ -621,7 +632,7 @@ void gui() {
 				showLoad = true;
 			}
 			if (ImGui::MenuItem("Save")) {
-				if(currentFile.empty()) {
+				if (currentFile.empty()) {
 					showSave = true;
 				} else {
 					save(currentFile);
@@ -660,7 +671,7 @@ void gui() {
 	if (ImGui::CollapsingHeader("Particle System", ImGuiTreeNodeFlags_DefaultOpen)) {
 		const char* particleSystemItems[] = { "Points", "Lines", "Textured", "Spritesheet", "Animated Spritesheet", "Metaball" };
 		static int particleSystemItem = 2;
-		particleSystemItem=(int)particleSystemMode;
+		particleSystemItem = (int)particleSystemMode;
 
 		if (ImGui::Combo("Render Mode", &particleSystemItem, particleSystemItems, 6)) {
 			particleSystemMode = static_cast<ParticleSystemMode>(particleSystemItem);
@@ -696,13 +707,13 @@ void gui() {
 		if (particleSystemMode == ParticleSystemMode::Lines) {
 			auto ps = dynamic_cast<particles::LineParticleSystem *>(particleSystem);
 
-            static float pointVec1[4] = { 0, 0, 8, 8 };
-            static float pointVec2[4] = { 0, 1, 8, 8 };
+			static float pointVec1[4] = { 0, 0, 8, 8 };
+			static float pointVec2[4] = { 0, 1, 8, 8 };
 
-            ImGui::InputFloat2("point 1", pointVec1);
-            ImGui::InputFloat2("point 2", pointVec2);
+			ImGui::InputFloat2("point 1", pointVec1);
+			ImGui::InputFloat2("point 2", pointVec2);
 
-			ps->setPoints(sf::Vector2f(pointVec1[0],pointVec1[1]),sf::Vector2f(pointVec2[0],pointVec2[1]));
+			ps->setPoints(sf::Vector2f(pointVec1[0], pointVec1[1]), sf::Vector2f(pointVec2[0], pointVec2[1]));
 		}
 
 		if (particleSystemMode == ParticleSystemMode::Metaball) {

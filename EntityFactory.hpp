@@ -105,6 +105,7 @@ public:
 		shrManager.load("color_swap", "defs/shaders/color_swap.frag");
 		shrManager.load("pixelation", "defs/shaders/pixelation.frag");
 		shrManager.load("outline", "defs/shaders/outline.frag");
+//		shrManager.load("metaball", particles::metaballVertexShader, particles::metaballFragmentShader);
 #endif
 
 		texLoader.loadTextureWithWhiteMask("interface_rebel", "medias/interface/bgs/interface_rebel.png");
@@ -611,21 +612,30 @@ public:
 		return entity;
 	}
 
-	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, float lifetime, ParticleEffectOptions options) {
+	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, ParticleEffectOptions options) {
 		EntityID entity = registry.create();
 
 #ifdef FACTORY_DEBUG
 		std::cout << "EntityFactory: create map effect " << entity << " " << name << std::endl;
 #endif
 		ParticleEffect effect;
-		effect.lifetime = lifetime;
 		effect.currentTime = 0.0;
 
 		options.texMgr = &texManager;
 
 		particleEffectParser.parse(effect, this->getXmlComponent(name, "particle"), options);
 
+		effect.pos = effect.spawner->center;
+		if(options.hasDestPos())
+			effect.destpos = options.destPos;
+		else
+			effect.destpos = effect.pos;
+
 		registry.assign<ParticleEffect>(entity, effect);
+
+		Effects effects;
+		particleEffectParser.parseEffects(effects, this->getXmlComponent(name, "effects"));
+		registry.assign<Effects>(entity, effects);
 
 		return entity;
 	}

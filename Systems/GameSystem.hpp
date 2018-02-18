@@ -232,8 +232,8 @@ public:
 			return false;
 	}
 
-	EntityID emitEffect(std::string name, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions()) {
-		EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, name, lifetime, options);
+	EntityID emitEffect(std::string name, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
+		EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, name, options);
 		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
 		effect.spawner->center = ppos;
 		if (!effect.continuous)
@@ -243,11 +243,11 @@ public:
 	}
 
 
-	EntityID emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, float lifetime, ParticleEffectOptions options = ParticleEffectOptions()) {
+	EntityID emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
 		if (this->vault->registry.has<Effects>(emitter)) {
 			Effects &effects = this->vault->registry.get<Effects>(emitter);
 			if (effects.effects.count(name) > 0) {
-				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], lifetime, options);
+				EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], options);
 				ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
 				effect.spawner->center = ppos;
 				if (!effect.continuous)
@@ -276,7 +276,7 @@ public:
 				sf::Vector2f fxPos = tile.ppos;
 				fxPos.x += 16.0;
 				fxPos.y += 16.0;
-				this->emitEffect("spend", entity, fxPos, 5.0);
+				this->emitEffect("spend", entity, fxPos);
 
 				this->vault->factory.destroyEntity(this->vault->registry, entity);
 

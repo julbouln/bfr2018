@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION "0.9.04"
+#define VERSION "0.9.05"
 
 //#define SOUND_SYSTEM_DEBUG
 //#define TRANSITIONS_DEBUG
@@ -23,3 +23,7 @@
 #define PATHFINDING_FLOWFIELD_DYNAMIC
 
 #define MAX_SOUNDS 32
+
+#ifdef WITHGPERFTOOLS
+#include <gperftools/profiler.h> 
+#endif

@@ -1,5 +1,5 @@
 <entity class="effect" name="mitraille">
-    <particle name="mitraille" count="50" max="250" type="points" continuous="true">
+    <particle name="mitraille" count="50" lifetime="3.0" max="250" type="points" continuous="true">
         <spawner type="box" x="16.0" y="16.0"/>
         <time_generator max_time="4.0" min_time="4.0"/>
         <size_generator max_end_size="50.0" max_start_size="20.0" min_end_size="40.0" min_start_size="10.0"/>

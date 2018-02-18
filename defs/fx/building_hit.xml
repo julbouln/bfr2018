@@ -1,5 +1,5 @@
 <entity class="effect" name="building_hit">
-    <particle name="building_hit" count="25" max="100" type="points">
+    <particle name="building_hit" count="25" lifetime="1.0" max="100" type="points">
         <spawner type="point"/>
         <time_generator max_time="0.5" min_time="0.25"/>
         <size_generator max_end_size="50.0" max_start_size="20.0" min_end_size="40.0" min_start_size="10.0"/>

@@ -1,6 +1,6 @@
 <entity class="effect" name="blood_hit">
     <texture path="medias/extra/blobTexture.png"/>
-    <particle name="blood_hit" count="100" max="200" type="metaball" a="255" b="52" g="52" r="218">
+    <particle name="blood_hit" count="100" lifetime="1.0" max="200" type="metaball" a="255" b="52" g="52" r="218">
         <psize x="128" y="128"/>
         <spawner type="disk" x="8.0" y="8.0"/>
         <time_generator max_time="1.0" min_time="0.5"/>

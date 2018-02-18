@@ -173,6 +173,9 @@ public:
 			unit.attack1 = Attack{attack1_power, 0, 0};
 			unit.attack2 = Attack{attack2_power, attack2_dist, attack2_maxDist };
 
+			if(element->FirstChildElement("can_destroy_resources"))
+				unit.canDestroyResources = element->FirstChildElement("can_destroy_resources")->BoolAttribute("value");
+
 			tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
 			if (soundsEl) {
 				for (tinyxml2::XMLElement *soundEl : soundsEl) {

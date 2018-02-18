@@ -85,6 +85,7 @@
       </sound_action>
     </sound_actions>
     <sound_attack name="rockette"/>
+    <can_destroy_resources value="true"/>
   </unit>
   <effects>
     <effect name="hit" ref="rotten_hit"/>

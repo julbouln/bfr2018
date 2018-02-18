@@ -57,11 +57,20 @@ static std::map<std::string, VelocityGeneratorMode> velGenModes =
 class ParticleEffectOptions {
 public:
 	ParticleEffectOptions() {
+		destPos = sf::Vector2f(-32.0, -32.0);
 		texMgr = nullptr;
 		direction = 0;
 		applyShader = false;
 		shader = nullptr;
 	}
+
+	bool hasDestPos() {
+		if (destPos.x >= 0)
+			return true;
+		else
+			return false;
+	}
+
 	TextureManager *texMgr;
 	sf::Vector2f destPos; // for aimed swawner
 	int direction; // for aimed spawner
@@ -73,7 +82,13 @@ public:
 };
 
 class ParticleEffectParser {
+	sf::Shader metaballShader;
 public:
+
+	ParticleEffectParser() {
+		metaballShader.loadFromMemory(particles::metaballVertexShader, particles::metaballFragmentShader);
+	}
+
 	sf::Color parseColor(tinyxml2::XMLElement *element) {
 		return sf::Color(element->IntAttribute("r"), element->IntAttribute("g"), element->IntAttribute("b"), element->IntAttribute("a"));
 	}
@@ -95,6 +110,11 @@ public:
 			tinyxml2::XMLElement * psizeEl = element->FirstChildElement("psize");
 			if (psizeEl)
 				spriteSize = sf::Vector2f{(float)psizeEl->IntAttribute("x"), (float)psizeEl->IntAttribute("y")};
+
+			if (particleEl->Attribute("lifetime"))
+				effect.lifetime = particleEl->FloatAttribute("lifetime");
+			else
+				effect.lifetime = std::numeric_limits<float>::max();
 
 			int max = particleEl->IntAttribute("max") + 1;
 			int count = particleEl->IntAttribute("count");
@@ -171,7 +191,7 @@ public:
 			break;
 			case ParticleSystemMode::Metaball: {
 				// FIXME size == screen size
-				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
+				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y, &metaballShader);
 				metaball->color = this->parseColor(particleEl);
 				effect.particleSystem = metaball;
 			}
@@ -281,12 +301,13 @@ public:
 
 			tinyxml2::XMLElement *colGenEl = particleEl->FirstChildElement("color_generator");
 
-			auto colorGenerator = effect.particleSystem->addGenerator<particles::ColorGenerator>();
-			colorGenerator->minStartCol = this->parseColor(colGenEl->FirstChildElement("min_start_col"));
-			colorGenerator->maxStartCol = this->parseColor(colGenEl->FirstChildElement("max_start_col"));
-			colorGenerator->minEndCol = this->parseColor(colGenEl->FirstChildElement("min_end_col"));
-			colorGenerator->maxEndCol = this->parseColor(colGenEl->FirstChildElement("max_end_col"));
-
+			if (colGenEl) {
+				auto colorGenerator = effect.particleSystem->addGenerator<particles::ColorGenerator>();
+				colorGenerator->minStartCol = this->parseColor(colGenEl->FirstChildElement("min_start_col"));
+				colorGenerator->maxStartCol = this->parseColor(colGenEl->FirstChildElement("max_start_col"));
+				colorGenerator->minEndCol = this->parseColor(colGenEl->FirstChildElement("min_end_col"));
+				colorGenerator->maxEndCol = this->parseColor(colGenEl->FirstChildElement("max_end_col"));
+			}
 			auto timeUpdater = effect.particleSystem->addUpdater<particles::TimeUpdater>();
 			auto colorUpdater = effect.particleSystem->addUpdater<particles::ColorUpdater>();
 			auto sizeUpdater = effect.particleSystem->addUpdater<particles::SizeUpdater>();

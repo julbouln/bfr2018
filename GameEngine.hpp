@@ -259,7 +259,7 @@ public:
 		pathfinding.init();
 
 
-//		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0), 60);
+//		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0));
 //		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);
 
 
@@ -704,7 +704,7 @@ public:
 
 		mapLayers.drawTerrainTileMap(this->game->window, dt);
 		drawMap.draw(this->game->window, clip, dt);
-		if (this->gameSpeed < 2)
+//		if (this->gameSpeed < 2)
 			fx.draw(this->game->window, clip, dt);
 
 		mapLayers.drawFogTileMap(this->game->window, dt);
@@ -972,11 +972,6 @@ public:
 	}
 
 	void update(float dt) {
-	}
-
-	void update(sf::Time & elapsed) {
-		float dt = elapsed.asSeconds();
-
 		float updateDt = dt;
 		this->game->window.setView(this->gameView);
 
@@ -985,11 +980,11 @@ public:
 		this->updateEveryFrame(dt);
 		this->updateMoveView(dt);
 
-		if (this->gameSpeed < 2) {
-			this->fx.update(elapsed);
-		} else {
-			this->fx.clear();
-		}
+//		if (this->gameSpeed < 2) {
+			this->fx.update(dt);
+//		} else {
+//			this->fx.clear();
+//		}
 
 		this->currentTime += dt;
 

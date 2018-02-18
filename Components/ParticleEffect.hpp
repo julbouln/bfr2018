@@ -10,6 +10,16 @@ struct ParticleEffect {
 	int particles;
 	bool continuous;
 	bool alwaysVisible;
+	sf::Vector2f pos;
+	sf::Vector2f destpos;
+
+	std::function<void(void)> effectEndCallback;
+
+	ParticleEffect() {
+		this->particleSystem = nullptr;
+		this->spawner = nullptr;
+		this->effectEndCallback = []() {};
+	}
 };
 
 struct Effects {

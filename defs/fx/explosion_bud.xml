@@ -1,0 +1,12 @@
+<entity class="effect" name="explosion_bud">
+    <texture path="medias/extra/blobTexture.png"/>
+    <particle a="255" b="38" count="160" g="152" max="300" name="explosion_bud" r="78" type="metaball">
+        <psize x="128" y="128"/>
+        <spawner type="point"/>
+        <time_generator max_time="0.34999999" min_time="0.25"/>
+        <size_generator max_end_size="12" max_start_size="15" min_end_size="4" min_start_size="6"/>
+        <velocity_generator max_angle="180.00002" max_start_speed="120" min_angle="-180.00002" min_start_speed="80" type="angled"/>
+        <rotation_generator max_end_angle="90" max_start_angle="-20" min_end_angle="90" min_start_angle="-20"/>
+        <euler_updater accel_x="0" accel_y="0"/>
+    </particle>
+</entity>

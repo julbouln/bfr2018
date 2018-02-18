@@ -1,6 +1,6 @@
 <entity class="effect" name="pepino">
     <texture mode="with_directions" path="medias/projectiles/pepino.png"/>
-    <particle count="1" max="1" name="pepino" type="animated_spritesheet">
+    <particle count="1" lifetime="3.0" max="1" name="pepino" type="animated_spritesheet">
         <psize x="32" y="32"/>
         <animation>
             <frames>

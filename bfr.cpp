@@ -8,6 +8,9 @@
 
 int main(int argc, char *argv[])
 {
+#ifdef WITHGPERFTOOLS
+	ProfilerStart("bfr_prof.log");
+#endif
 	bool fullscreen = false;
 	unsigned int width = 1024;
 	unsigned int height = 768;
@@ -90,6 +93,11 @@ int main(int argc, char *argv[])
 	game.pushRegisteredStage("main_menu");
 
 	game.loop();
+
+#ifdef WITHGPERFTOOLS
+ProfilerStop();
+#endif
+
 
 	return EXIT_SUCCESS;
 }
