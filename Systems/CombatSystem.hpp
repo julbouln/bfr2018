@@ -167,7 +167,8 @@ public:
 					}
 				}
 				else {
-					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+					sf::Vector2i dpos = destTile.pos;
+//					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
 #ifdef COMBAT_DEBUG
 					std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
 #endif

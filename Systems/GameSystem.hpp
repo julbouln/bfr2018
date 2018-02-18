@@ -176,9 +176,13 @@ public:
 				}
 				*/
 
-		float dist = vectorLength(tile.pos - destTile.pos);
-		if (dist >= range && dist <= maxRange)
-			inRange = true;
+		for (sf::Vector2i const &p : this->tileSurface(destTile)) {
+			float dist = vectorLength(tile.pos - p);
+			if (dist >= range && dist <= maxRange) {
+				inRange = true;
+				break;
+			}
+		}
 
 		return inRange;
 	}
