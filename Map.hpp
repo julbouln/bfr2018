@@ -137,6 +137,7 @@ public:
 
 	Layer<EntityID> effects;
 
+	Layer<EntityID> water;
 	Layer<EntityID> corpses;
 
 	Layer<EntityID> staticBuildable;

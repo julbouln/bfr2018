@@ -75,8 +75,8 @@
   <unit>
     <cost value="40"/>
     <speed value="1"/>
-    <attack1 power="12"/>
-    <attack2 dist="1" max_dist="2" power="10"/>
+    <attack1 power="10"/>
+    <attack2 dist="2" max_dist="2" power="10"/>
     <sound_actions/>
     <sound_attack name="mitraille">
       <sound_buffer global="mitraille" path="medias/projectiles/mitraille.flac"/>

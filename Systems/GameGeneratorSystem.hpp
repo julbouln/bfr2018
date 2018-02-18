@@ -147,7 +147,7 @@ private:
 	}
 
 	sf::Vector2i getInitialPosition(sf::Vector2i pos) {
-		return this->firstFreePosition(pos, this->map->staticPathfinding, 16);
+		return this->firstAvailablePosition(pos, 1, 16);
 	}
 
 	std::vector<sf::Vector2i> generateInitialPositions() {

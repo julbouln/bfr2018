@@ -98,43 +98,20 @@ public:
 	sf::Vector2i nearestTileAround(sf::Vector2i src, Tile &tile, int dist) {
 		sf::Vector2i nearest(1024, 1024);
 		for (sf::Vector2i const &p : this->tileAround(tile, dist)) {
-			if (!this->map->objs.get(p.x, p.y)) {
+			if (this->map->pathAvailable(p.x, p.y)) {
 				if (this->approxDistance(src, p) < this->approxDistance(src, nearest)) {
 					nearest = p;
 				}
 			}
 		}
-#ifdef BUG_DEBUG
-		if (nearest.x == 1024 && nearest.y == 1024) {
-			std::cout << "BUG: no nearest pos around " << tile.pos.x << "x" << tile.pos.y << std::endl;
-		}
-#endif
-		return nearest;
+		if (nearest.x == 1024 && nearest.y == 1024)
+			return tile.pos;
+		else
+			return nearest;
 	}
 
-	sf::Vector2i firstFreePosition(sf::Vector2i src, Layer<EntityID> &layer, int maxDist) {
-		sf::Vector2i fp;
-		int dist = 1;
-		while (dist < maxDist) {
-			for (int w = -dist; w < dist + 1; ++w) {
-				for (int h = -dist; h < dist + 1; ++h) {
-					if (w == -dist || h == -dist || w == dist || h == dist) {
-						int x = w + src.x;
-						int y = h + src.y;
-						if (this->map->bound(x, y)) {
-							if (!layer.get(x, y))
-								return sf::Vector2i(x, y);
-						}
-					}
-				}
-			}
-			dist++;
-		}
-	}
-
-	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int maxDist) {
-		sf::Vector2i fp;
-		int dist = 1;
+	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int minDist, int maxDist) {
+		int dist = minDist;
 		while (dist < maxDist) {
 			for (int w = -dist; w < dist + 1; ++w) {
 				for (int h = -dist; h < dist + 1; ++h) {
@@ -150,7 +127,7 @@ public:
 			}
 			dist++;
 		}
-		std::cout << "BUG: no available position for " << src.x << "x" << src.y << std::endl;
+//		std::cout << "BUG: no available position for " << src.x << "x" << src.y << std::endl;
 		return src;
 	}
 
@@ -479,7 +456,7 @@ public:
 		if (this->map->pathAvailable(destpos.x, destpos.y))
 			unit.destpos = destpos;
 		else
-			unit.destpos = this->firstAvailablePosition(destpos, 16);
+			unit.destpos = this->firstAvailablePosition(destpos, 1, 16);
 
 		unit.nopath = 0;
 	}

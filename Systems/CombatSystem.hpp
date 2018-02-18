@@ -90,20 +90,20 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-				float dist = 1.0;
-				float maxDist = 1.5;
-				if (unit.attack2.distance)
-					dist = unit.attack2.distance;
-				if (unit.attack2.maxDistance)
-					maxDist = 1.5 * unit.attack2.maxDistance;
+				if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+					float dist = 1.0;
+					float maxDist = 1.5;
+					if (unit.attack2.distance)
+						dist = unit.attack2.distance;
+					if (unit.attack2.maxDistance)
+						maxDist = 1.5 * unit.attack2.maxDistance;
 
-				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
+					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-				bool inRange = this->ennemyInRange(tile, destTile, 1, maxDist);
+					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1.0, 1.5);
 
-				if (inRange) {
-					if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+					if (inRange) {
 						int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
@@ -111,7 +111,6 @@ public:
 #endif
 						sf::Vector2i distDiff = (destTile.pos - tile.pos);
 						// use attack2 if in correct range
-//						if (dist > 1 && (abs(distDiff.x) == dist || abs(distDiff.y) == dist)) {
 						if (unit.attack2.distance && this->ennemyInRange(tile, destTile, dist, maxDist)) {
 							attackPower = unit.attack2.power;
 						}
@@ -166,15 +165,21 @@ public:
 
 						}
 					}
-				}
-				else {
-					sf::Vector2i dpos = destTile.pos;
-//					sf::Vector2i dpos = this->nearestTileAround(tile.pos, destTile, dist);
+					else {
+						sf::Vector2i dpos = destTile.pos;
+						for (int d = maxDist; d >= dist; d--) {
+							if (dpos == destTile.pos)
+								dpos = this->nearestTileAround(tile.pos, destTile, d);
+						}
+//						sf::Vector2i dpos = this->revFirstAvailablePosition(destTile.pos, maxDist, dist);
+						if (dpos == destTile.pos)
+							dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
 #ifdef COMBAT_DEBUG
-					std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
+						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
 #endif
-					unit.targetPos = dpos;
-					this->goTo(unit, dpos);
+						unit.targetPos = dpos;
+						this->goTo(unit, dpos);
+					}
 				}
 			} else {
 				unit.targetEnt = 0;
@@ -262,7 +267,7 @@ public:
 										projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
 										EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
-										if (projEnt && unit.canDestroyResources) {											
+										if (projEnt && unit.canDestroyResources) {
 											ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
 											sf::Vector2i projDestPos = destTile.pos;
 											proj.effectEndCallback = [this, projDestPos]() {

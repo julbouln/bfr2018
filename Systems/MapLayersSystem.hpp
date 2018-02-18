@@ -457,6 +457,7 @@ public:
 
 	// init corpses and ruins tiles, must be called after player creation
 	void initCorpses() {
+
 		auto playerView = this->vault->registry.view<Player>();
 		for (EntityID playerEnt : playerView) {
 			Player &player = playerView.get(playerEnt);
