@@ -468,6 +468,7 @@ public:
 
 	void attack(Unit & unit, EntityID destEnt) {
 		unit.targetEnt = destEnt;
+		unit.destpos = unit.nextpos;
 	}
 
 	void attack(EntityID entity, EntityID destEnt) {
