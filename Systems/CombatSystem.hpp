@@ -91,17 +91,17 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
 				if (tile.pos == unit.nextpos) { // unit must be arrived at a position
-					float dist = 1.0;
-					float maxDist = 1.5;
+					int dist = 1;
+					int maxDist = 1;
 					if (unit.attack2.distance)
 						dist = unit.attack2.distance;
 					if (unit.attack2.maxDistance)
-						maxDist = 1.5 * unit.attack2.maxDistance;
+						maxDist = unit.attack2.maxDistance;
 
 					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 					GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1.0, 1.5);
+					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
 
 					if (inRange) {
 						int attackPower = unit.attack1.power;
@@ -164,21 +164,26 @@ public:
 							}
 
 						}
-					}
-					else {
+					} else {
 						sf::Vector2i dpos = destTile.pos;
-						for (int d = maxDist; d >= dist; d--) {
-							if (dpos == destTile.pos)
-								dpos = this->nearestTileAround(tile.pos, destTile, d);
-						}
+						dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
 //						sf::Vector2i dpos = this->revFirstAvailablePosition(destTile.pos, maxDist, dist);
-						if (dpos == destTile.pos)
+						if (dpos == destTile.pos) {
+#ifdef COMBAT_DEBUG
+							std::cout << "CombatSystem: CANNOT FIND NEAREST " << entity << " " << dpos.x << "x" << dpos.y << std::endl;
+#endif
 							dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
+						}
 #ifdef COMBAT_DEBUG
 						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
 #endif
 						unit.targetPos = dpos;
 						this->goTo(unit, dpos);
+
+#ifdef COMBAT_DEBUG
+						std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+#endif
+
 					}
 				}
 			} else {
@@ -293,6 +298,11 @@ public:
 
 				// attacked obj does not exists anymore, stop attacking
 				if (!unit.targetEnt || !this->vault->registry.valid(unit.targetEnt)) {
+#ifdef COMBAT_DEBUG
+					if (unit.targetEnt) {
+						std::cout << "CombatSystem: " << entity << "enemy target does not exists anymore " << unit.targetEnt << std::endl;
+					}
+#endif
 					this->changeState(entity, "idle");
 					unit.targetEnt = 0;
 					unit.destpos = tile.pos;

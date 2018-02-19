@@ -272,7 +272,6 @@ public:
 					rectangle.setPosition(pos);
 
 					window.draw(rectangle);
-
 				}
 
 				// resources

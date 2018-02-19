@@ -189,7 +189,7 @@ public:
 			Player &player = this->vault->registry.get<Player>(obj.player);
 
 			if (obj.mapped) {
-				sf::IntRect surfRect = this->tileSurfaceExtendedRect(tile, obj.view);
+//				sf::IntRect surfRect = this->tileSurfaceExtendedRect(tile, obj.view);
 
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					player.fog.set(p.x, p.y, FogState::InSight);

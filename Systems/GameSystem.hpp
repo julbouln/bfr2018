@@ -64,48 +64,56 @@ public:
 		for (int w = -dist; w < tile.size.x + dist; ++w) {
 			for (int h = -dist; h < tile.size.y + dist; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-				if (this->map->bound(p.x, p.y))
+				if (this->map->bound(p.x, p.y) && this->approxDistance(tile.pos, p) <= dist + vectorLength(sf::Vector2f(tile.size) / 2.0f) ) {
 					surface.push_back(p);
+				}
 			}
 		}
 		return surface;
-	}
-
-	sf::IntRect tileSurfaceRect(Tile &tile) {
-		sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(0, 0));
-		return sf::IntRect(p.x, p.y, tile.size.x, tile.size.y);
-	}
-
-	sf::IntRect tileSurfaceExtendedRect(Tile &tile, int dist) {
-		sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(0, 0));
-		return sf::IntRect(p.x - dist, p.y - dist, tile.size.x + dist * 2, tile.size.y + dist * 2);
 	}
 
 	std::vector<sf::Vector2i> tileAround(Tile &tile, int dist) {
 		std::vector<sf::Vector2i> surface;
 		for (int w = -dist; w < tile.size.x + dist; ++w) {
 			for (int h = -dist; h < tile.size.y + dist; ++h) {
-				if (w <= -dist || h <= -dist || w >= tile.size.x || h >= tile.size.y) {
-					sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-					if (this->map->bound(p.x, p.y))
-						surface.push_back(p);
+				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
+				if (tile.pos != p && this->map->bound(p.x, p.y) &&
+				        this->approxDistance(tile.pos, p) <= (dist + vectorLength(sf::Vector2f(tile.size) / 2.0f) ) &&
+				        this->approxDistance(tile.pos, p) >= (dist - 1.0 + vectorLength(sf::Vector2f(tile.size) / 2.0f) )) {
+					surface.push_back(p);
 				}
 			}
 		}
 		return surface;
 	}
 
-	sf::Vector2i nearestTileAround(sf::Vector2i src, Tile &tile, int dist) {
+	std::vector<sf::Vector2i> tileAround(Tile &tile, int minDist, int maxDist) {
+		std::vector<sf::Vector2i> surface;
+		for (int w = -maxDist; w < tile.size.x + maxDist; ++w) {
+			for (int h = -maxDist; h < tile.size.y + maxDist; ++h) {
+				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
+				if (tile.pos != p && this->map->bound(p.x, p.y) &&
+				        this->approxDistance(tile.pos, p) <= (maxDist + vectorLength(sf::Vector2f(tile.size) / 2.0f) ) &&
+				        this->approxDistance(tile.pos, p) >= (minDist - 1.0 + vectorLength(sf::Vector2f(tile.size) / 2.0f) )) {
+					surface.push_back(p);
+				}
+			}
+		}
+		return surface;
+	}
+
+	sf::Vector2i nearestTileAround(Tile &tile, Tile &destTile, int minDist, int maxDist) {
 		sf::Vector2i nearest(1024, 1024);
-		for (sf::Vector2i const &p : this->tileAround(tile, dist)) {
+		for (sf::Vector2i const &p : this->tileAround(destTile, minDist, maxDist)) {
 			if (this->map->pathAvailable(p.x, p.y)) {
-				if (this->approxDistance(src, p) < this->approxDistance(src, nearest)) {
+				if (this->approxDistance(tile.pos, p) < this->approxDistance(tile.pos, nearest)) {
 					nearest = p;
 				}
 			}
 		}
-		if (nearest.x == 1024 && nearest.y == 1024)
+		if (nearest.x == 1024 && nearest.y == 1024) {
 			return tile.pos;
+		}
 		else
 			return nearest;
 	}
@@ -144,24 +152,16 @@ public:
 		return 0;
 	}
 
-	bool ennemyInRange(Tile &tile, Tile &destTile, float range, float maxRange)
+	bool ennemyInRange(Tile &tile, Tile &destTile, int range, int maxRange)
 	{
-		bool inRange = false;
-		/*		for (sf::Vector2i const &p : this->tileAround(destTile, range)) {
-					if (tile.pos == p)
-						inRange = true;
-				}
-				*/
-
-		for (sf::Vector2i const &p : this->tileSurface(destTile)) {
-			float dist = vectorLength(tile.pos - p);
-			if (dist >= range && dist <= maxRange) {
-				inRange = true;
-				break;
+		for (sf::Vector2i const &p : this->tileAround(tile, range, maxRange)) {
+			for (sf::Vector2i const &dp : this->tileSurface(destTile)) {
+				if (dp == p)
+					return true;
 			}
 		}
 
-		return inRange;
+		return false;
 	}
 
 	void addPlayerFrontPoint(EntityID playerEnt, EntityID ent, sf::Vector2i pos) {

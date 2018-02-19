@@ -13,7 +13,7 @@ class PathfindingSystem : public GameSystem {
 
 public:
 	FlowFieldPathFind flowFieldPathFind;
-	
+
 	PathfindingSystem() {
 		search = nullptr;
 	}
@@ -86,8 +86,8 @@ public:
 			if (tile.pos == unit.destpos) {
 				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			} else {
-				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);				
-				this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);				
+				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);
+				this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 			}
 		}
 
@@ -154,6 +154,22 @@ public:
 		this->updatePathfindingLayer(dt);
 
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
+
+		// avoid multiple unit at the same pos
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
+			Unit &unit = view.get<Unit>(entity);
+
+			EntityID samePosEnt = this->map->objs.get(tile.pos.x, tile.pos.y);
+			if (samePosEnt != 0 && samePosEnt != entity) {
+#ifdef PATHFINDING_FLOWFIELD
+				std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
+				this->goTo(unit, tile.pos);
+#endif
+			}
+		}
+
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
@@ -188,10 +204,10 @@ public:
 						std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
 #endif
 
+						if (this->checkAround(entity, npos)) {
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
-						if (this->checkAround(entity, npos)) {
 							unit.nextpos = npos;
 
 							tile.view = this->getDirection(cpos, npos);
@@ -205,9 +221,7 @@ public:
 							std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
 #endif
 						}
-					}
-
-					else {
+					} else {
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
@@ -242,6 +256,7 @@ public:
 			}
 
 		}
+
 
 	}
 };

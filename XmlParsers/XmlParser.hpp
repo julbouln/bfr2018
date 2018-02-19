@@ -167,7 +167,7 @@ public:
 			unsigned int attack2_power = (unsigned int)element->FirstChildElement("attack2")->IntAttribute("power");
 			unsigned int attack2_dist = (unsigned int)element->FirstChildElement("attack2")->IntAttribute("dist");
 			unsigned int attack2_maxDist = attack2_dist;
-			if(element->FirstChildElement("attack2")->Attribute("maxDist"))
+			if(element->FirstChildElement("attack2")->Attribute("max_dist"))
 				attack2_maxDist=(unsigned int)element->FirstChildElement("attack2")->IntAttribute("max_dist");
 
 			unit.attack1 = Attack{attack1_power, 0, 0};

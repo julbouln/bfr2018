@@ -705,7 +705,7 @@ public:
 		mapLayers.drawTerrainTileMap(this->game->window, dt);
 		drawMap.draw(this->game->window, clip, dt);
 //		if (this->gameSpeed < 2)
-			fx.draw(this->game->window, clip, dt);
+		fx.draw(this->game->window, clip, dt);
 
 		mapLayers.drawFogTileMap(this->game->window, dt);
 
@@ -757,6 +757,54 @@ public:
 					srect.setPosition(pos);
 
 					this->game->window.draw(srect);
+				}
+
+				// view range
+				
+				if (this->vault->registry.has<GameObject>(this->selectedDebugObj)) {
+					GameObject &obj = this->vault->registry.get<GameObject>(this->selectedDebugObj);
+					for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
+						sf::RectangleShape srect;
+
+						sf::Vector2f pos;
+						pos.x = p.x * 32;
+						pos.y = p.y * 32;
+
+						srect.setSize(sf::Vector2f(32, 32));
+						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						srect.setOutlineColor(sf::Color(0xff, 0xff, 0x00, 0x7f));
+						srect.setOutlineThickness(2);
+						srect.setPosition(pos);
+
+						this->game->window.draw(srect);
+					}
+				}
+				
+
+				// attack range
+				if (this->vault->registry.has<Unit>(this->selectedDebugObj)) {
+					Unit &unit = this->vault->registry.get<Unit>(this->selectedDebugObj);
+					int dist = 1;
+					int maxDist = 1;
+					if(unit.attack2.distance) {
+						dist = unit.attack2.distance;
+						maxDist = unit.attack2.maxDistance;
+					}
+					for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
+						sf::RectangleShape srect;
+
+						sf::Vector2f pos;
+						pos.x = p.x * 32;
+						pos.y = p.y * 32;
+
+						srect.setSize(sf::Vector2f(32, 32));
+						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						srect.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+						srect.setOutlineThickness(2);
+						srect.setPosition(pos);
+
+						this->game->window.draw(srect);
+					}
 				}
 
 				// draw tile case
@@ -981,7 +1029,7 @@ public:
 		this->updateMoveView(dt);
 
 //		if (this->gameSpeed < 2) {
-			this->fx.update(dt);
+		this->fx.update(dt);
 //		} else {
 //			this->fx.clear();
 //		}
