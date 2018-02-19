@@ -52,13 +52,36 @@ public:
 	}
 
 	void update(float dt) {
-		// pass 1, if an ennemy is in sight, then attack
+		// pass 1, if an ennemy is in sight, then attack / respond to attack
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
-			if (!unit.targetEnt) {
+			if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+				if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
+					Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
+
+					if (destObj.life > 0) {
+						if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+							Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
+							if (destTile.state == "idle" || destTile.state == "move") {
+								// if ennemy is idle, he will fight back
+								this->attack(destUnit, entity);
+
+							} else if (destTile.state == "attack" && destUnit.targetEnt) {
+								// if ennemy is attacking a building, he will fight back
+								if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
+									this->attack(destUnit, entity);
+								}
+							}
+						}
+
+					}
+				}
+			} else {
 				std::vector<EntityID>targets;
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
@@ -137,33 +160,17 @@ public:
 							if (this->vault->registry.has<Unit>(unit.targetEnt)) {
 								this->changeState(unit.targetEnt, "die");
 							}
+
+							// target is dead, become idle
+							this->changeState(entity, "idle");
+							unit.targetEnt = 0;
+							unit.destpos = tile.pos;
 						} else {
 							// start/continue attacking
 							tile.view = this->getDirection(tile.pos, destTile.pos);
 							this->changeState(entity, "attack");
 						}
 
-						if (destObj.life == 0) {
-							// target is dead, become idle
-							this->changeState(entity, "idle");
-							unit.targetEnt = 0;
-							unit.destpos = tile.pos;
-						} else {
-							if (this->vault->registry.has<Unit>(unit.targetEnt)) {
-								Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
-								if (destTile.state == "idle" || destTile.state == "move") {
-									// if ennemy is idle, he will fight back
-									this->attack(destUnit, entity);
-
-								} else if (destTile.state == "attack" && destUnit.targetEnt) {
-									// if ennemy is attacking a building, he will fight back
-									if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
-										this->attack(destUnit, entity);
-									}
-								}
-							}
-
-						}
 					} else {
 						sf::Vector2i dpos = destTile.pos;
 						dpos = this->nearestTileAround(tile, destTile, dist, maxDist);

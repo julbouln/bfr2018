@@ -84,10 +84,12 @@ public:
 			Unit &unit = unitView.get<Unit>(entity);
 
 			if (tile.pos == unit.destpos) {
+				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			} else {
-				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);
-				this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
+//				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);
+//				if(tile.pos != unit.nextpos)
+//					this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 			}
 		}
 
@@ -155,18 +157,22 @@ public:
 
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 
+
 		// avoid multiple unit at the same pos
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			EntityID samePosEnt = this->map->objs.get(tile.pos.x, tile.pos.y);
-			if (samePosEnt != 0 && samePosEnt != entity) {
-#ifdef PATHFINDING_FLOWFIELD
-				std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
-				this->goTo(unit, tile.pos);
+			if (tile.pos == unit.destpos) {
+				EntityID samePosEnt = this->map->objs.get(tile.pos.x, tile.pos.y);
+				if (samePosEnt != 0 && samePosEnt != entity) {
+#ifdef PATHFINDING_DEBUG
+					std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
+					this->goTo(unit, tile.pos);
+//					unit.destpos = this->firstAvailablePosition(tile.pos, 1, 1);
+				}
 			}
 		}
 
@@ -204,11 +210,14 @@ public:
 						std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
 #endif
 
-						if (this->checkAround(entity, npos)) {
+//						if (this->checkAround(entity, npos)) {
+						if (npos != cpos) {
 #ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
+							std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
 							unit.nextpos = npos;
+//							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+							this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 
 							tile.view = this->getDirection(cpos, npos);
 							unit.velocity = this->dirVelocity(tile.view, unit.speed / 2.0);

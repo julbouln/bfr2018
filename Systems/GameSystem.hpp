@@ -345,7 +345,7 @@ public:
 	void seedResources(std::string type, EntityID entity) {
 		if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 			Tile &tile = this->vault->registry.get<Tile>(entity);
-			for (sf::Vector2i const &p : this->tileAround(tile, 2)) {
+			for (sf::Vector2i const &p : this->tileAround(tile, 1, 2)) {
 				float rnd = ((float) rand()) / (float) RAND_MAX;
 				if (rnd > 0.85) {
 					if (!this->map->resources.get(p.x, p.y) &&
@@ -370,7 +370,7 @@ public:
 			float cost = this->trainCost(type);
 
 			if (this->canSpendResources(playerEnt, player.resourceType, cost)) {
-				for (sf::Vector2i const &p : this->tileAround(tile, 1)) {
+				for (sf::Vector2i const &p : this->tileAround(tile, 1, 2)) {
 					if (!this->map->objs.get(p.x, p.y)) {
 						EntityID newEnt = this->vault->factory.createUnit(this->vault->registry, playerEnt, type, p.x, p.y);
 						this->spendResources(playerEnt, player.resourceType, cost);
