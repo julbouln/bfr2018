@@ -72,33 +72,29 @@ public:
 		return surface;
 	}
 
-	std::vector<sf::Vector2i> tileAround(Tile &tile, int dist) {
-		std::vector<sf::Vector2i> surface;
-		for (int w = -dist; w < tile.size.x + dist; ++w) {
-			for (int h = -dist; h < tile.size.y + dist; ++h) {
-				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-				if (tile.pos != p && this->map->bound(p.x, p.y) &&
-				        this->approxDistance(tile.pos, p) <= (dist + vectorLength(sf::Vector2f(tile.size) / 2.0f) ) &&
-				        this->approxDistance(tile.pos, p) >= (dist - 1.0 + vectorLength(sf::Vector2f(tile.size) / 2.0f) )) {
-					surface.push_back(p);
-				}
-			}
-		}
-		return surface;
-	}
-
 	std::vector<sf::Vector2i> tileAround(Tile &tile, int minDist, int maxDist) {
+		// ellipse calculation
 		std::vector<sf::Vector2i> surface;
-		for (int w = -maxDist; w < tile.size.x + maxDist; ++w) {
-			for (int h = -maxDist; h < tile.size.y + maxDist; ++h) {
-				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-				if (tile.pos != p && this->map->bound(p.x, p.y) &&
-				        this->approxDistance(tile.pos, p) <= (maxDist + vectorLength(sf::Vector2f(tile.size) / 2.0f) ) &&
-				        this->approxDistance(tile.pos, p) >= (minDist - 1.0 + vectorLength(sf::Vector2f(tile.size) / 2.0f) )) {
-					surface.push_back(p);
-				}
+
+		int minWidth = (tile.size.x) / 2 + minDist;
+		int minHeight = (tile.size.y) / 2 + minDist;
+
+		int maxWidth = tile.size.x / 2 + maxDist + 1;
+		int maxHeight = tile.size.y / 2 + maxDist + 1;
+
+		int min = minHeight * minHeight * minWidth * minWidth;
+		int max = maxHeight * maxHeight * maxWidth * maxWidth;
+
+		for (int y = -maxHeight + 1; y <= maxHeight - 1; y++) {
+			for (int x = -maxWidth + 1; x <= maxWidth - 1; x++) {
+				int rmin = x * x * minHeight * minHeight + y * y * minWidth * minWidth;
+				int rmax = x * x * maxHeight * maxHeight + y * y * maxWidth * maxWidth;
+				if (rmax <= max && rmin >= min)
+					if (this->map->bound(tile.pos.x + x, tile.pos.y + y))
+						surface.push_back(sf::Vector2i(tile.pos.x + x, tile.pos.y + y));
 			}
 		}
+
 		return surface;
 	}
 

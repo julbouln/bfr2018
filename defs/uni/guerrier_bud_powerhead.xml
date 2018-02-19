@@ -42,8 +42,6 @@
     <views count="8" name="die" type="animated">
       <view>
         <frames>
-          <frame n="6"/>
-          <frame n="7"/>
           <frame n="8"/>
           <frame n="9"/>
         </frames>

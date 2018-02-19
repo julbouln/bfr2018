@@ -807,6 +807,28 @@ public:
 					}
 				}
 
+				// around building
+				if (this->vault->registry.has<Building>(this->selectedDebugObj)) {
+					Building &building = this->vault->registry.get<Building>(this->selectedDebugObj);
+					int dist = 1;
+					int maxDist = 2;
+					for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
+						sf::RectangleShape srect;
+
+						sf::Vector2f pos;
+						pos.x = p.x * 32;
+						pos.y = p.y * 32;
+
+						srect.setSize(sf::Vector2f(32, 32));
+						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						srect.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+						srect.setOutlineThickness(2);
+						srect.setPosition(pos);
+
+						this->game->window.draw(srect);
+					}
+				}
+
 				// draw tile case
 				sf::RectangleShape trect;
 				sf::Vector2f pos;
