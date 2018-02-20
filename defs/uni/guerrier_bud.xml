@@ -55,14 +55,14 @@
   <game_object>
     <name value="guerrier_bud"/>
     <team value="rebel"/>
-    <view value="4"/>
+    <view value="5"/>
     <life value="6"/>
   </game_object>
   <unit>
     <cost value="8"/>
     <speed value="4"/>
     <attack1 power="2"/>
-    <attack2 dist="2" max_dist="3" power="3"/>
+    <attack2 dist="2" max_dist="4" power="3"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/rebels/guerrier_bud/sounds/gb_selec01.flac"/>

@@ -2,7 +2,7 @@
 	<texture mode="with_white_mask" path="medias/decors/maison1.png"/>
 	<tile>
 		<psize x="160" y="160"/>
-		<size x="5" y="2"/>
+		<size x="5" y="3"/>
 	</tile>
 	<decor>
 		<blocking value="true"/>

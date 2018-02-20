@@ -1,0 +1,10 @@
+<entity class="decor" group="champignon" name="bolet">
+	<texture mode="with_white_mask" path="medias/extra/decors/bolet.png"/>
+	<tile>
+		<psize x="19" y="15"/>
+		<size x="1" y="1"/>
+	</tile>
+	<decor>
+		<blocking value="false"/>
+	</decor>
+</entity>

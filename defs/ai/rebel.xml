@@ -138,7 +138,16 @@
 			<HasLessObjectsTypeThan qty="1" type="squat"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan qty="5" type="punk"/>
+		<HasLessObjectsTypeThan qty="3" type="punk"/>
+		<Train type="punk"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="squat"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="300"/>
+		<HasLessObjectsTypeThan qty="10" type="punk"/>
 		<Train type="punk"/>
 	</Sequence>
 	<Sequence>
@@ -156,7 +165,16 @@
 			<HasLessObjectsTypeThan qty="1" type="raffinerie_bud"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan qty="5" type="guerrier_bud_powerhead"/>
+		<HasLessObjectsTypeThan qty="3" type="guerrier_bud_powerhead"/>
+		<Train type="guerrier_bud_powerhead"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="raffinerie_bud"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="300"/>
+		<HasLessObjectsTypeThan qty="10" type="guerrier_bud_powerhead"/>
 		<Train type="guerrier_bud_powerhead"/>
 	</Sequence>
 	<Sequence>

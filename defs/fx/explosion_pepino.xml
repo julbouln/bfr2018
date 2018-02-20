@@ -1,6 +1,6 @@
 <entity name="explosion_pepino" class="effect">
     <texture path="medias/extra/pepino_fragment.png"/>
-    <particle name="explosion_pepino" count="20" max="40" type="texture">
+    <particle name="explosion_pepino" count="10" max="20" type="texture">
         <spawner type="point"/>
         <time_generator min_time="0" max_time="0.5"/>
         <size_generator min_start_size="4" max_start_size="8" min_end_size="8" max_end_size="16"/>

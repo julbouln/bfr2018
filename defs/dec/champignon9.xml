@@ -1,0 +1,10 @@
+<entity class="decor" group="champignon" name="cortinaire">
+	<texture mode="with_white_mask" path="medias/extra/decors/cortinaire.png"/>
+	<tile>
+		<psize x="22" y="20"/>
+		<size x="1" y="1"/>
+	</tile>
+	<decor>
+		<blocking value="false"/>
+	</decor>
+</entity>

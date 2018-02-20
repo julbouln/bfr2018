@@ -30,7 +30,7 @@
 	<resource path="defs/res/nature2.xml"/>
 	<resource path="defs/res/nature3.xml"/>
 	<resource path="defs/res/nature4.xml"/>
-	<resource path="defs/res/nature5.xml"/>
+<!--	<resource path="defs/res/nature5.xml"/> -->
 	<resource path="defs/res/nature6.xml"/>
 	<resource path="defs/res/nature7.xml"/>
 	<resource path="defs/res/nature8.xml"/>
@@ -106,5 +106,23 @@
 	<decor path="defs/dec/feu2.xml"/>
 	<decor path="defs/dec/feu3.xml"/>
 	<decor path="defs/dec/feu4.xml"/>
+
+	<decor path="defs/dec/champignon1.xml"/>
+	<decor path="defs/dec/champignon2.xml"/>
+	<decor path="defs/dec/champignon3.xml"/>
+	<decor path="defs/dec/champignon4.xml"/>
+	<decor path="defs/dec/champignon5.xml"/>
+	<decor path="defs/dec/champignon6.xml"/>
+	<decor path="defs/dec/champignon7.xml"/>
+	<decor path="defs/dec/champignon8.xml"/>
+	<decor path="defs/dec/champignon9.xml"/>
+	<decor path="defs/dec/champignon10.xml"/>
+	<decor path="defs/dec/champignon11.xml"/>
+	<decor path="defs/dec/cactus1.xml"/>
+	<decor path="defs/dec/cactus2.xml"/>
+	<decor path="defs/dec/cactus3.xml"/>
+	<decor path="defs/dec/cactus4.xml"/>
+	<decor path="defs/dec/cactus5.xml"/>
+	<decor path="defs/dec/cactus6.xml"/>
 
 </manifest>

@@ -1,0 +1,10 @@
+<entity class="decor" group="cactus" name="cactus4">
+	<texture mode="with_white_mask" path="medias/extra/decors/cactus4.png"/>
+	<tile>
+		<psize x="35" y="65"/>
+		<size x="1" y="1"/>
+	</tile>
+	<decor>
+		<blocking value="true"/>
+	</decor>
+</entity>

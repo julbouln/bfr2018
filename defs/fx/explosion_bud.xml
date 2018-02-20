@@ -1,6 +1,6 @@
 <entity class="effect" name="explosion_bud">
     <texture path="medias/extra/blobTexture.png"/>
-    <particle a="255" b="38" count="160" g="152" max="300" name="explosion_bud" r="78" type="metaball">
+    <particle a="255" b="38" count="150" g="152" max="300" name="explosion_bud" r="78" type="metaball">
         <psize x="128" y="128"/>
         <spawner type="point"/>
         <time_generator max_time="0.34999999" min_time="0.25"/>

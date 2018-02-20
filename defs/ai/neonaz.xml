@@ -129,7 +129,16 @@
 			<HasLessObjectsTypeThan qty="1" type="usine_vehicule"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan qty="5" type="super_guerrier"/>
+		<HasLessObjectsTypeThan qty="3" type="super_guerrier"/>
+		<Train type="super_guerrier"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="usine_vehicule"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="300"/>
+		<HasLessObjectsTypeThan qty="10" type="super_guerrier"/>
 		<Train type="super_guerrier"/>
 	</Sequence>
 	<Sequence>
@@ -147,7 +156,16 @@
 			<HasLessObjectsTypeThan qty="1" type="artillerie"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan qty="5" type="lance_missille"/>
+		<HasLessObjectsTypeThan qty="3" type="lance_missille"/>
+		<Train type="lance_missille"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="artillerie"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="300"/>
+		<HasLessObjectsTypeThan qty="10" type="lance_missille"/>
 		<Train type="lance_missille"/>
 	</Sequence>
 	<Sequence>
@@ -156,7 +174,16 @@
 			<HasLessObjectsTypeThan qty="1" type="artillerie"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan qty="5" type="grosnaz"/>
+		<HasLessObjectsTypeThan qty="3" type="grosnaz"/>
+		<Train type="grosnaz"/>
+	</Sequence>
+	<Sequence>
+		<Probability frac="100" per="1"/>
+		<Inverter>
+			<HasLessObjectsTypeThan qty="1" type="artillerie"/>
+		</Inverter>
+		<HasMoreResourcesThan amount="300"/>
+		<HasLessObjectsTypeThan qty="10" type="grosnaz"/>
 		<Train type="grosnaz"/>
 	</Sequence>
 	<Sequence>

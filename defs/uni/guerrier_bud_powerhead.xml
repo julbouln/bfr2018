@@ -53,14 +53,14 @@
   <game_object>
     <name value="guerrier_bud_powerhead"/>
     <team value="rebel"/>
-    <view value="4"/>
-    <life value="5"/>
+    <view value="5"/>
+    <life value="8"/>
   </game_object>
   <unit>
     <cost value="24"/>
     <speed value="4"/>
     <attack1 power="3"/>
-    <attack2 dist="2" max_dist="3" power="6"/>
+    <attack2 dist="2" max_dist="4" power="6"/>
     <sound_actions/>
     <sound_attack name="bud"/>
     <can_destroy_resources value="true"/>

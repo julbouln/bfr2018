@@ -353,7 +353,7 @@ public:
 		for (sf::Vector2i np : this->pathPoints) {
 			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR &&
 			        np.y >= offset.y && np.y < offset.y + PER_SECTOR &&
-			        np != cpos) {
+			        np != cpos && this->pathFind->map->pathAvailable(np.x,np.y)) {
 				if (vectorLength(np - cpos) < distance) {
 					distance = vectorLength(np - cpos);
 					point = np;
