@@ -1,0 +1,17 @@
+<entity name="explosion_pepino" class="effect">
+    <texture path="medias/extra/pepino_fragment.png"/>
+    <particle name="explosion_pepino" count="20" max="40" type="texture">
+        <spawner type="point"/>
+        <time_generator min_time="0" max_time="0.5"/>
+        <size_generator min_start_size="4" max_start_size="8" min_end_size="8" max_end_size="16"/>
+        <velocity_generator type="angled" min_angle="-180.00002" max_angle="180.00002" min_start_speed="60" max_start_speed="120"/>
+        <rotation_generator min_start_angle="-20" max_start_angle="-20" min_end_angle="90" max_end_angle="90"/>
+        <euler_updater accel_x="0" accel_y="0"/>
+        <color_generator>
+            <min_start_col a="255" r="255" g="255" b="255"/>
+            <max_start_col a="255" r="255" g="255" b="255"/>
+            <min_end_col a="255" r="255" g="255" b="255"/>
+            <max_end_col a="255" r="255" g="255" b="255"/>
+        </color_generator>
+    </particle>
+</entity>

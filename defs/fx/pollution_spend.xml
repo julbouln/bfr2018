@@ -3,7 +3,7 @@
     <particle name="pollution_spend" count="1" lifetime="5.0" max="1" type="texture">
         <spawner type="point"/>
         <time_generator max_time="2.0" min_time="2.0"/>
-        <size_generator max_end_size="35.0" max_start_size="35.0" min_end_size="35.0" min_start_size="35.0"/>
+        <size_generator max_end_size="32.0" max_start_size="32.0" min_end_size="32.0" min_start_size="32.0"/>
         <velocity_generator type="angled" max_angle="5.0" max_start_speed="50.0" min_angle="-5.0" min_start_speed="25.0"/>
         <color_generator>
             <min_start_col a="255" b="255" g="255" r="255"/>

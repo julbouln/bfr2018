@@ -55,6 +55,9 @@
 	<effect path="defs/fx/explosion.xml"/>
 	<effect path="defs/fx/explosion_rockette.xml"/>
 	<effect path="defs/fx/explosion_bud.xml"/>
+	<effect path="defs/fx/explosion_petrole.xml"/>
+	<effect path="defs/fx/explosion_pepino.xml"/>
+
 	<effect path="defs/fx/bud.xml"/>
 	<effect path="defs/fx/pepino.xml"/>
 	<effect path="defs/fx/petrole.xml"/>

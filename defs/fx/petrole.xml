@@ -23,4 +23,7 @@
         </color_generator>
     </particle>
     <sound_buffer path="medias/projectiles/tir_bud.flac"/>
+    <effects>
+        <effect name="next" ref="explosion_petrole"/>
+    </effects>
 </entity>

@@ -23,4 +23,8 @@
         </color_generator>
     </particle>
     <sound_buffer path="medias/projectiles/pepino.flac"/>
+    <effects>
+        <effect name="next" ref="explosion_pepino"/>
+    </effects>
+
 </entity>
