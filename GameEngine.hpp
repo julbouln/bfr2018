@@ -760,7 +760,7 @@ public:
 				}
 
 				// view range
-				
+
 				if (this->vault->registry.has<GameObject>(this->selectedDebugObj)) {
 					GameObject &obj = this->vault->registry.get<GameObject>(this->selectedDebugObj);
 					for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
@@ -779,14 +779,14 @@ public:
 						this->game->window.draw(srect);
 					}
 				}
-				
+
 
 				// attack range
 				if (this->vault->registry.has<Unit>(this->selectedDebugObj)) {
 					Unit &unit = this->vault->registry.get<Unit>(this->selectedDebugObj);
 					int dist = 1;
 					int maxDist = 1;
-					if(unit.attack2.distance) {
+					if (unit.attack2.distance) {
 						dist = unit.attack2.distance;
 						maxDist = unit.attack2.maxDistance;
 					}
@@ -878,7 +878,7 @@ public:
 									int dir = field->get(dx, dy);
 									if (dir < 8) {
 										sf::Sprite dirSprite;
-										dirSprite.setColor(sf::Color(0xff, 0xff, 0xff, 0xff));
+										dirSprite.setColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
 										dirSprite.setTexture(this->vault->factory.getTex("arrow"));
 										dirSprite.setOrigin(sf::Vector2f(16, 16));
 										switch (dir) {
@@ -922,12 +922,23 @@ public:
 
 								rectangle.setSize(sf::Vector2f(32, 32));
 								rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-								rectangle.setOutlineColor(sf::Color::Red);
+								rectangle.setOutlineColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
 								rectangle.setOutlineThickness(2);
 								rectangle.setPosition(pos);
 
 								this->game->window.draw(rectangle);
 							}
+
+							sf::RectangleShape rectangle;
+
+							sf::Vector2f pos(unit.flowFieldPath.ffDest.x * 32, unit.flowFieldPath.ffDest.y * 32);
+
+							rectangle.setSize(sf::Vector2f(32, 32));
+							rectangle.setFillColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
+							rectangle.setPosition(pos);
+
+							this->game->window.draw(rectangle);
+
 						}
 					}
 				}

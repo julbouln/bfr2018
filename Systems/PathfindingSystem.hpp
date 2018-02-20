@@ -76,7 +76,7 @@ public:
 		}
 
 		this->map->dynamicPathfinding.clear();
-		this->map->movingPathfinding.clear();
+//		this->map->movingPathfinding.clear();
 
 		auto unitView = this->vault->registry.persistent<Tile, Unit>();
 		for (EntityID entity : unitView) {
@@ -84,7 +84,7 @@ public:
 			Unit &unit = unitView.get<Unit>(entity);
 
 			if (tile.pos == unit.destpos) {
-				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			} else {
 //				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);
@@ -138,11 +138,16 @@ public:
 	}
 
 	void updateMovement(float dt) {
+//this->map->movingPathfinding.clear();
+
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
+
+
+//			this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 
 			if (obj.life > 0 && !this->unitInCase(unit, tile)) {
 //				float speed = (float)unit.speed / 2.0;
@@ -167,11 +172,22 @@ public:
 			if (tile.pos == unit.destpos) {
 				EntityID samePosEnt = this->map->objs.get(tile.pos.x, tile.pos.y);
 				if (samePosEnt != 0 && samePosEnt != entity) {
+					if (this->vault->registry.has<Unit>(samePosEnt)) {
+						Tile &samePosTile = this->vault->registry.get<Tile>(samePosEnt);
+						Unit &samePosUnit = this->vault->registry.get<Unit>(samePosEnt);
+						if (samePosTile.pos == samePosUnit.destpos) {
 #ifdef PATHFINDING_DEBUG
-					std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
+							std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
-					this->goTo(unit, tile.pos);
-//					unit.destpos = this->firstAvailablePosition(tile.pos, 1, 1);
+//							this->goTo(unit, tile.pos);
+							for(sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
+								if(this->map->pathAvailable(p.x,p.y) && this->map->movingPathfinding.get(p.x,p.y) == 0) {
+									unit.destpos = p;
+									break;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -216,7 +232,7 @@ public:
 							std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
 							unit.nextpos = npos;
-//							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
 							this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 
 							tile.view = this->getDirection(cpos, npos);
@@ -225,6 +241,8 @@ public:
 
 
 						} else {
+							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+							this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 							this->changeState(entity, "idle");
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " wait a moment " << std::endl;
@@ -235,6 +253,7 @@ public:
 						std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
 						this->changeState(entity, "idle");
+						unit.velocity = sf::Vector2f(0, 0);
 						unit.nopath++;
 
 						if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
@@ -250,7 +269,10 @@ public:
 #ifdef PATHFINDING_DEBUG
 					std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
 #endif
+					this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+					this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 					this->changeState(entity, "idle");
+					unit.velocity = sf::Vector2f(0, 0);
 				}
 			} else {
 //					float speed = (float)unit.speed / 2.0;
