@@ -263,7 +263,7 @@ public:
 						this->changeState(entity, "idle");
 						unit.velocity = sf::Vector2f(0, 0);
 						unit.nopath++;
-						unit.reallyNopath;
+						unit.reallyNopath++;
 
 						if (unit.reallyNopath > PATHFINDING_MAX_NO_PATH*4) {
 							unit.nopath = 0;

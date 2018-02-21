@@ -176,7 +176,9 @@ public:
 
 		for (EntityID entity : playerView) {
 			Player &player = playerView.get(entity);
-			for (FogState &state : player.fog.grid) {
+//			for (FogState &state : player.fog.grid) {
+			for(int i=0;i<player.fog.size();++i) {
+				FogState &state = player.fog.grid[i];
 				if (state == FogState::InSight)
 					state = FogState::Hidden;
 			}

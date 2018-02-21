@@ -144,20 +144,6 @@ public:
 		if (_grid.bound(x + 1, y) && _grid.pathAvailable(x + 1, y)) {
 			ret[cnt++] = x + 1 + y * _grid.width;
 		}
-		/*
-				if (_grid.bound(x, y - 1) && _grid.pathAvailable(x - 1, y - 1)) {
-					ret[cnt++] = (x - 1) + (y - 1) * _grid.width;
-				}
-				if (_grid.bound(x, y + 1) && _grid.pathAvailable(x + 1, y + 1)) {
-					ret[cnt++] = (x + 1) + (y + 1) * _grid.width;
-				}
-				if (_grid.bound(x - 1, y) && _grid.pathAvailable(x - 1, y + 1)) {
-					ret[cnt++] = (x - 1) + (y + 1) * _grid.width;
-				}
-				if (_grid.bound(x + 1, y) && _grid.pathAvailable(x + 1, y - 1)) {
-					ret[cnt++] = (x + 1) + (y - 1) * _grid.width;
-				}
-				*/
 		return cnt;
 	}
 
@@ -276,7 +262,7 @@ public:
 	Map *map;
 
 	~FlowFieldPathFind() {
-		if (!search)
+		if (search)
 			delete search;
 	}
 
@@ -312,6 +298,8 @@ public:
 	sf::Vector2i ffDest;
 
 	FlowFieldPath() {
+		this->cur = sf::Vector2i(-1, -1);
+		this->dest = sf::Vector2i(-1, -1);
 		this->mode = FlowFieldMode::Pathfinding;
 	}
 
@@ -353,7 +341,7 @@ public:
 		for (sf::Vector2i np : this->pathPoints) {
 			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR &&
 			        np.y >= offset.y && np.y < offset.y + PER_SECTOR &&
-			        np != cpos && this->pathFind->map->pathAvailable(np.x,np.y)) {
+			        np != cpos && this->pathFind->map->pathAvailable(np.x, np.y)) {
 				if (vectorLength(np - cpos) < distance) {
 					distance = vectorLength(np - cpos);
 					point = np;
@@ -410,7 +398,7 @@ public:
 						int x = w + dest.x;
 						int y = h + dest.y;
 						if (x >= offset.x && x < offset.x + PER_SECTOR && y >= offset.y && y < offset.y + PER_SECTOR && this->pathFind->map->bound(x, y) && this->pathFind->map->pathAvailable(x, y)) {
-								return sf::Vector2i(x, y);
+							return sf::Vector2i(x, y);
 						}
 					}
 				}
@@ -452,8 +440,8 @@ public:
 #endif
 //			ndpos = this->farestPathPoint(cpos);
 				ndpos = this->bestFollowingPathPoint(cpos);
-				if(!this->pathFind->map->pathAvailable(ndpos.x,ndpos.y)) {
-					ndpos = this->firstFreePos(cpos,ndpos,1,2);
+				if (!this->pathFind->map->pathAvailable(ndpos.x, ndpos.y)) {
+					ndpos = this->firstFreePos(cpos, ndpos, 1, 2);
 				}
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath best local dest " << ndpos.x << "x" << ndpos.y << std::endl;
@@ -470,11 +458,11 @@ public:
 			} else {
 				npos = cpos;
 
-				#ifdef FLOWFIELDS_DEBUG
-						std::cout << "FlowFieldPath cannot found next pos " << cpos.x << "x" << cpos.y << " " << dest.x << "x" << dest.y << " " << npos.x << "x" << npos.y << std::endl;
+#ifdef FLOWFIELDS_DEBUG
+				std::cout << "FlowFieldPath cannot found next pos " << cpos.x << "x" << cpos.y << " " << dest.x << "x" << dest.y << " " << npos.x << "x" << npos.y << std::endl;
 #endif
 
-#if 0				
+#if 0
 				// follow JPS path if no flow field found
 				bool foundNearPath = false;
 				for (std::list<sf::Vector2i>::iterator it = pathPoints.begin(); it != pathPoints.end(); ++it) {
@@ -500,7 +488,7 @@ public:
 					} else {
 //						sf::Vector2i steer = sf::Vector2i(vectorRound(this->seek(cpos, nearPathPoint)));
 //						npos = cpos + steer;
-					npos = cpos;
+						npos = cpos;
 #ifdef FLOWFIELDS_DEBUG
 						std::cout << "FlowFieldPath really cannot found next pos " << cpos.x << "x" << cpos.y << " " << dest.x << "x" << dest.y << " " << npos.x << "x" << npos.y << std::endl;
 					}
@@ -521,25 +509,33 @@ public:
 	}
 
 	bool start(int sx, int sy, int dx, int dy) {
-		if (sf::Vector2i(dx, dy) != dest) {
-			traversed.clear();
-			pathPoints.clear();
-			dest = sf::Vector2i(dx, dy);
+		sf::Vector2i newDest = sf::Vector2i(dx, dy);
+		if (newDest != dest) {
+			sf::Vector2i oldDest = dest;
+
+			dest = newDest;
 			cur = sf::Vector2i(sx, sy);
+			traversed.clear();
 
 			if (vectorLength(dest - cur) < 1.5) {
+				pathPoints.clear();
 				this->mode = FlowFieldMode::Steering;
 				this->ffDest = dest;
 				this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
 			} else {
-				this->mode = FlowFieldMode::Pathfinding;
-				JPS::PathVector path;
-				this->found = pathFind->find(path, sx, sy, dx, dy);
 
-				if (this->found) {
-					// find border pos
-					for (auto &p : path) {
-						this->pathPoints.push_back(sf::Vector2i(int(p.x), int(p.y)));
+//				if (vectorLength(oldDest - newDest) < 5.0) {
+//					this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
+//				} else
+				{
+					this->mode = FlowFieldMode::Pathfinding;
+
+					JPS::PathVector path;
+					this->found = pathFind->find(path, sx, sy, dx, dy);
+
+					if (this->found) {
+						// find border pos
+						this->initPath(path);
 					}
 				}
 
@@ -550,11 +546,22 @@ public:
 				this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
 		}
 		return this->found;
+	}
 
+	void initPath(JPS::PathVector &path) {
+		pathPoints.clear();
+		for (auto &p : path) {
+			this->pathPoints.push_back(sf::Vector2i(int(p.x), int(p.y)));
+		}
+	}
+
+	bool pathFound() {
+		return this->found;
 	}
 
 	void setPathFind(FlowFieldPathFind *p) {
 		pathFind = p;
-		this->currentFlowField.setGrid(pathFind->map,sf::IntRect(0,0,0,0));
+		this->currentFlowField.setGrid(pathFind->map, sf::IntRect(0, 0, 0, 0));
 	}
+
 };

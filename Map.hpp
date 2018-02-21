@@ -5,6 +5,8 @@
 
 #include "Helpers.hpp"
 
+#define VECTOR_LAYER
+
 enum TileType {
 	Sand,
 	SandAlt1,
@@ -37,6 +39,7 @@ enum FogType {
 	Visible = 15
 };
 
+#ifdef VECTOR_LAYER
 template <typename T, T Empty = 0> 
 class Layer {
 public:
@@ -59,15 +62,20 @@ public:
 	void fill()
 	{
 		grid.clear();
+		grid.reserve(width * height);
 		while (grid.size() < width * height) {
 			grid.push_back(Empty);
 		}
 	}
 
 	void clear() {
-		for (int i = 0; i < grid.size(); i++) {
+		for (int i = 0; i < grid.size(); ++i) {
 			grid[i] = Empty;
 		}
+	}
+
+	int size() {
+		return grid.size();
 	}
 
 	inline int index(int x, int y) const { return x + width * y; }
@@ -81,6 +89,61 @@ public:
 	}
 };
 
+#else
+template <typename T, T Empty = 0> 
+class Layer {
+public:
+	T* grid;
+
+	unsigned int width;
+	unsigned int height;
+	Layer() {
+//		grid = nullptr;
+	}
+
+	Layer(unsigned int width, unsigned int height) : width(width), height(height)  {
+		this->fill();
+	}
+
+	~Layer() {
+//		if(grid)
+//			delete[] grid;
+	}
+
+	void setSize(unsigned int w, unsigned int h) {
+		this->width = w;
+		this->height = h;
+		this->fill();
+	}
+
+	void fill()
+	{
+		grid = new T[width * height]();
+		this->clear();
+	}
+
+	void clear() {
+		for (int i = 0; i < width * height; ++i) {
+			grid[i] = Empty;
+		}
+	}
+
+	int size() {
+		return width * height;
+	}
+
+	inline int index(int x, int y) const { return x + width * y; }
+
+	T get(int x, int y) const {
+		return grid[this->index(x, y)];
+	}
+
+	void set(int x, int y, T ent) {
+		grid[this->index(x, y)] = ent;
+	}
+};
+#endif
+
 enum class FogState {
 	Unvisited,
 	Hidden,
@@ -91,7 +154,9 @@ class Fog : public Layer<FogState,FogState::Unvisited> {
 public:
 	int visited() {
 		int visited = 0;
-		for (FogState st : grid) {
+//		for (FogState st : grid) {
+		for(int i=0;i<width*height;++i) {
+			FogState &st = grid[i];
 			if (st != FogState::Unvisited)
 				visited++;
 		}
