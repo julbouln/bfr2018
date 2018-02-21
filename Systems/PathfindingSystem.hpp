@@ -180,8 +180,8 @@ public:
 							std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
 //							this->goTo(unit, tile.pos);
-							for(sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
-								if(this->map->pathAvailable(p.x,p.y) && this->map->movingPathfinding.get(p.x,p.y) == 0) {
+							for (sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
+								if (this->map->pathAvailable(p.x, p.y) && this->map->movingPathfinding.get(p.x, p.y) == 0) {
 									unit.destpos = p;
 									break;
 								}
@@ -198,7 +198,9 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 
 			if (obj.life > 0 && tile.pos != unit.destpos && this->unitInCase(unit, tile)) {
+				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				tile.pos = unit.nextpos;
+				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
 				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
@@ -231,8 +233,9 @@ public:
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
-							unit.nextpos = npos;
+							this->map->pathfinding.set(tile.pos.x, tile.pos.y, 0);
 							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+							unit.nextpos = npos;
 							this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 
 							tile.view = this->getDirection(cpos, npos);
@@ -252,6 +255,8 @@ public:
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " no path found" << std::endl;
 #endif
+						this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+						this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 						this->changeState(entity, "idle");
 						unit.velocity = sf::Vector2f(0, 0);
 						unit.nopath++;

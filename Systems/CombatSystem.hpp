@@ -67,10 +67,11 @@ public:
 					if (destObj.life > 0) {
 						if (this->vault->registry.has<Unit>(unit.targetEnt)) {
 							Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
-							if (destTile.state == "idle" || destTile.state == "move") {
+							if (destTile.state == "idle") {
 								// if ennemy is idle, he will fight back
 								this->attack(destUnit, entity);
-
+							} else if (destTile.state == "move") {
+								this->attack(destUnit, entity);
 							} else if (destTile.state == "attack" && destUnit.targetEnt) {
 								// if ennemy is attacking a building, he will fight back
 								if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
@@ -78,7 +79,6 @@ public:
 								}
 							}
 						}
-
 					}
 				}
 			} else {

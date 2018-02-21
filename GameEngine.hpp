@@ -1270,6 +1270,7 @@ public:
 			case sf::Event::MouseButtonPressed:
 			{
 				if (event.mouseButton.button == sf::Mouse::Left) {
+					this->selectedDebugObj = 0;
 					// left click on minimap
 					if (this->minimap.rect.contains(sf::Vector2f(mousePos))) {
 						sf::Vector2f mPos((float)(mousePos.x - this->minimap.rect.left) / (this->minimap.size / this->map->width), (float)(mousePos.y - this->minimap.rect.top) / (this->minimap.size / this->map->width));
@@ -1333,7 +1334,6 @@ public:
 						}
 					}
 
-					this->selectedDebugObj = 0;
 				}
 			}
 			break;
