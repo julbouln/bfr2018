@@ -6,7 +6,7 @@
 #include "GameSystem.hpp"
 #include "FlowField.hpp"
 
-#define PATHFINDING_MAX_NO_PATH 16
+#define PATHFINDING_MAX_NO_PATH 8
 
 class PathfindingSystem : public GameSystem {
 	JPS::Searcher<Map> *search;
@@ -263,6 +263,13 @@ public:
 						this->changeState(entity, "idle");
 						unit.velocity = sf::Vector2f(0, 0);
 						unit.nopath++;
+						unit.reallyNopath;
+
+						if (unit.reallyNopath > PATHFINDING_MAX_NO_PATH*4) {
+							unit.nopath = 0;
+							unit.reallyNopath = 0;
+							this->stop(unit);
+						}
 
 						if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
 							sf::Vector2i fp = this->firstAvailablePosition(unit.destpos, 1, 16);
@@ -271,6 +278,7 @@ public:
 #endif
 							this->goTo(unit, fp);
 						}
+
 					}
 
 				} else {

@@ -70,13 +70,13 @@
     <name value="super_guerrier"/>
     <team value="neonaz"/>
     <view value="3"/>
-    <life value="10"/>
+    <life value="12"/>
   </game_object>
   <unit>
     <cost value="40"/>
     <speed value="1"/>
-    <attack1 power="10"/>
-    <attack2 dist="2" max_dist="2" power="10"/>
+    <attack1 power="12"/>
+    <attack2 dist="2" max_dist="2" power="12"/>
     <sound_actions/>
     <sound_attack name="mitraille">
       <sound_buffer global="mitraille" path="medias/projectiles/mitraille.flac"/>

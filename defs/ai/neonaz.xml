@@ -75,7 +75,7 @@
 			<HasLessObjectsTypeThan qty="1" type="caserne"/>
 		</Inverter>
 		<HasMoreResourcesThan amount="200"/>
-		<HasLessObjectsTypeThan qty="100" type="patrouilleur"/>
+		<HasLessObjectsTypeThan qty="200" type="patrouilleur"/>
 		<Train type="patrouilleur"/>
 	</Sequence>
 	<Sequence>

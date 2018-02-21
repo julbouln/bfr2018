@@ -145,6 +145,7 @@ struct Unit {
 	sf::Vector2f velocity;
 
 	unsigned int nopath;
+	unsigned int reallyNopath;
 
 	std::string sound;
 	std::map<std::string, int> soundActions;
@@ -158,6 +159,8 @@ struct Unit {
 	bool canDestroyResources;
 
 	Unit() {
+		this->nopath = 0;
+		this->reallyNopath = 0;
 		this->canDestroyResources = false;
 	}
 };
