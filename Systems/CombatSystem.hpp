@@ -52,12 +52,15 @@ public:
 	}
 
 	void update(float dt) {
+
 		// pass 1, if an ennemy is in sight, then attack / respond to attack
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
+		// respond to attack
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
+
 			if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
 				if (this->vault->registry.has<Unit>(unit.targetEnt)) {
 					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
@@ -71,7 +74,8 @@ public:
 								// if ennemy is idle, he will fight back
 								this->attack(destUnit, entity);
 							} else if (destTile.state == "move") {
-								this->attack(destUnit, entity);
+								this->stop(destUnit);
+//								this->attack(destUnit, entity);
 							} else if (destTile.state == "attack" && destUnit.targetEnt) {
 								// if ennemy is attacking a building, he will fight back
 								if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
@@ -81,7 +85,15 @@ public:
 						}
 					}
 				}
-			} else {
+			}
+		}
+
+		// attack in sight
+		for (EntityID entity : view) {
+			Tile &tile = view.get<Tile>(entity);
+			GameObject &obj = view.get<GameObject>(entity);
+			Unit &unit = view.get<Unit>(entity);
+			if (!unit.targetEnt) {
 				std::vector<EntityID>targets;
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
@@ -106,6 +118,7 @@ public:
 				}
 			}
 		}
+
 
 		// pass 2, calculate combat
 		for (EntityID entity : view) {

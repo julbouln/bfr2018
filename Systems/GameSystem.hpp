@@ -462,6 +462,10 @@ public:
 		this->goTo(unit, destpos);
 	}
 
+	void stop(Unit &unit) {
+		unit.destpos = unit.nextpos;
+	}
+
 	void attack(Unit & unit, EntityID destEnt) {
 		unit.targetEnt = destEnt;
 		unit.destpos = unit.nextpos;
@@ -471,5 +475,6 @@ public:
 		Unit &unit = this->vault->registry.get<Unit>(entity);
 		this->attack(unit, destEnt);
 	}
+
 
 };

@@ -555,5 +555,6 @@ public:
 
 	void setPathFind(FlowFieldPathFind *p) {
 		pathFind = p;
+		this->currentFlowField.setGrid(pathFind->map,sf::IntRect(0,0,0,0));
 	}
 };

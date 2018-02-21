@@ -199,7 +199,7 @@ public:
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 			unsigned int idx = x + width * y;
-			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0)
+			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0 && movingPathfinding.grid[idx] == 0)
 				return true;
 		}
 		return false;

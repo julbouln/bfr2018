@@ -914,6 +914,7 @@ public:
 									}
 								}
 							}
+							
 
 							for (sf::Vector2i p : unit.flowFieldPath.inRangePathPoints(tile.pos)) {
 								sf::RectangleShape rectangle;
@@ -1030,9 +1031,11 @@ public:
 
 			if (obj.destroy) {
 				if (this->vault->registry.has<Unit>(entity)) {
+					Unit &unit = this->vault->registry.get<Unit>(entity);
 					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_" + std::to_string(obj.player), 0);
 //					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
+					this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, 0);
 				}
 				if (this->vault->registry.has<Building>(entity)) {
 					Building &building = this->vault->registry.get<Building>(entity);
