@@ -1,10 +1,13 @@
 #pragma once
 
 #include "GameSystem.hpp"
+#include "TileMap.hpp"
 
 class DrawMapSystem : public GameSystem {
 public:
 	std::vector<EntityID> entitiesDrawList;
+	TileMap terrainsTileMap;
+	TileMap fogTileMap;
 
 	bool showDebugLayer;
 
@@ -167,6 +170,7 @@ public:
 		});
 	}
 
+
 	void drawObjLayer(sf::RenderWindow & window, sf::IntRect clip, float dt) {
 		this->updateObjsDrawList(window, clip, dt);
 
@@ -248,6 +252,152 @@ public:
 				}
 			}
 		}
+	}
+
+	void initTileMaps(int w, int h) {
+		terrainsTileMap.resize(6, w, h);
+
+		for (int i = 0; i < 15; i++) {
+			terrainsTileMap.layers[Terrain].addTileRect(sf::IntRect((i / 3) * 32, (i % 3) * 32, 32, 32));
+		}
+		terrainsTileMap.layers[Terrain].init(&this->vault->factory.getTex("terrains"));
+
+		for (int i = 0; i < 32; i++) {
+			terrainsTileMap.layers[GrassConcrete].addTileRect(sf::IntRect(128, i * 32, 32, 32));
+		}
+		terrainsTileMap.layers[GrassConcrete].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		for (int i = 0; i < 32; i++) {
+			terrainsTileMap.layers[SandWater].addTileRect(sf::IntRect(32, i * 32, 32, 32));
+		}
+		terrainsTileMap.layers[SandWater].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		for (int i = 0; i < 32; i++) {
+			terrainsTileMap.layers[GrassSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+		}
+		terrainsTileMap.layers[GrassSand].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		for (int i = 0; i < 32; i++) {
+			terrainsTileMap.layers[ConcreteSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+		}
+		terrainsTileMap.layers[ConcreteSand].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		for (int i = 0; i < 32; i++) {
+			terrainsTileMap.layers[AnyDirt].addTileRect(sf::IntRect(96, i * 32, 32, 32));
+		}
+		terrainsTileMap.layers[AnyDirt].init(&this->vault->factory.getTex("terrains_transitions"));
+
+		// FOG
+		fogTileMap.resize(4, w, h);
+
+		for (int i = 0; i < 13; i++) {
+			fogTileMap.layers[0].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			fogTileMap.layers[1].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			fogTileMap.layers[2].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+			fogTileMap.layers[3].addTileRect(sf::IntRect(0, i * 32, 32, 32));
+		}
+		fogTileMap.layers[0].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0x7f));
+		fogTileMap.layers[1].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0x7f));
+		fogTileMap.layers[2].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0xff));
+		fogTileMap.layers[3].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0xff));
+
+	}
+
+	void updateAllTerrainTileMap(float dt) {
+		for (auto &layer : terrainsTileMap.layers) {
+			layer.clear();
+		}
+
+		for (int y = 0; y < this->map->height; y++) {
+			for (int x = 0; x < this->map->width; x++) {
+
+				terrainsTileMap.layers[Terrain].addPosition(this->map->terrains[Terrain].get(x, y), sf::Vector2i(x, y));
+
+				if (this->map->terrains[GrassConcrete].get(x, y))
+					terrainsTileMap.layers[GrassConcrete].addPosition(this->map->terrains[GrassConcrete].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[SandWater].get(x, y))
+					terrainsTileMap.layers[SandWater].addPosition(this->map->terrains[SandWater].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[GrassSand].get(x, y))
+					terrainsTileMap.layers[GrassSand].addPosition(this->map->terrains[GrassSand].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[ConcreteSand].get(x, y))
+					terrainsTileMap.layers[ConcreteSand].addPosition(this->map->terrains[ConcreteSand].get(x, y), sf::Vector2i(x, y));
+				if (this->map->terrains[AnyDirt].get(x, y))
+					terrainsTileMap.layers[AnyDirt].addPosition(this->map->terrains[AnyDirt].get(x, y), sf::Vector2i(x, y));
+			}
+		}
+
+	}
+	void updateAllFogTileMap(float dt) {
+
+		for (auto &layer : fogTileMap.layers) {
+			layer.clear();
+		}
+
+		for (int y = 0; y < this->map->height; y++) {
+			for (int x = 0; x < this->map->width; x++) {
+				if (this->map->fogHidden.get(x, y) != 15)
+					fogTileMap.layers[0].addPosition(this->map->fogHidden.get(x, y), sf::Vector2i(x, y));
+				if (this->map->fogHiddenTransitions.get(x, y) != 15)
+					fogTileMap.layers[1].addPosition(this->map->fogHiddenTransitions.get(x, y), sf::Vector2i(x, y));
+				if (this->map->fogUnvisited.get(x, y) != 15)
+					fogTileMap.layers[2].addPosition(this->map->fogUnvisited.get(x, y), sf::Vector2i(x, y));
+				if (this->map->fogUnvisitedTransitions.get(x, y) != 15)
+					fogTileMap.layers[3].addPosition(this->map->fogUnvisitedTransitions.get(x, y), sf::Vector2i(x, y));
+			}
+		}
+	}
+
+	void updateAllTileMaps() {
+		this->updateAllTerrainTileMap(0);
+		this->updateAllFogTileMap(0);
+	}
+
+	void drawTerrainTileMap(sf::RenderWindow &window, float dt) {
+		for (auto &layer : terrainsTileMap.layers) {
+			window.draw(layer);
+		}
+	}
+
+	void drawFogTileMap(sf::RenderWindow &window, float dt) {
+		for (auto &layer : fogTileMap.layers) {
+			window.draw(layer);
+		}
+	}
+
+	void update(float dt) {
+
+		// only update updated terrain tiles
+		for (sf::Vector2i const &p : this->map->markUpdateTerrainTransitions) {
+			terrainsTileMap.layers[Terrain].setPosition(this->map->terrains[Terrain].get(p.x, p.y), p);
+		}
+
+		if (this->map->markUpdateTerrainTransitions.size() > 0) {
+			terrainsTileMap.layers[GrassConcrete].clear();
+			terrainsTileMap.layers[SandWater].clear();
+			terrainsTileMap.layers[GrassSand].clear();
+			terrainsTileMap.layers[ConcreteSand].clear();
+			terrainsTileMap.layers[AnyDirt].clear();
+
+			for (int y = 0; y < this->map->height; y++) {
+				for (int x = 0; x < this->map->width; x++) {
+
+					if (this->map->terrains[GrassConcrete].get(x, y))
+						terrainsTileMap.layers[GrassConcrete].addPosition(this->map->terrains[GrassConcrete].get(x, y), sf::Vector2i(x, y));
+					if (this->map->terrains[SandWater].get(x, y))
+						terrainsTileMap.layers[SandWater].addPosition(this->map->terrains[SandWater].get(x, y), sf::Vector2i(x, y));
+					if (this->map->terrains[GrassSand].get(x, y))
+						terrainsTileMap.layers[GrassSand].addPosition(this->map->terrains[GrassSand].get(x, y), sf::Vector2i(x, y));
+					if (this->map->terrains[ConcreteSand].get(x, y))
+						terrainsTileMap.layers[ConcreteSand].addPosition(this->map->terrains[ConcreteSand].get(x, y), sf::Vector2i(x, y));
+					if (this->map->terrains[AnyDirt].get(x, y))
+						terrainsTileMap.layers[AnyDirt].addPosition(this->map->terrains[AnyDirt].get(x, y), sf::Vector2i(x, y));
+				}
+			}
+		}
+//		this->updateAllTerrainTileMap(dt);
+
+		if (this->map->markUpdateFogTransitions.size() > 0)
+			this->updateAllFogTileMap(dt);
 	}
 
 	// draw debug grid

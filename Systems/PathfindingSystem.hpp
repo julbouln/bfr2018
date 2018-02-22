@@ -7,6 +7,7 @@
 #include "FlowField.hpp"
 
 #define PATHFINDING_MAX_NO_PATH 8
+#define MOVING_AROUND_SIZE 3
 
 class PathfindingSystem : public GameSystem {
 	JPS::Searcher<Map> *search;
@@ -75,8 +76,7 @@ public:
 			}
 		}
 
-		this->map->dynamicPathfinding.clear();
-//		this->map->movingPathfinding.clear();
+//		this->map->dynamicPathfinding.clear();
 
 		auto unitView = this->vault->registry.persistent<Tile, Unit>();
 		for (EntityID entity : unitView) {
@@ -84,13 +84,14 @@ public:
 			Unit &unit = unitView.get<Unit>(entity);
 
 			if (tile.pos == unit.destpos) {
-//				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
-//				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//				if(unit.velocity == sf::Vector2f(0,0)) {
+//				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 			} else {
-//				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, entity);
+//				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, entity);
 //				if(tile.pos != unit.nextpos)
-//					this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//					this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
 			}
 		}
 
@@ -139,7 +140,7 @@ public:
 	}
 
 	void updateMovement(float dt) {
-//this->map->movingPathfinding.clear();
+//this->map->dynamicPathfinding.clear();
 
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 		for (EntityID entity : view) {
@@ -148,7 +149,7 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 
 
-//			this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
+//			this->map->dynamicPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 
 			if (obj.life > 0 && !this->unitInCase(unit, tile)) {
 //				float speed = (float)unit.speed / 2.0;
@@ -183,7 +184,7 @@ public:
 #endif
 //							this->goTo(unit, tile.pos);
 							for (sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
-								if (this->map->pathAvailable(p.x, p.y) && this->map->movingPathfinding.get(p.x, p.y) == 0) {
+								if (this->map->pathAvailable(p.x, p.y) && this->map->dynamicPathfinding.get(p.x, p.y) == 0) {
 									unit.destpos = p;
 									break;
 								}
@@ -200,9 +201,9 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 
 			if (obj.life > 0 && tile.pos != unit.destpos && this->unitInCase(unit, tile)) {
-				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				tile.pos = unit.nextpos;
-				this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//				this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
 				this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
 				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
 
@@ -211,9 +212,10 @@ public:
 #ifdef PATHFINDING_FLOWFIELD
 					unit.flowFieldPath.setPathFind(&flowFieldPathFind);
 					bool found = unit.flowFieldPath.start(tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y);
+					this->calculateMovingObjects(unit.flowFieldPath.getCurrentFlowField(), entity, tile.pos.x, tile.pos.y);
 #else
 					JPS::PathVector path;
-//						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);
+//						bool found = JPS::findPath(path, *this->map, tile.pos.x, tile.pos.y, unit.destpos.x, unit.destpos.y, 1);g
 					bool found = search->findPath(path, JPS::Pos(tile.pos.x, tile.pos.y), JPS::Pos(unit.destpos.x, unit.destpos.y), 1);
 #endif
 
@@ -235,10 +237,10 @@ public:
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
-							this->map->pathfinding.set(tile.pos.x, tile.pos.y, 0);
-							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//							this->map->pathfinding.set(tile.pos.x, tile.pos.y, 0);
+//							this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
 							unit.nextpos = npos;
-							this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
+//							this->map->dynamicPathfinding.set(unit.nextpos.x, unit.nextpos.y, entity);
 
 							tile.view = this->getDirection(cpos, npos);
 							unit.velocity = this->dirVelocity(tile.view, unit.speed / 2.0);
@@ -246,8 +248,8 @@ public:
 
 
 						} else {
-							this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
-							this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
+//							this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//							this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 							this->changeState(entity, "idle");
 							unit.velocity = sf::Vector2f(0, 0);
 #ifdef PATHFINDING_DEBUG
@@ -258,8 +260,8 @@ public:
 #ifdef PATHFINDING_DEBUG
 						std::cout << "Pathfinding: " << entity << " no path found " << tile.pos.x << "x" << tile.pos.y << " -> " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 #endif
-						this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
-						this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
+//						this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//						this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 						this->changeState(entity, "idle");
 						unit.velocity = sf::Vector2f(0, 0);
 						unit.nopath++;
@@ -285,8 +287,8 @@ public:
 #ifdef PATHFINDING_DEBUG
 					std::cout << "Pathfinding: " << entity << " at destination" << std::endl;
 #endif
-					this->map->movingPathfinding.set(tile.pos.x, tile.pos.y, 0);
-					this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
+//					this->map->dynamicPathfinding.set(tile.pos.x, tile.pos.y, 0);
+//					this->map->pathfinding.set(tile.pos.x, tile.pos.y, entity);
 					this->changeState(entity, "idle");
 					unit.velocity = sf::Vector2f(0, 0);
 				}
@@ -306,4 +308,30 @@ public:
 
 
 	}
+
+private:
+	void calculateMovingObjects(FlowField *flowField, EntityID currentEnt, int x, int y) {
+		std::vector<MovingObject> &movingObjects=flowField->movingObjects;
+		Tile &curTile = this->vault->registry.get<Tile>(currentEnt);
+		Unit &curUnit = this->vault->registry.get<Unit>(currentEnt);
+		flowField->currentMovingObjectVel = curUnit.speed/2.0;
+
+		movingObjects.clear();
+		for (int cx = x - MOVING_AROUND_SIZE; cx < x + MOVING_AROUND_SIZE*2; ++cx) {
+			for (int cy = y - MOVING_AROUND_SIZE; cy < y + MOVING_AROUND_SIZE*2; ++cy) {
+				if (this->map->bound(cx, cy)) {
+					EntityID ent = this->map->objs.get(cx, cy);
+					if(ent && ent != currentEnt) {
+						if(this->vault->registry.has<Unit>(ent)) {
+							Tile &tile = this->vault->registry.get<Tile>(ent);
+							Unit &unit = this->vault->registry.get<Unit>(ent);
+//							if(unit.velocity.x > 0 || unit.velocity.y > 0)
+								movingObjects.push_back(MovingObject{tile.ppos,unit.velocity});
+						}
+					}
+				}
+			}
+		}
+	}
+
 };

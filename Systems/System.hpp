@@ -11,7 +11,7 @@ public:
 		this->vault = vault;
 	}
 
-	float approxDistance(sf::Vector2i p1, sf::Vector2i p2) {
+	float approxDistance(const sf::Vector2i &p1, const sf::Vector2i &p2) const {
 		double dx = abs(p1.x - p2.x);
 		double dy = abs(p1.y - p2.y);
 		return 0.394 * (dx + dy) + 0.554 * std::max(dx, dy);

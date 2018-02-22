@@ -211,7 +211,11 @@ public:
 	Layer<EntityID> pathfinding;
 
 	Layer<EntityID> dynamicPathfinding;
-	Layer<EntityID> movingPathfinding;
+
+	// transitions calculation optimization
+	// maintain a list of position to update instead of updating every transitions
+	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
+	std::set<sf::Vector2i, CompareVector2i> markUpdateFogTransitions;
 
 	// not sure if sound must be there
 	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
@@ -250,10 +254,14 @@ public:
 
 		// units
 		this->dynamicPathfinding.setSize(width, height);
-		this->movingPathfinding.setSize(width, height);
 
 		this->width = width;
 		this->height = height;
+	}
+
+	void markUpdateClear() {
+		this->markUpdateTerrainTransitions.clear();
+		this->markUpdateFogTransitions.clear();
 	}
 
 	inline bool bound(int x, int y) const {
@@ -264,7 +272,7 @@ public:
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 			unsigned int idx = x + width * y;
-			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0 && movingPathfinding.grid[idx] == 0)
+			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0)// && dynamicPathfinding.grid[idx] == 0)
 				return true;
 		}
 		return false;

@@ -229,12 +229,13 @@ public:
 	}
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
-		mapLayers.initTileMaps();
 		mapLayers.initTransitions();
 
 		this->currentPlayer = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
+		drawMap.initTileMaps(mapWidth, mapHeight);
 
 		mapLayers.updateAllTransitions();
+		drawMap.updateAllTileMaps();
 
 		ai.generate();
 
@@ -702,12 +703,12 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 
-		mapLayers.drawTerrainTileMap(this->game->window, dt);
+		drawMap.drawTerrainTileMap(this->game->window, dt);
 		drawMap.draw(this->game->window, clip, dt);
 //		if (this->gameSpeed < 2)
 		fx.draw(this->game->window, clip, dt);
 
-		mapLayers.drawFogTileMap(this->game->window, dt);
+		drawMap.drawFogTileMap(this->game->window, dt);
 
 		// draw selected
 		for (EntityID selectedObj : this->selectedObjs) {
@@ -1035,7 +1036,7 @@ public:
 					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_" + std::to_string(obj.player), 0);
 //					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
-					this->map->movingPathfinding.set(unit.nextpos.x, unit.nextpos.y, 0);
+					this->map->dynamicPathfinding.set(unit.nextpos.x, unit.nextpos.y, 0);
 				}
 				if (this->vault->registry.has<Building>(entity)) {
 					Building &building = this->vault->registry.get<Building>(entity);
@@ -1097,6 +1098,8 @@ public:
 
 		this->resources.update(updateDt);
 		this->mapLayers.update(updateDt);
+		this->drawMap.update(updateDt);
+		this->map->markUpdateClear();
 
 		this->mapLayers.updateSpectatorFog(this->currentPlayer, dt);
 		this->mapLayers.updatePlayerFogLayer(this->currentPlayer, sf::IntRect(0, 0, this->map->width, this->map->height), dt);

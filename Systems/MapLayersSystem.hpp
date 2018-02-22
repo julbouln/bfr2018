@@ -1,7 +1,6 @@
 #pragma once
 #include "Helpers.hpp"
 #include "GameSystem.hpp"
-#include "TileMap.hpp"
 
 class MapLayersSystem : public GameSystem {
 	std::map<std::string, std::vector<EntityID>> tiles;
@@ -17,24 +16,15 @@ class MapLayersSystem : public GameSystem {
 
 //	std::vector<EntityID> debugTransitions;
 
-	// transitions calculation optimization
-	// maintain a list of position to update instead of updating every transitions
-
-	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
-	std::set<sf::Vector2i, CompareVector2i> markUpdateFogTransitions;
-
 	std::map<EntityID, EntityID> altTerrains;
-
-	TileMap terrainsTileMap;
-	TileMap fogTileMap;
 
 public:
 	void update(float dt) {
 		this->updateLayer(dt);
-		this->updateTransitions(dt);
-		this->updateTileMap(dt);
+//		this->updateTileMap(dt);
 		this->updateObjsLayer(dt);
 		this->updatePlayersFog(dt);
+		this->updateTransitions(dt);
 	}
 
 	void updateLayer(float dt) {
@@ -65,7 +55,7 @@ public:
 
 					if (this->map->terrainsForTransitions.get(p.x, p.y) != newEnt) {
 						for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1)) {
-							this->markUpdateTerrainTransitions.insert(sp);
+							this->map->markUpdateTerrainTransitions.insert(sp);
 						}
 
 						if (this->map->staticBuildable.get(p.x, p.y) == 0) {
@@ -94,7 +84,7 @@ public:
 
 				if (this->map->terrainsForTransitions.get(p.x, p.y) != newEnt) {
 					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1)) {
-						this->markUpdateTerrainTransitions.insert(sp);
+						this->map->markUpdateTerrainTransitions.insert(sp);
 					}
 
 					if (this->map->staticBuildable.get(p.x, p.y) == 0) {
@@ -105,46 +95,6 @@ public:
 			}
 		}
 
-	}
-
-	void updateTileMap(float dt) {
-		for (auto &layer : terrainsTileMap.layers) {
-			layer.clear();
-		}
-
-		for (int y = 0; y < this->map->height; y++) {
-			for (int x = 0; x < this->map->width; x++) {
-				terrainsTileMap.layers[Terrain].addPosition(this->map->terrains[Terrain].get(x, y), sf::Vector2i(x, y));
-
-				if (this->map->terrains[GrassConcrete].get(x, y))
-					terrainsTileMap.layers[GrassConcrete].addPosition(this->map->terrains[GrassConcrete].get(x, y), sf::Vector2i(x, y));
-				if (this->map->terrains[SandWater].get(x, y))
-					terrainsTileMap.layers[SandWater].addPosition(this->map->terrains[SandWater].get(x, y), sf::Vector2i(x, y));
-				if (this->map->terrains[GrassSand].get(x, y))
-					terrainsTileMap.layers[GrassSand].addPosition(this->map->terrains[GrassSand].get(x, y), sf::Vector2i(x, y));
-				if (this->map->terrains[ConcreteSand].get(x, y))
-					terrainsTileMap.layers[ConcreteSand].addPosition(this->map->terrains[ConcreteSand].get(x, y), sf::Vector2i(x, y));
-				if (this->map->terrains[AnyDirt].get(x, y))
-					terrainsTileMap.layers[AnyDirt].addPosition(this->map->terrains[AnyDirt].get(x, y), sf::Vector2i(x, y));
-			}
-		}
-
-		for (auto &layer : fogTileMap.layers) {
-			layer.clear();
-		}
-
-		for (int y = 0; y < this->map->height; y++) {
-			for (int x = 0; x < this->map->width; x++) {
-				if (this->map->fogHidden.get(x, y) != 15)
-					fogTileMap.layers[0].addPosition(this->map->fogHidden.get(x, y), sf::Vector2i(x, y));
-				if (this->map->fogHiddenTransitions.get(x, y) != 15)
-					fogTileMap.layers[1].addPosition(this->map->fogHiddenTransitions.get(x, y), sf::Vector2i(x, y));
-				if (this->map->fogUnvisited.get(x, y) != 15)
-					fogTileMap.layers[2].addPosition(this->map->fogUnvisited.get(x, y), sf::Vector2i(x, y));
-				if (this->map->fogUnvisitedTransitions.get(x, y) != 15)
-					fogTileMap.layers[3].addPosition(this->map->fogUnvisitedTransitions.get(x, y), sf::Vector2i(x, y));
-			}
-		}
 	}
 
 	void updateObjsLayer(float dt) {
@@ -273,22 +223,15 @@ public:
 
 				if (markUpdate) {
 					for (sf::Vector2i const &sp : this->vectorSurfaceExtended(p, 1)) {
-						this->markUpdateFogTransitions.insert(sp);
+						this->map->markUpdateFogTransitions.insert(sp);
 					}
 				}
 			}
 		}
 
 #ifdef TRANSITIONS_DEBUG
-		std::cout << "Transitions: update " << this->markUpdateFogTransitions.size() << " FOG transitions" << std::endl;
+		std::cout << "Transitions: update " << this->map->markUpdateFogTransitions.size() << " FOG transitions" << std::endl;
 #endif
-
-		for (sf::Vector2i const &p : this->markUpdateFogTransitions) {
-			this->updateFogHiddenTransition(p.x, p.y);
-			this->updateFogUnvisitedTransition(p.x, p.y);
-		}
-
-		this->markUpdateFogTransitions.clear();
 	}
 
 	EntityID getTile(std::string name, int n) {
@@ -296,67 +239,6 @@ public:
 	}
 
 // Terrains/Transitions
-
-	void drawTerrainTileMap(sf::RenderWindow &window, float dt) {
-		for (auto &layer : terrainsTileMap.layers) {
-			window.draw(layer);
-		}
-	}
-
-	void drawFogTileMap(sf::RenderWindow &window, float dt) {
-		for (auto &layer : fogTileMap.layers) {
-			window.draw(layer);
-		}
-	}
-
-	void initTileMaps() {
-		terrainsTileMap.resize(6);
-
-		for (int i = 0; i < 15; i++) {
-			terrainsTileMap.layers[Terrain].addTileRect(sf::IntRect((i / 3) * 32, (i % 3) * 32, 32, 32));
-		}
-		terrainsTileMap.layers[Terrain].init(&this->vault->factory.getTex("terrains"));
-
-		for (int i = 0; i < 32; i++) {
-			terrainsTileMap.layers[GrassConcrete].addTileRect(sf::IntRect(128, i * 32, 32, 32));
-		}
-		terrainsTileMap.layers[GrassConcrete].init(&this->vault->factory.getTex("terrains_transitions"));
-
-		for (int i = 0; i < 32; i++) {
-			terrainsTileMap.layers[SandWater].addTileRect(sf::IntRect(32, i * 32, 32, 32));
-		}
-		terrainsTileMap.layers[SandWater].init(&this->vault->factory.getTex("terrains_transitions"));
-
-		for (int i = 0; i < 32; i++) {
-			terrainsTileMap.layers[GrassSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
-		}
-		terrainsTileMap.layers[GrassSand].init(&this->vault->factory.getTex("terrains_transitions"));
-
-		for (int i = 0; i < 32; i++) {
-			terrainsTileMap.layers[ConcreteSand].addTileRect(sf::IntRect(0, i * 32, 32, 32));
-		}
-		terrainsTileMap.layers[ConcreteSand].init(&this->vault->factory.getTex("terrains_transitions"));
-
-		for (int i = 0; i < 32; i++) {
-			terrainsTileMap.layers[AnyDirt].addTileRect(sf::IntRect(96, i * 32, 32, 32));
-		}
-		terrainsTileMap.layers[AnyDirt].init(&this->vault->factory.getTex("terrains_transitions"));
-
-		// FOG
-		fogTileMap.resize(4);
-
-		for (int i = 0; i < 13; i++) {
-			fogTileMap.layers[0].addTileRect(sf::IntRect(0, i * 32, 32, 32));
-			fogTileMap.layers[1].addTileRect(sf::IntRect(0, i * 32, 32, 32));
-			fogTileMap.layers[2].addTileRect(sf::IntRect(0, i * 32, 32, 32));
-			fogTileMap.layers[3].addTileRect(sf::IntRect(0, i * 32, 32, 32));
-		}
-		fogTileMap.layers[0].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0x7f));
-		fogTileMap.layers[1].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0x7f));
-		fogTileMap.layers[2].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0xff));
-		fogTileMap.layers[3].init(&this->vault->factory.getTex("fog_transition"), sf::Color(0x00, 0x00, 0x00, 0xff));
-
-	}
 
 	void initTransitions() {
 		for (int i = 0; i < 32; i++) {
@@ -610,14 +492,19 @@ public:
 		std::cout << "Transitions: update " << this->markUpdateTerrainTransitions.size() << " terrain transitions" << std::endl;
 #endif
 
-		for (sf::Vector2i const &p : this->markUpdateTerrainTransitions) {
+		for (sf::Vector2i const &p : this->map->markUpdateTerrainTransitions) {
 			this->updateDirtTransition(p.x, p.y);
 			this->updateGrassConcreteTransition(p.x, p.y);
 			this->updateSandWaterTransition(p.x, p.y);
 			this->updateGrassSandTransition(p.x, p.y);
 			this->updateConcreteSandTransition(p.x, p.y);
 		}
-		this->markUpdateTerrainTransitions.clear();
+
+		for (sf::Vector2i const &p : this->map->markUpdateFogTransitions) {
+			this->updateFogHiddenTransition(p.x, p.y);
+			this->updateFogUnvisitedTransition(p.x, p.y);
+		}
+		
 	}
 
 	// FOG transition
