@@ -4,6 +4,8 @@
 
 #include <tuple>
 #include <utility>
+#include <algorithm>
+#include <type_traits>
 #include "sparse_set.hpp"
 
 
@@ -188,25 +190,49 @@ public:
     }
 
     /**
-     * @brief Iterate the entities and applies them the given function object.
+     * @brief Returns the components assigned to the given entity.
      *
-     * The function object is invoked for each entity. It is provided with the
-     * entity itself and a set of references to all the components of the
-     * view.<br/>
-     * The signature of the function should be equivalent to the following:
+     * Prefer this function instead of `Registry::get` during iterations. It has
+     * far better performance than its companion function.
      *
-     * @code{.cpp}
-     * void(entity_type, Component &...);
-     * @endcode
+     * @warning
+     * Attempting to use invalid component types results in a compilation error.
+     * Attempting to use an entity that doesn't belong to the view results in
+     * undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode if
+     * the view doesn't contain the given entity.
      *
-     * @tparam Func Type of the function object to invoke.
-     * @param func A valid function object.
+     * @tparam Comp Types of the components to get.
+     * @param entity A valid entity identifier.
+     * @return The components assigned to the entity.
      */
-    template<typename Func>
-    void each(Func &&func) {
-        for(auto entity: *this) {
-            std::forward<Func>(func)(entity, get<Component>(entity)...);
-        }
+    template<typename... Comp>
+    std::enable_if_t<(sizeof...(Comp) > 1), std::tuple<const Comp &...>>
+    get(entity_type entity) const noexcept {
+        return std::tuple<const Comp &...>{ get<Comp>(entity)... };
+    }
+
+    /**
+     * @brief Returns the components assigned to the given entity.
+     *
+     * Prefer this function instead of `Registry::get` during iterations. It has
+     * far better performance than its companion function.
+     *
+     * @warning
+     * Attempting to use invalid component types results in a compilation error.
+     * Attempting to use an entity that doesn't belong to the view results in
+     * undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode if
+     * the view doesn't contain the given entity.
+     *
+     * @tparam Comp Types of the components to get.
+     * @param entity A valid entity identifier.
+     * @return The components assigned to the entity.
+     */
+    template<typename... Comp>
+    std::enable_if_t<(sizeof...(Comp) > 1), std::tuple<Comp &...>>
+    get(entity_type entity) noexcept {
+        return std::tuple<Comp &...>{ get<Comp>(entity)... };
     }
 
     /**
@@ -225,10 +251,32 @@ public:
      * @param func A valid function object.
      */
     template<typename Func>
-    void each(Func &&func) const {
+    void each(Func func) const {
         for(auto entity: *this) {
-            std::forward<Func>(func)(entity, get<Component>(entity)...);
+            func(entity, get<Component>(entity)...);
         }
+    }
+
+    /**
+     * @brief Iterate the entities and applies them the given function object.
+     *
+     * The function object is invoked for each entity. It is provided with the
+     * entity itself and a set of references to all the components of the
+     * view.<br/>
+     * The signature of the function should be equivalent to the following:
+     *
+     * @code{.cpp}
+     * void(entity_type, Component &...);
+     * @endcode
+     *
+     * @tparam Func Type of the function object to invoke.
+     * @param func A valid function object.
+     */
+    template<typename Func>
+    void each(Func func) {
+        const_cast<const PersistentView *>(this)->each([&func](entity_type entity, const Component &... component) {
+            func(entity, const_cast<Component &>(component)...);
+        });
     }
 
     /**
@@ -294,24 +342,25 @@ private:
  * @sa PersistentView
  *
  * @tparam Entity A valid entity type (see entt_traits for more details).
- * @tparam First One of the components to iterate.
- * @tparam Other The rest of the components to iterate.
+ * @tparam Component Types of components iterated by the view.
  */
-template<typename Entity, typename First, typename... Other>
+template<typename Entity, typename... Component>
 class View final {
-    template<typename Component>
-    using pool_type = SparseSet<Entity, Component>;
+    static_assert(sizeof...(Component) > 1, "!");
+
+    template<typename Comp>
+    using pool_type = SparseSet<Entity, Comp>;
 
     using base_pool_type = SparseSet<Entity>;
     using underlying_iterator_type = typename base_pool_type::iterator_type;
-    using repo_type = std::tuple<pool_type<First> &, pool_type<Other> &...>;
+    using repo_type = std::tuple<pool_type<Component> &...>;
 
     class Iterator {
         inline bool valid() const noexcept {
             using accumulator_type = bool[];
-            auto entity = *begin;
-            bool all = std::get<pool_type<First> &>(pools).has(entity);
-            accumulator_type accumulator =  { (all = all && std::get<pool_type<Other> &>(pools).has(entity))... };
+            const auto entity = *begin;
+            bool all = true;
+            accumulator_type accumulator =  { all, (all = all && std::get<pool_type<Component> &>(pools).has(entity))... };
             (void)accumulator;
             return all;
         }
@@ -328,9 +377,7 @@ class View final {
         }
 
         Iterator & operator++() noexcept {
-            ++begin;
-            while(begin != end && !valid()) { ++begin; }
-            return *this;
+            return (++begin != end && !valid()) ? ++(*this) : *this;
         }
 
         Iterator operator++(int) noexcept {
@@ -366,11 +413,10 @@ public:
 
     /**
      * @brief Constructs a view out of a bunch of pools of components.
-     * @param pool A reference to a pool of components.
-     * @param other Other references to pools of components.
+     * @param pools References to pools of components.
      */
-    View(pool_type<First> &pool, pool_type<Other>&... other) noexcept
-        : pools{pool, other...}, view{nullptr}
+    View(pool_type<Component>&... pools) noexcept
+        : pools{pools...}, view{nullptr}
     {
         reset();
     }
@@ -425,13 +471,13 @@ public:
      * An assertion will abort the execution at runtime in debug mode if
      * the view doesn't contain the given entity.
      *
-     * @tparam Component Type of the component to get.
+     * @tparam Comp Type of the component to get.
      * @param entity A valid entity identifier.
      * @return The component assigned to the entity.
      */
-    template<typename Component>
-    const Component & get(entity_type entity) const noexcept {
-        return std::get<pool_type<Component> &>(pools).get(entity);
+    template<typename Comp>
+    const Comp & get(entity_type entity) const noexcept {
+        return std::get<pool_type<Comp> &>(pools).get(entity);
     }
 
     /**
@@ -447,35 +493,59 @@ public:
      * An assertion will abort the execution at runtime in debug mode if
      * the view doesn't contain the given entity.
      *
-     * @tparam Component Type of the component to get.
+     * @tparam Comp Type of the component to get.
      * @param entity A valid entity identifier.
      * @return The component assigned to the entity.
      */
-    template<typename Component>
-    Component & get(entity_type entity) noexcept {
-        return const_cast<Component &>(const_cast<const View *>(this)->get<Component>(entity));
+    template<typename Comp>
+    Comp & get(entity_type entity) noexcept {
+        return const_cast<Comp &>(const_cast<const View *>(this)->get<Comp>(entity));
     }
 
     /**
-     * @brief Iterate the entities and applies them the given function object.
+     * @brief Returns the components assigned to the given entity.
      *
-     * The function object is invoked for each entity. It is provided with the
-     * entity itself and a set of references to all the components of the
-     * view.<br/>
-     * The signature of the function should be equivalent to the following:
+     * Prefer this function instead of `Registry::get` during iterations. It has
+     * far better performance than its companion function.
      *
-     * @code{.cpp}
-     * void(entity_type, Component &...);
-     * @endcode
+     * @warning
+     * Attempting to use invalid component types results in a compilation error.
+     * Attempting to use an entity that doesn't belong to the view results in
+     * undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode if
+     * the view doesn't contain the given entity.
      *
-     * @tparam Func Type of the function object to invoke.
-     * @param func A valid function object.
+     * @tparam Comp Types of the components to get.
+     * @param entity A valid entity identifier.
+     * @return The components assigned to the entity.
      */
-    template<typename Func>
-    void each(Func &&func) {
-        for(auto entity: *this) {
-            std::forward<Func>(func)(entity, get<First>(entity), get<Other>(entity)...);
-        }
+    template<typename... Comp>
+    std::enable_if_t<(sizeof...(Comp) > 1), std::tuple<const Comp &...>>
+    get(entity_type entity) const noexcept {
+        return std::tuple<const Comp &...>{ get<Comp>(entity)... };
+    }
+
+    /**
+     * @brief Returns the components assigned to the given entity.
+     *
+     * Prefer this function instead of `Registry::get` during iterations. It has
+     * far better performance than its companion function.
+     *
+     * @warning
+     * Attempting to use invalid component types results in a compilation error.
+     * Attempting to use an entity that doesn't belong to the view results in
+     * undefined behavior.<br/>
+     * An assertion will abort the execution at runtime in debug mode if
+     * the view doesn't contain the given entity.
+     *
+     * @tparam Comp Types of the components to get.
+     * @param entity A valid entity identifier.
+     * @return The components assigned to the entity.
+     */
+    template<typename... Comp>
+    std::enable_if_t<(sizeof...(Comp) > 1), std::tuple<Comp &...>>
+    get(entity_type entity) noexcept {
+        return std::tuple<Comp &...>{ get<Comp>(entity)... };
     }
 
     /**
@@ -494,10 +564,32 @@ public:
      * @param func A valid function object.
      */
     template<typename Func>
-    void each(Func &&func) const {
+    void each(Func func) const {
         for(auto entity: *this) {
-            std::forward<Func>(func)(entity, get<First>(entity), get<Other>(entity)...);
+            func(entity, get<Component>(entity)...);
         }
+    }
+
+    /**
+     * @brief Iterate the entities and applies them the given function object.
+     *
+     * The function object is invoked for each entity. It is provided with the
+     * entity itself and a set of references to all the components of the
+     * view.<br/>
+     * The signature of the function should be equivalent to the following:
+     *
+     * @code{.cpp}
+     * void(entity_type, Component &...);
+     * @endcode
+     *
+     * @tparam Func Type of the function object to invoke.
+     * @param func A valid function object.
+     */
+    template<typename Func>
+    void each(Func func) {
+        const_cast<const View *>(this)->each([&func](entity_type entity, const Component &... component) {
+            func(entity, const_cast<Component &>(component)...);
+        });
     }
 
     /**
@@ -511,9 +603,10 @@ public:
      * meantime.
      */
     void reset() {
-        using accumulator_type = void *[];
-        view = &std::get<pool_type<First> &>(pools);
-        accumulator_type accumulator = { (std::get<pool_type<Other> &>(pools).size() < view->size() ? (view = &std::get<pool_type<Other> &>(pools)) : nullptr)... };
+        using accumulator_type = size_type[];
+        auto probe = [this](auto sz, auto &pool) { return pool.size() < sz ? (view = &pool, pool.size()) : sz; };
+        size_type sz = std::max({ std::get<pool_type<Component> &>(pools).size()... }) + std::size_t{1};
+        accumulator_type accumulator = { sz, (sz = probe(sz, std::get<pool_type<Component> &>(pools)))... };
         (void)accumulator;
     }
 
@@ -716,27 +809,6 @@ public:
      * @brief Iterate the entities and applies them the given function object.
      *
      * The function object is invoked for each entity. It is provided with the
-     * entity itself and a reference to the component of the view.<br/>
-     * The signature of the function should be equivalent to the following:
-     *
-     * @code{.cpp}
-     * void(entity_type, Component &);
-     * @endcode
-     *
-     * @tparam Func Type of the function object to invoke.
-     * @param func A valid function object.
-     */
-    template<typename Func>
-    void each(Func &&func) {
-        for(auto entity: *this) {
-            std::forward<Func>(func)(entity, get(entity));
-        }
-    }
-
-    /**
-     * @brief Iterate the entities and applies them the given function object.
-     *
-     * The function object is invoked for each entity. It is provided with the
      * entity itself and a const reference to the component of the view.<br/>
      * The signature of the function should be equivalent to the following:
      *
@@ -748,10 +820,31 @@ public:
      * @param func A valid function object.
      */
     template<typename Func>
-    void each(Func &&func) const {
+    void each(Func func) const {
         for(auto entity: *this) {
-            std::forward<Func>(func)(entity, get(entity));
+            func(entity, get(entity));
         }
+    }
+
+    /**
+     * @brief Iterate the entities and applies them the given function object.
+     *
+     * The function object is invoked for each entity. It is provided with the
+     * entity itself and a reference to the component of the view.<br/>
+     * The signature of the function should be equivalent to the following:
+     *
+     * @code{.cpp}
+     * void(entity_type, Component &);
+     * @endcode
+     *
+     * @tparam Func Type of the function object to invoke.
+     * @param func A valid function object.
+     */
+    template<typename Func>
+    void each(Func func) {
+        const_cast<const View *>(this)->each([&func](entity_type entity, const Component &component) {
+            func(entity, const_cast<Component &>(component));
+        });
     }
 
 private:

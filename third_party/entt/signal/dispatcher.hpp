@@ -41,7 +41,7 @@ class Dispatcher final {
     template<typename Event>
     struct SignalWrapper final: BaseSignalWrapper {
         void publish(std::size_t current) override {
-            for(auto &&event: events[current]) {
+            for(const auto &event: events[current]) {
                 signal.publish(event);
             }
 
@@ -79,7 +79,7 @@ class Dispatcher final {
 
     template<typename Event>
     SignalWrapper<Event> & wrapper() {
-        auto type = event_family::type<Event>();
+        const auto type = event_family::type<Event>();
 
         if(!(type < wrappers.size())) {
             wrappers.resize(type + 1);
@@ -178,10 +178,12 @@ public:
      * to reduce at a minimum the time spent in the bodies of the listeners.
      */
     void update() {
-        auto buf = buffer(mode);
+        const auto buf = buffer(mode);
         mode = !mode;
 
-        for(auto &&wrapper: wrappers) {
+        for(auto pos = wrappers.size(); pos > decltype(pos){0}; --pos) {
+            auto &wrapper = wrappers[pos-1];
+
             if(wrapper) {
                 wrapper->publish(buf);
             }

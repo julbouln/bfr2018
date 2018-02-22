@@ -10,28 +10,6 @@
 namespace entt {
 
 
-namespace {
-
-
-struct BaseProcess {
-    enum class State: unsigned int {
-        UNINITIALIZED = 0,
-        RUNNING,
-        PAUSED,
-        SUCCEEDED,
-        FAILED,
-        ABORTED,
-        FINISHED
-    };
-
-    template<State state>
-    using tag = std::integral_constant<State, state>;
-};
-
-
-}
-
-
 /**
  * @brief Base class for processes.
  *
@@ -41,17 +19,21 @@ struct BaseProcess {
  * required:
  *
  * * @code{.cpp}
- *   void update(Delta);
+ *   void update(Delta, void *);
  *   @endcode
  *   It's invoked once per tick until a process is explicitly aborted or it
  *   terminates either with or without errors. Even though it's not mandatory to
  *   declare this member function, as a rule of thumb each process should at
- *   least define it to work properly.
+ *   least define it to work properly. The `void *` parameter is an opaque
+ *   pointer to user data (if any) forwarded directly to the process during an
+ *   update.
  *
  * * @code{.cpp}
- *   void init();
+ *   void init(void *);
  *   @endcode
- *   It's invoked at the first tick, immediately before an update.
+ *   It's invoked at the first tick, immediately before an update. The `void *`
+ *   parameter is an opaque pointer to user data (if any) forwarded directly to
+ *   the process during an update.
  *
  * * @code{.cpp}
  *   void succeeded();
@@ -82,17 +64,30 @@ struct BaseProcess {
  * @tparam Delta Type to use to provide elapsed time.
  */
 template<typename Derived, typename Delta>
-class Process: private BaseProcess {
+class Process {
+    enum class State: unsigned int {
+        UNINITIALIZED = 0,
+        RUNNING,
+        PAUSED,
+        SUCCEEDED,
+        FAILED,
+        ABORTED,
+        FINISHED
+    };
+
+    template<State state>
+    using tag = std::integral_constant<State, state>;
+
     template<typename Target = Derived>
-    auto tick(int, tag<State::UNINITIALIZED>)
-    -> decltype(std::declval<Target>().init()) {
-        static_cast<Target *>(this)->init();
+    auto tick(int, tag<State::UNINITIALIZED>, void *data)
+    -> decltype(std::declval<Target>().init(data)) {
+        static_cast<Target *>(this)->init(data);
     }
 
     template<typename Target = Derived>
-    auto tick(int, tag<State::RUNNING>, Delta delta)
-    -> decltype(std::declval<Target>().update(delta)) {
-        static_cast<Target *>(this)->update(delta);
+    auto tick(int, tag<State::RUNNING>, Delta delta, void *data)
+    -> decltype(std::declval<Target>().update(delta, data)) {
+        static_cast<Target *>(this)->update(delta, data);
     }
 
     template<typename Target = Derived>
@@ -227,15 +222,16 @@ public:
     /**
      * @brief Updates a process and its internal state if required.
      * @param delta Elapsed time.
+     * @param data Optional data.
      */
-    void tick(Delta delta) {
+    void tick(Delta delta, void *data = nullptr) {
         switch (current) {
         case State::UNINITIALIZED:
-            tick(0, tag<State::UNINITIALIZED>{});
+            tick(0, tag<State::UNINITIALIZED>{}, data);
             current = State::RUNNING;
             // no break on purpose, tasks are executed immediately
         case State::RUNNING:
-            tick(0, tag<State::RUNNING>{}, delta);
+            tick(0, tag<State::RUNNING>{}, delta, data);
         default:
             // suppress warnings
             break;
@@ -281,12 +277,13 @@ private:
  * following:
  *
  * @code{.cpp}
- * void(Delta delta, auto succeed, auto fail);
+ * void(Delta delta, void *data, auto succeed, auto fail);
  * @endcode
  *
  * Where:
  *
  * * `delta` is the elapsed time.
+ * * `data` is an opaque pointer to user data if any, `nullptr` otherwise.
  * * `succeed` is a function to call when a process terminates with success.
  * * `fail` is a function to call when a process terminates with errors.
  *
@@ -322,9 +319,10 @@ struct ProcessAdaptor: Process<ProcessAdaptor<Func, Delta>, Delta>, private Func
     /**
      * @brief Updates a process and its internal state if required.
      * @param delta Elapsed time.
+     * @param data Optional data.
      */
-    void update(Delta delta) {
-        Func::operator()(delta, [this](){ this->succeed(); }, [this](){ this->fail(); });
+    void update(Delta delta, void *data) {
+        Func::operator()(delta, data, [this](){ this->succeed(); }, [this](){ this->fail(); });
     }
 };
 

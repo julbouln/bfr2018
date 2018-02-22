@@ -28,7 +28,7 @@ namespace entt {
  * Example of use (pseudocode):
  *
  * @code{.cpp}
- * scheduler.attach([](auto delta, auto succeed, auto fail) {
+ * scheduler.attach([](auto delta, void *, auto succeed, auto fail) {
  *     // code
  * }).then<MyProcess>(arguments...);
  * @endcode
@@ -47,7 +47,7 @@ class Scheduler final {
 
     struct ProcessHandler final {
         using instance_type = std::unique_ptr<void, void(*)(void *)>;
-        using update_type = bool(*)(ProcessHandler &, Delta);
+        using update_type = bool(*)(ProcessHandler &, Delta, void *);
         using abort_type = void(*)(ProcessHandler &, bool);
         using next_type = std::unique_ptr<ProcessHandler>;
 
@@ -81,16 +81,16 @@ class Scheduler final {
     };
 
     template<typename Proc>
-    static bool update(ProcessHandler &handler, Delta delta) {
+    static bool update(ProcessHandler &handler, Delta delta, void *data) {
         auto *process = static_cast<Proc *>(handler.instance.get());
-        process->tick(delta);
+        process->tick(delta, data);
 
         auto dead = process->dead();
 
         if(dead) {
             if(handler.next && !process->rejected()) {
                 handler = std::move(*handler.next);
-                dead = handler.update(handler, delta);
+                dead = handler.update(handler, delta, data);
             } else {
                 handler.instance.reset();
             }
@@ -110,11 +110,11 @@ class Scheduler final {
     }
 
     auto then(ProcessHandler *handler) {
-        auto lambda = [this](ProcessHandler *handler, auto next, auto... args) {
+        auto lambda = [](ProcessHandler *handler, auto next, auto... args) {
             using Proc = typename decltype(next)::type;
 
             if(handler) {
-                auto proc = typename ProcessHandler::instance_type{ new Proc{std::forward<decltype(args)>(args)...}, &Scheduler::deleter<Proc> };
+                auto proc = typename ProcessHandler::instance_type{new Proc{std::forward<decltype(args)>(args)...}, &Scheduler::deleter<Proc>};
                 handler->next.reset(new ProcessHandler{std::move(proc), &Scheduler::update<Proc>, &Scheduler::abort<Proc>, nullptr});
                 handler = handler->next.get();
             }
@@ -181,7 +181,7 @@ public:
      * // schedules a task in the form of a process class
      * scheduler.attach<MyProcess>(arguments...)
      * // appends a child in the form of a lambda function
-     * .then([](auto delta, auto succeed, auto fail) {
+     * .then([](auto delta, void *, auto succeed, auto fail) {
      *     // code
      * })
      * // appends a child in the form of another process class
@@ -197,7 +197,7 @@ public:
     auto attach(Args&&... args) {
         static_assert(std::is_base_of<Process<Proc, Delta>, Proc>::value, "!");
 
-        auto proc = typename ProcessHandler::instance_type{ new Proc{std::forward<Args>(args)...}, &Scheduler::deleter<Proc> };
+        auto proc = typename ProcessHandler::instance_type{new Proc{std::forward<Args>(args)...}, &Scheduler::deleter<Proc>};
         ProcessHandler handler{std::move(proc), &Scheduler::update<Proc>, &Scheduler::abort<Proc>, nullptr};
         handlers.push_back(std::move(handler));
 
@@ -237,11 +237,11 @@ public:
      *
      * @code{.cpp}
      * // schedules a task in the form of a lambda function
-     * scheduler.attach([](auto delta, auto succeed, auto fail) {
+     * scheduler.attach([](auto delta, void *, auto succeed, auto fail) {
      *     // code
      * })
      * // appends a child in the form of another lambda function
-     * .then([](auto delta, auto succeed, auto fail) {
+     * .then([](auto delta, void *, auto succeed, auto fail) {
      *     // code
      * })
      * // appends a child in the form of a process class
@@ -269,18 +269,19 @@ public:
      * with its child.
      *
      * @param delta Elapsed time.
+     * @param data Optional data.
      */
-    void update(Delta delta) {
+    void update(Delta delta, void *data = nullptr) {
         bool clean = false;
 
-        for(auto i = handlers.size(); i > 0; --i) {
-            auto &handler = handlers[i-1];
-            const bool dead = handler.update(handler, delta);
+        for(auto pos = handlers.size(); pos > 0; --pos) {
+            auto &handler = handlers[pos-1];
+            const bool dead = handler.update(handler, delta, data);
             clean = clean || dead;
         }
 
         if(clean) {
-            handlers.erase(std::remove_if(handlers.begin(), handlers.end(), [delta](auto &handler) {
+            handlers.erase(std::remove_if(handlers.begin(), handlers.end(), [](auto &handler) {
                 return !handler.instance;
             }), handlers.end());
         }
