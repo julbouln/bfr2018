@@ -7,7 +7,7 @@
 #include "FlowField.hpp"
 
 #define PATHFINDING_MAX_NO_PATH 8
-#define MOVING_AROUND_SIZE 3
+#define MOVING_AROUND_SIZE 2
 
 class PathfindingSystem : public GameSystem {
 	JPS::Searcher<Map> *search;

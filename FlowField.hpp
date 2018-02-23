@@ -123,50 +123,30 @@ public:
 	}
 
 	bool pathAvailable(int x, int y) {
-		return _grid.pathAvailable(x, y);// && this->checkMovingObjects(x,y); 
+		return _grid.pathAvailable(x, y);// && this->checkMovingObjects(x,y);
 	}
 
 	float currentMovingObjectVel;
 	std::vector<MovingObject> movingObjects;
-	bool checkMovingObjects(int x, int y) {
+
+	bool checkMovingObjects(int sx, int sy, int x, int y) {
 		for (auto &mo : movingObjects) {
-			
-			sf::Vector2f ipos(x*32.0,y*32.0);
-			float prevA = 32.0/currentMovingObjectVel;
-			sf::Vector2f prevision = (mo.pos + prevA*mo.velocity);
-			prevision.x -= _grid.rect.left*32.0;
-			prevision.y -= _grid.rect.top*32.0;
+			sf::Vector2f spos(sx * 32.0, sy * 32.0);
+			sf::Vector2f ipos(x * 32.0, y * 32.0);
 
-
-//				std::cout << "MOVING: check prevision "<<x<<"x"<<y<< " " << prevision.x << "x"<<prevision.y << std::endl;
-
-			if(vectorLength(vectorRound(ipos - prevision)) < 2.0) {
-//				std::cout << "MOVING: prevision "<<_grid.rect.left+x<<"x"<<_grid.rect.top+y<< " <- " << mo.pos.x/32 << "x" << mo.pos.y/32 << std::endl;
-				return false;
-			}
-
-		}
-		return true;
-	}
-
-	bool checkMovingObjects2(int sx, int sy, int x, int y) {
-		for (auto &mo : movingObjects) {
-			sf::Vector2f spos(sx*32.0,sy*32.0);
-			sf::Vector2f ipos(x*32.0,y*32.0);
-
-			float prevA = vectorLength(ipos - spos)/currentMovingObjectVel;
+			float prevA = vectorLength(ipos - spos) / currentMovingObjectVel;
 
 //			sf::Vector2f opos = mo.pos;
 
 
-			sf::Vector2f prevision = (mo.pos + prevA*mo.velocity);
-			prevision.x -= _grid.rect.left*32.0;
-			prevision.y -= _grid.rect.top*32.0;
+			sf::Vector2f prevision = (mo.pos + prevA * mo.velocity);
+			prevision.x -= _grid.rect.left * 32.0;
+			prevision.y -= _grid.rect.top * 32.0;
 
 
 //				std::cout << "MOVING: check prevision "<<x<<"x"<<y<< " " << prevision.x << "x"<<prevision.y << std::endl;
-			float r = vectorLength(vectorRound(ipos - prevision));
-			if(r < 32.0) {
+			float r = vectorLength(ipos - prevision);
+			if (r < 16.0) {
 //				std::cout << "MOVING: prevision "<<_grid.rect.left+x<<"x"<<_grid.rect.top+y<< " <- " << mo.pos.x/32 << "x" << mo.pos.y/32 << std::endl;
 				return false;
 			}
@@ -187,18 +167,22 @@ public:
 	}
 
 // get neighbors (N, S, W and E). Will return the indices
-	int getNeighbors(int x, int y, int * ret) {
+	int getNeighbors(int x, int y, int * ret, bool *moving) {
 		int cnt = 0;
-		if (_grid.bound(x, y - 1) && this->pathAvailable(x, y - 1) && this->checkMovingObjects2(x,y,x,y-1)) {
+		if (_grid.bound(x, y - 1) && this->pathAvailable(x, y - 1)) {// && this->checkMovingObjects(x,y,x,y-1)) {
+			moving[cnt] = this->checkMovingObjects(x, y, x, y - 1);
 			ret[cnt++] = x + (y - 1) * _grid.width;
 		}
-		if (_grid.bound(x, y + 1) && this->pathAvailable(x, y + 1) && this->checkMovingObjects2(x,y,x,y+1)) {
+		if (_grid.bound(x, y + 1) && this->pathAvailable(x, y + 1)) {// && this->checkMovingObjects(x,y,x,y+1)) {
+			moving[cnt] = this->checkMovingObjects(x, y, x, y + 1);
 			ret[cnt++] = x + (y + 1) * _grid.width;
 		}
-		if (_grid.bound(x - 1, y) && this->pathAvailable(x - 1, y)&& this->checkMovingObjects2(x,y,x-1,y)) {
+		if (_grid.bound(x - 1, y) && this->pathAvailable(x - 1, y)) {// && this->checkMovingObjects(x,y,x-1,y)) {
+			moving[cnt] = this->checkMovingObjects(x, y, x - 1, y);
 			ret[cnt++] = x - 1 + y * _grid.width;
 		}
-		if (_grid.bound(x + 1, y) && this->pathAvailable(x + 1, y)&& this->checkMovingObjects2(x,y,x+1,y)) {
+		if (_grid.bound(x + 1, y) && this->pathAvailable(x + 1, y)) {// && this->checkMovingObjects(x,y,x+1,y)) {
+			moving[cnt] = this->checkMovingObjects(x, y, x + 1, y);
 			ret[cnt++] = x + 1 + y * _grid.width;
 		}
 		return cnt;
@@ -209,7 +193,7 @@ public:
 		int ret = 14;
 		for (int i = 0; i < 8; ++i) {
 			sf::Vector2i c = sf::Vector2i(x, y) + DIRECTIONS[i];
-			if (this->pathAvailable(c.x, c.y)) {
+			if (this->pathAvailable(c.x, c.y)) {// && this->checkMovingObjects(x,y,c.x,c.y)) {
 				int idx = c.x + c.y * _grid.width;
 				if (_fields[idx] < m) {
 					ret = i;
@@ -233,21 +217,26 @@ public:
 		_fields[targetID] = 0;
 		openList.push_back(targetID);
 		int neighbors[4];
+		bool movNeighbors[4];
 		while (openList.size() > 0)	{
 			unsigned currentID = openList.front();
 			openList.pop_front();
 			unsigned short currentX = currentID % _grid.width;
 			unsigned short currentY = currentID / _grid.width;
-			int neighborCount = getNeighbors(currentX, currentY, neighbors);
+			int neighborCount = getNeighbors(currentX, currentY, neighbors, movNeighbors);
 //			std::cout << "GET neighbors "<<currentID << " "<<currentX<<"x"<<currentY<<" "<<neighborCount<<std::endl;
 			for (int i = 0; i < neighborCount; ++i) {
 
 #ifdef PATHFINDING_FLOWFIELD_DYNAMIC
 				int modifier = 1;
+				if (!movNeighbors[i]) {
+					modifier = 8;
+				}
 //				if (!_grid.pathPrevision(currentX, currentY)) {
 //					std::cout << "WARN already at "<<currentX<<"x"<<currentY<<std::endl;
 //					modifier = 16;
 //				}
+//				this->checkMovingObjects(x,y,x+1,y)
 				/*				if (!_grid.pathUnit(currentX, currentY))
 									modifier = 16;
 				*/
@@ -351,10 +340,13 @@ class FlowFieldPath {
 	FlowFieldMode mode;
 	bool found;
 	FlowField currentFlowField;
+
+	int lastCalcDest;
 public:
 	sf::Vector2i ffDest;
 
 	FlowFieldPath() {
+		this->lastCalcDest = 4;
 		this->cur = sf::Vector2i(-1, -1);
 		this->dest = sf::Vector2i(-1, -1);
 		this->mode = FlowFieldMode::Pathfinding;
@@ -434,7 +426,7 @@ public:
 		for (sf::Vector2i np : this->pathPoints) {
 			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR &&
 			        np.y >= offset.y && np.y < offset.y + PER_SECTOR &&
-			        np != cpos) {
+			        np != cpos && this->pathFind->map->pathAvailable(np.x, np.y)) {
 				if (pcnt > bcnt) {
 					bcnt = pcnt;
 					point = np;
@@ -442,6 +434,50 @@ public:
 			}
 			pcnt++;
 		}
+
+		sf::Vector2i bPoint = point;
+
+		std::vector<sf::Vector2i> linePoints;
+		
+		if (point.x == offset.x) {
+			// left
+			for (int y = offset.y; y < offset.y + PER_SECTOR; y++) {
+				if (this->pathFind->map->pathAvailable(point.x, y))
+					linePoints.push_back(sf::Vector2i(point.x, y));
+			}
+		} else if (point.x == offset.x + PER_SECTOR - 1) {
+			// right
+			for (int y = offset.y; y < offset.y + PER_SECTOR; y++) {
+				if (this->pathFind->map->pathAvailable(point.x, y))
+					linePoints.push_back(sf::Vector2i(point.x, y));
+			}
+		}
+
+		if (point.y == offset.y) {
+			// top
+			for (int x = offset.x; x < offset.x + PER_SECTOR; x++) {
+				if (this->pathFind->map->pathAvailable(x, point.y))
+					linePoints.push_back(sf::Vector2i(x, point.y));
+			}
+		} else if (point.y == offset.y + PER_SECTOR - 1) {
+			// bottom
+			for (int x = offset.x; x < offset.x + PER_SECTOR; x++) {
+				if (this->pathFind->map->pathAvailable(x, point.y))
+					linePoints.push_back(sf::Vector2i(x, point.y));
+			}
+		}
+
+		if (linePoints.size() > 0) {
+			float distance = std::numeric_limits<float>::max();
+			for (sf::Vector2i np : linePoints) {
+				if (vectorLength(np - cpos) < distance) {
+					distance = vectorLength(np - cpos);
+					point = np;
+//						std::cout << "FlowFieldPath fallback "<<ndpos.x<<"x"<<ndpos.y<<std::endl;
+				}
+			}
+		}
+
 		return point;
 	}
 
@@ -454,9 +490,9 @@ public:
 					if (w == -dist || h == -dist || w == dist || h == dist) {
 						int x = w + dest.x;
 						int y = h + dest.y;
-						if (x >= offset.x && x < offset.x + PER_SECTOR && y >= offset.y && y < offset.y + PER_SECTOR && 
-							this->pathFind->map->bound(x, y) && 
-							this->pathFind->map->pathAvailable(x, y)) {
+						if (x >= offset.x && x < offset.x + PER_SECTOR && y >= offset.y && y < offset.y + PER_SECTOR &&
+						        this->pathFind->map->bound(x, y) &&
+						        this->pathFind->map->pathAvailable(x, y)) {
 							return sf::Vector2i(x, y);
 						}
 					}
@@ -492,16 +528,26 @@ public:
 			if (ffRect.contains(dest)) {
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath dest in sector " << dest.x << "x" << dest.y << std::endl;
+
 #endif
+				ndpos = this->bestFollowingPathPoint(cpos);
 			} else {
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath dest out of sector " << dest.x << "x" << dest.y << " (" << pathPoints.size() << ")" << std::endl;
 #endif
 //			ndpos = this->farestPathPoint(cpos);
-				ndpos = this->bestFollowingPathPoint(cpos);
-				if (!this->pathFind->map->pathAvailable(ndpos.x, ndpos.y)) {
-					ndpos = this->firstFreePos(cpos, ndpos, 1, 2);
+				if(lastCalcDest < 4 && ffRect.contains(ffDest)) {
+					ndpos = ffDest;
+				} else {
+					ndpos = this->bestFollowingPathPoint(cpos);
+					lastCalcDest = 0;
 				}
+
+
+				lastCalcDest++;
+//				if (!this->pathFind->map->pathAvailable(ndpos.x, ndpos.y)) {
+//					ndpos = this->firstFreePos(cpos, ndpos, 1, 2);
+//				}
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath best local dest " << ndpos.x << "x" << ndpos.y << std::endl;
 #endif
@@ -542,18 +588,21 @@ public:
 			cur = sf::Vector2i(sx, sy);
 			traversed.clear();
 
+				this->lastCalcDest = 4;
+
 			if (vectorLength(dest - cur) < 1.5) {
 				pathPoints.clear();
 				this->mode = FlowFieldMode::Steering;
 				this->ffDest = dest;
 				this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
 			} else {
-
 //				if (vectorLength(oldDest - newDest) < 5.0) {
 //					this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
 //				} else
 				{
 					this->mode = FlowFieldMode::Pathfinding;
+					this->ffDest = dest;
+
 
 					JPS::PathVector path;
 					this->found = pathFind->find(path, sx, sy, dx, dy);
