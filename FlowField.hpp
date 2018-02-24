@@ -81,6 +81,7 @@ public:
 
 };
 
+
 class FlowField {
 	std::vector<field_t> _fields;
 	std::vector<dir_t> _dir;
@@ -127,7 +128,25 @@ public:
 	}
 
 	float currentMovingObjectVel;
+	MovingObject currentMovingObject;
 	std::vector<MovingObject> movingObjects;
+
+	sf::Vector2f getMovingObjectsForce(int sx, int sy, int x, int y) {
+		for (auto &mo : movingObjects) {
+			sf::Vector2f distance = (mo.pos - currentMovingObject.pos);
+			sf::Vector2f vel = mo.velocity - currentMovingObject.velocity;
+			sf::Vector2f d(distance.x/(vel.x+0.0001f),distance.y/(vel.y+0.0001f));
+			float collisionPrevision = vectorLength(d);
+
+			sf::Vector2i p = sf::Vector2i(mo.pos/32.0f);
+
+//			if (distance < 32) {
+//				std::cout << "mov " << currentMovingObject.pos.x << "x" << currentMovingObject.pos.y << " " << mo.pos.x << "x" << mo.pos.y << std::endl;
+//			}
+std::cout << "mov "<<p.x<<"x"<<p.y<< " "<< collisionPrevision << " " << distance.x << "x" << distance.y << " " << vel.x << "x" << vel.y << std::endl;
+
+		}
+	}
 
 	bool checkMovingObjects(int sx, int sy, int x, int y) {
 		for (auto &mo : movingObjects) {
@@ -229,9 +248,9 @@ public:
 
 #ifdef PATHFINDING_FLOWFIELD_DYNAMIC
 				int modifier = 1;
-				if (!movNeighbors[i]) {
-					modifier = 8;
-				}
+//				if (!movNeighbors[i]) {
+//					modifier = 8;
+//				}
 //				if (!_grid.pathPrevision(currentX, currentY)) {
 //					std::cout << "WARN already at "<<currentX<<"x"<<currentY<<std::endl;
 //					modifier = 16;
@@ -438,7 +457,7 @@ public:
 		sf::Vector2i bPoint = point;
 
 		std::vector<sf::Vector2i> linePoints;
-		
+
 		if (point.x == offset.x) {
 			// left
 			for (int y = offset.y; y < offset.y + PER_SECTOR; y++) {
@@ -536,7 +555,7 @@ public:
 				std::cout << "FlowFieldPath dest out of sector " << dest.x << "x" << dest.y << " (" << pathPoints.size() << ")" << std::endl;
 #endif
 //			ndpos = this->farestPathPoint(cpos);
-				if(lastCalcDest < 4 && ffRect.contains(ffDest)) {
+				if (lastCalcDest < 4 && ffRect.contains(ffDest)) {
 					ndpos = ffDest;
 				} else {
 					ndpos = this->bestFollowingPathPoint(cpos);
@@ -552,6 +571,13 @@ public:
 				std::cout << "FlowFieldPath best local dest " << ndpos.x << "x" << ndpos.y << std::endl;
 #endif
 			}
+
+//			this->currentFlowField.getMovingObjectsForce(cpos.x,cpos.y,ndpos.x,ndpos.y);
+
+//			sf::Vector2f avoid = this->currentFlowField.collisionAvoidance();
+//			if(avoid.x != 0 || avoid.y != 0) {
+//				std::cout << "AVOID "<<avoid.x<<"x"<<avoid.y<<std::endl;
+//			}
 
 			ffDest = ndpos;
 			ndpos -= offset;
@@ -588,7 +614,7 @@ public:
 			cur = sf::Vector2i(sx, sy);
 			traversed.clear();
 
-				this->lastCalcDest = 4;
+			this->lastCalcDest = 4;
 
 			if (vectorLength(dest - cur) < 1.5) {
 				pathPoints.clear();

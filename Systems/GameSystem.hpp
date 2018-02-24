@@ -27,6 +27,7 @@ public:
 		                   );
 	}
 
+
 	sf::Vector2i tilePosition(Tile &tile, sf::Vector2i p) {
 		return sf::Vector2i(tile.pos.x + (p.x - tile.size.x / 2) + tile.offset.x,
 		                    tile.pos.y + (p.y - tile.size.y / 2) + tile.offset.y);

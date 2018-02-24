@@ -576,7 +576,8 @@ public:
 
 			ImGui::Separator();
 			ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
-			ImGui::Text("Game Position: (%.1f,%.1f)", gameMapPos.x, gameMapPos.y);
+			ImGui::Text("Game Position: (%.1f,%.1f)", gamePos.x, gamePos.y);
+			ImGui::Text("Game map position: (%.1f,%.1f)", gameMapPos.x, gameMapPos.y);
 
 			if (ImGui::BeginPopupContextWindow())
 			{
@@ -677,7 +678,7 @@ public:
 		}
 
 		this->tileAnim.update(dt);
-		this->pathfinding.updateMovement(dt);
+		this->pathfinding.updateSteering(dt);
 
 		this->sound.update(dt);
 		this->sound.cleanPlaying(dt);

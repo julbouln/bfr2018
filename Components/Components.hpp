@@ -143,6 +143,7 @@ struct Unit {
 	sf::Vector2i destpos;
 	sf::Vector2i nextpos;
 	sf::Vector2f velocity;
+	sf::Vector2i direction;
 
 	unsigned int nopath;
 	unsigned int reallyNopath;
@@ -159,6 +160,7 @@ struct Unit {
 	bool canDestroyResources;
 
 	Unit() {
+		this->direction = sf::Vector2i(0,0);
 		this->nopath = 0;
 		this->reallyNopath = 0;
 		this->canDestroyResources = false;

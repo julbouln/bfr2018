@@ -121,6 +121,7 @@ public:
 				initialPositions.pop_back();
 
 				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x, player.initialPos.y);
+				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x+2, player.initialPos.y+2);
 			} else if (player.team == "neonaz") {
 				player.initialPos = initialPositions.back();
 				initialPositions.pop_back();
