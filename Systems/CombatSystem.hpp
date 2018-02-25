@@ -126,7 +126,8 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-				if (tile.pos == unit.nextpos) { // unit must be arrived at a position
+				if (tile.pos == unit.nextpos) 
+				{ // unit must be arrived at a position
 					int dist = 1;
 					int maxDist = 1;
 					if (unit.attack2.distance)

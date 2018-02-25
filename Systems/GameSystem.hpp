@@ -21,19 +21,19 @@ public:
 		this->screenHeight = screenHeight;
 	}
 
-	sf::Vector2f tileDrawPosition(Tile &tile) {
+	sf::Vector2f tileDrawPosition(Tile &tile) const {
 		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + tile.offset.x * 32,
 		                    tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32
 		                   );
 	}
 
 
-	sf::Vector2i tilePosition(Tile &tile, sf::Vector2i p) {
+	sf::Vector2i tilePosition(Tile &tile, sf::Vector2i p) const {
 		return sf::Vector2i(tile.pos.x + (p.x - tile.size.x / 2) + tile.offset.x,
 		                    tile.pos.y + (p.y - tile.size.y / 2) + tile.offset.y);
 	}
 
-	std::vector<sf::Vector2i> tileSurface(Tile &tile) {
+	std::vector<sf::Vector2i> tileSurface(Tile &tile) const {
 		std::vector<sf::Vector2i> surface;
 		surface.reserve(tile.size.x * tile.size.y); // optimize by reserving expected vector size
 		for (int w = 0; w < tile.size.x; ++w) {
@@ -46,7 +46,7 @@ public:
 		return surface;
 	}
 
-	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) {
+	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) const {
 		std::vector<sf::Vector2i> surface;
 		surface.reserve((dist * 2) * (dist * 2)); // optimize by reserving expected vector size
 		for (int w = -dist; w < dist + 1; ++w) {
@@ -59,7 +59,7 @@ public:
 		return surface;
 	}
 
-	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) {
+	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) const {
 		std::vector<sf::Vector2i> surface;
 		surface.reserve((tile.size.x + dist * 2) * (tile.size.y + dist * 2)); // optimize by reserving expected vector size
 		for (int w = -dist; w < tile.size.x + dist; ++w) {
@@ -73,7 +73,7 @@ public:
 		return surface;
 	}
 
-	std::vector<sf::Vector2i> tileAround(Tile &tile, int minDist, int maxDist) {
+	std::vector<sf::Vector2i> tileAround(Tile &tile, int minDist, int maxDist) const {
 		// ellipse calculation
 		std::vector<sf::Vector2i> surface;
 
@@ -99,7 +99,7 @@ public:
 		return surface;
 	}
 
-	sf::Vector2i nearestTileAround(Tile &tile, Tile &destTile, int minDist, int maxDist) {
+	sf::Vector2i nearestTileAround(Tile &tile, Tile &destTile, int minDist, int maxDist) const {
 		sf::Vector2i nearest(1024, 1024);
 		for (sf::Vector2i const &p : this->tileAround(destTile, minDist, maxDist)) {
 			if (this->map->pathAvailable(p.x, p.y)) {
@@ -115,7 +115,7 @@ public:
 			return nearest;
 	}
 
-	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int minDist, int maxDist) {
+	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int minDist, int maxDist) const {
 		int dist = minDist;
 		while (dist < maxDist) {
 			for (int w = -dist; w < dist + 1; ++w) {
@@ -124,7 +124,7 @@ public:
 						int x = w + src.x;
 						int y = h + src.y;
 						if (this->map->bound(x, y)) {
-							if (this->map->pathAvailable(x, y))
+							if (this->map->pathAvailable(x, y) && this->map->objs.get(x, y)==0)
 								return sf::Vector2i(x, y);
 						}
 					}

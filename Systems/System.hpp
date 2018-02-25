@@ -19,6 +19,10 @@ public:
 
 	int getDirection(sf::Vector2i src, sf::Vector2i dst) {
 		sf::Vector2i diff = dst - src;
+		return this->getDirection(diff);
+	}
+	
+	int getDirection(sf::Vector2i diff) {
 		if (diff.x <= -1) {
 
 			if (diff.y <= -1)

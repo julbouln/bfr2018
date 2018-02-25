@@ -8,25 +8,33 @@
 #include "Steering.hpp"
 
 #define PATHFINDING_MAX_NO_PATH 8
-#define MOVING_AROUND_SIZE 3
+#define STEERING_RADIUS 3
 
 class PathfindingSystem : public GameSystem {
+#ifndef PATHFINDING_FLOWFIELD
 	JPS::Searcher<Map> *search;
+#endif
 
 public:
 	FlowFieldPathFind flowFieldPathFind;
 
 	PathfindingSystem() {
+#ifndef PATHFINDING_FLOWFIELD
 		search = nullptr;
+#endif
 	}
 
 	~PathfindingSystem() {
+#ifndef PATHFINDING_FLOWFIELD
 		if (search)
 			delete search;
+#endif
 	}
 
 	void init() {
+#ifndef PATHFINDING_FLOWFIELD
 		search = new JPS::Searcher<Map>(*this->map);
+#endif
 //		this->testDbscan();
 		flowFieldPathFind.init(this->map);
 	}
@@ -132,73 +140,99 @@ public:
 
 			if (obj.life > 0)
 			{
+				float speed = (float)unit.speed * 0.5f;
+				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity};
+
 				tile.pos = sf::Vector2i(tile.ppos / 32.0f); // trunc map pos
 				if (tile.pos != unit.pathPos) {
+					this->map->objs.set(unit.pathPos.x, unit.pathPos.y, 0); // mark pos immediatly
+					this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
+
 					unit.pathUpdate = true;
 					unit.pathPos = tile.pos;
 				}
-				this->calculateSteeringObjects(steering, entity, tile.pos.x, tile.pos.y);
 
-				float speed = (float)unit.speed * 0.5f;
-				sf::Vector2f vel = sf::Vector2f(unit.direction) * speed;
-				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity};
+				if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
+					sf::Vector2f vel = steering.flee(curSteerObj, sf::Vector2f(tile.pos * 32), speed);
+					unit.velocity = vel;
+					tile.ppos += vel;
+				} else {
+					this->calculateSteeringObjects(steering, entity, tile.pos.x, tile.pos.y);
+
+					sf::Vector2f vel = sf::Vector2f(unit.direction) * speed;
 
 //				sf::Vector2f sdest = sf::Vector2f(unit.nextpos * 32);
-				sf::Vector2f sdest = tile.ppos + vel;
+					sf::Vector2f sdest = tile.ppos + vel;
 
-				vel = steering.seek(curSteerObj, sdest, speed);
+					vel = steering.seek(curSteerObj, sdest, speed);
 
-				unit.velocity = vel;
+					unit.velocity = vel;
 
-				sf::Vector2f avoid = steering.collisionAvoidance(curSteerObj);
-				if (avoid.x != 0 || avoid.y != 0) {
+					sf::Vector2f avoid = steering.collisionAvoidance(curSteerObj);
+					if (avoid.x != 0 || avoid.y != 0) {
 //					std::cout << "AVOID " << avoid.x << "x" << avoid.y << " + " << vel.x << "x" << vel.y << std::endl;
-					vel += avoid;
+						vel += avoid;
 
-					if (unit.destpos == tile.pos) {
-						sf::Vector2i pushVec = sf::Vector2i(vectorRound(vectorNormalize(vel * 32.0f)));
+						if (unit.destpos == tile.pos) {
+							sf::Vector2i pushVec = sf::Vector2i(vectorRound(vectorNormalize(vel * 32.0f)));
 
-						int x = pushVec.x;
-						int y = pushVec.y;
+							int x = pushVec.x;
+							int y = pushVec.y;
 
-						// perpendicular vector
-						sf::Vector2i p1;
-						p1.x = -y;
-						p1.y = x;
+							// perpendicular vector
+							sf::Vector2i p1;
+							p1.x = -y;
+							p1.y = x;
 
-						sf::Vector2i p2;
-						p1.x = y;
-						p1.y = -x;
+							sf::Vector2i p2;
+							p1.x = y;
+							p1.y = -x;
 
-						sf::Vector2i pp = tile.pos + p1;
+							sf::Vector2i pp = tile.pos + p1;
 
-						if (this->map->objs.get(pp.x, pp.y) == 0) {
-							unit.destpos = pp;
-						} else {
-							pp = tile.pos + p2;
 							if (this->map->objs.get(pp.x, pp.y) == 0) {
 								unit.destpos = pp;
+							} else {
+								pp = tile.pos + p2;
+								if (this->map->objs.get(pp.x, pp.y) == 0) {
+									unit.destpos = pp;
+								}
 							}
-						}
-						/*
-												else {
-													for (int x = tile.pos.x - 1; x < tile.pos.x + 1; ++x) {
-														for (int y = tile.pos.y - 1; y < tile.pos.y + 1; ++y) {
-															sf::Vector2i fp(x, y);
-															if (this->map->objs.get(x, y) == 0) {
-																unit.destpos = fp;
-																break;
+							/*
+													else {
+														for (int x = tile.pos.x - 1; x < tile.pos.x + 1; ++x) {
+															for (int y = tile.pos.y - 1; y < tile.pos.y + 1; ++y) {
+																sf::Vector2i fp(x, y);
+																if (this->map->objs.get(x, y) == 0) {
+																	unit.destpos = fp;
+																	break;
+																}
 															}
+
 														}
-
 													}
-												}
-												*/
+													*/
 
+						}
 					}
-				}
 
-				tile.ppos += vel;
+					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f;
+					cpPos.x += 16.0f;
+					cpPos.y += 16.0f;
+					if (vel == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state=="move")) {
+						if (vectorRound(tile.ppos) != vectorRound(cpPos)) {
+							vel = steering.seek(curSteerObj, cpPos, 1.0f);
+							tile.view = this->getDirection(sf::Vector2i(vectorNormalize(vel)*4.0f));
+							tile.state = "move";
+						} else {
+							tile.state = "idle";
+						}
+					}
+
+
+
+					tile.ppos += vel;
+				}
 			}
 		}
 	}
@@ -215,6 +249,9 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
+			if (tile.pos != unit.destpos && vectorLength(unit.destpos - tile.pos) < 1.5 && this->map->objs.get(unit.destpos.x, unit.destpos.y) != entity && unit.velocity == sf::Vector2f(0.0, 0.0)) {
+				unit.destpos = this->firstAvailablePosition(unit.destpos, 1, 16);
+			}
 			if (tile.pos == unit.destpos) {
 				EntityID samePosEnt = this->map->objs.get(tile.pos.x, tile.pos.y);
 				if (samePosEnt != 0 && samePosEnt != entity) {
@@ -226,13 +263,15 @@ public:
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
+							unit.destpos = this->firstAvailablePosition(tile.pos, 1, 16);
 //							this->goTo(unit, tile.pos);
-							for (sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
-								if (this->map->pathAvailable(p.x, p.y)) {
-									unit.destpos = p;
-									break;
-								}
-							}
+							/*							for (sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
+															if (this->map->pathAvailable(p.x,p.y) && this->map->objs.get(p.x, p.y)==0) {
+																unit.destpos = p;
+																break;
+															}
+														}
+														*/
 						}
 					}
 				}
@@ -333,8 +372,8 @@ public:
 private:
 	void calculateSteeringObjects(Steering &steering, EntityID currentEnt, int x, int y) {
 		steering.objects.clear();
-		for (int cx = x - MOVING_AROUND_SIZE; cx < x + MOVING_AROUND_SIZE * 2; ++cx) {
-			for (int cy = y - MOVING_AROUND_SIZE; cy < y + MOVING_AROUND_SIZE * 2; ++cy) {
+		for (int cx = x - STEERING_RADIUS; cx < x + STEERING_RADIUS * 2; ++cx) {
+			for (int cy = y - STEERING_RADIUS; cy < y + STEERING_RADIUS * 2; ++cy) {
 				if (this->map->bound(cx, cy)) {
 					EntityID ent = this->map->objs.get(cx, cy);
 					if (ent && ent != currentEnt) {

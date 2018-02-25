@@ -42,6 +42,12 @@ public:
 		return seekVel;
 	}
 
+	sf::Vector2f flee(SteeringObject currentObject, sf::Vector2f dpos, float speed) {
+		sf::Vector2f fleeVel = vectorNormalize(sf::Vector2f(currentObject.pos - dpos)) * speed;
+//		std::cout << "Steering: flee " << seekVel.x << "x" << seekVel.y << std::endl;
+		return fleeVel;
+	}
+
 	sf::Vector2f collisionAvoidance(SteeringObject currentObject) {
 		sf::Vector2f avoidance;
 
@@ -57,7 +63,7 @@ public:
  			float af = vectorLength(vel);
 			avoidance = vectorNormalize(avoidance) * af * MAX_AVOID_FORCE;
 
-			if(vectorLength(currentObject.velocity + avoidance) < af * MAX_AVOID_FORCE) {
+			if(vectorLength(currentObject.velocity + avoidance) < af * MAX_AVOID_FORCE) { // take a perpendicular vector if forces avoid movement
 				float x = avoidance.x;
 				float y = avoidance.y;
 				avoidance.x = -y;
