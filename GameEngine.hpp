@@ -717,9 +717,9 @@ public:
 			{
 				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
 
-				sf::Vector2f pos;
-				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
-				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
+				sf::Vector2f pos = this->tileDrawPosition(tile);
+//				pos.x = tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32;
+//				pos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32;
 
 				sf::Sprite selected(this->vault->factory.getTex("selected"));
 				selected.setTextureRect(sf::IntRect(0, 0, 7, 7));
@@ -1037,7 +1037,6 @@ public:
 					EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_" + std::to_string(obj.player), 0);
 //					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
-					this->map->dynamicPathfinding.set(unit.nextpos.x, unit.nextpos.y, 0);
 				}
 				if (this->vault->registry.has<Building>(entity)) {
 					Building &building = this->vault->registry.get<Building>(entity);

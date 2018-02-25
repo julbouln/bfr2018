@@ -184,8 +184,8 @@ public:
 					shadow.setTexture(this->vault->factory.getTex("shadow"));
 					sf::Vector2f spos;
 
-					spos.x = tile.ppos.x;
-					spos.y = tile.ppos.y + 13;
+					spos.x = tile.ppos.x - 16;
+					spos.y = tile.ppos.y - 16 + 13;
 
 					shadow.setPosition(spos);
 					window.draw(shadow);

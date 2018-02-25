@@ -1,6 +1,6 @@
 #pragma once
 
-#define VERSION "0.9.05"
+#define VERSION "0.9.06"
 
 //#define SOUND_SYSTEM_DEBUG
 //#define TRANSITIONS_DEBUG

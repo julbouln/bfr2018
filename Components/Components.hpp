@@ -145,6 +145,9 @@ struct Unit {
 	sf::Vector2f velocity;
 	sf::Vector2i direction;
 
+	sf::Vector2i pathPos; // map pos
+	bool pathUpdate;
+
 	unsigned int nopath;
 	unsigned int reallyNopath;
 
@@ -164,6 +167,7 @@ struct Unit {
 		this->nopath = 0;
 		this->reallyNopath = 0;
 		this->canDestroyResources = false;
+		this->pathUpdate = false;
 	}
 };
 

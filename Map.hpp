@@ -210,8 +210,6 @@ public:
 	Layer<EntityID> staticPathfinding;
 	Layer<EntityID> pathfinding;
 
-	Layer<EntityID> dynamicPathfinding;
-
 	// transitions calculation optimization
 	// maintain a list of position to update instead of updating every transitions
 	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
@@ -252,9 +250,6 @@ public:
 		// buildings
 		this->pathfinding.setSize(width, height);
 
-		// units
-		this->dynamicPathfinding.setSize(width, height);
-
 		this->width = width;
 		this->height = height;
 	}
@@ -272,7 +267,7 @@ public:
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 			unsigned int idx = x + width * y;
-			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0)// && dynamicPathfinding.grid[idx] == 0)
+			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0)
 				return true;
 		}
 		return false;

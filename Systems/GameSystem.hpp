@@ -22,8 +22,8 @@ public:
 	}
 
 	sf::Vector2f tileDrawPosition(Tile &tile) {
-		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + 16 + tile.offset.x * 32,
-		                    tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + 16 + tile.offset.y * 32
+		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + tile.offset.x * 32,
+		                    tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32
 		                   );
 	}
 
@@ -455,6 +455,7 @@ public:
 		else
 			unit.destpos = this->firstAvailablePosition(destpos, 1, 16);
 
+		unit.pathUpdate = true;
 		unit.nopath = 0;
 	}
 

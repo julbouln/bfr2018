@@ -395,6 +395,13 @@ public:
 		}
 	}
 
+	sf::Vector2f caseToPixel(sf::Vector2i pos) {
+		sf::Vector2f ppos = sf::Vector2f(pos) * 32.0f;
+		ppos.x+=16.0f;
+		ppos.y+=16.0f;
+		return ppos;
+	}
+
 // Unit
 #define UNIT_FRAME_COUNT 10
 
@@ -442,7 +449,7 @@ public:
 		this->parseTileFromXml(name, tile);
 
 		tile.pos = sf::Vector2i(x, y);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.ppos = this->caseToPixel(tile.pos);
 
 		tile.view = South;
 
@@ -462,6 +469,7 @@ public:
 		unit.targetEnt = 0;
 		unit.nopath = 0;
 		unit.destpos = tile.pos;
+		unit.pathPos = tile.pos;
 
 		registry.assign<Tile>(entity, tile);
 		registry.assign<GameObject>(entity, obj);
@@ -512,7 +520,8 @@ public:
 		this->parseTileFromXml(obj.name, tile);
 
 		tile.pos = sf::Vector2i(x, y);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.ppos = this->caseToPixel(tile.pos);
+
 		this->setColorSwapShader(registry, tile, playerEnt);
 
 		registry.assign<Tile>(entity, tile);
@@ -565,7 +574,7 @@ public:
 		tile.size = sf::Vector2i{1, 1};
 
 		tile.pos = sf::Vector2i(x, y);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.ppos = this->caseToPixel(tile.pos);
 
 		tile.sprite.setTexture(texManager.getRef(name));
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, 32, 32)); // texture need to be updated
@@ -591,7 +600,7 @@ public:
 		this->parseTileFromXml(rname, tile);
 
 		tile.pos = oldTile.pos;
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.ppos = this->caseToPixel(tile.pos);
 
 		tile.sprite.setTexture(texManager.getRef(rname));
 		tile.sprite.setTextureRect(sf::IntRect(0, 0, tile.psize.x, tile.psize.y)); // texture need to be updated
@@ -651,7 +660,7 @@ public:
 		this->parseTileFromXml(rname, tile);
 
 		tile.pos = sf::Vector2i(x, y);
-		tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+		tile.ppos = this->caseToPixel(tile.pos);
 
 		Decor decor;
 		this->parseDecorFromXml(rname, decor);

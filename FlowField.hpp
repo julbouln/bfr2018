@@ -57,23 +57,8 @@ public:
 
 	bool pathAvailable(int x, int y) const {
 //		std::cout << "AVAILABLE "<<rect.left << "x" <<rect.top << " : "<<x+rect.left<<"x"<<y+rect.top<<std::endl;
-		return localBound(x, y) && map->pathAvailable(x + rect.left, y + rect.top);// && checkMovingObjects(x + rect.left, y + rect.top);
-		//map->dynamicPathfinding.get(x + rect.left, y + rect.top) == 0;
+		return localBound(x, y) && map->pathAvailable(x + rect.left, y + rect.top);
 	}
-
-	bool pathPrevision(int x, int y) const {
-//		std::cout << "AVAILABLE "<<rect.left << "x" <<rect.top << " : "<<x+rect.left<<"x"<<y+rect.top<<std::endl;
-		return this->localBound(x, y) && map->dynamicPathfinding.get(x + rect.left, y + rect.top) == 0;
-		/*		for(int cx = x-1;cx < x+2;cx++) {
-					for(int cy = y-1;cy < y+2;cy++) {
-						if(this->map->bound(cx,cy)) {
-							EntityID ent = this->map.objs.get(cx,cy);
-						}
-					}
-				}
-				*/
-	}
-
 
 	bool bound(int x, int y) const {
 		return this->localBound(x, y) && map->bound(x + rect.left, y + rect.top);
@@ -248,17 +233,6 @@ std::cout << "mov "<<p.x<<"x"<<p.y<< " "<< collisionPrevision << " " << distance
 
 #ifdef PATHFINDING_FLOWFIELD_DYNAMIC
 				int modifier = 1;
-//				if (!movNeighbors[i]) {
-//					modifier = 8;
-//				}
-//				if (!_grid.pathPrevision(currentX, currentY)) {
-//					std::cout << "WARN already at "<<currentX<<"x"<<currentY<<std::endl;
-//					modifier = 16;
-//				}
-//				this->checkMovingObjects(x,y,x+1,y)
-				/*				if (!_grid.pathUnit(currentX, currentY))
-									modifier = 16;
-				*/
 				unsigned int endNodeCost = _fields[currentID] + modifier;
 #else
 				unsigned int endNodeCost = _fields[currentID] + 1;
@@ -402,40 +376,6 @@ public:
 		return points;
 	}
 
-	sf::Vector2i nearestPathPoint(sf::Vector2i cpos) {
-		sf::Vector2i offset = this->offset(cpos);
-		sf::Vector2i point = cpos;
-		float distance = std::numeric_limits<float>::max();
-		for (sf::Vector2i np : this->pathPoints) {
-			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR &&
-			        np.y >= offset.y && np.y < offset.y + PER_SECTOR &&
-			        np != cpos && this->pathFind->map->pathAvailable(np.x, np.y)) {
-				if (vectorLength(np - cpos) < distance) {
-					distance = vectorLength(np - cpos);
-					point = np;
-//						std::cout << "FlowFieldPath fallback "<<ndpos.x<<"x"<<ndpos.y<<std::endl;
-				}
-			}
-		}
-		return point;
-	}
-
-	sf::Vector2i farestPathPoint(sf::Vector2i cpos) {
-		sf::Vector2i offset = this->offset(cpos);
-		sf::Vector2i point = cpos;
-		float distance = std::numeric_limits<float>::max();
-		for (sf::Vector2i np : this->pathPoints) {
-			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR &&
-			        np.y >= offset.y && np.y < offset.y + PER_SECTOR &&
-			        np != cpos) {
-				if (vectorLength(dest - np) < distance) {
-					distance = vectorLength(dest - np);
-					point = np;
-				}
-			}
-		}
-		return point;
-	}
 
 	sf::Vector2i bestFollowingPathPoint(sf::Vector2i cpos) {
 		sf::Vector2i offset = this->offset(cpos);
@@ -554,7 +494,6 @@ public:
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath dest out of sector " << dest.x << "x" << dest.y << " (" << pathPoints.size() << ")" << std::endl;
 #endif
-//			ndpos = this->farestPathPoint(cpos);
 				if (lastCalcDest < 4 && ffRect.contains(ffDest)) {
 					ndpos = ffDest;
 				} else {
