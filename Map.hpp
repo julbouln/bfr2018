@@ -273,6 +273,16 @@ public:
 		return false;
 	}
 
+	inline bool positionAvailable(unsigned x, unsigned y) const {
+		if (x < width && y < height) // Unsigned will wrap if < 0
+		{
+			unsigned int idx = x + width * y;
+			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0 && objs.grid[idx]==0)
+				return true;
+		}
+		return false;
+	}
+
 	// pathfinding blocking method
 	inline bool operator()(unsigned x, unsigned y) const
 	{

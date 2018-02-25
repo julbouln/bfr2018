@@ -18,4 +18,5 @@ sf::Vector2f vectorNormalize(sf::Vector2f v);
 float vectorLength(sf::Vector2f v);
 float vectorLength(sf::Vector2i v);
 sf::Vector2f vectorRound(sf::Vector2f v);
+sf::Vector2f vectorTrunc(sf::Vector2f v);
 float vectorDot(sf::Vector2f v1, sf::Vector2f v2);

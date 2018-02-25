@@ -28,6 +28,14 @@ sf::Vector2f vectorRound(sf::Vector2f v) {
 	return rv;
 }
 
+
+sf::Vector2f vectorTrunc(sf::Vector2f v) {
+	sf::Vector2f rv = v;
+	rv.x = trunc(rv.x);
+	rv.y = trunc(rv.y);
+	return rv;
+}
+
 float vectorDot(sf::Vector2f v1, sf::Vector2f v2) {
 	return v1.x * v2.x + v1.y * v2.y;
 }

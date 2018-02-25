@@ -94,7 +94,8 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 			if (!unit.targetEnt) {
-				std::vector<EntityID>targets;
+				EntityID finalTargetEnt = 0;
+				float dist = std::numeric_limits<float>::max();
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
 					if (pEnt) {
@@ -106,15 +107,18 @@ public:
 								player.enemyFound = true;
 								player.enemyPos = p;
 
-								targets.push_back(pEnt);
+								if (this->approxDistance(p, tile.pos) < dist) {
+									dist = this->approxDistance(p, tile.pos);
+									finalTargetEnt = pEnt;
+								}
+
 							}
 						}
 					}
 				}
-				if (targets.size() > 0) {
-					// attack random in sight target
-					std::random_shuffle ( targets.begin(), targets.end() );
-					this->attack(unit, targets.front());
+
+				if (finalTargetEnt) {
+					this->attack(unit, finalTargetEnt);
 				}
 			}
 		}
@@ -126,8 +130,8 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-				if (tile.pos == unit.nextpos) 
-				{ // unit must be arrived at a position
+				if (tile.pos == unit.nextpos)
+				{	// unit must be arrived at a position
 					int dist = 1;
 					int maxDist = 1;
 					if (unit.attack2.distance)

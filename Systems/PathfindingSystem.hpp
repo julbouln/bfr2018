@@ -143,7 +143,7 @@ public:
 				float speed = (float)unit.speed * 0.5f;
 				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity};
 
-				tile.pos = sf::Vector2i(tile.ppos / 32.0f); // trunc map pos
+				tile.pos = sf::Vector2i(vectorTrunc(tile.ppos / 32.0f)); // trunc map pos
 				if (tile.pos != unit.pathPos) {
 					this->map->objs.set(unit.pathPos.x, unit.pathPos.y, 0); // mark pos immediatly
 					this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
@@ -152,11 +152,9 @@ public:
 					unit.pathPos = tile.pos;
 				}
 
-				if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
-					sf::Vector2f vel = steering.flee(curSteerObj, sf::Vector2f(tile.pos * 32), speed);
-					unit.velocity = vel;
-					tile.ppos += vel;
-				} else {
+//				if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
+				//} else
+				{
 					this->calculateSteeringObjects(steering, entity, tile.pos.x, tile.pos.y);
 
 					sf::Vector2f vel = sf::Vector2f(unit.direction) * speed;
@@ -167,6 +165,7 @@ public:
 					vel = steering.seek(curSteerObj, sdest, speed);
 
 					unit.velocity = vel;
+
 
 					sf::Vector2f avoid = steering.collisionAvoidance(curSteerObj);
 					if (avoid.x != 0 || avoid.y != 0) {
@@ -216,17 +215,32 @@ public:
 						}
 					}
 
+					if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
+						sf::Vector2f cob = sf::Vector2f(tile.pos * 32);
+						cob.x += 16.0f;
+						cob.y += 16.0f;
+						sf::Vector2f bvel = steering.flee(curSteerObj, cob, speed * 0.5f);
+						vel += bvel;
+					}
+
 					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f;
 					cpPos.x += 16.0f;
 					cpPos.y += 16.0f;
-					if (vel == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state=="move")) {
+					bool nobodyMove = true;
+					for (auto &mo : steering.objects) {
+						if (mo.velocity != sf::Vector2f(0, 0))
+							nobodyMove = false;
+					}
+					if (nobodyMove && vel == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state == "move")) {
 						if (vectorRound(tile.ppos) != vectorRound(cpPos)) {
 							vel = steering.seek(curSteerObj, cpPos, 1.0f);
-							tile.view = this->getDirection(sf::Vector2i(vectorNormalize(vel)*4.0f));
+							tile.view = this->getDirection(sf::Vector2i(vectorNormalize(vel) * 4.0f));
 							tile.state = "move";
-						} else {
-							tile.state = "idle";
 						}
+					}
+
+					if (tile.state != "attack" && vel == sf::Vector2f(0, 0)) {
+						tile.state = "idle";
 					}
 
 
@@ -263,8 +277,8 @@ public:
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
 #endif
-							unit.destpos = this->firstAvailablePosition(tile.pos, 1, 16);
-//							this->goTo(unit, tile.pos);
+//							unit.destpos = this->firstAvailablePosition(tile.pos, 1, 16);
+							this->goTo(unit, tile.pos);
 							/*							for (sf::Vector2i const &p : this->tileAround(tile, 1, 1)) {
 															if (this->map->pathAvailable(p.x,p.y) && this->map->objs.get(p.x, p.y)==0) {
 																unit.destpos = p;

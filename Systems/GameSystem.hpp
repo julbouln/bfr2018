@@ -124,7 +124,7 @@ public:
 						int x = w + src.x;
 						int y = h + src.y;
 						if (this->map->bound(x, y)) {
-							if (this->map->pathAvailable(x, y) && this->map->objs.get(x, y)==0)
+							if (this->map->positionAvailable(x, y))
 								return sf::Vector2i(x, y);
 						}
 					}
@@ -450,7 +450,7 @@ public:
 	}
 
 	void goTo(Unit & unit, sf::Vector2i destpos) {
-		if (this->map->pathAvailable(destpos.x, destpos.y))
+		if (this->map->positionAvailable(destpos.x, destpos.y) )
 			unit.destpos = destpos;
 		else
 			unit.destpos = this->firstAvailablePosition(destpos, 1, 16);
