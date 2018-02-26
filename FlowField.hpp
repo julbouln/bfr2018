@@ -537,7 +537,7 @@ public:
 			std::cout << "FlowFieldPath nextpos " << cx << "x" << cy << " -> " << npos.x << "x" << npos.y << " " << offset.x << "x" << offset.y << std::endl;
 #endif
 		} else {
-			sf::Vector2i steer = sf::Vector2i(vectorRound(this->seek(cpos, dest)));
+			sf::Vector2i steer = sf::Vector2i(vectorTrunc(this->seek(cpos, dest)));
 			npos = cpos + steer;
 		}
 

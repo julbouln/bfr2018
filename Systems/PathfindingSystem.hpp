@@ -141,7 +141,7 @@ public:
 			if (obj.life > 0)
 			{
 				float speed = (float)unit.speed * 0.5f;
-				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity};
+				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, speed};
 
 				tile.pos = sf::Vector2i(vectorTrunc(tile.ppos / 32.0f)); // trunc map pos
 				if (tile.pos != unit.pathPos) {
@@ -160,15 +160,12 @@ public:
 					sf::Vector2f vel = sf::Vector2f(unit.direction) * speed;
 
 //				sf::Vector2f sdest = sf::Vector2f(unit.nextpos * 32);
-					sf::Vector2f sdest = tile.ppos + vel;
+//					sf::Vector2f sdest = tile.ppos + vel;
 
-					vel = steering.seek(curSteerObj, sdest, speed);
-
-					unit.velocity = vel;
-
+//					vel = steering.seek(curSteerObj, sdest, speed);
 
 					sf::Vector2f avoid = steering.collisionAvoidance(curSteerObj);
-					if (avoid.x != 0 || avoid.y != 0) {
+					if (avoid != sf::Vector2f(0, 0)) {
 //					std::cout << "AVOID " << avoid.x << "x" << avoid.y << " + " << vel.x << "x" << vel.y << std::endl;
 						vel += avoid;
 
@@ -214,15 +211,16 @@ public:
 
 						}
 					}
-
-					if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
-						sf::Vector2f cob = sf::Vector2f(tile.pos * 32);
-						cob.x += 16.0f;
-						cob.y += 16.0f;
-						sf::Vector2f bvel = steering.flee(curSteerObj, cob, speed * 0.5f);
-						vel += bvel;
-					}
-
+					/*
+										if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
+											sf::Vector2f cob = sf::Vector2f(tile.pos * 32);
+											cob.x += 16.0f;
+											cob.y += 16.0f;
+											sf::Vector2f bvel = steering.flee(curSteerObj, cob, speed * 0.5f);
+											vel += bvel;
+										}
+					*/
+					
 					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f;
 					cpPos.x += 16.0f;
 					cpPos.y += 16.0f;
@@ -243,6 +241,19 @@ public:
 						tile.state = "idle";
 					}
 
+					// truncate
+					if (vel.x > speed)
+						vel.x = speed;
+					if (vel.y > speed)
+						vel.y = speed;
+					if (vel.x < -speed)
+						vel.x = -speed;
+					if (vel.y < -speed)
+						vel.y = -speed;
+
+
+
+					unit.velocity = vel;
 
 
 					tile.ppos += vel;
@@ -263,9 +274,10 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			if (tile.pos != unit.destpos && vectorLength(unit.destpos - tile.pos) < 1.5 && this->map->objs.get(unit.destpos.x, unit.destpos.y) != entity && unit.velocity == sf::Vector2f(0.0, 0.0)) {
-				unit.destpos = this->firstAvailablePosition(unit.destpos, 1, 16);
-			}
+//			if (tile.pos != unit.destpos && vectorLength(unit.destpos - tile.pos) < 1.5 && this->map->objs.get(unit.destpos.x, unit.destpos.y) != entity && unit.velocity == sf::Vector2f(0.0, 0.0)) {
+//				unit.destpos = this->firstAvailablePosition(unit.destpos, 1, 16);
+//			}
+
 			if (tile.pos == unit.destpos) {
 				EntityID samePosEnt = this->map->objs.get(tile.pos.x, tile.pos.y);
 				if (samePosEnt != 0 && samePosEnt != entity) {
@@ -391,12 +403,19 @@ private:
 				if (this->map->bound(cx, cy)) {
 					EntityID ent = this->map->objs.get(cx, cy);
 					if (ent && ent != currentEnt) {
+						Tile &tile = this->vault->registry.get<Tile>(ent);
 						if (this->vault->registry.has<Unit>(ent)) {
-							Tile &tile = this->vault->registry.get<Tile>(ent);
 							Unit &unit = this->vault->registry.get<Unit>(ent);
 //							if(unit.velocity.x > 0 || unit.velocity.y > 0)
-							steering.objects.push_back(SteeringObject{ent, tile.ppos, unit.velocity});
+							steering.objects.push_back(SteeringObject{ent, tile.ppos, unit.velocity, (float)unit.speed * 0.5f});
 						}
+					}
+
+					if (!this->map->pathAvailable(cx, cy)) {
+						sf::Vector2f ppos = sf::Vector2f(cx, cy) * 32.0f;
+						ppos.x+=16.0f;
+						ppos.y+=16.0f;
+						steering.objects.push_back(SteeringObject{0, ppos, sf::Vector2f(0, 0), 0.0f});
 					}
 				}
 			}
