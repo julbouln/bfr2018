@@ -1,15 +1,13 @@
-CFLAGS = -O3 -std=c++14 
-#-DWITHGPERFTOOLS
+CFLAGS = -g -std=c++14 -DWITHGPERFTOOLS
 INCLUDES = -I.
 THIRD_PARTY_OBJS = third_party/imgui/imgui.o third_party/imgui/imgui_draw.o third_party/imgui/imgui-sfml.o third_party/imgui/ImguiWindowsFileIO.o third_party/Particles/ParticleData.o third_party/Particles/ParticleSpawner.o third_party/Particles/ParticleUpdater.o third_party/Particles/ParticleGenerator.o third_party/Particles/ParticleSystem.o third_party/dbscan/dbscan.o third_party/tinyxml2.o third_party/SimplexNoise.o 
-OBJS = ShaderOptions.o Helpers.o Stages/MainMenu.o Stages/PlayMenu.o Stages/GameOver.o bfr.o
+OBJS = ShaderOptions.o Helpers.o Quadtree.o Map.o Stages/MainMenu.o Stages/PlayMenu.o Stages/GameOver.o bfr.o
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(INCLUDES) -o $@ -c $<
 
 bfr: $(THIRD_PARTY_OBJS) $(OBJS)
-	$(CXX) $(THIRD_PARTY_OBJS) $(OBJS) $(CFLAGS) -o bfr -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL 
-	#-lprofiler
+	$(CXX) $(THIRD_PARTY_OBJS) $(OBJS) $(CFLAGS) -o bfr -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL -lprofiler
 
 all: bfr
 
@@ -21,6 +19,9 @@ particle_demo: $(THIRD_PARTY_OBJS) ShaderOptions.o
 
 steering_test: Helpers.o
 	$(CXX) $(CFLAGS) $(INCLUDES) Helpers.o tests/steering.cpp -o tests/steering -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
+
+hashedstring_test:
+	$(CXX) $(CFLAGS) $(INCLUDES) tests/hashedstring.cpp -o tests/hashedstring
 
 prof:
 	google-pprof --callgrind ./bfr ./bfr_prof.log > profile.callgrind

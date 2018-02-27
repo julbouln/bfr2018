@@ -15,7 +15,7 @@
 //#define BUG_DEBUG
 //#define PATHFINDING_DEBUG
 //#define FLOWFIELDS_DEBUG
-#define STEERING_DEBUG
+//#define STEERING_DEBUG
 
 #define ZOOMLEVEL_ENABLE
 #define SHADER_ENABLE

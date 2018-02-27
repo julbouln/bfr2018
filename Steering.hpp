@@ -11,6 +11,7 @@ struct SteeringObject {
 	sf::Vector2f pos;
 	sf::Vector2f velocity;
 	float maxSpeed;
+	float maxForce;
 };
 
 class Steering {
@@ -25,7 +26,12 @@ public:
 		for (auto &mo : objects) {
 			float ndistance = vectorLength(mo.pos - currentObject.pos);
 
-			sf::Vector2f velocity = currentObject.velocity - mo.velocity;
+//			sf::Vector2f velocity = currentObject.velocity - mo.velocity;
+			sf::Vector2f velocity = currentObject.velocity;
+
+//			float dynLen = vectorLength(currentObject.velocity) / currentObject.maxSpeed;
+//			sf::Vector2f ahead = currentObject.pos + vectorNormalize(velocity) * dynLen;
+//			sf::Vector2f ahead2 = currentObject.pos + vectorNormalize(velocity) * dynLen * 0.5f;
 
 			sf::Vector2f ahead = currentObject.pos + vectorNormalize(velocity) * MAX_SEE_AHEAD;
 			sf::Vector2f ahead2 = currentObject.pos + vectorNormalize(velocity) * MAX_SEE_AHEAD * 0.5f;
@@ -37,6 +43,14 @@ public:
 			}
 		}
 		return threatening;
+	}
+
+	sf::Vector2f limit(sf::Vector2f v, float max) {
+		if (vectorSquare(v) > max * max) {
+			return vectorNormalize(v) * max;
+		} else {
+			return v;
+		}
 	}
 
 	sf::Vector2f seek(SteeringObject currentObject, sf::Vector2f dpos, float speed) {
@@ -57,13 +71,92 @@ public:
 		return fleeVel;
 	}
 
+
+	sf::Vector2f followPath(SteeringObject currentObject, std::vector<sf::Vector2f> path, int idx) {
+		int i = 0, index = 0;
+		float dist = std::numeric_limits<float>::max();
+
+		for (sf::Vector2f vect : path)
+		{
+			sf::Vector2f temp = (vect - currentObject.pos);
+			float len = fabs(vectorLength(temp));
+			if (len < dist)
+			{
+				index = i;
+				dist = len;
+			}
+			i++;
+		}
+
+#ifdef STEERING_DEBUG
+		std::cout << "Steering: followPath index(1):" << index << std::endl;
+#endif
+		// arrive on last pos
+		if (index == path.size() - 1)
+		{
+#ifdef STEERING_DEBUG
+			std::cout << "Steering: followPath at destination" << std::endl;
+#endif
+			return sf::Vector2f(0, 0);
+		}
+
+		index++;
+#ifdef STEERING_DEBUG
+		std::cout << "Steering: followPath index:" << index << std::endl;
+#endif
+
+		return seek(currentObject, path[index], currentObject.maxSpeed);
+	}
+
+// https://gamedev.stackexchange.com/questions/45381/wall-avoidance-steering
+	sf::Vector2f repulsionFromWalls(SteeringObject currentObject, std::vector<sf::Vector2f> walls)
+	{
+		sf::Vector2f force(0, 0); // My force will be stored here
+		sf::Vector2f pos = currentObject.pos; // Position of the agent
+
+		// For each wall
+		for (sf::Vector2f &wall : walls)
+		{
+			// Get the center point of the wall
+			sf::Vector2f center(wall.x + 16.0f, wall.y + 16.0f);
+
+			// Create a new vector between my agent and the center of the current wall
+			sf::Vector2f distance = (center - pos);
+
+			// If the wall is visible, calculate the force to apply
+//			float dotProduct = vectorDot(distance, vectorNormalize(wall));
+			float dotProduct = vectorDot(distance, vectorNormalize(wall));
+			if (dotProduct != 0)
+			{
+#ifdef STEERING_DEBUG
+				std::cout << "Steering: repulsionFromWalls " << currentObject.entity << " dotProduct:" << dotProduct << " distance:" << distance.x << "x" << distance.y << std::endl;
+#endif
+				if (dotProduct < 0)
+					force +=  vectorNormalize(wall) / vectorLength(distance);
+				else
+					force -=  vectorNormalize(wall) / vectorLength(distance);
+
+			}
+		}
+
+		// Returned the calculated force
+#ifdef STEERING_DEBUG
+		std::cout << "Steering: repulsionFromWalls " << currentObject.entity << " total repulsion:" << force.x << "x" << force.y << std::endl;
+#endif
+		return force;
+	}
+
 	sf::Vector2f collisionAvoidance(SteeringObject currentObject) {
 		sf::Vector2f avoidance;
 
 		SteeringObject *mostThreatening = this->findMostThreateningObject(currentObject);
 		if (mostThreatening) {
-			sf::Vector2f velocity = currentObject.velocity - mostThreatening->velocity;
+//			sf::Vector2f velocity = currentObject.velocity - mostThreatening->velocity;
+			sf::Vector2f velocity = currentObject.velocity;
+
 //			float dynLen = vectorLength(currentObject.velocity) / currentObject.maxSpeed;
+//			sf::Vector2f ahead = currentObject.pos + vectorNormalize(velocity) * dynLen;
+
 			sf::Vector2f ahead = currentObject.pos + vectorNormalize(velocity) * MAX_SEE_AHEAD;
 
 			avoidance = ahead - mostThreatening->pos;
@@ -77,17 +170,20 @@ public:
 			std::cout << "Steering: avoid " << currentObject.entity << " threatened by " << mostThreatening->entity << " " << avoidance.x << "x" << avoidance.y << std::endl;
 #endif
 
-			if (vectorLength(currentObject.velocity + avoidance) < af * MAX_AVOID_FORCE) { // take a perpendicular vector if forces avoid movement
+			/*
+						if (vectorLength(currentObject.velocity + avoidance) < af * MAX_AVOID_FORCE) { // take a perpendicular vector if forces avoid movement
 
-				float x = avoidance.x;
-				float y = avoidance.y;
-				avoidance.x = -y;
-				avoidance.y = x;
-#ifdef STEERING_DEBUG
-				std::cout << "Steering: avoid " << currentObject.entity << " rotate by 90 " << mostThreatening->entity << " " << avoidance.x << "x" << avoidance.y << std::endl;
-#endif
+							float x = avoidance.x;
+							float y = avoidance.y;
+							avoidance.x = -y;
+							avoidance.y = x;
+			#ifdef STEERING_DEBUG
+							std::cout << "Steering: avoid " << currentObject.entity << " rotate by 90 " << mostThreatening->entity << " " << avoidance.x << "x" << avoidance.y << std::endl;
+			#endif
 
-			}
+						}
+
+						*/
 
 		} else {
 #ifdef STEERING_DEBUG

@@ -2,8 +2,11 @@
 
 #include <queue>
 #include <vector>
+#include <set>
 
+#include "Entity.hpp"
 #include "Helpers.hpp"
+#include "Quadtree.hpp"
 
 #define VECTOR_LAYER
 
@@ -40,7 +43,7 @@ enum FogType {
 };
 
 #ifdef VECTOR_LAYER
-template <typename T, T Empty = 0> 
+template <typename T, T Empty = 0>
 class Layer {
 public:
 	std::vector<T> grid;
@@ -90,7 +93,7 @@ public:
 };
 
 #else
-template <typename T, T Empty = 0> 
+template <typename T, T Empty = 0>
 class Layer {
 public:
 	T* grid;
@@ -150,12 +153,12 @@ enum class FogState {
 	InSight
 };
 
-class Fog : public Layer<FogState,FogState::Unvisited> {
+class Fog : public Layer<FogState, FogState::Unvisited> {
 public:
 	int visited() {
 		int visited = 0;
 //		for (FogState st : grid) {
-		for(int i=0;i<width*height;++i) {
+		for (int i = 0; i < width * height; ++i) {
 			FogState &st = grid[i];
 			if (st != FogState::Unvisited)
 				visited++;
@@ -179,6 +182,7 @@ public:
 		return l.priority < r.priority;
 	}
 };
+
 
 class Map {
 public:
@@ -210,6 +214,8 @@ public:
 	Layer<EntityID> staticPathfinding;
 	Layer<EntityID> pathfinding;
 
+	Quadtree* units;
+
 	// transitions calculation optimization
 	// maintain a list of position to update instead of updating every transitions
 	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
@@ -218,46 +224,12 @@ public:
 	// not sure if sound must be there
 	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
 
-	Map() {
-	}
+	Map();
 
-	void setSize(unsigned int width, unsigned int height) {
-//		this->terrains.setSize(width, height);
+	void setSize(unsigned int width, unsigned int height);
 
-		for (int i = 0; i < 6; i++) {
-			Layer<int> layer;
-			layer.setSize(width, height);
-			this->terrains.push_back(layer);
-		}
+	void markUpdateClear();
 
-		this->terrainsForTransitions.setSize(width, height);
-		this->objs.setSize(width, height);
-		this->resources.setSize(width, height);
-		this->decors.setSize(width, height);
-
-		this->fogHidden.setSize(width, height);
-		this->fogUnvisited.setSize(width, height);
-
-		this->fogHiddenTransitions.setSize(width, height);
-		this->fogUnvisitedTransitions.setSize(width, height);
-
-		this->corpses.setSize(width, height);
-
-		this->staticBuildable.setSize(width, height);
-
-		// water & decors
-		this->staticPathfinding.setSize(width, height);
-		// buildings
-		this->pathfinding.setSize(width, height);
-
-		this->width = width;
-		this->height = height;
-	}
-
-	void markUpdateClear() {
-		this->markUpdateTerrainTransitions.clear();
-		this->markUpdateFogTransitions.clear();
-	}
 
 	inline bool bound(int x, int y) const {
 		return (x >= 0 && y >= 0 && x < this->width && y < this->height);
@@ -277,16 +249,16 @@ public:
 		if (x < width && y < height) // Unsigned will wrap if < 0
 		{
 			unsigned int idx = x + width * y;
-			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0 && objs.grid[idx]==0)
+			if (staticPathfinding.grid[idx] == 0 && pathfinding.grid[idx] == 0 && objs.grid[idx] == 0)
 				return true;
 		}
 		return false;
 	}
 
-	// pathfinding blocking method
+// pathfinding blocking method
 	inline bool operator()(unsigned x, unsigned y) const
 	{
-		return this->pathAvailable(x,y);
+		return this->pathAvailable(x, y);
 	}
 
 };

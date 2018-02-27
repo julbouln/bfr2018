@@ -160,7 +160,7 @@ public:
 		if (element) {
 
 			unit.cost = element->FirstChildElement("cost")->IntAttribute("value");
-			unit.speed = element->FirstChildElement("speed")->IntAttribute("value");
+			unit.speed = (float)element->FirstChildElement("speed")->IntAttribute("value") * 0.5f;
 
 			unsigned int attack1_power = (unsigned int)element->FirstChildElement("attack1")->IntAttribute("power");
 

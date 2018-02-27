@@ -133,7 +133,7 @@ enum class GroupFormation {
 
 struct Unit {
 	unsigned int cost;
-	unsigned int speed;
+	float speed;
 	Attack attack1;
 	Attack attack2;
 
