@@ -121,7 +121,7 @@ public:
 			sf::Vector2f distance = (mo.pos - currentMovingObject.pos);
 			sf::Vector2f vel = mo.velocity - currentMovingObject.velocity;
 			sf::Vector2f d(distance.x/(vel.x+0.0001f),distance.y/(vel.y+0.0001f));
-			float collisionPrevision = vectorLength(d);
+			float collisionPrevision = length(d);
 
 			sf::Vector2i p = sf::Vector2i(mo.pos/32.0f);
 
@@ -138,7 +138,7 @@ std::cout << "mov "<<p.x<<"x"<<p.y<< " "<< collisionPrevision << " " << distance
 			sf::Vector2f spos(sx * 32.0, sy * 32.0);
 			sf::Vector2f ipos(x * 32.0, y * 32.0);
 
-			float prevA = vectorLength(ipos - spos) / currentMovingObjectVel;
+			float prevA = length(ipos - spos) / currentMovingObjectVel;
 
 //			sf::Vector2f opos = mo.pos;
 
@@ -149,7 +149,7 @@ std::cout << "mov "<<p.x<<"x"<<p.y<< " "<< collisionPrevision << " " << distance
 
 
 //				std::cout << "MOVING: check prevision "<<x<<"x"<<y<< " " << prevision.x << "x"<<prevision.y << std::endl;
-			float r = vectorLength(ipos - prevision);
+			float r = length(ipos - prevision);
 			if (r < 16.0) {
 //				std::cout << "MOVING: prevision "<<_grid.rect.left+x<<"x"<<_grid.rect.top+y<< " <- " << mo.pos.x/32 << "x" << mo.pos.y/32 << std::endl;
 				return false;
@@ -358,7 +358,7 @@ public:
 	}
 
 	sf::Vector2f seek(sf::Vector2i cpos, sf::Vector2i dpos) {
-		sf::Vector2f seekVel = vectorNormalize(sf::Vector2f(dpos - cpos));
+		sf::Vector2f seekVel = normalize(sf::Vector2f(dpos - cpos));
 //		std::cout << "FlowFieldPath: seek " << seekVel.x << "x" << seekVel.y << std::endl;
 		return seekVel;
 	}
@@ -429,8 +429,8 @@ public:
 		if (linePoints.size() > 0) {
 			float distance = std::numeric_limits<float>::max();
 			for (sf::Vector2i np : linePoints) {
-				if (vectorLength(np - cpos) < distance) {
-					distance = vectorLength(np - cpos);
+				if (length(np - cpos) < distance) {
+					distance = length(np - cpos);
 					point = np;
 //						std::cout << "FlowFieldPath fallback "<<ndpos.x<<"x"<<ndpos.y<<std::endl;
 				}
@@ -486,13 +486,13 @@ public:
 
 			if (ffRect.contains(dest)) {
 #ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath dest in sector " << dest.x << "x" << dest.y << std::endl;
+				std::cout << "FlowFieldPath dest in sector " << dest << std::endl;
 
 #endif
 				ndpos = this->bestFollowingPathPoint(cpos);
 			} else {
 #ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath dest out of sector " << dest.x << "x" << dest.y << " (" << pathPoints.size() << ")" << std::endl;
+				std::cout << "FlowFieldPath dest out of sector " << dest << " (" << pathPoints.size() << ")" << std::endl;
 #endif
 				if (lastCalcDest < 4 && ffRect.contains(ffDest)) {
 					ndpos = ffDest;
@@ -507,7 +507,7 @@ public:
 //					ndpos = this->firstFreePos(cpos, ndpos, 1, 2);
 //				}
 #ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath best local dest " << ndpos.x << "x" << ndpos.y << std::endl;
+				std::cout << "FlowFieldPath best local dest " << ndpos << std::endl;
 #endif
 			}
 
@@ -529,15 +529,15 @@ public:
 				npos = cpos;
 
 #ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath cannot found next pos " << cpos.x << "x" << cpos.y << " " << dest.x << "x" << dest.y << " " << npos.x << "x" << npos.y << std::endl;
+				std::cout << "FlowFieldPath cannot found next pos " << cpos << " " << dest << " " << npos << std::endl;
 #endif
 			}
 
 #ifdef FLOWFIELDS_DEBUG
-			std::cout << "FlowFieldPath nextpos " << cx << "x" << cy << " -> " << npos.x << "x" << npos.y << " " << offset.x << "x" << offset.y << std::endl;
+			std::cout << "FlowFieldPath nextpos " << cpos << " -> " << npos << " " << offset << std::endl;
 #endif
 		} else {
-			sf::Vector2i steer = sf::Vector2i(vectorTrunc(this->seek(cpos, dest)));
+			sf::Vector2i steer = sf::Vector2i(trunc(this->seek(cpos, dest)));
 			npos = cpos + steer;
 		}
 
@@ -555,13 +555,13 @@ public:
 
 			this->lastCalcDest = 4;
 
-			if (vectorLength(dest - cur) < 1.5) {
+			if (length(dest - cur) < 1.5) {
 				pathPoints.clear();
 				this->mode = FlowFieldMode::Steering;
 				this->ffDest = dest;
 				this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
 			} else {
-//				if (vectorLength(oldDest - newDest) < 5.0) {
+//				if (length(oldDest - newDest) < 5.0) {
 //					this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
 //				} else
 				{

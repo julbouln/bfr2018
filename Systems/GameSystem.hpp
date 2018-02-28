@@ -65,7 +65,7 @@ public:
 		for (int w = -dist; w < tile.size.x + dist; ++w) {
 			for (int h = -dist; h < tile.size.y + dist; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-				if (this->map->bound(p.x, p.y) && this->approxDistance(tile.pos, p) <= dist + vectorLength(sf::Vector2f(tile.size) / 2.0f) ) {
+				if (this->map->bound(p.x, p.y) && this->approxDistance(tile.pos, p) <= dist + length(sf::Vector2f(tile.size) / 2.0f) ) {
 					surface.push_back(p);
 				}
 			}

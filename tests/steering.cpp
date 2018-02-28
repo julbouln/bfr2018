@@ -9,7 +9,7 @@ struct Agent {
 };
 
 sf::Vector2f seek(Agent ag, Agent target) {
-	sf::Vector2f seekVel = vectorNormalize(target.pos - ag.pos);
+	sf::Vector2f seekVel = normalize(target.pos - ag.pos);
 
 	seekVel = vectorRound(seekVel);
 	std::cout << "seek " << ag.pos.x << "x" << ag.pos.y << " -> " << target.pos.x << "x" << target.pos.y << " : " << seekVel.x << "x" << seekVel.y << std::endl;
@@ -24,7 +24,7 @@ sf::Vector2f pursue(Agent ag, Agent target) {
 	float maxPrediction = 5.5f;
 	float prediction = 0.f;
 	sf::Vector2f direction = target.pos - ag.pos;
-	float distance = vectorLength(direction);
+	float distance = length(direction);
 
 	if (ag.speed <= distance / maxPrediction)
 	{
@@ -50,7 +50,7 @@ sf::Vector2f followPath(Agent ag, std::vector<sf::Vector2f> path, int idx) {
 	for (sf::Vector2f vect : path)
 	{
 		sf::Vector2f temp = (vect - ag.pos);
-		float len = fabs(vectorLength(temp));
+		float len = fabs(length(temp));
 		if (len < dist)
 		{
 			index = i;
@@ -82,12 +82,12 @@ sf::Vector2f collisionAvoid(Agent ag, std::vector<Agent> others) {
 	{
 		direction = nb.pos - ag.pos;
 
-		if (vectorLength(direction) != 0.f)  // check for check the agent itself
+		if (length(direction) != 0.f)  // check for check the agent itself
 		{
-			if (fabs(vectorDot(orientation, direction)) > ag.view && vectorLength(direction) < 50.0f)
+			if (fabs(orientation * direction) > ag.view && length(direction) < 50.0f)
 				//if (direction.dot(nb.getorientation().asVector()) > agent.getFOV() && direction.getLength() < agent.getseparationRadius())
 			{
-				std::cout << "collisionAvoid dot:" << fabs(vectorDot(orientation, direction)) << " " << orientation.x << "x" << orientation.y << " " << direction.x << "x" << direction.y << std::endl;
+				std::cout << "collisionAvoid dot:" << fabs(orientation * direction) << " " << orientation << " " << direction << std::endl;
 				ag.pos = vectorRound(ag.pos);
 				nb.pos = vectorRound(nb.pos);
 				return pursue(nb, ag);
@@ -125,7 +125,7 @@ int main() {
 		others.push_back(agent2);
 		sf::Vector2f avel = collisionAvoid(agent1, others);
 
-		if (vectorLength(avel) > 0) {
+		if (length(avel) > 0) {
 			agent1.vel = avel;
 			agent1.pos += avel;
 		}

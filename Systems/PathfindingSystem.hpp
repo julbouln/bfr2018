@@ -120,7 +120,7 @@ public:
 					Tile &otherTile = this->vault->registry.get<Tile>(other);
 					if (otherTile.pos != otherUnit.destpos && (npos == otherUnit.nextpos || npos == otherTile.pos)) {
 #ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << other << " go to " << npos.x << "x" << npos.y << std::endl;
+						std::cout << "Pathfinding: " << other << " go to " << npos << std::endl;
 #endif
 						return false;
 					}
@@ -154,7 +154,7 @@ public:
 			{
 				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, 1.0f};
 
-				tile.pos = sf::Vector2i(vectorTrunc(tile.ppos / 32.0f)); // trunc map pos
+				tile.pos = sf::Vector2i(trunc(tile.ppos / 32.0f)); // trunc map pos
 				if (tile.pos != unit.pathPos) {
 					this->map->objs.set(unit.pathPos.x, unit.pathPos.y, 0); // mark pos immediatly
 					this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
@@ -168,21 +168,21 @@ public:
 				{
 					this->calculateSteeringObjects(steering, entity, tile.pos.x, tile.pos.y);
 
-					sf::Vector2f flowForce = vectorNormalize(sf::Vector2f(unit.direction * 32)) * unit.speed;
+					sf::Vector2f flowForce = normalize(sf::Vector2f(unit.direction * 32)) * unit.speed;
 
 					sf::Vector2f steerForce(0,0);
-					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f;
-					cpPos.x += 16.0f;
-					cpPos.y += 16.0f;
+					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
+//					cpPos.x += 16.0f;
+//					cpPos.y += 16.0f;
 					bool nobodyMove = true;
 					for (auto &mo : steering.objects) {
 						if (mo.velocity != sf::Vector2f(0, 0))
 							nobodyMove = false;
 					}
 					if (nobodyMove && flowForce == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state == "move")) {
-						if (vectorRound(tile.ppos) != vectorRound(cpPos)) {
+						if (round(tile.ppos) != round(cpPos)) {
 							steerForce = steering.seek(curSteerObj, cpPos, 1.0f);
-							tile.view = this->getDirection(sf::Vector2i(vectorNormalize(steerForce) * 4.0f));
+							tile.view = this->getDirection(sf::Vector2i(normalize(steerForce) * 4.0f));
 							tile.state = "move";
 						}
 					}
@@ -207,7 +207,7 @@ public:
 					vel += flowForce;
 //					vel += avoidForce;
 					vel += steering.avoid(curSteerObj, cases);
-					vel += steering.seperate(curSteerObj, steering.objects);
+					vel += steering.separate(curSteerObj, steering.objects);
 //					vel += steering.align(curSteerObj, steering.objects);
 //					vel += steering.cohesion(curSteerObj, steering.objects);
 
@@ -256,7 +256,7 @@ public:
 						if (samePosTile.pos == samePosUnit.destpos)
 						{
 #ifdef PATHFINDING_DEBUG
-							std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos.x << "x" << tile.pos.y << std::endl;
+							std::cout << "Pathfinding: " << entity << " at same pos than " << samePosEnt << " move " << tile.pos << std::endl;
 #endif
 //							unit.destpos = this->firstAvailablePosition(tile.pos, 1, 16);
 							this->goTo(unit, tile.pos);
@@ -305,19 +305,19 @@ public:
 #endif
 
 #ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << entity << " at " << cpos.x << "x" << cpos.y << " next position " << npos.x << "x" << npos.y << "(" << npos.x - cpos.x << "x" << npos.y - cpos.y << ")" << std::endl;
+						std::cout << "Pathfinding: " << entity << " at " << cpos " next position " << npos << "(" << (npos - cpos) << ")" << std::endl;
 #endif
 
 //						if (this->checkAround(entity, npos)) {
 						if (npos != cpos) {
 #ifdef PATHFINDING_DEBUG
-							std::cout << "Pathfinding: " << entity << " check around " << tile.pos.x << "x" << tile.pos.y << std::endl;
+							std::cout << "Pathfinding: " << entity << " check around " << tile.pos << std::endl;
 #endif
 							unit.nextpos = npos;
 
 							tile.view = this->getDirection(cpos, npos);
 							unit.direction = this->dirVector2i(tile.view);
-//							unit.velocity = vectorNormalize(sf::Vector2f(unit.direction * 32)) * unit.speed;
+//							unit.velocity = normalize(sf::Vector2f(unit.direction * 32)) * unit.speed;
 							this->changeState(entity, "move");
 
 
@@ -332,7 +332,7 @@ public:
 						}
 					} else {
 #ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << entity << " no path found " << tile.pos.x << "x" << tile.pos.y << " -> " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+						std::cout << "Pathfinding: " << entity << " no path found " << tile.pos << " -> " << unit.destpos << std::endl;
 #endif
 						this->changeState(entity, "idle");
 						unit.direction = sf::Vector2i(0, 0);
@@ -349,7 +349,7 @@ public:
 						if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
 							sf::Vector2i fp = this->firstAvailablePosition(unit.destpos, 1, 16);
 #ifdef PATHFINDING_DEBUG
-							std::cout << "Pathfinding: " << entity << " go to first free position " << fp.x << "x" << fp.y << std::endl;
+							std::cout << "Pathfinding: " << entity << " go to first free position " << fp << std::endl;
 #endif
 							this->goTo(unit, fp);
 						}
