@@ -59,7 +59,8 @@ public:
 		if (seekVel != sf::Vector2f(0, 0))
 			std::cout << "Steering: seek " << currentObject.entity << " " << seekVel.x << "x" << seekVel.y << std::endl;
 #endif
-		return seekVel;
+
+		return this->limit(seekVel, currentObject.maxForce);
 	}
 
 	sf::Vector2f flee(SteeringObject currentObject, sf::Vector2f dpos, float speed) {
@@ -108,43 +109,98 @@ public:
 		return seek(currentObject, path[index], currentObject.maxSpeed);
 	}
 
-// https://gamedev.stackexchange.com/questions/45381/wall-avoidance-steering
-	sf::Vector2f repulsionFromWalls(SteeringObject currentObject, std::vector<sf::Vector2f> walls)
-	{
-		sf::Vector2f force(0, 0); // My force will be stored here
-		sf::Vector2f pos = currentObject.pos; // Position of the agent
-
-		// For each wall
-		for (sf::Vector2f &wall : walls)
+	sf::Vector2f avoid(SteeringObject currentObject, std::vector<sf::Vector2f> cases) {
+		sf::Vector2f force(0, 0);
+		sf::Vector2f pos = currentObject.pos;
+		for (sf::Vector2f &c : cases)
 		{
-			// Get the center point of the wall
-			sf::Vector2f center(wall.x + 16.0f, wall.y + 16.0f);
-
-			// Create a new vector between my agent and the center of the current wall
-			sf::Vector2f distance = (center - pos);
-
-			// If the wall is visible, calculate the force to apply
-//			float dotProduct = vectorDot(distance, vectorNormalize(wall));
-			float dotProduct = vectorDot(distance, vectorNormalize(wall));
-			if (dotProduct != 0)
-			{
-#ifdef STEERING_DEBUG
-				std::cout << "Steering: repulsionFromWalls " << currentObject.entity << " dotProduct:" << dotProduct << " distance:" << distance.x << "x" << distance.y << std::endl;
-#endif
-				if (dotProduct < 0)
-					force +=  vectorNormalize(wall) / vectorLength(distance);
-				else
-					force -=  vectorNormalize(wall) / vectorLength(distance);
-
-			}
+			force += vectorNormalize(sf::Vector2f(pos - c));
 		}
+		force = vectorNormalize(force) * currentObject.maxSpeed;
+		force = this->limit(force, currentObject.maxForce);
 
-		// Returned the calculated force
-#ifdef STEERING_DEBUG
-		std::cout << "Steering: repulsionFromWalls " << currentObject.entity << " total repulsion:" << force.x << "x" << force.y << std::endl;
-#endif
 		return force;
 	}
+
+	sf::Vector2f seperate(SteeringObject currentObject, std::vector<SteeringObject> &others) {
+		float desiredseparation = 24.0f;
+		sf::Vector2f sum(0, 0);
+		int count = 0;
+		for (SteeringObject &other : others) {
+			float d = vectorLength(currentObject.pos - other.pos);
+			if ((d > 0) && (d < desiredseparation)) {
+				sf::Vector2f diff = vectorNormalize(currentObject.pos - other.pos) / d;
+
+				sum += diff;
+				count++;
+			}
+		}
+		if (count > 0) {
+			sum /= (float)count;
+			sum = vectorNormalize(sum);
+			sum *= currentObject.maxSpeed;
+			sum = this->limit(sum, currentObject.maxForce);
+
+			return sum;
+		} else {
+			return sf::Vector2f(0, 0);
+		}
+	}
+
+	sf::Vector2f cohesion(SteeringObject currentObject, std::vector<SteeringObject> &others) {
+		float neighbordist = 24.0f;
+		sf::Vector2f sum(0, 0);
+		int count = 0;
+		for (SteeringObject &other : others) {
+			float d = vectorLength(currentObject.pos - other.pos);
+			if ((d > 0) && (d < neighbordist)) {
+
+				sum += other.pos;
+				count++;
+			}
+		}
+		if (count > 0) {
+			sum /= (float)count;
+			sum = this->limit(sum, currentObject.maxForce);
+
+			return seek(currentObject, sum, currentObject.maxSpeed);
+		} else {
+			return sf::Vector2f(0, 0);
+		}
+	}
+
+	sf::Vector2f align (SteeringObject currentObject, std::vector<SteeringObject> &others) {
+		float neighbordist = 24.0f;
+		sf::Vector2f sum(0, 0);
+		int count = 0;
+		for (SteeringObject &other : others) {
+			float d = vectorLength(currentObject.pos - other.pos);
+			if ((d > 0) && (d < neighbordist)) {
+				sum += other.velocity;
+			}
+		}
+		if (count > 0) {
+			sum /= (float)count;
+			sum = vectorNormalize(sum);
+			sum *= currentObject.maxSpeed;
+
+			sum = this->limit(sum, currentObject.maxForce);
+
+			return sum;
+		} else {
+			return sf::Vector2f(0, 0);
+		}
+	}
+
+	sf::Vector2f flock(SteeringObject currentObject, std::vector<SteeringObject> &others) {
+		sf::Vector2f fv(0, 0);
+		fv += this->seperate(currentObject, others);
+		fv += this->align(currentObject, others);
+		fv += this->cohesion(currentObject, others);
+		return fv;
+	}
+
+
 
 	sf::Vector2f collisionAvoidance(SteeringObject currentObject) {
 		sf::Vector2f avoidance;

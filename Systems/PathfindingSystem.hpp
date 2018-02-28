@@ -103,7 +103,7 @@ public:
 
 		for (EntityID entity : unitView) {
 			Tile &tile = unitView.get<Tile>(entity);
-			this->map->units->add(QuadtreeObject{entity, tile.ppos.x - 16.0f, tile.ppos.y - 16.0f, 32.0f, 32.0f});
+			this->map->units->add(QuadtreeObject(entity, tile.ppos.x - 16.0f, tile.ppos.y - 16.0f, 32.0f, 32.0f));
 //			this->map->units->add(QuadtreeObject{entity, tile.ppos.x, tile.ppos.y, 32.0f, 32.0f});
 		}
 
@@ -152,7 +152,7 @@ public:
 
 			if (obj.life > 0)
 			{
-				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, 0.1f};
+				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, 1.0f};
 
 				tile.pos = sf::Vector2i(vectorTrunc(tile.ppos / 32.0f)); // trunc map pos
 				if (tile.pos != unit.pathPos) {
@@ -168,56 +168,7 @@ public:
 				{
 					this->calculateSteeringObjects(steering, entity, tile.pos.x, tile.pos.y);
 
-//					sf::Vector2f ffv = sf::Vector2f(unit.direction) * unit.speed;
-//					sf::Vector2f vel = ffv - unit.velocity;
 					sf::Vector2f flowForce = vectorNormalize(sf::Vector2f(unit.direction * 32)) * unit.speed;
-//					sf::Vector2f vel = unit.velocity;
-
-					sf::Vector2f avoidForce = steering.collisionAvoidance(curSteerObj);
-					if (avoidForce != sf::Vector2f(0, 0)) {
-//					std::cout << "AVOID " << avoid.x << "x" << avoid.y << " + " << vel.x << "x" << vel.y << std::endl;
-//						vel += avoid;
-
-						/*
-												if (unit.destpos == tile.pos) {
-													sf::Vector2i pushVec = sf::Vector2i(vectorRound(vectorNormalize(vel * 32.0f)));
-
-													int x = pushVec.x;
-													int y = pushVec.y;
-
-													// perpendicular vector
-													sf::Vector2i p1;
-													p1.x = -y;
-													p1.y = x;
-
-													sf::Vector2i p2;
-													p1.x = y;
-													p1.y = -x;
-
-													sf::Vector2i pp = tile.pos + p1;
-
-													if (this->map->objs.get(pp.x, pp.y) == 0) {
-														unit.destpos = pp;
-													} else {
-														pp = tile.pos + p2;
-														if (this->map->objs.get(pp.x, pp.y) == 0) {
-															unit.destpos = pp;
-														}
-													}
-
-
-												}
-												*/
-					}
-					/*
-										if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
-											sf::Vector2f cob = sf::Vector2f(tile.pos * 32);
-											cob.x += 16.0f;
-											cob.y += 16.0f;
-											sf::Vector2f bvel = steering.flee(curSteerObj, cob, speed * 0.5f);
-											vel += bvel;
-										}
-					*/
 
 					sf::Vector2f steerForce(0,0);
 					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f;
@@ -236,41 +187,35 @@ public:
 						}
 					}
 
-
-					// truncate
-					/*					if (vel.x > unit.speed)
-											vel.x = unit.speed;
-										if (vel.y > unit.speed)
-											vel.y = unit.speed;
-										if (vel.x < -unit.speed)
-											vel.x = -unit.speed;
-										if (vel.y < -unit.speed)
-											vel.y = -unit.speed;
-					*/
-
 					int wallsSight = 1;
 
-					std::vector<sf::Vector2f> walls;
+					std::vector<sf::Vector2f> cases;
 					for (int cx = tile.pos.x - wallsSight; cx <= tile.pos.x + wallsSight; ++cx) {
 						for (int cy = tile.pos.y - wallsSight; cy <= tile.pos.y + wallsSight; ++cy) {
 							if (this->map->bound(cx, cy)) {
 								if (!this->map->pathAvailable(cx, cy)) {
-									walls.push_back(sf::Vector2f(cx * 32.0f, cy * 32.0f));
+									cases.push_back(sf::Vector2f(cx * 32.0f, cy * 32.0f));
 								}
 							}
 						}
 					}
 
-					sf::Vector2f wallsForce = steering.repulsionFromWalls(curSteerObj, walls);
+//					sf::Vector2f wallsForce = steering.repulsionFromWalls(curSteerObj, cases);
 
 					sf::Vector2f vel(0,0);
 					vel += steerForce;
 					vel += flowForce;
-					vel += avoidForce;
-					if(vectorLength(vel) > 0)
-						vel += wallsForce * 4.0f;
+//					vel += avoidForce;
+					vel += steering.avoid(curSteerObj, cases);
+					vel += steering.seperate(curSteerObj, steering.objects);
+//					vel += steering.align(curSteerObj, steering.objects);
+//					vel += steering.cohesion(curSteerObj, steering.objects);
 
-					vel = steering.limit(vel, unit.speed);
+//					vel += steering.flock(curSteerObj, steering.objects);
+//					if(vectorLength(vel) > 0)
+//						vel += wallsForce * 0.5f;
+
+//					vel = steering.limit(vel, unit.speed);
 
 
 
@@ -426,16 +371,20 @@ public:
 private:
 	void calculateSteeringObjects(Steering &steering, EntityID currentEnt, int x, int y) {
 		steering.objects.clear();
-//		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt((x - STEERING_RADIUS) * 32.0f, (y - STEERING_RADIUS) * 32.0f, STEERING_RADIUS * 2.0f * 32.0f, STEERING_RADIUS * 2.0f * 32.0f);
-		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
+		float getRadius = 2;
+//		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
+		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt((x - getRadius * 0.5f) * 32.0f, (y - getRadius * 0.5f) * 32.0f, getRadius * 32.0f, getRadius * 32.0f);
+		if(quadObjs.size() > 0) {
+//		std::cout << "PathfindingSystem: got "<<quadObjs.size()<< " quadtree objects"<<std::endl;
 		for (QuadtreeObject &quadObj : quadObjs) {
 			if (quadObj.entity != currentEnt) {
 //				std::cout << "CALC STEERING FOUND " << quadObj.entity << " at " << quadObj.x << "x" << quadObj.y << std::endl;
 				Tile &tile = this->vault->registry.get<Tile>(quadObj.entity);
 				Unit &unit = this->vault->registry.get<Unit>(quadObj.entity);
-				steering.objects.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, 0.1f});
+				steering.objects.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, 1.0f});
 			}
 		}
+	}
 
 //		if(steering.objects.size() > 0)
 //			std::cout << "FOUND "<<steering.objects.size()<<" steering objects"<<std::endl;
