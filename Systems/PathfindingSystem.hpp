@@ -166,24 +166,24 @@ public:
 //				if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) { // avoid being stuck on buildings or decors
 				//} else
 				{
-					this->calculateSteeringObjects(steering, entity, tile.pos.x, tile.pos.y);
+					std::vector<SteeringObject> surroundingObjects = this->getSurroundingSteeringObjects(entity, tile.pos.x, tile.pos.y);
 
 					sf::Vector2f steerForce(0, 0);
-/*
-					sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
-					bool nobodyMove = true;
-					for (auto &mo : steering.objects) {
-						if (mo.velocity != sf::Vector2f(0, 0))
-							nobodyMove = false;
-					}
-					if (nobodyMove && unit.velocity == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state == "move")) {
-						if (round(tile.ppos) != round(cpPos)) {
-							steerForce = steering.seek(curSteerObj, cpPos);
-							tile.view = this->getDirection(sf::Vector2i(normalize(steerForce) * 4.0f));
-							tile.state = "move";
-						}
-					}
-*/
+					/*
+										sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
+										bool nobodyMove = true;
+										for (auto &mo : steering.objects) {
+											if (mo.velocity != sf::Vector2f(0, 0))
+												nobodyMove = false;
+										}
+										if (nobodyMove && unit.velocity == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state == "move")) {
+											if (round(tile.ppos) != round(cpPos)) {
+												steerForce = steering.seek(curSteerObj, cpPos);
+												tile.view = this->getDirection(sf::Vector2i(normalize(steerForce) * 4.0f));
+												tile.state = "move";
+											}
+										}
+					*/
 					int casesSight = 1;
 
 					std::vector<sf::Vector2f> cases;
@@ -204,7 +204,7 @@ public:
 					accel += steering.followFlowField(curSteerObj, unit.direction);
 //					vel += avoidForce;
 					accel += steering.avoid(curSteerObj, cases);
-					accel += steering.separate(curSteerObj, steering.objects);
+					accel += steering.separate(curSteerObj, surroundingObjects);
 //					vel += steering.align(curSteerObj, steering.objects);
 //					vel += steering.cohesion(curSteerObj, steering.objects);
 
@@ -363,10 +363,9 @@ public:
 	}
 
 private:
-	void calculateSteeringObjects(Steering &steering, EntityID currentEnt, int x, int y) {
-		steering.objects.clear();
+	std::vector<SteeringObject> getSurroundingSteeringObjects(EntityID currentEnt, int x, int y) {
+		std::vector<SteeringObject> steerObjs;
 		float getRadius = 2;
-//		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt(x * 32.0f + 16.0f, y * 32.0f + 16.0f);
 		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt((x - getRadius * 0.5f) * 32.0f, (y - getRadius * 0.5f) * 32.0f, getRadius * 32.0f, getRadius * 32.0f);
 		if (quadObjs.size() > 0) {
 //		std::cout << "PathfindingSystem: got "<<quadObjs.size()<< " quadtree objects"<<std::endl;
@@ -375,53 +374,11 @@ private:
 //				std::cout << "CALC STEERING FOUND " << quadObj.entity << " at " << quadObj.x << "x" << quadObj.y << std::endl;
 					Tile &tile = this->vault->registry.get<Tile>(quadObj.entity);
 					Unit &unit = this->vault->registry.get<Unit>(quadObj.entity);
-					steering.objects.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, 0.5f});
+					steerObjs.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, 0.5f});
 				}
 			}
 		}
-
-//		if(steering.objects.size() > 0)
-//			std::cout << "FOUND "<<steering.objects.size()<<" steering objects"<<std::endl;
-		/*
-				for (int cx = x - STEERING_RADIUS; cx < x + STEERING_RADIUS * 2; ++cx) {
-					for (int cy = y - STEERING_RADIUS; cy < y + STEERING_RADIUS * 2; ++cy) {
-						if (this->map->bound(cx, cy)) {
-							if (!this->map->pathAvailable(cx, cy)) {
-								sf::Vector2f ppos = sf::Vector2f(cx, cy) * 32.0f;
-								ppos.x += 16.0f;
-								ppos.y += 16.0f;
-								steering.objects.push_back(SteeringObject{0, ppos, sf::Vector2f(0, 0), 0.0f,0.1f});
-							}
-						}
-					}
-				}
-				*/
+		return steerObjs;
 	}
-	/*
-		void calculateSteeringObjects(Steering &steering, EntityID currentEnt, int x, int y) {
-			steering.objects.clear();
-			for (int cx = x - STEERING_RADIUS; cx < x + STEERING_RADIUS * 2; ++cx) {
-				for (int cy = y - STEERING_RADIUS; cy < y + STEERING_RADIUS * 2; ++cy) {
-					if (this->map->bound(cx, cy)) {
-						EntityID ent = this->map->objs.get(cx, cy);
-						if (ent && ent != currentEnt) {
-							Tile &tile = this->vault->registry.get<Tile>(ent);
-							if (this->vault->registry.has<Unit>(ent)) {
-								Unit &unit = this->vault->registry.get<Unit>(ent);
-	//							if(unit.velocity.x > 0 || unit.velocity.y > 0)
-								steering.objects.push_back(SteeringObject{ent, tile.ppos, unit.velocity, (float)unit.speed * 0.5f});
-							}
-						}
 
-						if (!this->map->pathAvailable(cx, cy)) {
-							sf::Vector2f ppos = sf::Vector2f(cx, cy) * 32.0f;
-							ppos.x+=16.0f;
-							ppos.y+=16.0f;
-							steering.objects.push_back(SteeringObject{0, ppos, sf::Vector2f(0, 0), 0.0f});
-						}
-					}
-				}
-			}
-		}
-	*/
 };

@@ -16,34 +16,6 @@ struct SteeringObject {
 
 class Steering {
 public:
-	std::vector<SteeringObject> objects;
-
-
-	SteeringObject *findMostThreateningObject(SteeringObject currentObject) {
-		SteeringObject *threatening = nullptr;
-		float distance = std::numeric_limits<float>::max();
-
-		for (auto &mo : objects) {
-			float ndistance = length(mo.pos - currentObject.pos);
-
-//			sf::Vector2f velocity = currentObject.velocity - mo.velocity;
-			sf::Vector2f velocity = currentObject.velocity;
-
-//			float dynLen = length(currentObject.velocity) / currentObject.maxSpeed;
-//			sf::Vector2f ahead = currentObject.pos + normalize(velocity) * dynLen;
-//			sf::Vector2f ahead2 = currentObject.pos + normalize(velocity) * dynLen * 0.5f;
-
-			sf::Vector2f ahead = currentObject.pos + normalize(velocity) * MAX_SEE_AHEAD;
-			sf::Vector2f ahead2 = currentObject.pos + normalize(velocity) * MAX_SEE_AHEAD * 0.5f;
-
-			bool collision = length(mo.pos - ahead) <= OBJ_RADIUS || length(mo.pos - ahead2) <= OBJ_RADIUS || length(mo.pos - currentObject.pos) <= OBJ_RADIUS;
-			if (collision && ndistance < distance) {
-				distance = ndistance;
-				threatening = &mo;
-			}
-		}
-		return threatening;
-	}
 
 	sf::Vector2f seek(SteeringObject currentObject, sf::Vector2f dpos) {
 		sf::Vector2f steer = normalize(sf::Vector2f(dpos - currentObject.pos)) * currentObject.maxSpeed;
@@ -215,57 +187,6 @@ public:
 		fv += this->align(currentObject, others);
 		fv += this->cohesion(currentObject, others);
 		return fv;
-	}
-
-
-
-	sf::Vector2f collisionAvoidance(SteeringObject currentObject) {
-		sf::Vector2f avoidance;
-
-		SteeringObject *mostThreatening = this->findMostThreateningObject(currentObject);
-		if (mostThreatening) {
-//			sf::Vector2f velocity = currentObject.velocity - mostThreatening->velocity;
-			sf::Vector2f velocity = currentObject.velocity;
-
-//			float dynLen = length(currentObject.velocity) / currentObject.maxSpeed;
-//			sf::Vector2f ahead = currentObject.pos + normalize(velocity) * dynLen;
-
-			sf::Vector2f ahead = currentObject.pos + normalize(velocity) * MAX_SEE_AHEAD;
-
-			avoidance = ahead - mostThreatening->pos;
-
-// 			float af = 1.0f;
-			float af = length(velocity);
-//			float af = currentObject.maxSpeed;
-			avoidance = normalize(avoidance) * af * MAX_AVOID_FORCE;
-
-#ifdef STEERING_DEBUG
-			std::cout << "Steering: avoid " << currentObject.entity << " threatened by " << mostThreatening->entity << " " << avoidance << std::endl;
-#endif
-
-			/*
-						if (length(currentObject.velocity + avoidance) < af * MAX_AVOID_FORCE) { // take a perpendicular vector if forces avoid movement
-
-							float x = avoidance.x;
-							float y = avoidance.y;
-							avoidance.x = -y;
-							avoidance.y = x;
-			#ifdef STEERING_DEBUG
-							std::cout << "Steering: avoid " << currentObject.entity << " rotate by 90 " << mostThreatening->entity << " " << avoidance.x << "x" << avoidance.y << std::endl;
-			#endif
-
-						}
-
-						*/
-
-		} else {
-#ifdef STEERING_DEBUG
-//		std::cout << "Steering: avoid " << currentObject.entity << " no threatening" << std::endl;
-#endif
-			avoidance = sf::Vector2f(0, 0);
-		}
-
-		return avoidance;
 	}
 
 
