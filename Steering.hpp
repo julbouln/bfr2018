@@ -27,6 +27,38 @@ public:
 		return limit(steer, currentObject.maxForce);
 	}
 
+	sf::Vector2f seek(SteeringObject currentObject, sf::Vector2f dpos, float speed) {
+		sf::Vector2f steer = normalize(sf::Vector2f(dpos - currentObject.pos)) * speed;
+#ifdef STEERING_DEBUG
+		if (steer != sf::Vector2f(0, 0))
+			std::cout << "Steering: seek " << currentObject.entity << " " << steer << std::endl;
+#endif
+		steer -= currentObject.velocity;
+		return limit(steer, currentObject.maxForce);
+	}
+
+
+
+	sf::Vector2f arrive(SteeringObject currentObject, sf::Vector2f target) {
+		float range = 24.0f;
+		sf::Vector2f steer = target - currentObject.pos;
+
+		float d = length(steer);
+		steer = normalize(steer);
+
+		if (d < range) {
+			float m = (currentObject.maxSpeed / range) * d;
+			steer *= m;
+		} else {
+			steer *= currentObject.maxSpeed;
+		}
+
+		steer -= currentObject.velocity;
+		return limit(steer, currentObject.maxForce);
+	}
+
+
+
 	sf::Vector2f flee(SteeringObject currentObject, sf::Vector2f dpos) {
 		sf::Vector2f steer = normalize(sf::Vector2f(currentObject.pos - dpos)) * currentObject.maxSpeed;
 #ifdef STEERING_DEBUG
@@ -80,7 +112,7 @@ public:
 
 	// same than separate ?
 	sf::Vector2f avoid(SteeringObject currentObject, std::vector<sf::Vector2f> cases) {
-		float separation = 24.0f;
+		float separation = 48.0f;
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		sf::Vector2f pos = currentObject.pos;
@@ -101,18 +133,19 @@ public:
 
 			steer -= currentObject.velocity;
 			steer = limit(steer, currentObject.maxForce);
+			return steer;
+		} else {
+			return sf::Vector2f(0, 0);
 		}
-
-		return steer;
 	}
 
 	sf::Vector2f separate(SteeringObject currentObject, std::vector<SteeringObject> &others) {
-		float desiredseparation = 32.0f;
+		float separation = 32.0f;
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		for (SteeringObject &other : others) {
 			float d = length(currentObject.pos - other.pos);
-			if ((d > 0) && (d < desiredseparation)) {
+			if ((d > 0) && (d < separation)) {
 				sf::Vector2f diff = normalize(currentObject.pos - other.pos) / d;
 
 				steer += diff;
@@ -135,23 +168,23 @@ public:
 
 	sf::Vector2f cohesion(SteeringObject currentObject, std::vector<SteeringObject> &others) {
 		float neighbordist = 32.0f;
-		sf::Vector2f sum(0, 0);
+		sf::Vector2f steer(0, 0);
 		int count = 0;
 		for (SteeringObject &other : others) {
 			float d = length(currentObject.pos - other.pos);
 			if ((d > 0) && (d < neighbordist)) {
 
-				sum += other.pos;
+				steer += other.pos;
 				count++;
 			}
 		}
 		if (count > 0) {
-			sum /= (float)count;
+			steer /= (float)count;
 
-			sum -= currentObject.velocity;
-			sum = limit(sum, currentObject.maxForce);
+			steer -= currentObject.velocity;
+			steer = limit(steer, currentObject.maxForce);
 
-			return seek(currentObject, sum);
+			return seek(currentObject, steer);
 		} else {
 			return sf::Vector2f(0, 0);
 		}
@@ -159,23 +192,23 @@ public:
 
 	sf::Vector2f align (SteeringObject currentObject, std::vector<SteeringObject> &others) {
 		float neighbordist = 32.0f;
-		sf::Vector2f sum(0, 0);
+		sf::Vector2f steer(0, 0);
 		int count = 0;
 		for (SteeringObject &other : others) {
 			float d = length(currentObject.pos - other.pos);
 			if ((d > 0) && (d < neighbordist)) {
-				sum += other.velocity;
+				steer += other.velocity;
 			}
 		}
 		if (count > 0) {
-			sum /= (float)count;
-			sum = normalize(sum);
-			sum *= currentObject.maxSpeed;
+			steer /= (float)count;
+			steer = normalize(steer);
+			steer *= currentObject.maxSpeed;
 
-			sum -= currentObject.velocity;
-			sum = limit(sum, currentObject.maxForce);
+			steer -= currentObject.velocity;
+			steer = limit(steer, currentObject.maxForce);
 
-			return sum;
+			return steer;
 		} else {
 			return sf::Vector2f(0, 0);
 		}
@@ -188,6 +221,5 @@ public:
 		fv += this->cohesion(currentObject, others);
 		return fv;
 	}
-
 
 };
