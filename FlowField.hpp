@@ -478,18 +478,24 @@ public:
 			sf::Vector2i offset = this->offset(cpos);
 			sf::Vector2i cgpos = cpos - offset;
 
+
+			sf::Vector2i ndpos = dest;
+			ndpos = this->bestFollowingPathPoint(cpos);
+
 			sf::IntRect ffRect = sf::IntRect(offset.x, offset.y, PER_SECTOR, PER_SECTOR);
+//			sf::IntRect ffRect = rect(cpos, ndpos);
+
+//			std::cout << "ffRect "<<ffRect.left<<"x"<<ffRect.top<<" "<<ffRect.width<<"x"<<ffRect.height<<std::endl;
+//			sf::IntRect(offset.x, offset.y, PER_SECTOR, PER_SECTOR);
 
 			this->currentFlowField.setGrid(pathFind->map, ffRect);
 
-			sf::Vector2i ndpos = dest;
 
 			if (ffRect.contains(dest)) {
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath dest in sector " << dest << std::endl;
 
 #endif
-				ndpos = this->bestFollowingPathPoint(cpos);
 			} else {
 #ifdef FLOWFIELDS_DEBUG
 				std::cout << "FlowFieldPath dest out of sector " << dest << " (" << pathPoints.size() << ")" << std::endl;
@@ -497,7 +503,7 @@ public:
 				if (lastCalcDest < 4 && ffRect.contains(ffDest)) {
 					ndpos = ffDest;
 				} else {
-					ndpos = this->bestFollowingPathPoint(cpos);
+//					ndpos = this->bestFollowingPathPoint(cpos);
 					lastCalcDest = 0;
 				}
 

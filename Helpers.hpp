@@ -93,3 +93,25 @@ sf::Vector2<T> limit(const sf::Vector2<T> &v, const T &max) {
 		return v;
 	}
 }
+
+template <typename T>
+sf::Rect<T> rect(const sf::Vector2<T> &p1, const sf::Vector2<T> &p2) {
+	sf::Rect<T> r;
+	
+	if(p1.x < p2.x) {
+		r.left = p1.x;
+		r.width = p2.x - p1.x;
+	} else {
+		r.left = p2.x;
+		r.width = p1.x - p2.x;
+	}
+	if(p1.y < p2.y) {
+		r.top = p1.y;
+		r.height = p2.y - p1.y;
+	} else {
+		r.top = p2.y;
+		r.height = p1.y - p2.y;
+	}
+
+	return r;
+}

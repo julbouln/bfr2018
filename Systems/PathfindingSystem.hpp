@@ -207,22 +207,24 @@ public:
 				sf::Vector2f accel(0, 0);
 				accel += steerForce;
 				if(tile.pos == unit.destpos) {
-				accel += steering.arrive(curSteerObj, center);
+				accel += steering.arrive(curSteerObj, center) * 0.5f;
 //					accel += steering.seek(curSteerObj, center, 1.0f);
 				} else {
 				accel += steering.followFlowField(curSteerObj, unit.direction);
 				}
 //					vel += avoidForce;
 				accel += steering.avoid(curSteerObj, cases);
-				accel += steering.separate(curSteerObj, surroundingObjects);
+				accel += steering.separate(curSteerObj, surroundingObjects) * 1.5f;
 //					vel += steering.align(curSteerObj, steering.objects);
 //					vel += steering.cohesion(curSteerObj, steering.objects);
 
 //					vel += steering.flock(curSteerObj, steering.objects);
 
 
+//				accel += steering.queue(curSteerObj, surroundingObjects, accel);
 
 //					std::cout << "UNIT ACCEL" << entity << " "<<accel << std::endl;
+
 
 //					std::cout << "UNIT VELOCITY (before)" << entity << " "<<unit.velocity << std::endl;
 				unit.velocity = unit.velocity + accel;
@@ -236,7 +238,8 @@ public:
 
 
 				if (tile.state != "attack") {
-					if (length(unit.velocity) < 0.5f) {
+					if (length(unit.velocity) < 0.1f) {
+						unit.velocity = sf::Vector2f(0,0);
 						this->changeState(entity, "idle");
 					} else {
 						tile.view = this->getDirection(sf::Vector2i(normalize(unit.velocity) * 16.0f));
