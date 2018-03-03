@@ -141,12 +141,13 @@ struct Unit {
 	sf::Vector2i targetPos;
 
 	sf::Vector2i destpos;
-	sf::Vector2i nextpos;
+	sf::Vector2i nextpos; // deprecate
 	sf::Vector2f velocity;
 	sf::Vector2i direction;
 
 	sf::Vector2i pathPos; // map pos
 	bool pathUpdate;
+	bool commanded;
 
 	unsigned int nopath;
 	unsigned int reallyNopath;
@@ -167,6 +168,7 @@ struct Unit {
 		this->nopath = 0;
 		this->reallyNopath = 0;
 		this->canDestroyResources = false;
+		this->commanded = false;
 		this->pathUpdate = false;
 	}
 };

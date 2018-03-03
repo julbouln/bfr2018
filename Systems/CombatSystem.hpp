@@ -130,7 +130,7 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-				if (tile.pos == unit.nextpos)
+//				if (tile.pos == unit.nextpos)
 				{	// unit must be arrived at a position
 					int dist = 1;
 					int maxDist = 1;
@@ -142,8 +142,8 @@ public:
 					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 					GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
-
+//					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
+					bool inRange = (length(tile.ppos - destTile.ppos) >= (dist - 1) * 48.0f && length(tile.ppos - destTile.ppos) <= (maxDist) * 48.0f) || length(tile.ppos - destTile.ppos) <= 48.0f;
 					if (inRange) {
 						int attackPower = unit.attack1.power;
 
@@ -185,30 +185,32 @@ public:
 							unit.destpos = tile.pos;
 						} else {
 							// start/continue attacking
-							tile.view = this->getDirection(tile.pos, destTile.pos);
+//							tile.view = this->getDirection(tile.pos, destTile.pos);
 							this->changeState(entity, "attack");
+							unit.destpos = tile.pos;
 						}
 
 					} else {
-						sf::Vector2i dpos = destTile.pos;
-						dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
+						if (unit.destpos == tile.pos) {
+							sf::Vector2i dpos = destTile.pos;
+							dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
 //						sf::Vector2i dpos = this->revFirstAvailablePosition(destTile.pos, maxDist, dist);
-						if (dpos == destTile.pos) {
+							if (dpos == destTile.pos) {
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: CANNOT FIND NEAREST " << entity << " " << dpos.x << "x" << dpos.y << std::endl;
+								std::cout << "CombatSystem: CANNOT FIND NEAREST " << entity << " " << dpos.x << "x" << dpos.y << std::endl;
 #endif
-							dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
+								dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
+							}
+#ifdef COMBAT_DEBUG
+							std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
+#endif
+							unit.targetPos = dpos;
+							this->goTo(unit, dpos);
+
+#ifdef COMBAT_DEBUG
+							std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+#endif
 						}
-#ifdef COMBAT_DEBUG
-						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
-#endif
-						unit.targetPos = dpos;
-						this->goTo(unit, dpos);
-
-#ifdef COMBAT_DEBUG
-						std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
-#endif
-
 					}
 				}
 			} else {

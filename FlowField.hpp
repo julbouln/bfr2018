@@ -120,15 +120,15 @@ public:
 		for (auto &mo : movingObjects) {
 			sf::Vector2f distance = (mo.pos - currentMovingObject.pos);
 			sf::Vector2f vel = mo.velocity - currentMovingObject.velocity;
-			sf::Vector2f d(distance.x/(vel.x+0.0001f),distance.y/(vel.y+0.0001f));
+			sf::Vector2f d(distance.x / (vel.x + 0.0001f), distance.y / (vel.y + 0.0001f));
 			float collisionPrevision = length(d);
 
-			sf::Vector2i p = sf::Vector2i(mo.pos/32.0f);
+			sf::Vector2i p = sf::Vector2i(mo.pos / 32.0f);
 
 //			if (distance < 32) {
 //				std::cout << "mov " << currentMovingObject.pos.x << "x" << currentMovingObject.pos.y << " " << mo.pos.x << "x" << mo.pos.y << std::endl;
 //			}
-std::cout << "mov "<<p.x<<"x"<<p.y<< " "<< collisionPrevision << " " << distance.x << "x" << distance.y << " " << vel.x << "x" << vel.y << std::endl;
+			std::cout << "mov " << p.x << "x" << p.y << " " << collisionPrevision << " " << distance.x << "x" << distance.y << " " << vel.x << "x" << vel.y << std::endl;
 
 		}
 	}
@@ -319,18 +319,12 @@ public:
 	}
 };
 
-enum class FlowFieldMode {
-	Pathfinding,
-	Steering
-};
-
 class FlowFieldPath {
 	FlowFieldPathFind *pathFind;
 	std::list<sf::Vector2i> traversed;
 	std::list<sf::Vector2i> pathPoints;
 	sf::Vector2i cur;
 	sf::Vector2i dest;
-	FlowFieldMode mode;
 	bool found;
 	FlowField currentFlowField;
 
@@ -342,7 +336,6 @@ public:
 		this->lastCalcDest = 4;
 		this->cur = sf::Vector2i(-1, -1);
 		this->dest = sf::Vector2i(-1, -1);
-		this->mode = FlowFieldMode::Pathfinding;
 	}
 
 	FlowField *getCurrentFlowField() {
@@ -385,7 +378,7 @@ public:
 		for (sf::Vector2i np : this->pathPoints) {
 			if (np.x >= offset.x && np.x < offset.x + PER_SECTOR &&
 			        np.y >= offset.y && np.y < offset.y + PER_SECTOR &&
-			        np != cpos && this->pathFind->map->pathAvailable(np.x, np.y)) {
+			        np != cpos) {// && this->pathFind->map->pathAvailable(np.x, np.y)) {
 				if (pcnt > bcnt) {
 					bcnt = pcnt;
 					point = np;
@@ -473,79 +466,62 @@ public:
 
 		sf::Vector2i npos(cx, cy);
 
-		if (this->mode == FlowFieldMode::Pathfinding) {
 
-			sf::Vector2i offset = this->offset(cpos);
-			sf::Vector2i cgpos = cpos - offset;
+		sf::Vector2i offset = this->offset(cpos);
+		sf::Vector2i cgpos = cpos - offset;
 
 
-			sf::Vector2i ndpos = dest;
-			ndpos = this->bestFollowingPathPoint(cpos);
+		sf::Vector2i ndpos = dest;
 
-			sf::IntRect ffRect = sf::IntRect(offset.x, offset.y, PER_SECTOR, PER_SECTOR);
+		sf::IntRect ffRect = sf::IntRect(offset.x, offset.y, PER_SECTOR, PER_SECTOR);
 //			sf::IntRect ffRect = rect(cpos, ndpos);
 
-//			std::cout << "ffRect "<<ffRect.left<<"x"<<ffRect.top<<" "<<ffRect.width<<"x"<<ffRect.height<<std::endl;
-//			sf::IntRect(offset.x, offset.y, PER_SECTOR, PER_SECTOR);
-
-			this->currentFlowField.setGrid(pathFind->map, ffRect);
+		this->currentFlowField.setGrid(pathFind->map, ffRect);
 
 
-			if (ffRect.contains(dest)) {
+		if (ffRect.contains(dest)) {
+			ndpos = dest;
 #ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath dest in sector " << dest << std::endl;
-
-#endif
-			} else {
-#ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath dest out of sector " << dest << " (" << pathPoints.size() << ")" << std::endl;
-#endif
-				if (lastCalcDest < 4 && ffRect.contains(ffDest)) {
-					ndpos = ffDest;
-				} else {
-//					ndpos = this->bestFollowingPathPoint(cpos);
-					lastCalcDest = 0;
-				}
-
-
-				lastCalcDest++;
-//				if (!this->pathFind->map->pathAvailable(ndpos.x, ndpos.y)) {
-//					ndpos = this->firstFreePos(cpos, ndpos, 1, 2);
-//				}
-#ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath best local dest " << ndpos << std::endl;
-#endif
-			}
-
-//			this->currentFlowField.getMovingObjectsForce(cpos.x,cpos.y,ndpos.x,ndpos.y);
-
-//			sf::Vector2f avoid = this->currentFlowField.collisionAvoidance();
-//			if(avoid.x != 0 || avoid.y != 0) {
-//				std::cout << "AVOID "<<avoid.x<<"x"<<avoid.y<<std::endl;
-//			}
-
-			ffDest = ndpos;
-			ndpos -= offset;
-			this->currentFlowField.build(ndpos);
-
-			if (this->currentFlowField.found(cgpos)) {
-				npos = this->currentFlowField.next(cgpos);
-				npos += offset;
-			} else {
-				npos = cpos;
-
-#ifdef FLOWFIELDS_DEBUG
-				std::cout << "FlowFieldPath cannot found next pos " << cpos << " " << dest << " " << npos << std::endl;
-#endif
-			}
-
-#ifdef FLOWFIELDS_DEBUG
-			std::cout << "FlowFieldPath nextpos " << cpos << " -> " << npos << " " << offset << std::endl;
+			std::cout << "FlowFieldPath dest in sector " << dest << std::endl;
 #endif
 		} else {
-			sf::Vector2i steer = sf::Vector2i(trunc(this->seek(cpos, dest)));
-			npos = cpos + steer;
+			ndpos = this->bestFollowingPathPoint(cpos);
+
+#ifdef FLOWFIELDS_DEBUG
+			std::cout << "FlowFieldPath dest out of sector " << dest << " (" << pathPoints.size() << ")" << std::endl;
+#endif
+			if (lastCalcDest < 4 && ffRect.contains(ffDest)) {
+				ndpos = ffDest;
+			} else {
+				lastCalcDest = 0;
+			}
+
+
+			lastCalcDest++;
+#ifdef FLOWFIELDS_DEBUG
+			std::cout << "FlowFieldPath best local dest " << ndpos << std::endl;
+#endif
 		}
+
+		ffDest = ndpos;
+		ndpos -= offset;
+		this->currentFlowField.build(ndpos);
+
+		if (this->currentFlowField.found(cgpos)) {
+			npos = this->currentFlowField.next(cgpos);
+			npos += offset;
+		} else {
+			npos = cpos;
+
+#ifdef FLOWFIELDS_DEBUG
+			std::cout << "FlowFieldPath cannot found next pos " << cpos << " " << dest << " " << npos << std::endl;
+#endif
+		}
+
+#ifdef FLOWFIELDS_DEBUG
+		std::cout << "FlowFieldPath nextpos " << cpos << " -> " << npos << " " << offset << std::endl;
+#endif
+
 
 		return npos;
 	}
@@ -561,29 +537,14 @@ public:
 
 			this->lastCalcDest = 4;
 
-			if (length(dest - cur) < 1.5) {
-				pathPoints.clear();
-				this->mode = FlowFieldMode::Steering;
-				this->ffDest = dest;
-				this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
-			} else {
-//				if (length(oldDest - newDest) < 5.0) {
-//					this->found = this->pathFind->map->pathAvailable(dest.x, dest.y);
-//				} else
-				{
-					this->mode = FlowFieldMode::Pathfinding;
-					this->ffDest = dest;
+			this->ffDest = dest;
 
+			JPS::PathVector path;
+			this->found = pathFind->find(path, sx, sy, dx, dy);
 
-					JPS::PathVector path;
-					this->found = pathFind->find(path, sx, sy, dx, dy);
-
-					if (this->found) {
-						// find border pos
-						this->initPath(path);
-					}
-				}
-
+			if (this->found) {
+				// find border pos
+				this->initPath(path);
 			}
 		} else {
 			// check if destination position is still available

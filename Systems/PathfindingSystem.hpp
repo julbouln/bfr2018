@@ -8,7 +8,12 @@
 #include "Steering.hpp"
 
 #define PATHFINDING_MAX_NO_PATH 8
-#define STEERING_RADIUS 3
+#define OBSTACLE_RADIUS 1
+#define SURROUNDING_RADIUS 2
+
+#define MAX_FORCE 0.2f
+
+#define MIN_VELOCITY 0.01f
 
 class PathfindingSystem : public GameSystem {
 #ifndef PATHFINDING_FLOWFIELD
@@ -154,11 +159,7 @@ public:
 			{
 				tile.pos = sf::Vector2i(trunc(tile.ppos / 32.0f)); // trunc map pos
 
-//				if (tile.pos == unit.destpos) {
-//					unit.velocity = sf::Vector2f(0, 0);
-//				}
-
-				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, 0.5f};
+				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, MAX_FORCE};
 
 				if (tile.pos != unit.pathPos) {
 					this->map->objs.set(unit.pathPos.x, unit.pathPos.y, 0); // mark pos immediatly
@@ -168,33 +169,17 @@ public:
 					unit.pathPos = tile.pos;
 				}
 
+				if (!unit.commanded) {
+					unit.destpos = tile.pos;
+				}
+
 				std::vector<SteeringObject> surroundingObjects = this->getSurroundingSteeringObjects(entity, tile.pos.x, tile.pos.y);
 
-				sf::Vector2f steerForce(0, 0);
-				/*
-									sf::Vector2f cpPos = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
-									bool nobodyMove = true;
-									for (auto &mo : steering.objects) {
-										if (mo.velocity != sf::Vector2f(0, 0))
-											nobodyMove = false;
-									}
-									if (nobodyMove && unit.velocity == sf::Vector2f(0, 0) && (tile.state == "idle" || tile.state == "move")) {
-										if (round(tile.ppos) != round(cpPos)) {
-											steerForce = steering.seek(curSteerObj, cpPos);
-											tile.view = this->getDirection(sf::Vector2i(normalize(steerForce) * 4.0f));
-											tile.state = "move";
-										}
-									}
-				*/
-				int casesSight = 1;
-
 				std::vector<sf::Vector2f> cases;
-				for (int cx = tile.pos.x - casesSight; cx <= tile.pos.x + casesSight; ++cx) {
-					for (int cy = tile.pos.y - casesSight; cy <= tile.pos.y + casesSight; ++cy) {
-						if (this->map->bound(cx, cy)) {
-							if (!this->map->pathAvailable(cx, cy)) {
-								cases.push_back(sf::Vector2f(cx * 32.0f, cy * 32.0f));
-							}
+				for (int cx = tile.pos.x - OBSTACLE_RADIUS; cx <= tile.pos.x + OBSTACLE_RADIUS; ++cx) {
+					for (int cy = tile.pos.y - OBSTACLE_RADIUS; cy <= tile.pos.y + OBSTACLE_RADIUS; ++cy) {
+						if (!this->map->bound(cx, cy) || !this->map->pathAvailable(cx, cy)) {
+							cases.push_back(sf::Vector2f(cx * 32.0f, cy * 32.0f));
 						}
 					}
 				}
@@ -202,19 +187,27 @@ public:
 				sf::Vector2i nextPos = tile.pos + unit.direction;
 				sf::Vector2f center = sf::Vector2f(nextPos) * 32.0f + 16.0f;
 
-//					sf::Vector2f wallsForce = steering.repulsionFromWalls(curSteerObj, cases);
-
 				sf::Vector2f accel(0, 0);
-				accel += steerForce;
-				if(tile.pos == unit.destpos) {
-				accel += steering.arrive(curSteerObj, center) * 0.5f;
-//					accel += steering.seek(curSteerObj, center, 1.0f);
-				} else {
-				accel += steering.followFlowField(curSteerObj, unit.direction);
+
+				// escape from obstacle
+				if (!this->map->pathAvailable(tile.pos.x, tile.pos.y)) {
+					sf::Vector2i bestNextPos = tile.pos;
+					sf::Vector2i curDestPos = unit.destpos;
+					curDestPos = unit.flowFieldPath.ffDest;
+					float distance = std::numeric_limits<float>::max();
+					for (sf::Vector2i &fp : this->vectorSurfaceExtended(tile.pos, 1)) {
+						if (this->map->pathAvailable(fp.x, fp.y)) {
+							if (length(fp - curDestPos) < distance) {
+								distance = length(fp - curDestPos);
+								bestNextPos = fp;
+							}
+						}
+					}
+					accel += steering.seek(curSteerObj, sf::Vector2f(bestNextPos * 32) + 16.0f) * 2.0f;
+					accel += steering.flee(curSteerObj, sf::Vector2f(tile.pos * 32) + 16.0f);
 				}
 //					vel += avoidForce;
-				accel += steering.avoid(curSteerObj, cases);
-				accel += steering.separate(curSteerObj, surroundingObjects) * 1.5f;
+				accel += steering.avoid(curSteerObj, cases) * 1.0f;
 //					vel += steering.align(curSteerObj, steering.objects);
 //					vel += steering.cohesion(curSteerObj, steering.objects);
 
@@ -227,23 +220,67 @@ public:
 
 
 //					std::cout << "UNIT VELOCITY (before)" << entity << " "<<unit.velocity << std::endl;
-				unit.velocity = unit.velocity + accel;
-				unit.velocity = limit(unit.velocity, curSteerObj.maxSpeed);
-//					std::cout << "UNIT VELOCITY (after)" << entity << " "<<unit.velocity << std::endl;
-				tile.ppos += unit.velocity;
 
 //					if (tile.state != "attack" && tile.ppos == cpPos) {
 //						tile.state = "idle";
 //					}
 
-
 				if (tile.state != "attack") {
-					if (length(unit.velocity) < 0.1f) {
-						unit.velocity = sf::Vector2f(0,0);
+					bool seekTarget = false;
+					if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+						Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
+						// if attacking and target is near, then seek it and avoid separate
+						if (length(ttile.ppos - tile.ppos) < 32.0f) {
+							seekTarget = true;
+							accel += steering.seek(curSteerObj, ttile.ppos);
+						}
+					}
+
+					if (!seekTarget) {
+						if (tile.pos == unit.destpos && surroundingObjects.size() == 0) {
+							accel += steering.arrive(curSteerObj, center) * 0.5f;
+//					accel += steering.seek(curSteerObj, center, 1.0f);
+						} else {
+							accel += steering.followFlowField(curSteerObj, unit.direction) * 1.5f;
+						}
+						accel += steering.separate(curSteerObj, surroundingObjects) * 3.0f;
+					}
+
+					// queue if other are already attacking
+					/*
+					for (SteeringObject &obj : surroundingObjects) {
+						Tile &stile = this->vault->registry.get<Tile>(obj.entity);
+						if (stile.state == "attack" && obj.entity != unit.targetEnt) {
+							accel += steering.queue(curSteerObj, surroundingObjects, accel);
+						}
+					}
+					*/
+
+					unit.velocity = unit.velocity + accel;
+					unit.velocity = limit(unit.velocity, curSteerObj.maxSpeed * MIN_VELOCITY, curSteerObj.maxSpeed);
+//					std::cout << "UNIT VELOCITY (after)" << entity << " "<<unit.velocity << std::endl;
+					tile.ppos += unit.velocity;
+
+#ifdef PATHFINDING_DEBUG
+					std::cout << "Pathfinding: " << entity << " steering accel:" << accel << " velocity:" << unit.velocity << " surrounding:" << surroundingObjects.size() << std::endl;
+#endif
+
+					float normVelLen = length(normalize(unit.velocity));
+					if (normVelLen < 0.2f) {
+						unit.velocity = sf::Vector2f(0, 0);
 						this->changeState(entity, "idle");
 					} else {
-						tile.view = this->getDirection(sf::Vector2i(normalize(unit.velocity) * 16.0f));
+//						if (length(unit.velocity) * 1.5f >= unit.speed)
+						if (normVelLen >= 1.0f)
+							tile.view = this->getDirection(sf::Vector2i(normalize(unit.velocity) * 16.0f));
+
 						this->changeState(entity, "move");
+					}
+				} else {
+					// face target
+					if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+						Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
+						tile.view = this->getDirection(sf::Vector2i(ttile.ppos - tile.ppos));
 					}
 				}
 			}
@@ -256,6 +293,7 @@ public:
 		auto view = this->vault->registry.persistent<Tile, GameObject, Unit>();
 
 
+#if 0
 		// avoid multiple unit at the same pos
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
@@ -291,6 +329,7 @@ public:
 				}
 			}
 		}
+#endif
 
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
@@ -324,7 +363,7 @@ public:
 #endif
 
 #ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << entity << " at " << cpos " next position " << npos << "(" << (npos - cpos) << ")" << std::endl;
+						std::cout << "Pathfinding: " << entity << " at " << cpos << " next position " << npos << "(" << (npos - cpos) << ")" << std::endl;
 #endif
 
 //						if (this->checkAround(entity, npos)) {
@@ -360,7 +399,9 @@ public:
 						if (unit.reallyNopath > PATHFINDING_MAX_NO_PATH * 4) {
 							unit.nopath = 0;
 							unit.reallyNopath = 0;
-							this->stop(unit);
+//							this->stop(unit);
+							unit.destpos = tile.pos;
+							unit.commanded = false;
 						}
 
 						if (unit.nopath > PATHFINDING_MAX_NO_PATH) {
@@ -379,6 +420,7 @@ public:
 #endif
 //					this->changeState(entity, "idle");
 					unit.direction = sf::Vector2i(0, 0);
+					unit.commanded = false;
 				}
 			}
 		}
@@ -387,8 +429,7 @@ public:
 private:
 	std::vector<SteeringObject> getSurroundingSteeringObjects(EntityID currentEnt, int x, int y) {
 		std::vector<SteeringObject> steerObjs;
-		float getRadius = 2;
-		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt((x - getRadius * 0.5f) * 32.0f, (y - getRadius * 0.5f) * 32.0f, getRadius * 32.0f, getRadius * 32.0f);
+		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt((x - SURROUNDING_RADIUS) * 32.0f, (y - SURROUNDING_RADIUS) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f);
 		if (quadObjs.size() > 0) {
 //		std::cout << "PathfindingSystem: got "<<quadObjs.size()<< " quadtree objects"<<std::endl;
 			for (QuadtreeObject &quadObj : quadObjs) {
@@ -396,7 +437,7 @@ private:
 //				std::cout << "CALC STEERING FOUND " << quadObj.entity << " at " << quadObj.x << "x" << quadObj.y << std::endl;
 					Tile &tile = this->vault->registry.get<Tile>(quadObj.entity);
 					Unit &unit = this->vault->registry.get<Unit>(quadObj.entity);
-					steerObjs.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, 0.5f});
+					steerObjs.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, MAX_FORCE});
 				}
 			}
 		}

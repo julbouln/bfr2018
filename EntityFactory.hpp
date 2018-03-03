@@ -521,6 +521,7 @@ public:
 
 		tile.pos = sf::Vector2i(x, y);
 		tile.ppos = this->caseToPixel(tile.pos);
+//		tile.ppos = sf::Vector2f(tile.pos) * 32.0f;
 
 		this->setColorSwapShader(registry, tile, playerEnt);
 

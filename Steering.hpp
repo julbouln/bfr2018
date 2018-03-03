@@ -6,11 +6,11 @@
 #define MAX_AVOID_FORCE 1.0f
 #define OBJ_RADIUS 20.0f
 
-#define MAX_QUEUE_AHEAD 32.0f
+#define MAX_QUEUE_AHEAD 16.0f
 #define MAX_QUEUE_RADIUS 16.0f
 
-#define AVOID_DIST 48.0f
-#define SEPARATION_DIST 24.0f
+#define AVOID_DIST 32.0f
+#define SEPARATION_DIST 32.0f
 #define COHESION_DIST 32.0f
 #define ALIGN_DIST 32.0f
 
@@ -79,6 +79,12 @@ public:
 	sf::Vector2f followFlowField(SteeringObject &currentObject, sf::Vector2i direction) {
 		sf::Vector2f steer = normalize(sf::Vector2f(direction)) * currentObject.maxSpeed;
 		steer -= currentObject.velocity;
+
+		#ifdef STEERING_DEBUG
+		if (steer != sf::Vector2f(0, 0))
+			std::cout << "Steering: followFlowField " << currentObject.entity << " " << steer << std::endl;
+#endif
+
 		return limit(steer, currentObject.maxForce);
 	}
 
@@ -125,11 +131,11 @@ public:
 		sf::Vector2f pos = currentObject.pos;
 		for (sf::Vector2f &c : cases)
 		{
+//			sf::Vector2f ahead = currentObject.pos + normalize(currentObject.velocity) * 24.0f;
+//			float d = length(ahead - c);
 			float d = length(currentObject.pos - c);
-			if ((d > 0) && (d < AVOID_DIST)) {
-				sf::Vector2f diff = normalize(currentObject.pos - c) / d;
-
-				steer += diff;
+			if (d <= 32.0f) {// || length(currentObject.pos - c) <= 24.0f) {
+				steer += normalize(currentObject.pos - c);
 				count++;
 			}
 		}
@@ -140,6 +146,12 @@ public:
 
 			steer -= currentObject.velocity;
 			steer = limit(steer, currentObject.maxForce);
+
+#ifdef STEERING_DEBUG
+		if (steer != sf::Vector2f(0, 0))
+			std::cout << "Steering: avoid " << currentObject.entity << " " << steer << std::endl;
+#endif
+
 			return steer;
 		} else {
 			return sf::Vector2f(0, 0);
@@ -151,7 +163,7 @@ public:
 		int count = 0;
 		for (SteeringObject &other : others) {
 			float d = length(currentObject.pos - other.pos);
-			if ((d > 0) && (d < SEPARATION_DIST)) {
+			if(d > 0.0f && d < SEPARATION_DIST) {
 				sf::Vector2f diff = normalize(currentObject.pos - other.pos) / d;
 
 				steer += diff;
@@ -165,6 +177,11 @@ public:
 
 			steer -= currentObject.velocity;
 			steer = limit(steer, currentObject.maxForce);
+
+#ifdef STEERING_DEBUG
+		if (steer != sf::Vector2f(0, 0))
+			std::cout << "Steering: separate " << currentObject.entity << " " << steer << std::endl;
+#endif
 
 			return steer;
 		} else {

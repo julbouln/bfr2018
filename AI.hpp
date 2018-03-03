@@ -333,7 +333,7 @@ public:
 
 				obj.mapped = true;
 				tile.pos = buildPos.front();
-				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+				tile.ppos = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
 				player.rootConstruction = 0;
 
 #ifdef AI_DEBUG

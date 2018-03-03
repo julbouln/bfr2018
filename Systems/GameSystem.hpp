@@ -456,6 +456,7 @@ public:
 			unit.destpos = this->firstAvailablePosition(destpos, 1, 16);
 
 		unit.pathUpdate = true;
+		unit.commanded = true;
 		unit.nopath = 0;
 	}
 

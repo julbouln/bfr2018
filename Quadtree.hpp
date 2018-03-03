@@ -25,7 +25,9 @@ public:
 
     inline bool     contains(float x, float y) const {return sf::FloatRect::contains(x,y);};
     inline bool     contains(float x, float y, float w, float h) const {return this->contains(x,y) && this->contains(x+w,y+h);};
-    inline bool     contains(QuadtreeObject &object) const {return this->contains(object.left,object.top,object.width,object.height);};
+    inline bool     contains(QuadtreeObject &object) const {return this->contains(object.left, object.top, object.width, object.height);};
+
+    inline bool     intersects(float x, float y, float w, float h) const {return sf::FloatRect::intersects(sf::FloatRect(x,y,w,h));};
 
 private:
 //    sf::FloatRect   rect;

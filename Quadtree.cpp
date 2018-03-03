@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Config.hpp"
 #include "Quadtree.hpp"
 
 Quadtree::Quadtree(float _x, float _y, float _width, float _height, int _level, int _maxLevel) :
@@ -27,7 +28,7 @@ Quadtree::Quadtree(float _x, float _y, float _width, float _height, int minRectW
     this->level = 0;
     this->maxLevel = 0;
     int calcWidth = _width;
-    while(calcWidth > minRectWidth) {
+    while (calcWidth > minRectWidth) {
         calcWidth = calcWidth * 0.5f;
         this->maxLevel++;
     }
@@ -57,6 +58,9 @@ Quadtree::~Quadtree() {
 }
 
 void Quadtree::add(QuadtreeObject object) {
+#ifdef QUADTREE_DEBUG
+    std::cout << "Quadtree: add " << object.entity << " " << object.left << "x" << object.top << " -> " << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
+#endif
     if (level == maxLevel)
         objects.push_back(object);
     else if (NW->contains(object))
@@ -96,13 +100,13 @@ std::vector<QuadtreeObject> Quadtree::getAt(float _x, float _y) {
         childReturnObjects = NW->getAt(_x, _y);
         returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
     }
-    
+
 //    std::cout << "Quadtree: get "<<returnObjects.size()<<std::endl;
     return returnObjects;
 }
 
 std::vector<QuadtreeObject> Quadtree::getAt(float _x, float _y, float _width, float _height) {
-if (level == maxLevel)
+    if (level == maxLevel)
         return objects;
 
     std::vector<QuadtreeObject> returnObjects, childReturnObjects;
@@ -110,24 +114,27 @@ if (level == maxLevel)
         returnObjects = objects;
     }
 
-    if (SE->contains(_x, _y, _width, _height)) {
-        childReturnObjects = SE->getAt(_x, _y);
+    if (SE->contains(_x,_y,_width,_height) || SE->intersects(_x, _y, _width, _height)) {
+        childReturnObjects = SE->getAt(_x, _y, _width, _height);
         returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
     }
-    if (NE->contains(_x, _y, _width, _height)) {
-        childReturnObjects = NE->getAt(_x, _y);
+    if (NE->contains(_x,_y,_width,_height) || NE->intersects(_x, _y, _width, _height)) {
+        childReturnObjects = NE->getAt(_x, _y, _width, _height);
         returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
     }
-    if (SW->contains(_x, _y, _width, _height)) {
-        childReturnObjects = SW->getAt(_x, _y);
+    if (SW->contains(_x,_y,_width,_height) || SW->intersects(_x, _y, _width, _height)) {
+        childReturnObjects = SW->getAt(_x, _y, _width, _height);
         returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
     }
-    if (NW->contains(_x, _y, _width, _height)) {
-        childReturnObjects = NW->getAt(_x, _y);
+    if (NW->contains(_x,_y,_width,_height) || NW->intersects(_x, _y, _width, _height)) {
+        childReturnObjects = NW->getAt(_x, _y, _width, _height);
         returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
     }
-    
-//    std::cout << "Quadtree: get "<<returnObjects.size()<<std::endl;
+
+#ifdef QUADTREE_DEBUG
+    std::cout << "Quadtree: getAt " << _x << "x" << _y << ":" << _width << "x" << _height << " : " << returnObjects.size() << " " << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
+#endif
+
     return returnObjects;
 }
 
