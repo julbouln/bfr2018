@@ -11,8 +11,6 @@
 #define OBSTACLE_RADIUS 1
 #define SURROUNDING_RADIUS 2
 
-#define MAX_FORCE 0.2f
-
 #define MIN_VELOCITY 0.01f
 
 class PathfindingSystem : public GameSystem {
@@ -22,6 +20,7 @@ class PathfindingSystem : public GameSystem {
 
 public:
 	FlowFieldPathFind flowFieldPathFind;
+	Steering<PathfindingObject> steering;
 
 	PathfindingSystem() {
 #ifndef PATHFINDING_FLOWFIELD
@@ -108,41 +107,12 @@ public:
 
 		for (EntityID entity : unitView) {
 			Tile &tile = unitView.get<Tile>(entity);
-			this->map->units->add(QuadtreeObject(entity, tile.ppos.x - 16.0f, tile.ppos.y - 16.0f, 32.0f, 32.0f));
+			Unit &unit = unitView.get<Unit>(entity);
+//			this->map->units->add(QuadtreeObject(entity, tile.ppos.x - 16.0f, tile.ppos.y - 16.0f, 32.0f, 32.0f));
+			this->map->units->add(PathfindingObject(entity, tile, unit));
 //			this->map->units->add(QuadtreeObject{entity, tile.ppos.x, tile.ppos.y, 32.0f, 32.0f});
 		}
 
-	}
-
-	bool checkAround(EntityID entity, sf::Vector2i npos) {
-		Tile &tile = this->vault->registry.get<Tile>(entity);
-
-		for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, 2)) {
-			EntityID other = this->map->objs.get(p.x, p.y);
-			if (other && other != entity) {
-				if (this->vault->registry.has<Unit>(other)) {
-					Unit &otherUnit = this->vault->registry.get<Unit>(other);
-					Tile &otherTile = this->vault->registry.get<Tile>(other);
-					if (otherTile.pos != otherUnit.destpos && (npos == otherUnit.nextpos || npos == otherTile.pos)) {
-#ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << other << " go to " << npos << std::endl;
-#endif
-						return false;
-					}
-				}
-			}
-		}
-		return true;
-	}
-
-	bool unitInCase(Unit &unit, Tile &tile) {
-		int diffx = abs(tile.ppos.x - unit.nextpos.x * 32);
-		int diffy = abs(tile.ppos.y - unit.nextpos.y * 32);
-		if (diffx >= 0 && diffx <= 2 && diffy >= 0 && diffy <= 2) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	void updateSteering(float dt) {
@@ -153,17 +123,15 @@ public:
 			GameObject &obj = view.get<GameObject>(entity);
 			Unit &unit = view.get<Unit>(entity);
 
-			Steering steering;
-
 			if (obj.life > 0)
 			{
 				tile.pos = sf::Vector2i(trunc(tile.ppos / 32.0f)); // trunc map pos
 
-				SteeringObject curSteerObj = SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, MAX_FORCE};
+				PathfindingObject curSteerObj = PathfindingObject(entity, tile, unit);//SteeringObject{entity, tile.ppos, unit.velocity, unit.speed, MAX_FORCE};
 
 				if (tile.pos != unit.pathPos) {
-					this->map->objs.set(unit.pathPos.x, unit.pathPos.y, 0); // mark pos immediatly
-					this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark pos immediatly
+					this->map->objs.set(unit.pathPos.x, unit.pathPos.y, 0); // mark map pos immediatly
+					this->map->objs.set(tile.pos.x, tile.pos.y, entity); // mark map pos immediatly
 
 					unit.pathUpdate = true;
 					unit.pathPos = tile.pos;
@@ -173,7 +141,7 @@ public:
 					unit.destpos = tile.pos;
 				}
 
-				std::vector<SteeringObject> surroundingObjects = this->getSurroundingSteeringObjects(entity, tile.pos.x, tile.pos.y);
+				std::vector<PathfindingObject> surroundingObjects = this->getSurroundingSteeringObjects(entity, tile.ppos.x, tile.ppos.y);
 
 				std::vector<sf::Vector2f> cases;
 				for (int cx = tile.pos.x - OBSTACLE_RADIUS; cx <= tile.pos.x + OBSTACLE_RADIUS; ++cx) {
@@ -206,31 +174,15 @@ public:
 					accel += steering.seek(curSteerObj, sf::Vector2f(bestNextPos * 32) + 16.0f) * 2.0f;
 					accel += steering.flee(curSteerObj, sf::Vector2f(tile.pos * 32) + 16.0f);
 				}
-//					vel += avoidForce;
+
 				accel += steering.avoid(curSteerObj, cases) * 1.0f;
-//					vel += steering.align(curSteerObj, steering.objects);
-//					vel += steering.cohesion(curSteerObj, steering.objects);
-
-//					vel += steering.flock(curSteerObj, steering.objects);
-
-
-//				accel += steering.queue(curSteerObj, surroundingObjects, accel);
-
-//					std::cout << "UNIT ACCEL" << entity << " "<<accel << std::endl;
-
-
-//					std::cout << "UNIT VELOCITY (before)" << entity << " "<<unit.velocity << std::endl;
-
-//					if (tile.state != "attack" && tile.ppos == cpPos) {
-//						tile.state = "idle";
-//					}
 
 				if (tile.state != "attack") {
 					bool seekTarget = false;
 					if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
 						Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
 						// if attacking and target is near, then seek it and avoid separate
-						if (length(ttile.ppos - tile.ppos) < 32.0f) {
+						if (distance(ttile.ppos, tile.ppos) < 64.0f) {
 							seekTarget = true;
 							accel += steering.seek(curSteerObj, ttile.ppos);
 						}
@@ -255,6 +207,7 @@ public:
 						}
 					}
 					*/
+					sf::Vector2f previousVelocity = unit.velocity;
 
 					unit.velocity = unit.velocity + accel;
 					unit.velocity = limit(unit.velocity, curSteerObj.maxSpeed * MIN_VELOCITY, curSteerObj.maxSpeed);
@@ -272,7 +225,7 @@ public:
 					} else {
 //						if (length(unit.velocity) * 1.5f >= unit.speed)
 						if (normVelLen >= 1.0f)
-							tile.view = this->getDirection(sf::Vector2i(normalize(unit.velocity) * 16.0f));
+							tile.view = this->getDirection(sf::Vector2i(normalize(previousVelocity+unit.velocity) * 16.0f));
 
 						this->changeState(entity, "move");
 					}
@@ -366,12 +319,10 @@ public:
 						std::cout << "Pathfinding: " << entity << " at " << cpos << " next position " << npos << "(" << (npos - cpos) << ")" << std::endl;
 #endif
 
-//						if (this->checkAround(entity, npos)) {
 						if (npos != cpos) {
 #ifdef PATHFINDING_DEBUG
 							std::cout << "Pathfinding: " << entity << " check around " << tile.pos << std::endl;
 #endif
-							unit.nextpos = npos;
 
 //							tile.view = this->getDirection(cpos, npos);
 							unit.direction = npos - cpos;
@@ -427,17 +378,19 @@ public:
 	}
 
 private:
-	std::vector<SteeringObject> getSurroundingSteeringObjects(EntityID currentEnt, int x, int y) {
-		std::vector<SteeringObject> steerObjs;
-		std::vector<QuadtreeObject> quadObjs = this->map->units->getAt((x - SURROUNDING_RADIUS) * 32.0f, (y - SURROUNDING_RADIUS) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f);
+	std::vector<PathfindingObject> getSurroundingSteeringObjects(EntityID currentEnt, float x, float y) {
+		std::vector<PathfindingObject> steerObjs;
+		std::vector<PathfindingObject> quadObjs = this->map->units->getAt(x - SURROUNDING_RADIUS * 32.0f, y - SURROUNDING_RADIUS * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f);
 		if (quadObjs.size() > 0) {
 //		std::cout << "PathfindingSystem: got "<<quadObjs.size()<< " quadtree objects"<<std::endl;
-			for (QuadtreeObject &quadObj : quadObjs) {
+			for (auto &quadObj : quadObjs) {
 				if (quadObj.entity != currentEnt) {
-//				std::cout << "CALC STEERING FOUND " << quadObj.entity << " at " << quadObj.x << "x" << quadObj.y << std::endl;
-					Tile &tile = this->vault->registry.get<Tile>(quadObj.entity);
-					Unit &unit = this->vault->registry.get<Unit>(quadObj.entity);
-					steerObjs.push_back(SteeringObject{quadObj.entity, tile.ppos, unit.velocity, unit.speed, MAX_FORCE});
+//					Tile &tile = this->vault->registry.get<Tile>(quadObj.entity);
+//					Unit &unit = this->vault->registry.get<Unit>(quadObj.entity);
+//					steerObjs.push_back(PathfindingObject(quadObj.entity, tile, unit));
+
+					quadObj.update(); // update from pointers
+					steerObjs.push_back(quadObj);
 				}
 			}
 		}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "Config.hpp"
 #include "Map.hpp"
 #include "third_party/JPS.h"
@@ -12,11 +14,6 @@ typedef signed char dir_t;
 const sf::Vector2i DIRECTIONS[] = { sf::Vector2i(1, 0), sf::Vector2i(1, 1), sf::Vector2i(0, 1), sf::Vector2i(-1, 1),
                                     sf::Vector2i(-1, 0), sf::Vector2i(-1, -1), sf::Vector2i(0, -1), sf::Vector2i(1, -1)
                                   };
-
-struct MovingObject {
-	sf::Vector2f pos;
-	sf::Vector2f velocity;
-};
 
 class Grid {
 	Map* map;
@@ -66,7 +63,6 @@ public:
 
 };
 
-
 class FlowField {
 	std::vector<field_t> _fields;
 	std::vector<dir_t> _dir;
@@ -109,54 +105,7 @@ public:
 	}
 
 	bool pathAvailable(int x, int y) {
-		return _grid.pathAvailable(x, y);// && this->checkMovingObjects(x,y);
-	}
-
-	float currentMovingObjectVel;
-	MovingObject currentMovingObject;
-	std::vector<MovingObject> movingObjects;
-
-	sf::Vector2f getMovingObjectsForce(int sx, int sy, int x, int y) {
-		for (auto &mo : movingObjects) {
-			sf::Vector2f distance = (mo.pos - currentMovingObject.pos);
-			sf::Vector2f vel = mo.velocity - currentMovingObject.velocity;
-			sf::Vector2f d(distance.x / (vel.x + 0.0001f), distance.y / (vel.y + 0.0001f));
-			float collisionPrevision = length(d);
-
-			sf::Vector2i p = sf::Vector2i(mo.pos / 32.0f);
-
-//			if (distance < 32) {
-//				std::cout << "mov " << currentMovingObject.pos.x << "x" << currentMovingObject.pos.y << " " << mo.pos.x << "x" << mo.pos.y << std::endl;
-//			}
-			std::cout << "mov " << p.x << "x" << p.y << " " << collisionPrevision << " " << distance.x << "x" << distance.y << " " << vel.x << "x" << vel.y << std::endl;
-
-		}
-	}
-
-	bool checkMovingObjects(int sx, int sy, int x, int y) {
-		for (auto &mo : movingObjects) {
-			sf::Vector2f spos(sx * 32.0, sy * 32.0);
-			sf::Vector2f ipos(x * 32.0, y * 32.0);
-
-			float prevA = length(ipos - spos) / currentMovingObjectVel;
-
-//			sf::Vector2f opos = mo.pos;
-
-
-			sf::Vector2f prevision = (mo.pos + prevA * mo.velocity);
-			prevision.x -= _grid.rect.left * 32.0;
-			prevision.y -= _grid.rect.top * 32.0;
-
-
-//				std::cout << "MOVING: check prevision "<<x<<"x"<<y<< " " << prevision.x << "x"<<prevision.y << std::endl;
-			float r = length(ipos - prevision);
-			if (r < 16.0) {
-//				std::cout << "MOVING: prevision "<<_grid.rect.left+x<<"x"<<_grid.rect.top+y<< " <- " << mo.pos.x/32 << "x" << mo.pos.y/32 << std::endl;
-				return false;
-			}
-
-		}
-		return true;
+		return _grid.pathAvailable(x, y);
 	}
 
 	bool checkIfContains(unsigned int idx, const std::list<unsigned int>& lst) const {
@@ -173,20 +122,16 @@ public:
 // get neighbors (N, S, W and E). Will return the indices
 	int getNeighbors(int x, int y, int * ret, bool *moving) {
 		int cnt = 0;
-		if (_grid.bound(x, y - 1) && this->pathAvailable(x, y - 1)) {// && this->checkMovingObjects(x,y,x,y-1)) {
-			moving[cnt] = this->checkMovingObjects(x, y, x, y - 1);
+		if (_grid.bound(x, y - 1) && this->pathAvailable(x, y - 1)) {
 			ret[cnt++] = x + (y - 1) * _grid.width;
 		}
-		if (_grid.bound(x, y + 1) && this->pathAvailable(x, y + 1)) {// && this->checkMovingObjects(x,y,x,y+1)) {
-			moving[cnt] = this->checkMovingObjects(x, y, x, y + 1);
+		if (_grid.bound(x, y + 1) && this->pathAvailable(x, y + 1)) {
 			ret[cnt++] = x + (y + 1) * _grid.width;
 		}
-		if (_grid.bound(x - 1, y) && this->pathAvailable(x - 1, y)) {// && this->checkMovingObjects(x,y,x-1,y)) {
-			moving[cnt] = this->checkMovingObjects(x, y, x - 1, y);
+		if (_grid.bound(x - 1, y) && this->pathAvailable(x - 1, y)) {
 			ret[cnt++] = x - 1 + y * _grid.width;
 		}
-		if (_grid.bound(x + 1, y) && this->pathAvailable(x + 1, y)) {// && this->checkMovingObjects(x,y,x+1,y)) {
-			moving[cnt] = this->checkMovingObjects(x, y, x + 1, y);
+		if (_grid.bound(x + 1, y) && this->pathAvailable(x + 1, y)) {
 			ret[cnt++] = x + 1 + y * _grid.width;
 		}
 		return cnt;
@@ -197,7 +142,7 @@ public:
 		int ret = 14;
 		for (int i = 0; i < 8; ++i) {
 			sf::Vector2i c = sf::Vector2i(x, y) + DIRECTIONS[i];
-			if (this->pathAvailable(c.x, c.y)) {// && this->checkMovingObjects(x,y,c.x,c.y)) {
+			if (this->pathAvailable(c.x, c.y)) {
 				int idx = c.x + c.y * _grid.width;
 				if (_fields[idx] < m) {
 					ret = i;

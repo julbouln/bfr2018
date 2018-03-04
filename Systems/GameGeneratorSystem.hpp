@@ -120,8 +120,14 @@ public:
 				player.initialPos = initialPositions.back();
 				initialPositions.pop_back();
 
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x, player.initialPos.y);
-				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x+2, player.initialPos.y+2);
+//				this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x, player.initialPos.y);
+				for (int x = 0; x < 3; x++) {
+					for (int y = 0; y < 3; y++) {
+						this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x + x, player.initialPos.y + y);
+
+					}
+
+				}
 			} else if (player.team == "neonaz") {
 				player.initialPos = initialPositions.back();
 				initialPositions.pop_back();

@@ -4,6 +4,8 @@
 
 #include "third_party/dbscan/dbscan.h"
 
+#define RANGE_RADIUS 32.0f
+
 class CombatSystem : public GameSystem {
 public:
 
@@ -74,8 +76,9 @@ public:
 								// if ennemy is idle, he will fight back
 								this->attack(destUnit, entity);
 							} else if (destTile.state == "move") {
-								this->stop(destUnit);
-//								this->attack(destUnit, entity);
+//								this->stop(destUnit);
+//								unit.destpos = tile.pos;
+								this->attack(destUnit, entity);
 							} else if (destTile.state == "attack" && destUnit.targetEnt) {
 								// if ennemy is attacking a building, he will fight back
 								if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
@@ -96,10 +99,12 @@ public:
 			if (!unit.targetEnt) {
 				EntityID finalTargetEnt = 0;
 				float dist = std::numeric_limits<float>::max();
+
 				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
 					EntityID pEnt = this->map->objs.get(p.x, p.y);
 					if (pEnt) {
 						if (this->vault->registry.has<GameObject>(pEnt)) {
+							Tile &pTile = this->vault->registry.get<Tile>(pEnt);
 							GameObject &pObj = this->vault->registry.get<GameObject>(pEnt);
 							if (pObj.team != obj.team) {
 								// TODO: optimize
@@ -107,8 +112,8 @@ public:
 								player.enemyFound = true;
 								player.enemyPos = p;
 
-								if (this->approxDistance(p, tile.pos) < dist) {
-									dist = this->approxDistance(p, tile.pos);
+								if (distance(pTile.ppos, tile.ppos) < dist) {
+									dist = distance(pTile.ppos, tile.ppos);
 									finalTargetEnt = pEnt;
 								}
 
@@ -120,9 +125,36 @@ public:
 				if (finalTargetEnt) {
 					this->attack(unit, finalTargetEnt);
 				}
+			} else {
+				// change target if somebody nearer attack
+				if (this->vault->registry.valid(unit.targetEnt)) {
+					Tile &cpTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					EntityID finalTargetEnt = 0;
+					float dist = std::numeric_limits<float>::max();
+
+					for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
+						EntityID pEnt = this->map->objs.get(p.x, p.y);
+						if (pEnt) {
+							if (this->vault->registry.has<Unit>(pEnt)) {
+								Tile &pTile = this->vault->registry.get<Tile>(pEnt);
+								GameObject &pObj = this->vault->registry.get<GameObject>(pEnt);
+								Unit &pUnit = this->vault->registry.get<Unit>(pEnt);
+								if (pObj.team != obj.team && pUnit.targetEnt == entity && distance(pTile.ppos, tile.ppos) < distance(cpTile.ppos, tile.ppos)) {
+									if (distance(pTile.ppos, tile.ppos) < dist) {
+										dist = distance(pTile.ppos, tile.ppos);
+										finalTargetEnt = pEnt;
+									}
+								}
+							}
+						}
+					}
+
+					if (finalTargetEnt) {
+						this->attack(unit, finalTargetEnt);
+					}
+				}
 			}
 		}
-
 
 		// pass 2, calculate combat
 		for (EntityID entity : view) {
@@ -130,87 +162,84 @@ public:
 			Unit &unit = view.get<Unit>(entity);
 			GameObject &obj = view.get<GameObject>(entity);
 			if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
-//				if (tile.pos == unit.nextpos)
-				{	// unit must be arrived at a position
-					int dist = 1;
-					int maxDist = 1;
-					if (unit.attack2.distance)
-						dist = unit.attack2.distance;
-					if (unit.attack2.maxDistance)
-						maxDist = unit.attack2.maxDistance;
+				int dist = 1;
+				int maxDist = 1;
+				if (unit.attack2.distance)
+					dist = unit.attack2.distance;
+				if (unit.attack2.maxDistance)
+					maxDist = unit.attack2.maxDistance;
 
-					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-					GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
+				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
 //					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
-					bool inRange = (length(tile.ppos - destTile.ppos) >= (dist - 1) * 48.0f && length(tile.ppos - destTile.ppos) <= (maxDist) * 48.0f) || length(tile.ppos - destTile.ppos) <= 48.0f;
-					if (inRange) {
-						int attackPower = unit.attack1.power;
+				bool inRange = (distance(tile.ppos, destTile.ppos) >= (dist - 1) * RANGE_RADIUS && distance(tile.ppos, destTile.ppos) <= (maxDist) * RANGE_RADIUS) || distance(tile.ppos, destTile.ppos) <= RANGE_RADIUS;
+				if (inRange) {
+					int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
-						std::cout << "CombatSystem: " << entity << " arrived at target, fight " << unit.targetEnt << std::endl;
+					std::cout << "CombatSystem: " << entity << " arrived at target, fight " << unit.targetEnt << std::endl;
 #endif
-						sf::Vector2i distDiff = (destTile.pos - tile.pos);
-						// use attack2 if in correct range
-						if (unit.attack2.distance && this->ennemyInRange(tile, destTile, dist, maxDist)) {
-							attackPower = unit.attack2.power;
+					sf::Vector2i distDiff = (destTile.pos - tile.pos);
+					// use attack2 if in correct range
+					if (unit.attack2.distance && this->ennemyInRange(tile, destTile, dist, maxDist)) {
+						attackPower = unit.attack2.power;
+					}
+					unit.destpos = tile.pos;
+					unit.targetPos = tile.pos;
+
+					float damage = (float)attackPower / 100.0;
+#ifdef COMBAT_DEBUG
+					std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
+#endif
+					destObj.life -= damage;
+
+					if (destObj.player) {
+						this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
+					}
+
+					if (destObj.life <= 0) {
+						// mark as dead
+						destObj.life = 0;
+						if (destTile.state != "die") {
+							Player &player = this->vault->registry.get<Player>(obj.player);
+							player.kills.insert(unit.targetEnt);
 						}
+						if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+							this->changeState(unit.targetEnt, "die");
+						}
+
+						// target is dead, become idle
+						this->changeState(entity, "idle");
+						unit.targetEnt = 0;
 						unit.destpos = tile.pos;
-						unit.targetPos = tile.pos;
-
-						float damage = (float)attackPower / 100.0;
-#ifdef COMBAT_DEBUG
-						std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
-#endif
-						destObj.life -= damage;
-
-						if (destObj.player) {
-							this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
-						}
-
-						if (destObj.life <= 0) {
-							// mark as dead
-							destObj.life = 0;
-							if (destTile.state != "die") {
-								Player &player = this->vault->registry.get<Player>(obj.player);
-								player.kills.insert(unit.targetEnt);
-							}
-							if (this->vault->registry.has<Unit>(unit.targetEnt)) {
-								this->changeState(unit.targetEnt, "die");
-							}
-
-							// target is dead, become idle
-							this->changeState(entity, "idle");
-							unit.targetEnt = 0;
-							unit.destpos = tile.pos;
-						} else {
-							// start/continue attacking
-//							tile.view = this->getDirection(tile.pos, destTile.pos);
-							this->changeState(entity, "attack");
-							unit.destpos = tile.pos;
-						}
-
 					} else {
-						if (unit.destpos == tile.pos) {
-							sf::Vector2i dpos = destTile.pos;
-							dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
+						// start/continue attacking
+//							tile.view = this->getDirection(tile.pos, destTile.pos);
+						this->changeState(entity, "attack");
+						unit.destpos = tile.pos;
+					}
+
+				} else {
+					if (unit.destpos == tile.pos) {
+						sf::Vector2i dpos = destTile.pos;
+						dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
 //						sf::Vector2i dpos = this->revFirstAvailablePosition(destTile.pos, maxDist, dist);
-							if (dpos == destTile.pos) {
+						if (dpos == destTile.pos) {
 #ifdef COMBAT_DEBUG
-								std::cout << "CombatSystem: CANNOT FIND NEAREST " << entity << " " << dpos.x << "x" << dpos.y << std::endl;
+							std::cout << "CombatSystem: CANNOT FIND NEAREST " << entity << " " << dpos.x << "x" << dpos.y << std::endl;
 #endif
-								dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
-							}
+							dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
+						}
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
+						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
 #endif
-							unit.targetPos = dpos;
-							this->goTo(unit, dpos);
+						unit.targetPos = dpos;
+						this->goTo(unit, dpos);
 
 #ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+						std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 #endif
-						}
 					}
 				}
 			} else {
@@ -218,7 +247,7 @@ public:
 			}
 		}
 
-		// pass 3
+		// pass 3 fx and die
 		for (EntityID entity : view) {
 			Tile &tile = view.get<Tile>(entity);
 			Unit &unit = view.get<Unit>(entity);

@@ -184,6 +184,8 @@ public:
 };
 
 
+class PathfindingObject;
+
 class Map {
 public:
 
@@ -214,7 +216,7 @@ public:
 	Layer<EntityID> staticPathfinding;
 	Layer<EntityID> pathfinding;
 
-	Quadtree* units;
+	Quadtree<PathfindingObject>* units;
 
 	// transitions calculation optimization
 	// maintain a list of position to update instead of updating every transitions

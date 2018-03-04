@@ -141,7 +141,6 @@ struct Unit {
 	sf::Vector2i targetPos;
 
 	sf::Vector2i destpos;
-	sf::Vector2i nextpos; // deprecate
 	sf::Vector2f velocity;
 	sf::Vector2i direction;
 
@@ -171,6 +170,38 @@ struct Unit {
 		this->commanded = false;
 		this->pathUpdate = false;
 	}
+};
+
+#define MAX_FORCE 0.2f
+
+class PathfindingObject : public sf::FloatRect {
+public:
+	EntityID entity;
+	sf::Vector2f pos;
+	sf::Vector2f velocity;
+	float maxSpeed;
+	float maxForce;
+
+	// keep the components pointers for update
+    PathfindingObject(EntityID ent, Tile &_tile, Unit &_unit) : entity(ent), tile(&_tile), unit(&_unit) {
+    	this->maxForce = MAX_FORCE;
+    	this->update();
+    }
+
+    void update() {
+    	this->left = tile->ppos.x - 16.0f;
+    	this->top = tile->ppos.y - 16.0f;
+    	this->width = 32.0f;
+    	this->height = 32.0f;
+
+    	this->pos = tile->ppos;
+    	this->velocity = unit->velocity;
+    	this->maxSpeed = unit->speed;
+    }
+private:
+	Unit *unit;
+	Tile *tile;
+
 };
 
 struct Building {

@@ -18,39 +18,52 @@ struct CompareVector2i
 template <typename T>
 std::ostream & operator<<(std::ostream & os, const sf::Vector2<T>& v)
 {
-   os << v.x << "x" << v.y;
-   return os;
+	os << v.x << "x" << v.y;
+	return os;
 }
 
 template <typename T>
 sf::Vector2<T> operator *(const sf::Vector2<T>& left, const sf::Vector2<T>& right)
 {
-    T x = left.x * right.x;
-    T y = left.y * right.y;
-    return sf::Vector2<T>(x,y);
+	T x = left.x * right.x;
+	T y = left.y * right.y;
+	return sf::Vector2<T>(x, y);
 }
 
 template <typename T>
 sf::Vector2<T> operator /(const sf::Vector2<T>& left, const sf::Vector2<T>& right)
 {
-    T x = left.x / right.x;
-    T y = left.y / right.y;
-    return sf::Vector2<T>(x,y);
+	T x = left.x / right.x;
+	T y = left.y / right.y;
+	return sf::Vector2<T>(x, y);
 }
 
 template <typename T>
 sf::Vector2<T> operator +(const sf::Vector2<T>& v, const T &sum)
 {
-    T x = v.x + sum;
-    T y = v.y + sum;
-    return sf::Vector2<T>(x,y);
+	T x = v.x + sum;
+	T y = v.y + sum;
+	return sf::Vector2<T>(x, y);
 }
 
 template <typename T>
 float square(const sf::Vector2<T> &v) {
 	return (v.x * v.x + v.y * v.y);
 }
- 
+
+//#define APPROXIMATE_DISTANCE
+
+template <typename T>
+float distance(const sf::Vector2<T> &p1, const sf::Vector2<T> &p2) {
+#ifdef APPROXIMATE_DISTANCE
+	float dx = abs(p1.x - p2.x);
+	float dy = abs(p1.y - p2.y);
+	return 0.394f * (dx + dy) + 0.554f * std::max(dx, dy);
+#else
+	return sqrt(float(p2.x - p1.x) * float(p2.x - p1.x) + float(p2.y - p1.y) * float(p2.y - p1.y));
+#endif
+}
+
 template <typename T>
 float length(const sf::Vector2<T> &v) {
 	return sqrt(v.x * v.x + v.y * v.y);
@@ -100,8 +113,8 @@ sf::Vector2<T> limit(const sf::Vector2<T> &v, const T &min, const T &max) {
 	if (square(v) > max * max) {
 		return normalize(v) * max;
 	} else {
-		if(square(v) < min) {
-			return sf::Vector2<T>(0,0);
+		if (square(v) < min) {
+			return sf::Vector2<T>(0, 0);
 		} else {
 			return v;
 		}

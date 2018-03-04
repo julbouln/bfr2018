@@ -1,5 +1,5 @@
 #include "Map.hpp"
-
+#include "Components/Components.hpp"
 
 Map::Map() {
 }
@@ -33,7 +33,7 @@ void Map::setSize(unsigned int width, unsigned int height) {
 	// buildings
 	this->pathfinding.setSize(width, height);
 
-	this->units = new Quadtree(0.0, 0.0, width * 32.0f, height * 32.0f, 0, 5);
+	this->units = new Quadtree<PathfindingObject>(0.0, 0.0, width * 32.0f, height * 32.0f, 0, 5);
 //	this->units = new Quadtree(0.0, 0.0, width * 32.0f, height * 32.0f, 48);
 
 	this->width = width;

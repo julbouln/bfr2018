@@ -14,6 +14,7 @@
 #define COHESION_DIST 32.0f
 #define ALIGN_DIST 32.0f
 
+/*
 struct SteeringObject {
 	EntityID entity;
 	sf::Vector2f pos;
@@ -21,11 +22,13 @@ struct SteeringObject {
 	float maxSpeed;
 	float maxForce;
 };
+*/
 
+template <typename T>
 class Steering {
 public:
 
-	sf::Vector2f seek(SteeringObject &currentObject, sf::Vector2f dpos) {
+	sf::Vector2f seek(T &currentObject, sf::Vector2f dpos) {
 		sf::Vector2f steer = normalize(sf::Vector2f(dpos - currentObject.pos)) * currentObject.maxSpeed;
 #ifdef STEERING_DEBUG
 		if (steer != sf::Vector2f(0, 0))
@@ -35,7 +38,7 @@ public:
 		return limit(steer, currentObject.maxForce);
 	}
 
-	sf::Vector2f seek(SteeringObject &currentObject, sf::Vector2f dpos, float speed) {
+	sf::Vector2f seek(T &currentObject, sf::Vector2f dpos, float speed) {
 		sf::Vector2f steer = normalize(sf::Vector2f(dpos - currentObject.pos)) * speed;
 #ifdef STEERING_DEBUG
 		if (steer != sf::Vector2f(0, 0))
@@ -47,7 +50,7 @@ public:
 
 
 
-	sf::Vector2f arrive(SteeringObject &currentObject, sf::Vector2f target) {
+	sf::Vector2f arrive(T &currentObject, sf::Vector2f target) {
 		float range = 24.0f;
 		sf::Vector2f steer = target - currentObject.pos;
 
@@ -67,7 +70,7 @@ public:
 
 
 
-	sf::Vector2f flee(SteeringObject &currentObject, sf::Vector2f dpos) {
+	sf::Vector2f flee(T &currentObject, sf::Vector2f dpos) {
 		sf::Vector2f steer = normalize(sf::Vector2f(currentObject.pos - dpos)) * currentObject.maxSpeed;
 #ifdef STEERING_DEBUG
 		if (steer != sf::Vector2f(0, 0))
@@ -76,7 +79,7 @@ public:
 		return steer;
 	}
 
-	sf::Vector2f followFlowField(SteeringObject &currentObject, sf::Vector2i direction) {
+	sf::Vector2f followFlowField(T &currentObject, sf::Vector2i direction) {
 		sf::Vector2f steer = normalize(sf::Vector2f(direction)) * currentObject.maxSpeed;
 		steer -= currentObject.velocity;
 
@@ -88,7 +91,7 @@ public:
 		return limit(steer, currentObject.maxForce);
 	}
 
-	sf::Vector2f followPath(SteeringObject &currentObject, std::vector<sf::Vector2f> path, int idx) {
+	sf::Vector2f followPath(T &currentObject, std::vector<sf::Vector2f> path, int idx) {
 		int i = 0, index = 0;
 		float dist = std::numeric_limits<float>::max();
 
@@ -125,7 +128,7 @@ public:
 	}
 
 	// same than separate ?
-	sf::Vector2f avoid(SteeringObject &currentObject, std::vector<sf::Vector2f> cases) {
+	sf::Vector2f avoid(T &currentObject, std::vector<sf::Vector2f> cases) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		sf::Vector2f pos = currentObject.pos;
@@ -157,11 +160,11 @@ public:
 			return sf::Vector2f(0, 0);
 		}
 	}
-
-	sf::Vector2f separate(SteeringObject &currentObject, std::vector<SteeringObject> &others) {
+	
+	sf::Vector2f separate(T &currentObject, std::vector<T> &others) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
-		for (SteeringObject &other : others) {
+		for (auto &other : others) {
 			float d = length(currentObject.pos - other.pos);
 			if(d > 0.0f && d < SEPARATION_DIST) {
 				sf::Vector2f diff = normalize(currentObject.pos - other.pos) / d;
@@ -189,10 +192,10 @@ public:
 		}
 	}
 
-	sf::Vector2f cohesion(SteeringObject &currentObject, std::vector<SteeringObject> &others) {
+	sf::Vector2f cohesion(T &currentObject, std::vector<T> &others) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
-		for (SteeringObject &other : others) {
+		for (T &other : others) {
 			float d = length(currentObject.pos - other.pos);
 			if ((d > 0) && (d < COHESION_DIST)) {
 
@@ -212,10 +215,10 @@ public:
 		}
 	}
 
-	sf::Vector2f align (SteeringObject &currentObject, std::vector<SteeringObject> &others) {
+	sf::Vector2f align (T &currentObject, std::vector<T> &others) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
-		for (SteeringObject &other : others) {
+		for (auto &other : others) {
 			float d = length(currentObject.pos - other.pos);
 			if ((d > 0) && (d < ALIGN_DIST)) {
 				steer += other.velocity;
@@ -235,7 +238,7 @@ public:
 		}
 	}
 
-	sf::Vector2f flock(SteeringObject &currentObject, std::vector<SteeringObject> &others) {
+	sf::Vector2f flock(T &currentObject, std::vector<T> &others) {
 		sf::Vector2f fv(0, 0);
 		fv += this->separate(currentObject, others);
 		fv += this->align(currentObject, others);
@@ -243,13 +246,13 @@ public:
 		return fv;
 	}
 
-	SteeringObject* getNeighborAhead(SteeringObject &currentObject, std::vector<SteeringObject> &neighbors) {
-		SteeringObject *ret = nullptr;
+	T* getNeighborAhead(T &currentObject, std::vector<T> &neighbors) {
+		T *ret = nullptr;
 		sf::Vector2f qa = normalize(currentObject.velocity) * MAX_QUEUE_AHEAD;
 
 		sf::Vector2f ahead = currentObject.pos + qa;
 
-		for (SteeringObject &neighbor : neighbors) {
+		for (auto &neighbor : neighbors) {
 			float d = length(ahead - neighbor.pos);
 
 			if (d <= MAX_QUEUE_RADIUS) {
@@ -261,8 +264,8 @@ public:
 		return ret;
 	}
 
-	sf::Vector2f queue(SteeringObject &currentObject, std::vector<SteeringObject> &neighbors) {
-		SteeringObject *neighbor = this->getNeighborAhead(currentObject, neighbors);
+	sf::Vector2f queue(T &currentObject, std::vector<T> &neighbors) {
+		T *neighbor = this->getNeighborAhead(currentObject, neighbors);
 
 		if (neighbor) {
 			sf::Vector2f steer = (currentObject.velocity * 0.3f);
@@ -277,11 +280,11 @@ public:
 
 	}
 
-	sf::Vector2f queue(SteeringObject &currentObject, std::vector<SteeringObject> &neighbors, sf::Vector2f currentSteer) {
+	sf::Vector2f queue(T &currentObject, std::vector<T> &neighbors, sf::Vector2f currentSteer) {
 		sf::Vector2f v = currentObject.velocity;
 		sf::Vector2f brake;
 
-		SteeringObject *neighbor = this->getNeighborAhead(currentObject, neighbors);
+		T *neighbor = this->getNeighborAhead(currentObject, neighbors);
 
 		if (neighbor) {
 			brake.x = -currentSteer.x * 0.8f;

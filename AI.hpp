@@ -326,7 +326,7 @@ public:
 
 				std::sort( buildPos.begin( ), buildPos.end( ), [this, player ]( const auto & lhs, const auto & rhs )
 				{
-					return this->approxDistance(player.initialPos, lhs) < this->approxDistance(player.initialPos, rhs);
+					return distance(player.initialPos, lhs) < distance(player.initialPos, rhs);
 				});
 
 //			std::random_shuffle ( buildPos.begin(), buildPos.end() );
@@ -453,7 +453,7 @@ public:
 				if (this->vault->registry.valid(attacker)) {
 					Tile &atTile = this->vault->registry.get<Tile>(attacker);
 
-					if (atTile.state == "idle" && this->approxDistance(atTile.pos, player.enemyPos) > 8) {
+					if (atTile.state == "idle" && distance(atTile.pos, player.enemyPos) > 8) {
 #ifdef AI_DEBUG
 						std::cout << "AI: " << entity << " launch expedition with " << attacker << " at " << player.enemyPos.x << "x" << player.enemyPos.y << std::endl;
 #endif
@@ -500,7 +500,7 @@ public:
 				if (this->vault->registry.valid(attacker)) {
 					Tile &atTile = this->vault->registry.get<Tile>(attacker);
 
-					if (atTile.state == "idle" && this->approxDistance(atTile.pos, destPos) > 8) {
+					if (atTile.state == "idle" && distance(atTile.pos, destPos) > 8) {
 #ifdef AI_DEBUG
 						std::cout << "AI: " << entity << " send defense with " << attacker << " at " << destPos.x << "x" << destPos.y << std::endl;
 #endif

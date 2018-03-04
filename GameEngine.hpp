@@ -560,7 +560,7 @@ public:
 						Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 						ImGui::Separator();
 						ImGui::Text("Unit: ");
-						ImGui::Text("Next pos: %dx%d", unit.nextpos.x, unit.nextpos.y);
+						ImGui::Text("Direction: %dx%d", unit.direction.x, unit.direction.y);
 						ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
 						ImGui::Text("Dest attack: %d", (int)unit.targetEnt);
 						ImGui::Text("Velocity: %.2fx%.2f", unit.velocity.x, unit.velocity.y);

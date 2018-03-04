@@ -65,7 +65,7 @@ public:
 		for (int w = -dist; w < tile.size.x + dist; ++w) {
 			for (int h = -dist; h < tile.size.y + dist; ++h) {
 				sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-				if (this->map->bound(p.x, p.y) && this->approxDistance(tile.pos, p) <= dist + length(sf::Vector2f(tile.size) / 2.0f) ) {
+				if (this->map->bound(p.x, p.y) && distance(tile.pos, p) <= dist + length(sf::Vector2f(tile.size) / 2.0f) ) {
 					surface.push_back(p);
 				}
 			}
@@ -103,7 +103,7 @@ public:
 		sf::Vector2i nearest(1024, 1024);
 		for (sf::Vector2i const &p : this->tileAround(destTile, minDist, maxDist)) {
 			if (this->map->pathAvailable(p.x, p.y)) {
-				if (this->approxDistance(tile.pos, p) < this->approxDistance(tile.pos, nearest)) {
+				if (distance(tile.pos, p) < distance(tile.pos, nearest)) {
 					nearest = p;
 				}
 			}
@@ -164,7 +164,7 @@ public:
 	void addPlayerFrontPoint(EntityID playerEnt, EntityID ent, sf::Vector2i pos) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		if (this->vault->registry.has<Unit>(ent)) {
-			if (this->approxDistance(player.initialPos, pos) < this->approxDistance(sf::Vector2i(0, 0), sf::Vector2i(this->map->width, this->map->height)) / 4) {
+			if (distance(player.initialPos, pos) < distance(sf::Vector2i(0, 0), sf::Vector2i(this->map->width, this->map->height)) / 4) {
 				player.allFrontPoints.push_back(pos);
 			}
 		} else {
@@ -466,12 +466,10 @@ public:
 	}
 
 	void stop(Unit &unit) {
-		unit.destpos = unit.nextpos;
 	}
 
 	void attack(Unit & unit, EntityID destEnt) {
 		unit.targetEnt = destEnt;
-		unit.destpos = unit.nextpos;
 	}
 
 	void attack(EntityID entity, EntityID destEnt) {
