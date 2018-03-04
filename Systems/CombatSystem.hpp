@@ -53,6 +53,22 @@ public:
 		}
 	}
 
+	bool posInRange(Tile &tile, sf::Vector2f &destPos, int dist, int maxDist) {
+		return (distance(tile.ppos, destPos) >= (dist - 1) * RANGE_RADIUS && distance(tile.ppos, destPos) <= (maxDist) * RANGE_RADIUS) || distance(tile.ppos, destPos) <= RANGE_RADIUS;
+	}
+
+	bool ennemyInRange(Tile &tile, Tile &destTile, int dist, int maxDist) {
+		for (int w = 0; w < destTile.size.x; ++w) {
+			for (int h = 0; h < destTile.size.y; ++h) {
+				sf::Vector2f p = destTile.ppos + sf::Vector2f((w - destTile.size.x/2)*32,(h - destTile.size.x/2)*32);
+				if(this->posInRange(tile, p, dist, maxDist)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	void update(float dt) {
 
 		// pass 1, if an ennemy is in sight, then attack / respond to attack
@@ -75,14 +91,17 @@ public:
 							if (destTile.state == "idle") {
 								// if ennemy is idle, he will fight back
 								this->attack(destUnit, entity);
+								destUnit.destpos = destTile.pos;
 							} else if (destTile.state == "move") {
 //								this->stop(destUnit);
 //								unit.destpos = tile.pos;
 								this->attack(destUnit, entity);
+								destUnit.destpos = destTile.pos;
 							} else if (destTile.state == "attack" && destUnit.targetEnt) {
 								// if ennemy is attacking a building, he will fight back
 								if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
 									this->attack(destUnit, entity);
+									destUnit.destpos = destTile.pos;
 								}
 							}
 						}
@@ -124,6 +143,7 @@ public:
 
 				if (finalTargetEnt) {
 					this->attack(unit, finalTargetEnt);
+					unit.destpos = tile.pos;
 				}
 			} else {
 				// change target if somebody nearer attack
@@ -151,6 +171,7 @@ public:
 
 					if (finalTargetEnt) {
 						this->attack(unit, finalTargetEnt);
+						unit.destpos = tile.pos;
 					}
 				}
 			}
@@ -173,7 +194,7 @@ public:
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
 //					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
-				bool inRange = (distance(tile.ppos, destTile.ppos) >= (dist - 1) * RANGE_RADIUS && distance(tile.ppos, destTile.ppos) <= (maxDist) * RANGE_RADIUS) || distance(tile.ppos, destTile.ppos) <= RANGE_RADIUS;
+				bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist);
 				if (inRange) {
 					int attackPower = unit.attack1.power;
 

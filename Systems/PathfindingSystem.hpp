@@ -152,9 +152,6 @@ public:
 					}
 				}
 
-				sf::Vector2i nextPos = tile.pos + unit.direction;
-				sf::Vector2f center = sf::Vector2f(nextPos) * 32.0f + 16.0f;
-
 				sf::Vector2f accel(0, 0);
 
 				// escape from obstacle
@@ -162,11 +159,11 @@ public:
 					sf::Vector2i bestNextPos = tile.pos;
 					sf::Vector2i curDestPos = unit.destpos;
 					curDestPos = unit.flowFieldPath.ffDest;
-					float distance = std::numeric_limits<float>::max();
+					float dist = std::numeric_limits<float>::max();
 					for (sf::Vector2i &fp : this->vectorSurfaceExtended(tile.pos, 1)) {
 						if (this->map->pathAvailable(fp.x, fp.y)) {
-							if (length(fp - curDestPos) < distance) {
-								distance = length(fp - curDestPos);
+							if (distance(fp, curDestPos) < dist) {
+								dist = distance(fp, curDestPos);
 								bestNextPos = fp;
 							}
 						}
@@ -189,8 +186,15 @@ public:
 					}
 
 					if (!seekTarget) {
-						if (tile.pos == unit.destpos && surroundingObjects.size() == 0) {
-							accel += steering.arrive(curSteerObj, center) * 0.5f;
+						// check if somebody move arround
+						sf::Vector2f sum(0,0);
+						for (auto &obj : surroundingObjects) {
+							sum += obj.velocity;
+						}
+
+						if (tile.pos == unit.destpos && length(sum) < 0.1f) {
+							sf::Vector2f center = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
+							accel += steering.arrive(curSteerObj, center);
 //					accel += steering.seek(curSteerObj, center, 1.0f);
 						} else {
 							accel += steering.followFlowField(curSteerObj, unit.direction) * 1.5f;
@@ -225,7 +229,7 @@ public:
 					} else {
 //						if (length(unit.velocity) * 1.5f >= unit.speed)
 						if (normVelLen >= 1.0f)
-							tile.view = this->getDirection(sf::Vector2i(normalize(previousVelocity+unit.velocity) * 16.0f));
+							tile.view = this->getDirection(sf::Vector2i(normalize(previousVelocity + unit.velocity) * 16.0f));
 
 						this->changeState(entity, "move");
 					}

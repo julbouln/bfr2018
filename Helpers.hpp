@@ -60,7 +60,7 @@ float distance(const sf::Vector2<T> &p1, const sf::Vector2<T> &p2) {
 	float dy = abs(p1.y - p2.y);
 	return 0.394f * (dx + dy) + 0.554f * std::max(dx, dy);
 #else
-	return sqrt(float(p2.x - p1.x) * float(p2.x - p1.x) + float(p2.y - p1.y) * float(p2.y - p1.y));
+	return sqrt((float)(p2.x - p1.x) * (float)(p2.x - p1.x) + (float)(p2.y - p1.y) * (float)(p2.y - p1.y));
 #endif
 }
 
