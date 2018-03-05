@@ -259,11 +259,8 @@ public:
 		victory.init();
 		pathfinding.init();
 
-
 //		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0));
 //		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);
-
-
 	}
 
 	void menuGui() {
@@ -705,7 +702,6 @@ public:
 	void draw(float dt) {
 		sf::IntRect clip = this->viewClip();
 
-		drawMap.drawTerrainTileMap(this->game->window, dt);
 		drawMap.draw(this->game->window, clip, dt);
 //		if (this->gameSpeed < 2)
 		fx.draw(this->game->window, clip, dt);
@@ -1088,11 +1084,7 @@ public:
 		this->updateEveryFrame(dt);
 		this->updateMoveView(dt);
 
-//		if (this->gameSpeed < 2) {
 		this->fx.update(dt);
-//		} else {
-//			this->fx.clear();
-//		}
 
 		this->currentTime += dt;
 

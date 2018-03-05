@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Config.hpp"
+#include "Events.hpp"
 
 #include "GameVault.hpp"
 #include "System.hpp"
 #include "Map.hpp"
+
+#include "third_party/entt/signal/dispatcher.hpp"
 
 //#define GAME_SYSTEM_DEBUG
 
@@ -19,7 +22,13 @@ public:
 		this->map = map;
 		this->screenWidth = screenWidth;
 		this->screenHeight = screenHeight;
+
+//		this->vault->dispatcher.connect<AnimationFrameChanged>(this);
 	}
+
+//	void receive(const AnimationFrameChanged &event) {
+//		std::cout << "ANIMATION FRAME CHANGED RECEIVED "<< event.frame <<std::endl;
+//	}
 
 	sf::Vector2f tileDrawPosition(Tile &tile) const {
 		return sf::Vector2f(tile.ppos.x - (tile.centerRect.left + tile.centerRect.width / 2) + tile.offset.x * 32,

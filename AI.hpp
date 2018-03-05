@@ -6,51 +6,6 @@
 #include "Systems/GameSystem.hpp"
 #include "BrainTree/BrainTree.h"
 
-enum class AITag {
-	TSelector,
-	TRandomSelector,
-	TSequence,
-	TInverter,
-	TSucceeder,
-	TUntilFail,
-	TProbability,
-	THasMoreResourcesThan,
-	THasLessObjectsTypeThan,
-	THasLessObjectsThan,
-	THasExploredLessThan,
-	THasFoundEnnemy,
-	TExplore,
-	TBuild,
-	TPlaceBuilt,
-	TPlant,
-	TTrain,
-	TSendExpedition,
-	TSendDefense
-};
-
-static std::map<std::string, AITag> aiTags =
-{
-	{ "Selector", AITag::TSelector },
-	{ "RandomSelector", AITag::TRandomSelector },
-	{ "Sequence", AITag::TSequence },
-	{ "Inverter", AITag::TInverter },
-	{ "Succeeder", AITag::TSucceeder },
-	{ "UntilFail", AITag::TUntilFail },
-	{ "Probability", AITag::TProbability},
-	{ "HasMoreResourcesThan", AITag::THasMoreResourcesThan},
-	{ "HasLessObjectsTypeThan", AITag::THasLessObjectsTypeThan},
-	{ "HasLessObjectsThan", AITag::THasLessObjectsThan},
-	{ "HasExploredLessThan", AITag::THasExploredLessThan},
-	{ "HasFoundEnnemy", AITag::THasFoundEnnemy},
-	{ "Explore", AITag::TExplore},
-	{ "Build", AITag::TBuild},
-	{ "PlaceBuilt", AITag::TPlaceBuilt},
-	{ "Plant", AITag::TPlant},
-	{ "Train", AITag::TTrain},
-	{ "SendExpedition", AITag::TSendExpedition},
-	{ "SendDefense", AITag::TSendDefense},
-};
-
 class Probability : public BrainTree::Leaf
 {
 public:
@@ -181,10 +136,10 @@ private:
 };
 
 
-class HasFoundEnnemy : public BrainTree::Leaf, public GameSystem
+class HasFoundEnemy : public BrainTree::Leaf, public GameSystem
 {
 public:
-	HasFoundEnnemy(BrainTree::Blackboard::Ptr board, EntityID entity) : Leaf(board), entity(entity) {}
+	HasFoundEnemy(BrainTree::Blackboard::Ptr board, EntityID entity) : Leaf(board), entity(entity) {}
 
 	Status update() override
 	{
@@ -523,6 +478,8 @@ private:
 	int per;
 };
 
+typedef entt::HashedString AINode;
+
 class AIParser : public GameSystem {
 	tinyxml2::XMLDocument doc;
 public:
@@ -551,44 +508,45 @@ public:
 #ifdef AI_DEBUG
 		std::cout << "AI: parse node " << element->Name() << std::endl;
 #endif
-		switch (aiTags[element->Name()]) {
-		case AITag::TSelector: {
+
+		switch (AINode(element->Name())) {
+		case AINode("Selector"): {
 			auto selector = std::make_shared<BrainTree::Selector>();
 			for (tinyxml2::XMLElement *child : element) {
 				selector->addChild(this->parseElement(blackboard, child, entity));
 			}
 			return selector;
 		}
-		case AITag::TRandomSelector: {
+		case AINode("RandomSelector"): {
 			auto selector = std::make_shared<BrainTree::RandomSelector>();
 			for (tinyxml2::XMLElement *child : element) {
 				selector->addChild(this->parseElement(blackboard, child, entity));
 			}
 			return selector;
 		}
-		case AITag::TSequence: {
+		case AINode("Sequence"): {
 			auto sequence = std::make_shared<BrainTree::Sequence>();
 			for (tinyxml2::XMLElement *child : element) {
 				sequence->addChild(this->parseElement(blackboard, child, entity));
 			}
 			return sequence;
 		}
-		case AITag::TInverter: {
+		case AINode("Inverter"): {
 			auto node = std::make_shared<BrainTree::Inverter>();
 			node->setChild(this->parseElement(blackboard, element->FirstChildElement(), entity));
 			return node;
 		}
-		case AITag::TSucceeder: {
+		case AINode("Succeeder"): {
 			auto node = std::make_shared<BrainTree::Succeeder>();
 			node->setChild(this->parseElement(blackboard, element->FirstChildElement(), entity));
 			return node;
 		}
-		case AITag::TUntilFail: {
+		case AINode("UntilFail"): {
 			auto node = std::make_shared<BrainTree::UntilFail>();
 			node->setChild(this->parseElement(blackboard, element->FirstChildElement(), entity));
 			return node;
 		}
-		case AITag::TProbability: {
+		case AINode("Probability"): {
 			int per = element->IntAttribute("per");
 			int frac = element->IntAttribute("frac");
 #ifdef AI_DEBUG
@@ -597,14 +555,14 @@ public:
 			auto node = std::make_shared<Probability>(blackboard, per, frac);
 			return node;
 		}
-		case AITag::THasMoreResourcesThan: {
+		case AINode("HasMoreResourcesThan"): {
 			float amount = element->FloatAttribute("amount");
 			auto node = std::make_shared<HasMoreResourcesThan>(blackboard, entity, amount);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::THasLessObjectsTypeThan: {
+		case AINode("HasLessObjectsTypeThan"): {
 			int qty = element->IntAttribute("qty");
 			std::string type = element->Attribute("type");
 			auto node = std::make_shared<HasLessObjectsTypeThan>(blackboard, entity, type, qty);
@@ -612,48 +570,48 @@ public:
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::THasLessObjectsThan: {
+		case AINode("HasLessObjectsThan"): {
 			int qty = element->IntAttribute("qty");
 			auto node = std::make_shared<HasLessObjectsThan>(blackboard, entity, qty);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::THasExploredLessThan: {
+		case AINode("HasExploredLessThan"): {
 			int per = element->IntAttribute("per");
 			auto node = std::make_shared<HasExploredLessThan>(blackboard, entity, per);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TBuild: {
+		case AINode("Build"): {
 			std::string name = element->Attribute("type");
 			auto node = std::make_shared<Build>(blackboard, entity, name);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TPlaceBuilt: {
+		case AINode("PlaceBuilt"): {
 			auto node = std::make_shared<PlaceBuilt>(blackboard, entity);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TPlant: {
+		case AINode("Plant"): {
 			std::string name = element->Attribute("type");
 			auto node = std::make_shared<Plant>(blackboard, entity, name);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TTrain: {
+		case AINode("Train"): {
 			std::string name = element->Attribute("type");
 			auto node = std::make_shared<Train>(blackboard, entity, name);
 			node->map = this->map;
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TExplore: {
+		case AINode("Explore"): {
 			std::string name = element->Attribute("type");
 			int maxDist = -1;
 
@@ -665,7 +623,13 @@ public:
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TSendExpedition: {
+		case AINode("HasFoundEnemy"): {
+			auto node = std::make_shared<HasFoundEnemy>(blackboard, entity);
+			node->map = this->map;
+			node->setVault(this->vault);
+			return node;
+		}
+		case AINode("SendExpedition"): {
 			std::string name = element->Attribute("type");
 			int per = element->IntAttribute("per");
 			auto node = std::make_shared<SendExpedition>(blackboard, entity, name, per);
@@ -673,7 +637,7 @@ public:
 			node->setVault(this->vault);
 			return node;
 		}
-		case AITag::TSendDefense: {
+		case AINode("SendDefense"): {
 			std::string name = element->Attribute("type");
 			int per = element->IntAttribute("per");
 			auto node = std::make_shared<SendDefense>(blackboard, entity, name, per);
