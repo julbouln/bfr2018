@@ -11,6 +11,12 @@ void VictorySystem::init() {
 #endif
 }
 
+void VictorySystem::update(EntityID playerEnt, float dt) {
+	this->updateStats(dt);
+	this->updatePlayerBonus(playerEnt);
+	this->clearStats();
+}
+
 void VictorySystem::updatePlayerBonus(EntityID entity) {
 	Player &player = this->vault->registry.get<Player>(entity);
 	switch (player.kills.size()) {

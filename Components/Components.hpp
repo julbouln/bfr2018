@@ -15,17 +15,6 @@
 
 #include "ParticleEffect.hpp"
 
-enum {
-	North,
-	NorthEast,
-	East,
-	SouthEast,
-	South,
-	NorthWest,
-	West,
-	SouthWest
-};
-
 static const sf::Vector2f directionVectors[8] = {
 	sf::Vector2f(0.0,-1.0),
 	sf::Vector2f(1.0,-1.0),
@@ -156,9 +145,7 @@ struct Unit {
 
 	std::string attackSound;
 
-#ifdef PATHFINDING_FLOWFIELD
 	FlowFieldPath flowFieldPath;
-#endif
 
 	bool canDestroyResources;
 

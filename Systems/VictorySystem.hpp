@@ -9,14 +9,15 @@ class VictorySystem : public GameSystem {
 
 public:
 	void init();
-
+	void update(EntityID playerEnt, float dt);
 	void draw(sf::RenderWindow &window, float dt);
-	void updatePlayerBonus(EntityID entity);
 
-	void clearStats();
-	void updateStats(float dt);
+	bool checkVictoryConditions(EntityID playerEnt);
 	float resourcesVictory();
 	float butcheryVictory();
-	bool checkVictoryConditions(EntityID playerEnt);
 
+private:
+	void updatePlayerBonus(EntityID entity);
+	void clearStats();
+	void updateStats(float dt);
 };

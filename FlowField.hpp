@@ -175,13 +175,7 @@ public:
 			int neighborCount = getNeighbors(currentX, currentY, neighbors, movNeighbors);
 //			std::cout << "GET neighbors "<<currentID << " "<<currentX<<"x"<<currentY<<" "<<neighborCount<<std::endl;
 			for (int i = 0; i < neighborCount; ++i) {
-
-#ifdef PATHFINDING_FLOWFIELD_DYNAMIC
-				int modifier = 1;
-				unsigned int endNodeCost = _fields[currentID] + modifier;
-#else
 				unsigned int endNodeCost = _fields[currentID] + 1;
-#endif
 				if (endNodeCost < _fields[neighbors[i]]) {
 					if (!checkIfContains(neighbors[i], openList)) {
 						openList.push_back(neighbors[i]);

@@ -9,8 +9,6 @@
 
 #include "third_party/entt/signal/dispatcher.hpp"
 
-//#define GAME_SYSTEM_DEBUG
-
 class GameSystem : public System {
 public:
 	Map *map;
@@ -199,14 +197,6 @@ public:
 		return restrictedPos;
 	}
 
-	sf::Vector2f dirVelocity(int direction, float speed) {
-		return directionVectors[direction] * speed;
-	}
-
-	sf::Vector2i dirVector2i(int direction) {
-		return sf::Vector2i(directionVectors[direction]);
-	}
-
 	bool canSpendResources(EntityID playerEnt, std::string type, int val) {
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		if (player.resources > val)
@@ -224,7 +214,6 @@ public:
 
 		return entity;
 	}
-
 
 	EntityID emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
 		if (this->vault->registry.has<Effects>(emitter)) {
@@ -278,7 +267,6 @@ public:
 	float trainCost(std::string type) {
 		Unit unit;
 		this->vault->factory.parseUnitFromXml(type, unit);
-//		return 2 * this->objTypeLife(type);
 		return unit.cost;
 	}
 

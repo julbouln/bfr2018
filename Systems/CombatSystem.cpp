@@ -337,14 +337,14 @@ void CombatSystem::update(float dt) {
 
 									ParticleEffectOptions hitOptions;
 									hitOptions.destPos = destTile.ppos;
-									hitOptions.direction = this->getDirection(tile.pos, destTile.pos);
+									hitOptions.direction = getDirection(tile.pos, destTile.pos);
 									hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
 									this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
 
 									ParticleEffectOptions projOptions;
 									projOptions.destPos = destTile.ppos;
-									projOptions.direction = this->getDirection(tile.pos, destTile.pos);
+									projOptions.direction = getDirection(tile.pos, destTile.pos);
 									projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
 									EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);

@@ -35,9 +35,7 @@ void SoundSystem::update(float dt) {
 
 		this->map->sounds.pop();
 	}
-}
 
-void SoundSystem::cleanPlaying(float dt) {
 	playing.remove_if([](sf::Sound & sound) { return (sound.getStatus() == sf::Sound::Status::Stopped); });
 
 #ifdef SOUND_SYSTEM_DEBUG

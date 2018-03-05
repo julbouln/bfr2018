@@ -8,7 +8,6 @@
 
 class CombatSystem : public GameSystem {
 public:
-
 	void updateFront(float dt);
 	void update(float dt);
 

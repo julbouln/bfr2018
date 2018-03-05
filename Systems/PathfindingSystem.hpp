@@ -14,26 +14,17 @@
 #define MIN_VELOCITY 0.01f
 
 class PathfindingSystem : public GameSystem {
-#ifndef PATHFINDING_FLOWFIELD
-	JPS::Searcher<Map> *search;
-#endif
-
 public:
 	FlowFieldPathFind flowFieldPathFind;
-	Steering<PathfindingObject> steering;
 
 	PathfindingSystem();
 	~PathfindingSystem();
 
 	void init();
-
-	void updateSteering(float dt);
 	void update(float dt);
 
 private:
 	void updatePathfindingLayer(float dt);
-	void updateQuadtrees();
-	std::vector<PathfindingObject> getSurroundingSteeringObjects(EntityID currentEnt, float x, float y);
 
 	void testDbscan();
 

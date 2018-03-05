@@ -5,7 +5,7 @@ OBJS = ShaderOptions.o Helpers.o Map.o \
 Stages/MainMenu.o Stages/PlayMenu.o Stages/GameOver.o \
 Systems/ConstructionSystem.o Systems/DrawMapSystem.o Systems/TileAnimSystem.o Systems/CombatSystem.o \
 Systems/FxSystem.o Systems/GameGeneratorSystem.o Systems/MinimapSystem.o \
-Systems/MapLayersSystem.o Systems/PathfindingSystem.o \
+Systems/MapLayersSystem.o Systems/PathfindingSystem.o Systems/SteeringSystem.o \
 Systems/ResourcesSystem.o Systems/SoundSystem.o Systems/VictorySystem.o \
 bfr.o
 

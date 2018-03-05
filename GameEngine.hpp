@@ -18,6 +18,7 @@
 #include "Systems/ResourcesSystem.hpp"
 #include "Systems/ConstructionSystem.hpp"
 #include "Systems/PathfindingSystem.hpp"
+#include "Systems/SteeringSystem.hpp"
 #include "Systems/CombatSystem.hpp"
 #include "Systems/VictorySystem.hpp"
 #include "Systems/SoundSystem.hpp"
@@ -49,6 +50,7 @@ public:
 	MapLayersSystem mapLayers;
 	ConstructionSystem construction;
 	PathfindingSystem pathfinding;
+	SteeringSystem steering;
 	CombatSystem combat;
 	VictorySystem victory;
 	SoundSystem sound;
@@ -199,6 +201,7 @@ public:
 		mapLayers.setShared(vault, this->map, this->width, this->height);
 		construction.setShared(vault, this->map, this->width, this->height);
 		pathfinding.setShared(vault, this->map, this->width, this->height);
+		steering.setShared(vault, this->map, this->width, this->height);
 		combat.setShared(vault, this->map, this->width, this->height);
 		victory.setShared(vault, this->map, this->width, this->height);
 		sound.setShared(vault, this->map, this->width, this->height);
@@ -660,10 +663,7 @@ public:
 	}
 
 	void updateDecade(float dt) {
-		victory.updateStats(dt);
-		victory.updatePlayerBonus(this->currentPlayer);
-		victory.clearStats();
-
+		victory.update(this->currentPlayer, dt);
 		minimap.update(this->currentPlayer, dt);
 		combat.updateFront(dt);
 	}
@@ -676,10 +676,9 @@ public:
 		}
 
 		this->tileAnim.update(dt);
-		this->pathfinding.updateSteering(dt);
+		this->steering.update(dt);
 
 		this->sound.update(dt);
-		this->sound.cleanPlaying(dt);
 	}
 
 	sf::IntRect viewClip() {
@@ -884,7 +883,6 @@ public:
 				crect.setPosition(cpos);
 				this->game->window.draw(crect);
 
-#ifdef PATHFINDING_FLOWFIELD
 				// draw FlowFields
 				if (this->vault->registry.has<Unit>(this->selectedDebugObj)) {
 					Tile &tile = this->vault->registry.get<Tile>(this->selectedDebugObj);
@@ -964,8 +962,6 @@ public:
 						}
 					}
 				}
-#endif
-
 			} else {
 				this->selectedDebugObj = 0;
 			}

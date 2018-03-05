@@ -6,5 +6,4 @@ class SoundSystem : public GameSystem {
 	std::list<sf::Sound> playing;
 public:
 	void update(float dt);
-	void cleanPlaying(float dt);
 };

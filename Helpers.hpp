@@ -128,3 +128,17 @@ sf::Vector2<T> limit(const sf::Vector2<T> &v, const T &min, const T &max) {
 		}
 	}
 }
+
+enum {
+	North,
+	NorthEast,
+	East,
+	SouthEast,
+	South,
+	NorthWest,
+	West,
+	SouthWest
+};
+
+int getDirection(const sf::Vector2i &src, const sf::Vector2i &dst);
+int getDirection(const sf::Vector2i &diff);

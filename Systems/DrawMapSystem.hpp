@@ -20,7 +20,6 @@ public:
 
 	void drawFogTileMap(sf::RenderWindow &window, float dt);
 
-
 private:
 	inline bool clipped(sf::IntRect & clip, sf::Vector2i const & p) const {
 		return (p.x >= clip.left && p.x <= clip.left + clip.width &&
