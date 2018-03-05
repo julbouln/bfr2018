@@ -47,6 +47,14 @@ sf::Vector2<T> operator +(const sf::Vector2<T>& v, const T &sum)
 }
 
 template <typename T>
+sf::Vector2<T> operator -(const sf::Vector2<T>& v, const T &sum)
+{
+	T x = v.x - sum;
+	T y = v.y - sum;
+	return sf::Vector2<T>(x, y);
+}
+
+template <typename T>
 float square(const sf::Vector2<T> &v) {
 	return (v.x * v.x + v.y * v.y);
 }

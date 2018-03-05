@@ -108,9 +108,7 @@ public:
 		for (EntityID entity : unitView) {
 			Tile &tile = unitView.get<Tile>(entity);
 			Unit &unit = unitView.get<Unit>(entity);
-//			this->map->units->add(QuadtreeObject(entity, tile.ppos.x - 16.0f, tile.ppos.y - 16.0f, 32.0f, 32.0f));
 			this->map->units->add(PathfindingObject(entity, tile, unit));
-//			this->map->units->add(QuadtreeObject{entity, tile.ppos.x, tile.ppos.y, 32.0f, 32.0f});
 		}
 
 	}

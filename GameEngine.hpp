@@ -793,12 +793,11 @@ public:
 						dist = unit.attack2.distance;
 						maxDist = unit.attack2.maxDistance;
 					}
+
 					for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
 						sf::RectangleShape srect;
 
-						sf::Vector2f pos;
-						pos.x = p.x * 32;
-						pos.y = p.y * 32;
+						sf::Vector2f pos = sf::Vector2f(p * 32);
 
 						srect.setSize(sf::Vector2f(32, 32));
 						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
@@ -808,6 +807,29 @@ public:
 
 						this->game->window.draw(srect);
 					}
+
+					sf::Vector2f sppos = tile.ppos - dist*32.0f;
+
+					sf::CircleShape scircle;
+					scircle.setRadius(dist * 32.0f);
+					scircle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					scircle.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+					scircle.setOutlineThickness(2);
+					scircle.setPosition(sppos);
+
+					this->game->window.draw(scircle);
+
+					sf::Vector2f eppos = tile.ppos - maxDist*32.0f;
+
+					sf::CircleShape ecircle;
+					ecircle.setRadius(maxDist * 32.0f);
+					ecircle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					ecircle.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+					ecircle.setOutlineThickness(2);
+					ecircle.setPosition(eppos);
+
+					this->game->window.draw(ecircle);
+
 				}
 
 				// around building
@@ -917,7 +939,7 @@ public:
 									}
 								}
 							}
-							
+
 
 							for (sf::Vector2i p : unit.flowFieldPath.inRangePathPoints(tile.pos)) {
 								sf::RectangleShape rectangle;

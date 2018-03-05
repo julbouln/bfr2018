@@ -54,7 +54,8 @@ public:
 	}
 
 	bool posInRange(Tile &tile, sf::Vector2f &destPos, int dist, int maxDist) {
-		return (distance(tile.ppos, destPos) >= (dist - 1) * RANGE_RADIUS && distance(tile.ppos, destPos) <= (maxDist) * RANGE_RADIUS) || distance(tile.ppos, destPos) <= RANGE_RADIUS;
+		return (distance(tile.ppos, destPos) >= (dist - 1) * RANGE_RADIUS && distance(tile.ppos, destPos) <= (maxDist) * RANGE_RADIUS);
+		// || distance(tile.ppos, destPos) <= RANGE_RADIUS;
 	}
 
 	bool ennemyInRange(Tile &tile, Tile &destTile, int dist, int maxDist) {
@@ -194,12 +195,12 @@ public:
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
 //					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
-				bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist);
+				bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
 				if (inRange) {
 					int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
-					std::cout << "CombatSystem: " << entity << " arrived at target, fight " << unit.targetEnt << std::endl;
+					std::cout << "CombatSystem: " << entity << " arrived at target, fight " << distance(tile.ppos, destTile.ppos) << " " << unit.targetEnt << std::endl;
 #endif
 					sf::Vector2i distDiff = (destTile.pos - tile.pos);
 					// use attack2 if in correct range
@@ -209,7 +210,13 @@ public:
 					unit.destpos = tile.pos;
 					unit.targetPos = tile.pos;
 
-					float damage = (float)attackPower / 100.0;
+					float damage = (float)attackPower / 100.0f;
+
+					// damage malus for moving target
+					if(this->vault->registry.has<Unit>(unit.targetEnt)) {
+						Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
+						damage /= length(destUnit.velocity)*2.0f;
+					}
 #ifdef COMBAT_DEBUG
 					std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
 #endif
@@ -244,6 +251,7 @@ public:
 				} else {
 					if (unit.destpos == tile.pos) {
 						sf::Vector2i dpos = destTile.pos;
+/*
 						dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
 //						sf::Vector2i dpos = this->revFirstAvailablePosition(destTile.pos, maxDist, dist);
 						if (dpos == destTile.pos) {
@@ -253,8 +261,9 @@ public:
 							dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
 						}
 #ifdef COMBAT_DEBUG
-						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << std::endl;
+						std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << " " << distance(tile.ppos, destTile.ppos) << std::endl;
 #endif
+*/
 						unit.targetPos = dpos;
 						this->goTo(unit, dpos);
 
