@@ -141,7 +141,6 @@ void SteeringSystem::update(float dt) {
 	}
 }
 
-
 std::vector<PathfindingObject> SteeringSystem::getSurroundingSteeringObjects(EntityID currentEnt, float x, float y) {
 	std::vector<PathfindingObject> steerObjs;
 	std::vector<PathfindingObject> quadObjs = this->map->units->getAt(x - SURROUNDING_RADIUS * 32.0f, y - SURROUNDING_RADIUS * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f);

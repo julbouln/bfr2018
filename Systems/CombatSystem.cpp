@@ -4,6 +4,7 @@ void CombatSystem::init() {
 	this->vault->dispatcher.connect<AnimationFrameChanged>(this);
 }
 
+// frame changed
 void CombatSystem::receive(const AnimationFrameChanged &event) {
 	if (event.state == "attack") {
 		EntityID entity = event.entity;
@@ -278,44 +279,14 @@ void CombatSystem::update(float dt) {
 					this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
 				}
 
-				if (destObj.life <= 0) {
-					// mark as dead
-					destObj.life = 0;
-					if (destTile.state != "die") {
-						Player &player = this->vault->registry.get<Player>(obj.player);
-						player.kills.insert(unit.targetEnt);
-					}
-					if (this->vault->registry.has<Unit>(unit.targetEnt)) {
-						this->changeState(unit.targetEnt, "die");
-					}
-
-					// target is dead, become idle
-					this->changeState(entity, "idle");
-					unit.targetEnt = 0;
-					unit.destpos = tile.pos;
-				} else {
-					// start/continue attacking
-//							tile.view = this->getDirection(tile.pos, destTile.pos);
-					this->changeState(entity, "attack");
-					unit.destpos = tile.pos;
-				}
+				// start/continue attacking
+				this->changeState(entity, "attack");
+				unit.destpos = tile.pos;
 
 			} else {
 				if (unit.destpos == tile.pos) {
 					sf::Vector2i dpos = destTile.pos;
-					/*
-											dpos = this->nearestTileAround(tile, destTile, dist, maxDist);
-					//						sf::Vector2i dpos = this->revFirstAvailablePosition(destTile.pos, maxDist, dist);
-											if (dpos == destTile.pos) {
-					#ifdef COMBAT_DEBUG
-												std::cout << "CombatSystem: CANNOT FIND NEAREST " << entity << " " << dpos.x << "x" << dpos.y << std::endl;
-					#endif
-												dpos = this->firstAvailablePosition(destTile.pos, dist, maxDist + 4);
-											}
-					#ifdef COMBAT_DEBUG
-											std::cout << "CombatSystem: " << entity << " target out of range, go to " << dpos.x << "x" << dpos.y << " " << distance(tile.ppos, destTile.ppos) << std::endl;
-					#endif
-					*/
+
 					unit.targetPos = dpos;
 					this->goTo(unit, dpos);
 
@@ -335,111 +306,46 @@ void CombatSystem::update(float dt) {
 		Unit &unit = view.get<Unit>(entity);
 		GameObject &obj = view.get<GameObject>(entity);
 
-		if (obj.life == 0) {
-			if (tile.state == "die" && (rand() % 16) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
-				// alt die FX
-				ParticleEffectOptions altOptions;
-				altOptions.destPos = tile.ppos;
-				altOptions.direction = 0;
-				// copy shader options from original tile
-				if (tile.shader) {
-					// setting screenSize will create a RenderTexture, only do this for effect needing shader
-					altOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
-					altOptions.applyShader = true;
-					altOptions.shader = this->vault->factory.shrManager.getRef(tile.shaderName);
-					altOptions.shaderOptions = tile.shaderOptions;
-				}
+		if (obj.life <= 0) {
+			if (tile.state == "die") {
+				if ((rand() % 16) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
+					// alt die FX
+					ParticleEffectOptions altOptions;
+					altOptions.destPos = tile.ppos;
+					altOptions.direction = 0;
+					// copy shader options from original tile
+					if (tile.shader) {
+						// setting screenSize will create a RenderTexture, only do this for effect needing shader
+						altOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
+						altOptions.applyShader = true;
+						altOptions.shader = this->vault->factory.shrManager.getRef(tile.shaderName);
+						altOptions.shaderOptions = tile.shaderOptions;
+					}
 
-				this->emitEffect("alt_die", entity, tile.ppos, altOptions);
-				obj.destroy = true;
-			} else {
-				// unit died, destroy after playing anim
-				if (this->vault->registry.has<AnimatedSpritesheet>(entity))
-				{
-					AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
-					if (anim.states.count("die") > 0) {
-						if (anim.states["die"][tile.view].l >= 1) {
+					this->emitEffect("alt_die", entity, tile.ppos, altOptions);
+					obj.destroy = true;
+				} else {
+					// unit died, destroy after playing anim
+					if (this->vault->registry.has<AnimatedSpritesheet>(entity))
+					{
+						AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
+						if (anim.states.count("die") > 0) {
+							if (anim.states["die"][tile.view].l >= 1) {
+								obj.destroy = true;
+							}
+						} else {
 							obj.destroy = true;
 						}
-					} else {
-						obj.destroy = true;
 					}
 				}
+			} else {
+				this->changeState(entity, "die");
+				unit.targetEnt = 0;
+				unit.destpos = tile.pos;
 			}
-
-			this->changeState(entity, "die");
-			unit.targetEnt = 0;
-			unit.destpos = tile.pos;
 		}
 
-		/*
-				if (tile.state == "attack" && this->vault->registry.has<AnimatedSpritesheet>(entity)) {
-				} else {
-				}
-		*/
 		if (tile.state == "attack") {
-#if 0
-			// play sound at frame 1
-			if (this->vault->registry.has<AnimatedSpritesheet>(entity))
-			{
-
-				AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
-				anim.states[tile.state][tile.view].frameChangeCallback = [this, entity](int frame) {
-					if (vault->registry.valid(entity)) {
-						Unit &unit = vault->registry.get<Unit>(entity);
-						Tile &tile = vault->registry.get<Tile>(entity);
-						if (frame == 1) {
-#ifdef COMBAT_DEBUG
-							std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
-#endif
-							map->sounds.push(SoundPlay {unit.attackSound, 1, false, tile.pos});
-
-							if (unit.targetEnt) {
-								if (this->vault->registry.valid(unit.targetEnt)) { // ???
-									Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-									sf::Vector2f fxPos = destTile.ppos;
-									sf::Vector2i diffPos = tile.pos - destTile.pos;
-									fxPos.x += diffPos.x * 8.0 + 16.0;
-									fxPos.y += diffPos.y * 8.0;
-
-									ParticleEffectOptions hitOptions;
-									hitOptions.destPos = destTile.ppos;
-									hitOptions.direction = getDirection(tile.pos, destTile.pos);
-									hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
-
-									this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
-
-									ParticleEffectOptions projOptions;
-									projOptions.destPos = destTile.ppos;
-									projOptions.direction = getDirection(tile.pos, destTile.pos);
-									projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
-
-									EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
-									if (projEnt && unit.canDestroyResources) {
-										ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
-										sf::Vector2i projDestPos = destTile.pos;
-										proj.effectEndCallback = [this, projDestPos]() {
-											EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-											if (resEnt) {
-												this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-												this->vault->registry.destroy(resEnt);
-												std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
-											}
-										};
-									}
-
-								} else {
-									this->changeState(entity, "idle");
-									unit.targetEnt = 0;
-									unit.destpos = tile.pos;
-								}
-							}
-						}
-					}
-				};
-			}
-#endif
-
 			// attacked obj does not exists anymore, stop attacking
 			if (!unit.targetEnt || !this->vault->registry.valid(unit.targetEnt)) {
 #ifdef COMBAT_DEBUG
@@ -447,6 +353,11 @@ void CombatSystem::update(float dt) {
 					std::cout << "CombatSystem: " << entity << "enemy target does not exists anymore " << unit.targetEnt << std::endl;
 				}
 #endif
+				if(unit.targetEnt) {
+					Player &player = this->vault->registry.get<Player>(obj.player);
+					player.kills.insert(unit.targetEnt);
+				}
+
 				this->changeState(entity, "idle");
 				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
@@ -461,7 +372,7 @@ void CombatSystem::update(float dt) {
 		Building &building = buildingView.get<Building>(entity);
 		GameObject &obj = buildingView.get<GameObject>(entity);
 
-		if (obj.life == 0) {
+		if (obj.life <= 0) {
 
 			ParticleEffectOptions projOptions;
 			projOptions.destPos = tile.ppos;

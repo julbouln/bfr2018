@@ -382,7 +382,6 @@ void GameSystem::sendGroup(std::vector<EntityID> group, sf::Vector2i destpos, Gr
 			for (EntityID entity : group) {
 				this->goTo(entity, destpos);
 				this->clearTarget(entity);
-
 			}
 			break;
 		}

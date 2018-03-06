@@ -1,7 +1,6 @@
 #include "Helpers.hpp"
 #include <cmath>
 
-
 int getDirection(const sf::Vector2i &src, const sf::Vector2i &dst) {
 	sf::Vector2i diff = dst - src;
 	return getDirection(diff);
