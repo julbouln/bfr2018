@@ -74,14 +74,11 @@ struct AnimatedSpriteView {
 	// number of loop since animation started
 	int l;
 
-	std::function<void(int)> frameChangeCallback;
-
 	AnimatedSpriteView() {
 		this->loop = true;
 		this->l = 0;
 		this->t = 0.0;
 		this->currentFrame = 0;
-		this->frameChangeCallback = [](int frame) {};
 	}
 };
 

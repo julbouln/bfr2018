@@ -8,8 +8,12 @@
 
 class CombatSystem : public GameSystem {
 public:
+	void init();
 	void updateFront(float dt);
 	void update(float dt);
+
+// signals
+	void receive(const AnimationFrameChanged &event);
 
 private:
 	bool posInRange(Tile & tile, sf::Vector2f & destPos, int dist, int maxDist);

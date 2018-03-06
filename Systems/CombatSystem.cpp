@@ -1,5 +1,66 @@
 #include "CombatSystem.hpp"
 
+void CombatSystem::init() {
+	this->vault->dispatcher.connect<AnimationFrameChanged>(this);
+}
+
+void CombatSystem::receive(const AnimationFrameChanged &event) {
+	if (event.state == "attack") {
+		EntityID entity = event.entity;
+		int frame = event.frame;
+		if (frame == 1) {
+			Tile &tile = vault->registry.get<Tile>(entity);
+			Unit &unit = vault->registry.get<Unit>(entity);
+
+#ifdef COMBAT_DEBUG
+			std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
+#endif
+			map->sounds.push(SoundPlay {unit.attackSound, 1, false, tile.pos});
+
+			if (unit.targetEnt) {
+				if (this->vault->registry.valid(unit.targetEnt)) { // ???
+					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					sf::Vector2f fxPos = destTile.ppos;
+					sf::Vector2i diffPos = tile.pos - destTile.pos;
+					fxPos.x += diffPos.x * 8.0 + 16.0;
+					fxPos.y += diffPos.y * 8.0;
+
+					ParticleEffectOptions hitOptions;
+					hitOptions.destPos = destTile.ppos;
+					hitOptions.direction = getDirection(tile.pos, destTile.pos);
+					hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
+
+					this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
+
+					ParticleEffectOptions projOptions;
+					projOptions.destPos = destTile.ppos;
+					projOptions.direction = getDirection(tile.pos, destTile.pos);
+					projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
+
+					EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
+					if (projEnt && unit.canDestroyResources) {
+						ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
+						sf::Vector2i projDestPos = destTile.pos;
+						proj.effectEndCallback = [this, projDestPos]() {
+							EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+							if (resEnt) {
+								this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+								this->vault->registry.destroy(resEnt);
+								std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+							}
+						};
+					}
+
+				} else {
+					this->changeState(entity, "idle");
+					unit.targetEnt = 0;
+					unit.destpos = tile.pos;
+				}
+			}
+		}
+	}
+}
+
 void CombatSystem::updateFront(float dt) {
 	// player
 	auto playerView = this->vault->registry.view<Player>();
@@ -311,12 +372,18 @@ void CombatSystem::update(float dt) {
 			unit.destpos = tile.pos;
 		}
 
+		/*
+				if (tile.state == "attack" && this->vault->registry.has<AnimatedSpritesheet>(entity)) {
+				} else {
+				}
+		*/
 		if (tile.state == "attack") {
+#if 0
 			// play sound at frame 1
 			if (this->vault->registry.has<AnimatedSpritesheet>(entity))
 			{
-				AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
 
+				AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
 				anim.states[tile.state][tile.view].frameChangeCallback = [this, entity](int frame) {
 					if (vault->registry.valid(entity)) {
 						Unit &unit = vault->registry.get<Unit>(entity);
@@ -371,6 +438,7 @@ void CombatSystem::update(float dt) {
 					}
 				};
 			}
+#endif
 
 			// attacked obj does not exists anymore, stop attacking
 			if (!unit.targetEnt || !this->vault->registry.valid(unit.targetEnt)) {

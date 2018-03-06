@@ -1,5 +1,21 @@
 #include "TileAnimSystem.hpp"
 
+void TileAnimSystem::init() {
+	this->vault->dispatcher.connect<StateChanged>(this);
+}
+
+void TileAnimSystem::receive(const StateChanged &event) {
+	EntityID entity = event.entity;
+	if (this->vault->registry.has<AnimatedSpritesheet>(entity)) {
+		AnimatedSpritesheet &spritesheet = this->vault->registry.get<AnimatedSpritesheet>(entity);
+
+		AnimatedSpriteView &view = spritesheet.states[event.state][event.view];
+		view.l = 0;
+		view.t = 0.0;
+		view.currentFrame = 0;
+	}
+}
+
 void TileAnimSystem::update(float dt) {
 	float gameDt = 0.033 / dt * 0.033;
 	updateStaticSpritesheets(gameDt);
@@ -38,8 +54,7 @@ void TileAnimSystem::updateAnimatedSpritesheets(float dt) {
 					frame %= animView.frames.size();
 
 				if (frame != animView.currentFrame) {
-					this->vault->dispatcher.trigger<AnimationFrameChanged>(entity, frame);
-					animView.frameChangeCallback(frame);
+					this->vault->dispatcher.trigger<AnimationFrameChanged>(entity, tile.state, frame);
 				}
 
 				animView.currentFrame = frame;
