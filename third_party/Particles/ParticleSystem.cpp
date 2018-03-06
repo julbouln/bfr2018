@@ -6,6 +6,8 @@
 
 namespace particles {
 
+//#define USE_EMBEDDED_RENDER_TEXTURE
+
 /* ParticleSystem */
 
 ParticleSystem::ParticleSystem(int maxCount) : emitRate(0.f), m_dt(0.f) {
@@ -131,6 +133,10 @@ void PointParticleSystem::render(sf::RenderTarget &renderTarget) {
 	renderTarget.draw(ver, m_particles->countAlive, sf::Points, states);
 }
 
+void PointParticleSystem::render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) {
+	this->render(renderTarget);
+}
+
 void PointParticleSystem::updateVertices() {
 	for (int i = 0; i < m_particles->countAlive; ++i) {
 		m_vertices[i].position = m_particles->pos[i];
@@ -156,6 +162,10 @@ void LineParticleSystem::render(sf::RenderTarget &renderTarget) {
 
 	const sf::Vertex *ver = &m_vertices[0];
 	renderTarget.draw(ver, m_particles->countAlive, sf::Lines, states);
+}
+
+void LineParticleSystem::render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) {
+	this->render(renderTarget);
 }
 
 void LineParticleSystem::setPoints(sf::Vector2f p1, sf::Vector2f p2) {
@@ -217,8 +227,10 @@ TextureParticleSystem::TextureParticleSystem(int maxCount, sf::Texture *texture)
 }
 
 TextureParticleSystem::TextureParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight) : TextureParticleSystem(maxCount, texture) {
+#ifdef USE_EMBEDDED_RENDER_TEXTURE
 	if (windowWidth > 0 && windowHeight > 0)
 		m_renderTexture.create(windowWidth, windowHeight);
+#endif
 }
 
 void TextureParticleSystem::setTexture(sf::Texture *texture) {
@@ -284,31 +296,63 @@ void TextureParticleSystem::draw(sf::RenderTarget &renderTarget) {
 	renderTarget.draw(ver, m_particles->countAlive * 4, sf::Quads, states);
 }
 
-void TextureParticleSystem::drawWithShader(sf::RenderTarget &renderTarget) {
-	if (m_particles->countAlive <= 0) return;
-
+void TextureParticleSystem::preRender(sf::RenderTexture *p_renderTexture) {
 	sf::RenderStates states = sf::RenderStates::Default;
 
 	states.blendMode = sf::BlendAdd;
-
 	states.texture = m_texture;
 
 	const sf::Vertex *ver = &m_vertices[0];
 
+	p_renderTexture->clear(sf::Color(0, 0, 0, 0));
+	p_renderTexture->draw(ver, m_particles->countAlive * 4, sf::Quads, states);
+	p_renderTexture->display();
+}
+
+void TextureParticleSystem::drawWithShader(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) {
 	sf::View oldView = renderTarget.getView();
 	sf::View defaultView = renderTarget.getDefaultView();
 
-	m_renderTexture.setView(oldView);
-	m_renderTexture.clear(sf::Color(0, 0, 0, 0));
-	m_renderTexture.draw(ver, m_particles->countAlive * 4, sf::Quads, states);
-	m_renderTexture.display();
-	m_sprite.setTexture(m_renderTexture.getTexture());
+	p_renderTexture->setView(oldView);
+	this->preRender(p_renderTexture);
+	m_sprite.setTexture(p_renderTexture->getTexture());
 
 	applyShaderOptions(shader, shaderOptions);
 
 	renderTarget.setView(defaultView);
 	renderTarget.draw(m_sprite, shader);
 	renderTarget.setView(oldView);
+}
+
+void TextureParticleSystem::drawWithShader(sf::RenderTarget &renderTarget) {
+	if (m_particles->countAlive <= 0) return;
+
+#ifdef USE_EMBEDDED_RENDER_TEXTURE
+	sf::View oldView = renderTarget.getView();
+	sf::View defaultView = renderTarget.getDefaultView();
+
+	sf::RenderTexture *p_renderTexture = &m_renderTexture;
+
+	p_renderTexture->setView(oldView);
+	this->preRender(p_renderTexture);
+	m_sprite.setTexture(p_renderTexture->getTexture());
+
+	applyShaderOptions(shader, shaderOptions);
+
+	renderTarget.setView(defaultView);
+	renderTarget.draw(m_sprite, shader);
+	renderTarget.setView(oldView);
+#else
+	sf::RenderStates states = sf::RenderStates::Default;
+	states.blendMode = sf::BlendAdd;
+	states.texture = m_texture;
+
+	const sf::Vertex *ver = &m_vertices[0];
+
+	applyShaderOptions(shader, shaderOptions);
+	states.shader = shader;
+	renderTarget.draw(ver, m_particles->countAlive * 4, sf::Quads, states);
+#endif
 }
 
 void TextureParticleSystem::render(sf::RenderTarget &renderTarget) {
@@ -319,12 +363,28 @@ void TextureParticleSystem::render(sf::RenderTarget &renderTarget) {
 		this->draw(renderTarget);
 }
 
+void TextureParticleSystem::render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) {
+	updateVertices();
+	if (applyShader)
+		this->drawWithShader(renderTarget, p_renderTexture);
+	else
+		this->draw(renderTarget);
+}
+
 /* SpriteSheetParticleSystem */
 
 void SpriteSheetParticleSystem::render(sf::RenderTarget &renderTarget) {
 	updateVertices();
 	if (applyShader)
 		this->drawWithShader(renderTarget);
+	else
+		this->draw(renderTarget);
+}
+
+void SpriteSheetParticleSystem::render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) {
+	updateVertices();
+	if (applyShader)
+		this->drawWithShader(renderTarget, p_renderTexture);
 	else
 		this->draw(renderTarget);
 }
@@ -359,7 +419,10 @@ MetaballParticleSystem::MetaballParticleSystem(int maxCount, sf::Texture *textur
 	if (!m_shader.loadFromMemory(metaballVertexShader, metaballFragmentShader)) {
 		std::cerr << "MetaballParticleSystem: cannot load shader" << std::endl;
 	}
+#ifdef USE_EMBEDDED_RENDER_TEXTURE
 	m_renderTexture.create(windowWidth, windowHeight);
+#endif
+
 	applyShader = true;
 	shader = &m_shader;
 }
@@ -372,8 +435,9 @@ MetaballParticleSystem::MetaballParticleSystem(int maxCount, sf::Texture *textur
 #else
 	pShader->setParameter("texture", sf::Shader::CurrentTexture);
 #endif
-
+#ifdef USE_EMBEDDED_RENDER_TEXTURE
 	m_renderTexture.create(windowWidth, windowHeight);
+#endif
 	applyShader = true;
 	shader = pShader;
 }
@@ -384,6 +448,14 @@ void MetaballParticleSystem::render(sf::RenderTarget &renderTarget) {
 	shaderOptions.colors["customColor"] = color;
 	shaderOptions.floats["threshold"] = threshold;
 	this->drawWithShader(renderTarget);
+}
+
+void MetaballParticleSystem::render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) {
+	updateVertices();
+	// always render with shader
+	shaderOptions.colors["customColor"] = color;
+	shaderOptions.floats["threshold"] = threshold;
+	this->drawWithShader(renderTarget, p_renderTexture);
 }
 
 }

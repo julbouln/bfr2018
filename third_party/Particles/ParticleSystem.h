@@ -25,6 +25,7 @@ public:
 
 	virtual void update(float dt);
 	virtual void render(sf::RenderTarget &renderTarget) = 0;
+	virtual void render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) = 0;
 
 	template<typename T>
 	inline T *addGenerator() {
@@ -108,6 +109,7 @@ public:
 	PointParticleSystem &operator=(const PointParticleSystem &) = delete;
 
 	virtual void render(sf::RenderTarget& renderTarget) override;
+	virtual void render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) override;
 
 protected:
 	void updateVertices();
@@ -123,6 +125,7 @@ public:
 	LineParticleSystem &operator=(const LineParticleSystem &) = delete;
 
 	virtual void render(sf::RenderTarget& renderTarget) override;
+	virtual void render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) override;
 
 	void setPoints(sf::Vector2f p1, sf::Vector2f p2);
 
@@ -144,11 +147,16 @@ public:
 	TextureParticleSystem &operator=(const TextureParticleSystem &) = delete;
 
 	virtual void render(sf::RenderTarget &renderTarget) override;
+	virtual void render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) override;
+
 	// extra
 	void draw(sf::RenderTarget &renderTarget);
 	void drawWithShader(sf::RenderTarget &renderTarget);
 
 	void setTexture(sf::Texture *texture);
+
+	void preRender(sf::RenderTexture *p_renderTexture);
+	void drawWithShader(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture);
 
 protected:
 	void updateVertices();
@@ -177,6 +185,7 @@ public:
 	SpriteSheetParticleSystem &operator=(const SpriteSheetParticleSystem &) = delete;
 
 	virtual void render(sf::RenderTarget &renderTarget) override;
+	virtual void render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) override;
 
 protected:
 	void updateVertices();
@@ -218,6 +227,7 @@ public:
 	MetaballParticleSystem &operator=(const MetaballParticleSystem &) = delete;
 
 	virtual void render(sf::RenderTarget &renderTarget) override;
+	virtual void render(sf::RenderTarget &renderTarget, sf::RenderTexture *p_renderTexture) override;
 
 public:
 	sf::Color color{ sf::Color::White };

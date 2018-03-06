@@ -263,6 +263,7 @@ public:
 		pathfinding.init();
 		combat.init();
 		tileAnim.init();
+		fx.init();
 
 //		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0));
 //		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);

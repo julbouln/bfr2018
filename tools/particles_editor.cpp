@@ -814,6 +814,8 @@ void gui() {
 
 
 int main() {
+	sf::RenderTexture renderTexture;
+
 	circleTexture = new sf::Texture();
 	blobTexture = new sf::Texture();
 	starTexture = new sf::Texture();
@@ -834,6 +836,8 @@ int main() {
 
 	ImGui::SFML::Init(window);
 
+	renderTexture.create(WINDOW_WIDTH, WINDOW_HEIGHT);
+
 	sf::Clock clock;
 	while (window.isOpen()) {
 		sf::Event event;
@@ -853,13 +857,13 @@ int main() {
 
 		sf::Time dt = clock.restart();
 		ImGui::SFML::Update(window, dt);
-		particleSystem->update(dt);
+		particleSystem->update(dt.asSeconds());
 
 		gui();
 
 		window.clear();
 
-		particleSystem->render(window);
+		particleSystem->render(window, &renderTexture);
 		ImGui::SFML::Render(window);
 
 		window.display();

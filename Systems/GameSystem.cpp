@@ -188,16 +188,22 @@ bool GameSystem::canSpendResources(EntityID playerEnt, std::string type, int val
 }
 
 EntityID GameSystem::emitEffect(std::string name, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
+#ifdef PARTICLES_ENABLE
 	EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, name, options);
 	ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
+
 	effect.spawner->center = ppos;
 	if (!effect.continuous)
 		effect.particleSystem->emitParticles(effect.particles);
 
 	return entity;
+#else
+	return 0;
+#endif
 }
 
 EntityID GameSystem::emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
+#ifdef PARTICLES_ENABLE
 	if (this->vault->registry.has<Effects>(emitter)) {
 		Effects &effects = this->vault->registry.get<Effects>(emitter);
 		if (effects.effects.count(name) > 0) {
@@ -212,6 +218,7 @@ EntityID GameSystem::emitEffect(std::string name, EntityID emitter, sf::Vector2f
 			return entity;
 		}
 	}
+#endif
 	return 0;
 }
 

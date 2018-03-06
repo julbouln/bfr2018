@@ -1,5 +1,9 @@
 #include "FxSystem.hpp"
 
+void FxSystem::init() {
+	renderTexture.create(this->screenWidth, this->screenHeight);
+}
+
 void FxSystem::update(float dt) {
 	float gameDt = 0.033 / dt * 0.033;
 	auto view = this->vault->registry.view<ParticleEffect>();
@@ -38,6 +42,6 @@ void FxSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 		ParticleEffect &effect = view.get(entity);
 		if (effect.alwaysVisible || (effect.spawner->center.x / 32 > clip.left && effect.spawner->center.y / 32 > clip.top &&
 		                             effect.spawner->center.x / 32 < clip.left + clip.width && effect.spawner->center.y / 32 < clip.top + clip.height))
-			effect.particleSystem->render(window);
+			effect.particleSystem->render(window, &renderTexture);
 	}
 }
