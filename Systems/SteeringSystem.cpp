@@ -112,21 +112,30 @@ void SteeringSystem::update(float dt) {
 
 				unit.velocity = unit.velocity + accel;
 				unit.velocity = limit(unit.velocity, curSteerObj.maxSpeed * MIN_VELOCITY, curSteerObj.maxSpeed);
-//					std::cout << "UNIT VELOCITY (after)" << entity << " "<<unit.velocity << std::endl;
 				tile.ppos += unit.velocity;
 
 #ifdef PATHFINDING_DEBUG
 				std::cout << "Pathfinding: " << entity << " steering accel:" << accel << " velocity:" << unit.velocity << " surrounding:" << surroundingObjects.size() << std::endl;
 #endif
 
-				float normVelLen = length(normalize(unit.velocity));
-				if (normVelLen < 0.2f) {
+				if(unit.averageCount < 16) {
+					unit.averageVelocity += unit.velocity;
+					unit.averageCount++;					
+				} else {
+					unit.averageVelocity = unit.velocity;
+					unit.averageCount = 1;
+				}
+
+				sf::Vector2f avVel = unit.averageVelocity / (float)unit.averageCount;
+				float velLen = length(avVel);
+
+				if (velLen < unit.speed * 0.1f) {
 					unit.velocity = sf::Vector2f(0, 0);
 					this->changeState(entity, "idle");
 				} else {
 //						if (length(unit.velocity) * 1.5f >= unit.speed)
-					if (normVelLen >= 1.0f)
-						tile.view = getDirection(sf::Vector2i(normalize(previousVelocity + unit.velocity) * 16.0f));
+					if (velLen >= unit.speed * 0.5f)
+						tile.view = getDirection(sf::Vector2i(normalize(avVel) * 16.0f));
 
 					this->changeState(entity, "move");
 				}

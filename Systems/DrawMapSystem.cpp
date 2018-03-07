@@ -199,8 +199,8 @@ void DrawMapSystem::drawObjLayer(sf::RenderWindow & window, sf::IntRect clip, fl
 				GameObject &obj = this->vault->registry.get<GameObject>(ent);
 				if (obj.life > 0) {
 					sf::Vector2f lpos;
-					lpos.x = tile.ppos.x;
-					lpos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32;
+					lpos.x = tile.ppos.x - 16.0f;
+					lpos.y = tile.ppos.y - (tile.centerRect.top + tile.centerRect.height / 2) + tile.offset.y * 32 - 16.0f;
 
 					sf::RectangleShape lifeBarFrame;
 					lifeBarFrame.setSize(sf::Vector2f(32, 8));

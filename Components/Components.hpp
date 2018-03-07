@@ -128,6 +128,10 @@ struct Unit {
 
 	sf::Vector2i destpos;
 	sf::Vector2f velocity;
+
+	sf::Vector2f averageVelocity;
+	int averageCount;
+
 	sf::Vector2i direction;
 
 	sf::Vector2i pathPos; // map pos
@@ -147,6 +151,9 @@ struct Unit {
 	bool canDestroyResources;
 
 	Unit() {
+		this->averageCount = 1;
+		this->velocity = sf::Vector2f(0,0);
+		this->averageVelocity = sf::Vector2f(0,0);
 		this->direction = sf::Vector2i(0,0);
 		this->nopath = 0;
 		this->reallyNopath = 0;

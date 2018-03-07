@@ -22,9 +22,9 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 				if (this->vault->registry.valid(unit.targetEnt)) { // ???
 					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 					sf::Vector2f fxPos = destTile.ppos;
-					sf::Vector2i diffPos = tile.pos - destTile.pos;
-					fxPos.x += diffPos.x * 8.0 + 16.0;
-					fxPos.y += diffPos.y * 8.0;
+					sf::Vector2f diffPos = normalize(sf::Vector2f(tile.pos - destTile.pos))*16.0f;
+					fxPos.x += diffPos.x;
+					fxPos.y += diffPos.y;
 
 					ParticleEffectOptions hitOptions;
 					hitOptions.destPos = destTile.ppos;

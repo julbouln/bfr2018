@@ -133,10 +133,6 @@ void PathfindingSystem::update(float dt) {
 #endif
 
 					if (npos != cpos) {
-#ifdef PATHFINDING_DEBUG
-						std::cout << "Pathfinding: " << entity << " check around " << tile.pos << std::endl;
-#endif
-
 						unit.direction = npos - cpos;
 					} else {
 						unit.direction = sf::Vector2i(0, 0);
