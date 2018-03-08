@@ -4,6 +4,8 @@
 #include "Entity.hpp"
 #include "SFML/Graphics/Rect.hpp"
 
+#define MAX_QUADTREE_OBJS 4
+
 template <typename T>
 class Quadtree;
 
@@ -77,7 +79,7 @@ public:
 
     void add(T object) {
 #ifdef QUADTREE_DEBUG
-        std::cout << "Quadtree: add " << object.entity << " " << object.left << "x" << object.top << " -> " << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
+        std::cout << "Quadtree: add " << object.entity << " " << object.x << "x" << object.y << " -> " << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
 #endif
         if (level == maxLevel)
             objects.push_back(object);
@@ -93,7 +95,7 @@ public:
             objects.push_back(object);
     }
 
-    std::vector<T> getAt(float _x, float _y) {
+    std::vector<T> get(float _x, float _y) {
         if (level == maxLevel)
             return objects;
 
@@ -103,19 +105,19 @@ public:
         }
 
         if (SE->contains(_x, _y)) {
-            childReturnObjects = SE->getAt(_x, _y);
+            childReturnObjects = SE->get(_x, _y);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
         if (NE->contains(_x, _y)) {
-            childReturnObjects = NE->getAt(_x, _y);
+            childReturnObjects = NE->get(_x, _y);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
         if (SW->contains(_x, _y)) {
-            childReturnObjects = SW->getAt(_x, _y);
+            childReturnObjects = SW->get(_x, _y);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
         if (NW->contains(_x, _y)) {
-            childReturnObjects = NW->getAt(_x, _y);
+            childReturnObjects = NW->get(_x, _y);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
 
@@ -123,7 +125,7 @@ public:
         return returnObjects;
     }
 
-    std::vector<T> getAt(float _x, float _y, float _width, float _height) {
+    std::vector<T> get(float _x, float _y, float _width, float _height) {
         if (level == maxLevel)
             return objects;
 
@@ -132,28 +134,57 @@ public:
             returnObjects = objects;
         }
 
-        if (SE->contains(_x, _y, _width, _height) || SE->intersects(_x, _y, _width, _height)) {
-            childReturnObjects = SE->getAt(_x, _y, _width, _height);
+        if (SE->intersects(_x, _y, _width, _height)) {
+            childReturnObjects = SE->get(_x, _y, _width, _height);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
-        if (NE->contains(_x, _y, _width, _height) || NE->intersects(_x, _y, _width, _height)) {
-            childReturnObjects = NE->getAt(_x, _y, _width, _height);
+        if (NE->intersects(_x, _y, _width, _height)) {
+            childReturnObjects = NE->get(_x, _y, _width, _height);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
-        if (SW->contains(_x, _y, _width, _height) || SW->intersects(_x, _y, _width, _height)) {
-            childReturnObjects = SW->getAt(_x, _y, _width, _height);
+        if (SW->intersects(_x, _y, _width, _height)) {
+            childReturnObjects = SW->get(_x, _y, _width, _height);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
-        if (NW->contains(_x, _y, _width, _height) || NW->intersects(_x, _y, _width, _height)) {
-            childReturnObjects = NW->getAt(_x, _y, _width, _height);
+        if (NW->intersects(_x, _y, _width, _height)) {
+            childReturnObjects = NW->get(_x, _y, _width, _height);
             returnObjects.insert(returnObjects.end(), childReturnObjects.begin(), childReturnObjects.end());
         }
 
 #ifdef QUADTREE_DEBUG
-        std::cout << "Quadtree: getAt " << _x << "x" << _y << ":" << _width << "x" << _height << " : " << returnObjects.size() << " " << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
+        std::cout << "Quadtree: get " << _x << "x" << _y << ":" << _width << "x" << _height << " : found:" << returnObjects.size() << " level:" << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
 #endif
 
         return returnObjects;
+    }
+
+    // recursive vector inserting
+    void retrieve(std::vector<T> &v, float _x, float _y, float _width, float _height) {
+        if (level == maxLevel) {
+            v.insert(v.end(), objects.begin(), objects.end());
+            return;
+        }
+
+        if (!objects.empty()) {
+            v.insert(v.end(), objects.begin(), objects.end());
+        }
+
+        if (SE->intersects(_x, _y, _width, _height)) {
+            SE->retrieve(v, _x, _y, _width, _height);
+        }
+        if (NE->intersects(_x, _y, _width, _height)) {
+            NE->retrieve(v, _x, _y, _width, _height);
+        }
+        if (SW->intersects(_x, _y, _width, _height)) {
+            SW->retrieve(v, _x, _y, _width, _height);
+        }
+        if (NW->intersects(_x, _y, _width, _height)) {
+            NW->retrieve(v, _x, _y, _width, _height);
+        }
+
+#ifdef QUADTREE_DEBUG
+        std::cout << "Quadtree: get " << _x << "x" << _y << ":" << _width << "x" << _height << " : found:" << v.size() << " level:" << this->level << " " << this->left << "x" << this->top << ":" << this->width << "x" << this->height << std::endl;
+#endif
     }
 
     void clear() {
@@ -171,15 +202,30 @@ public:
         }
     }
 
-    inline bool     contains(float x, float y) const {return sf::FloatRect::contains(x, y);};
-    inline bool     contains(float x, float y, float w, float h) const {return this->contains(x, y) && this->contains(x + w, y + h);};
-    inline bool     contains(T &object) const {return this->contains(object.left, object.top, object.width, object.height);};
+    inline bool contains(float x, float y) const {
+        // sfml implementation manage negative rect, we do not need that
+        // return sf::FloatRect::contains(x, y);
+        return (x >= this->left) && (x < (this->left + this->width)) && (y >= this->top) && (y < (this->top + this->height));
+    };
+    inline bool contains(float x, float y, float w, float h) const {
+        return this->contains(x, y) && this->contains(x + w, y + h);
+    };
+    inline bool contains(T &object) const {
+        return this->contains(object.x, object.y);
+    };
 
-    inline bool     intersects(float x, float y, float w, float h) const {return sf::FloatRect::intersects(sf::FloatRect(x, y, w, h));};
+    inline bool intersects(float x, float y, float w, float h) const {
+        // sfml implementation manage negative rect, we do not need that
+        // return sf::FloatRect::intersects(sf::FloatRect(x, y, w, h));
+
+        if (this->left > (x + w) || x > (this->left + this->width))
+            return false;
+        if (this->top > (y + h) || y > (this->top + this->height))
+            return false;
+        return true;
+    };
 
 private:
-//    sf::FloatRect   rect;
-
     int             level;
     int             maxLevel;
     std::vector<T> objects;

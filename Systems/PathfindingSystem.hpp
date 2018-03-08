@@ -8,8 +8,6 @@
 #include "Steering.hpp"
 
 #define PATHFINDING_MAX_NO_PATH 8
-#define OBSTACLE_RADIUS 1
-#define SURROUNDING_RADIUS 2
 
 #define MIN_VELOCITY 0.01f
 

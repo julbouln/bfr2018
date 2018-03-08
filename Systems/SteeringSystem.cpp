@@ -1,5 +1,11 @@
 #include "SteeringSystem.hpp"
 
+#define OBSTACLE_RADIUS 1
+#define SURROUNDING_RADIUS 1
+#define MAX_SURROUNDING_OBJS 64
+
+#define MIN_VELOCITY 0.01f
+
 void SteeringSystem::updateQuadtrees() {
 	this->map->units->clear();
 	auto unitView = this->vault->registry.persistent<Tile, Unit>();
@@ -152,7 +158,10 @@ void SteeringSystem::update(float dt) {
 
 std::vector<PathfindingObject> SteeringSystem::getSurroundingSteeringObjects(EntityID currentEnt, float x, float y) {
 	std::vector<PathfindingObject> steerObjs;
-	std::vector<PathfindingObject> quadObjs = this->map->units->getAt(x - SURROUNDING_RADIUS * 32.0f, y - SURROUNDING_RADIUS * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f);
+	steerObjs.reserve(MAX_SURROUNDING_OBJS);
+	std::vector<PathfindingObject> quadObjs;
+	quadObjs.reserve(MAX_SURROUNDING_OBJS); // guess we won't have more than MAX_SURROUNDING_OBJS objects in this 3x3 grid
+	this->map->units->retrieve(quadObjs, x - SURROUNDING_RADIUS * 32.0f, y - SURROUNDING_RADIUS * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f, (SURROUNDING_RADIUS + 1) * 32.0f);
 	if (quadObjs.size() > 0) {
 //		std::cout << "PathfindingSystem: got "<<quadObjs.size()<< " quadtree objects"<<std::endl;
 		for (auto &quadObj : quadObjs) {

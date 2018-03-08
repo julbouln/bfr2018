@@ -165,7 +165,7 @@ struct Unit {
 
 #define MAX_FORCE 0.2f
 
-class PathfindingObject : public sf::FloatRect {
+class PathfindingObject : public sf::Vector2f {
 public:
 	EntityID entity;
 	sf::Vector2f pos;
@@ -180,10 +180,8 @@ public:
     }
 
     void update() {
-    	this->left = tile->ppos.x - 16.0f;
-    	this->top = tile->ppos.y - 16.0f;
-    	this->width = 32.0f;
-    	this->height = 32.0f;
+    	this->x = tile->ppos.x;
+    	this->y = tile->ppos.y;
 
     	this->pos = tile->ppos;
     	this->velocity = unit->velocity;
