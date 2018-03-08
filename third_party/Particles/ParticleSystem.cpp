@@ -408,6 +408,17 @@ void SpriteSheetParticleSystem::updateVertices() {
 
 /* MetaballParticleSystem */
 
+MetaballParticleSystem::MetaballParticleSystem(int maxCount, sf::Texture *texture, sf::Shader *pShader) : TextureParticleSystem(maxCount, texture) {
+	additiveBlendMode = true;
+#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
+	pShader->setUniform("texture", sf::Shader::CurrentTexture);
+#else
+	pShader->setParameter("texture", sf::Shader::CurrentTexture);
+#endif
+	applyShader = true;
+	shader = pShader;
+}
+
 MetaballParticleSystem::MetaballParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight) : TextureParticleSystem(maxCount, texture) {
 	additiveBlendMode = true;
 #if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3

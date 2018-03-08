@@ -237,7 +237,8 @@ void GameSystem::spendResources(EntityID playerEnt, std::string type, int val) {
 			sf::Vector2f fxPos = tile.ppos;
 			fxPos.x += 16.0;
 			fxPos.y += 16.0;
-			this->emitEffect("spend", entity, fxPos);
+//			this->emitEffect("spend", entity, fxPos);
+			this->vault->dispatcher.trigger<EffectCreate>("spend", entity, fxPos, ParticleEffectOptions());
 
 			this->vault->factory.destroyEntity(this->vault->registry, entity);
 

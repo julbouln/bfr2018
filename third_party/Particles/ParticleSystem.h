@@ -6,7 +6,7 @@
 #include "ParticleSpawner.h"
 #include "ParticleUpdater.h"
 
-#include "ShaderOptions.hpp"
+#include "Options.hpp"
 
 namespace particles {
 
@@ -219,6 +219,7 @@ static const std::string metaballFragmentShader = \
 
 class MetaballParticleSystem : public TextureParticleSystem {
 public:
+	MetaballParticleSystem(int maxCount, sf::Texture *texture, sf::Shader *pShader);
 	MetaballParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight);
 	MetaballParticleSystem(int maxCount, sf::Texture *texture, int windowWidth, int windowHeight, sf::Shader *pShader);
 	virtual ~MetaballParticleSystem() {}

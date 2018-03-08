@@ -29,16 +29,19 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 					ParticleEffectOptions hitOptions;
 					hitOptions.destPos = destTile.ppos;
 					hitOptions.direction = getDirection(tile.pos, destTile.pos);
-					hitOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-					this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
+//					this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
+					this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
+
 
 					ParticleEffectOptions projOptions;
 					projOptions.destPos = destTile.ppos;
 					projOptions.direction = getDirection(tile.pos, destTile.pos);
-					projOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 
-					EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
+//					EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
+					this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
+
+/*
 					if (projEnt && unit.canDestroyResources) {
 						ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
 						sf::Vector2i projDestPos = destTile.pos;
@@ -51,7 +54,7 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 							}
 						};
 					}
-
+*/
 				} else {
 					this->changeState(entity, "idle");
 					unit.targetEnt = 0;
@@ -315,14 +318,14 @@ void CombatSystem::update(float dt) {
 					altOptions.direction = 0;
 					// copy shader options from original tile
 					if (tile.shader) {
-						// setting screenSize will create a RenderTexture, only do this for effect needing shader
-						altOptions.screenSize = sf::Vector2i(this->screenWidth, this->screenHeight);
 						altOptions.applyShader = true;
 						altOptions.shader = this->vault->factory.shrManager.getRef(tile.shaderName);
 						altOptions.shaderOptions = tile.shaderOptions;
 					}
 
-					this->emitEffect("alt_die", entity, tile.ppos, altOptions);
+//					this->emitEffect("alt_die", entity, tile.ppos, altOptions);
+					this->vault->dispatcher.trigger<EffectCreate>("alt_die", entity, tile.ppos, altOptions);
+
 					obj.destroy = true;
 				} else {
 					// unit died, destroy after playing anim
@@ -378,7 +381,8 @@ void CombatSystem::update(float dt) {
 			projOptions.destPos = tile.ppos;
 			projOptions.direction = 0;
 
-			this->emitEffect("destroy", entity, tile.ppos, projOptions);
+//			this->emitEffect("destroy", entity, tile.ppos, projOptions);
+			this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
 			map->sounds.push(SoundPlay{"explosion", 2, true, tile.pos});
 
 			obj.destroy = true;

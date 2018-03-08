@@ -7,5 +7,5 @@
 struct GameVault {
 	entt::Registry<EntityID> registry;
 	EntityFactory factory;
-	entt::UnmanagedDispatcher dispatcher{};
+	entt::UnmanagedDispatcher dispatcher;
 };

@@ -3,8 +3,7 @@
 #include "third_party/tinyxml2.h"
 #include "third_party/tixml2ex.h"
 
-#include "Managers/TextureManager.hpp"
-
+#include "Options.hpp"
 #include "Components/ParticleEffect.hpp"
 
 enum class ParticleSystemMode {
@@ -54,32 +53,6 @@ static std::map<std::string, VelocityGeneratorMode> velGenModes =
 	{ "aimed", VelocityGeneratorMode::Aimed },
 };
 
-class ParticleEffectOptions {
-public:
-	ParticleEffectOptions() {
-		destPos = sf::Vector2f(-32.0, -32.0);
-		texMgr = nullptr;
-		direction = 0;
-		applyShader = false;
-		shader = nullptr;
-	}
-
-	bool hasDestPos() {
-		if (destPos.x >= 0)
-			return true;
-		else
-			return false;
-	}
-
-	TextureManager *texMgr;
-	sf::Vector2f destPos; // for aimed swawner
-	int direction; // for aimed spawner
-	sf::Vector2i screenSize; // for metaball
-	// shader
-	bool applyShader;
-	sf::Shader *shader;
-	ShaderOptions shaderOptions;
-};
 
 class ParticleEffectParser {
 	sf::Shader metaballShader;
@@ -130,10 +103,10 @@ public:
 			}
 			break;
 			case ParticleSystemMode::Texture:
-				effect.particleSystem = new particles::TextureParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
+				effect.particleSystem = new particles::TextureParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
 				break;
 			case ParticleSystemMode::Spritesheet: {
-				auto spriteSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
+				auto spriteSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
 
 				auto texCoordGen = spriteSystem->addGenerator<particles::TexCoordsGenerator>();
 				texCoordGen->texCoords = sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y);
@@ -148,7 +121,7 @@ public:
 			}
 			break;
 			case ParticleSystemMode::AnimatedSpritesheet: {
-				auto spriteSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y);
+				auto spriteSystem = new particles::SpriteSheetParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))));
 
 				auto texCoordGen = spriteSystem->addGenerator<particles::TexCoordsGenerator>();
 				texCoordGen->texCoords = sf::IntRect(options.direction * spriteSize.x, 0, spriteSize.x, spriteSize.y);
@@ -191,7 +164,7 @@ public:
 			break;
 			case ParticleSystemMode::Metaball: {
 				// FIXME size == screen size
-				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), options.screenSize.x, options.screenSize.y, &metaballShader);
+				auto metaball = new particles::MetaballParticleSystem(max, &(options.texMgr->getRef(particleEl->Attribute("name"))), &metaballShader);
 				metaball->color = this->parseColor(particleEl);
 				effect.particleSystem = metaball;
 			}

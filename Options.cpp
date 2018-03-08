@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-#include "ShaderOptions.hpp"
+#include "Options.hpp"
 
 void applyShaderOptions(sf::Shader *shader, ShaderOptions &options) {
 	#if SFML_VERSION_MAJOR==2 && SFML_VERSION_MINOR > 3
