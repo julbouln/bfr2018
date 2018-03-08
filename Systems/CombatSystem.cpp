@@ -30,7 +30,6 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 					hitOptions.destPos = destTile.ppos;
 					hitOptions.direction = getDirection(tile.pos, destTile.pos);
 
-//					this->emitEffect("hit", unit.targetEnt, fxPos, hitOptions);
 					this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
 
 
@@ -38,7 +37,6 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 					projOptions.destPos = destTile.ppos;
 					projOptions.direction = getDirection(tile.pos, destTile.pos);
 
-//					EntityID projEnt = this->emitEffect("projectile", entity, tile.ppos, projOptions);
 					this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
 
 /*
@@ -323,7 +321,6 @@ void CombatSystem::update(float dt) {
 						altOptions.shaderOptions = tile.shaderOptions;
 					}
 
-//					this->emitEffect("alt_die", entity, tile.ppos, altOptions);
 					this->vault->dispatcher.trigger<EffectCreate>("alt_die", entity, tile.ppos, altOptions);
 
 					obj.destroy = true;
@@ -381,7 +378,6 @@ void CombatSystem::update(float dt) {
 			projOptions.destPos = tile.ppos;
 			projOptions.direction = 0;
 
-//			this->emitEffect("destroy", entity, tile.ppos, projOptions);
 			this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
 			map->sounds.push(SoundPlay{"explosion", 2, true, tile.pos});
 

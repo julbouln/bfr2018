@@ -9,7 +9,7 @@
 #include "Map.hpp"
 #include "BrainTree/BrainTree.h"
 
-#include "ShaderOptions.hpp"
+#include "Options.hpp"
 
 #include "FlowField.hpp"
 

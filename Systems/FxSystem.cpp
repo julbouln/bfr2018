@@ -90,7 +90,6 @@ void FxSystem::update(float dt) {
 
 			ParticleEffectOptions nOptions;
 
-//			this->emitEffect("next", entity, effect.destpos, nOptions);
 			this->vault->dispatcher.trigger<EffectCreate>("next", entity, effect.destpos, nOptions);
 
 			this->vault->dispatcher.trigger<EffectDestroy>(entity);

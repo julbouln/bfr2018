@@ -187,41 +187,6 @@ bool GameSystem::canSpendResources(EntityID playerEnt, std::string type, int val
 		return false;
 }
 
-EntityID GameSystem::emitEffect(std::string name, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
-#ifdef PARTICLES_ENABLE
-	EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, name, options);
-	ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
-
-	effect.spawner->center = ppos;
-	if (!effect.continuous)
-		effect.particleSystem->emitParticles(effect.particles);
-
-	return entity;
-#else
-	return 0;
-#endif
-}
-
-EntityID GameSystem::emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, ParticleEffectOptions options = ParticleEffectOptions()) {
-#ifdef PARTICLES_ENABLE
-	if (this->vault->registry.has<Effects>(emitter)) {
-		Effects &effects = this->vault->registry.get<Effects>(emitter);
-		if (effects.effects.count(name) > 0) {
-			EntityID entity = this->vault->factory.createParticleEffect(this->vault->registry, effects.effects[name], options);
-			ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(entity);
-			effect.spawner->center = ppos;
-			if (!effect.continuous)
-				effect.particleSystem->emitParticles(effect.particles);
-#ifdef GAME_SYSTEM_DEBUG
-			std::cout << "GameSystem: emit effect " << name << " at " << ppos.x << "x" << ppos.y << std::endl;
-#endif
-			return entity;
-		}
-	}
-#endif
-	return 0;
-}
-
 void GameSystem::spendResources(EntityID playerEnt, std::string type, int val) {
 	Player &player = this->vault->registry.get<Player>(playerEnt);
 	int spended = val;
@@ -237,7 +202,7 @@ void GameSystem::spendResources(EntityID playerEnt, std::string type, int val) {
 			sf::Vector2f fxPos = tile.ppos;
 			fxPos.x += 16.0;
 			fxPos.y += 16.0;
-//			this->emitEffect("spend", entity, fxPos);
+
 			this->vault->dispatcher.trigger<EffectCreate>("spend", entity, fxPos, ParticleEffectOptions());
 
 			this->vault->factory.destroyEntity(this->vault->registry, entity);

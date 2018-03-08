@@ -38,10 +38,6 @@ public:
 
 	bool canSpendResources(EntityID playerEnt, std::string type, int val);
 
-	EntityID emitEffect(std::string name, sf::Vector2f ppos, ParticleEffectOptions options);
-
-	EntityID emitEffect(std::string name, EntityID emitter, sf::Vector2f ppos, ParticleEffectOptions options);
-
 	void spendResources(EntityID playerEnt, std::string type, int val);
 	float buildTime(std::string type);
 	float trainCost(std::string type);
