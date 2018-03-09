@@ -79,7 +79,7 @@ void SteeringSystem::update(float dt) {
 
 			if (tile.state != "attack") {
 				bool seekTarget = false;
-				if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+				if (unit.targetEnt) {
 					Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
 					// if attacking and target is near, then seek it and avoid separate
 					if (distance(ttile.ppos, tile.ppos) < 64.0f) {
@@ -103,7 +103,7 @@ void SteeringSystem::update(float dt) {
 						accel += steering.followFlowField(curSteerObj, unit.direction) * 1.5f;
 					}
 				}
-				accel += steering.separate(curSteerObj, surroundingObjects) * 3.0f;
+				accel += steering.separate(curSteerObj, surroundingObjects) * 2.0f;
 
 				// queue if other are already attacking
 				/*
@@ -147,7 +147,7 @@ void SteeringSystem::update(float dt) {
 				}
 			} else {
 				// face target
-				if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+				if (unit.targetEnt) {
 					Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
 					tile.view = getDirection(sf::Vector2i(ttile.ppos - tile.ppos));
 				}

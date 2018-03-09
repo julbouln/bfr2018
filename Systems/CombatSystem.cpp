@@ -19,45 +19,43 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 			map->sounds.push(SoundPlay {unit.attackSound, 1, false, tile.pos});
 
 			if (unit.targetEnt) {
-				if (this->vault->registry.valid(unit.targetEnt)) { // ???
-					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-					sf::Vector2f fxPos = destTile.ppos;
-					sf::Vector2f diffPos = normalize(sf::Vector2f(tile.pos - destTile.pos))*16.0f;
-					fxPos.x += diffPos.x;
-					fxPos.y += diffPos.y;
+				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+				sf::Vector2f fxPos = destTile.ppos;
+				sf::Vector2f diffPos = normalize(sf::Vector2f(tile.pos - destTile.pos)) * 16.0f;
+				fxPos.x += diffPos.x;
+				fxPos.y += diffPos.y;
 
-					ParticleEffectOptions hitOptions;
-					hitOptions.destPos = destTile.ppos;
-					hitOptions.direction = getDirection(tile.pos, destTile.pos);
+				ParticleEffectOptions hitOptions;
+				hitOptions.destPos = destTile.ppos;
+				hitOptions.direction = getDirection(tile.pos, destTile.pos);
 
-					this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
+				this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
 
 
-					ParticleEffectOptions projOptions;
-					projOptions.destPos = destTile.ppos;
-					projOptions.direction = getDirection(tile.pos, destTile.pos);
+				ParticleEffectOptions projOptions;
+				projOptions.destPos = destTile.ppos;
+				projOptions.direction = getDirection(tile.pos, destTile.pos);
 
-					this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
+				this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
 
-/*
-					if (projEnt && unit.canDestroyResources) {
-						ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
-						sf::Vector2i projDestPos = destTile.pos;
-						proj.effectEndCallback = [this, projDestPos]() {
-							EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-							if (resEnt) {
-								this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-								this->vault->registry.destroy(resEnt);
-								std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
-							}
-						};
-					}
-*/
-				} else {
-					this->changeState(entity, "idle");
-					unit.targetEnt = 0;
-					unit.destpos = tile.pos;
-				}
+				/*
+									if (projEnt && unit.canDestroyResources) {
+										ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
+										sf::Vector2i projDestPos = destTile.pos;
+										proj.effectEndCallback = [this, projDestPos]() {
+											EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+											if (resEnt) {
+												this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+												this->vault->registry.destroy(resEnt);
+												std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+											}
+										};
+									}
+				*/
+			} else {
+				this->changeState(entity, "idle");
+				unit.targetEnt = 0;
+				unit.destpos = tile.pos;
 			}
 		}
 	}
@@ -134,7 +132,7 @@ void CombatSystem::update(float dt) {
 		GameObject &obj = view.get<GameObject>(entity);
 		Unit &unit = view.get<Unit>(entity);
 
-		if (unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+		if (unit.targetEnt) {
 			if (this->vault->registry.has<Unit>(unit.targetEnt)) {
 				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 				GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
@@ -154,7 +152,7 @@ void CombatSystem::update(float dt) {
 							destUnit.destpos = destTile.pos;
 						} else if (destTile.state == "attack" && destUnit.targetEnt) {
 							// if ennemy is attacking a building, he will fight back
-							if (this->vault->registry.valid(destUnit.targetEnt) && this->vault->registry.has<Building>(destUnit.targetEnt)) {
+							if (this->vault->registry.has<Building>(destUnit.targetEnt)) {
 								this->attack(destUnit, entity);
 								destUnit.destpos = destTile.pos;
 							}
@@ -202,32 +200,30 @@ void CombatSystem::update(float dt) {
 			}
 		} else {
 			// change target if somebody nearer attack
-			if (this->vault->registry.valid(unit.targetEnt)) {
-				Tile &cpTile = this->vault->registry.get<Tile>(unit.targetEnt);
-				EntityID finalTargetEnt = 0;
-				float dist = std::numeric_limits<float>::max();
+			Tile &cpTile = this->vault->registry.get<Tile>(unit.targetEnt);
+			EntityID finalTargetEnt = 0;
+			float dist = std::numeric_limits<float>::max();
 
-				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
-					EntityID pEnt = this->map->objs.get(p.x, p.y);
-					if (pEnt) {
-						if (this->vault->registry.has<Unit>(pEnt)) {
-							Tile &pTile = this->vault->registry.get<Tile>(pEnt);
-							GameObject &pObj = this->vault->registry.get<GameObject>(pEnt);
-							Unit &pUnit = this->vault->registry.get<Unit>(pEnt);
-							if (pObj.team != obj.team && pUnit.targetEnt == entity && distance(pTile.ppos, tile.ppos) < distance(cpTile.ppos, tile.ppos)) {
-								if (distance(pTile.ppos, tile.ppos) < dist) {
-									dist = distance(pTile.ppos, tile.ppos);
-									finalTargetEnt = pEnt;
-								}
+			for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
+				EntityID pEnt = this->map->objs.get(p.x, p.y);
+				if (pEnt) {
+					if (this->vault->registry.has<Unit>(pEnt)) {
+						Tile &pTile = this->vault->registry.get<Tile>(pEnt);
+						GameObject &pObj = this->vault->registry.get<GameObject>(pEnt);
+						Unit &pUnit = this->vault->registry.get<Unit>(pEnt);
+						if (pObj.team != obj.team && pUnit.targetEnt == entity && distance(pTile.ppos, tile.ppos) < distance(cpTile.ppos, tile.ppos)) {
+							if (distance(pTile.ppos, tile.ppos) < dist) {
+								dist = distance(pTile.ppos, tile.ppos);
+								finalTargetEnt = pEnt;
 							}
 						}
 					}
 				}
+			}
 
-				if (finalTargetEnt) {
-					this->attack(unit, finalTargetEnt);
-					unit.destpos = tile.pos;
-				}
+			if (finalTargetEnt) {
+				this->attack(unit, finalTargetEnt);
+				unit.destpos = tile.pos;
 			}
 		}
 	}
@@ -237,7 +233,7 @@ void CombatSystem::update(float dt) {
 		Tile &tile = view.get<Tile>(entity);
 		Unit &unit = view.get<Unit>(entity);
 		GameObject &obj = view.get<GameObject>(entity);
-		if (obj.life > 0 && unit.targetEnt && this->vault->registry.valid(unit.targetEnt)) {
+		if (obj.life > 0 && unit.targetEnt) {
 			int dist = 1;
 			int maxDist = 1;
 			if (unit.attack2.distance)
@@ -262,7 +258,6 @@ void CombatSystem::update(float dt) {
 					attackPower = unit.attack2.power;
 				}
 				unit.destpos = tile.pos;
-				unit.targetPos = tile.pos;
 
 				float damage = (float)attackPower / 100.0f;
 
@@ -285,19 +280,19 @@ void CombatSystem::update(float dt) {
 				unit.destpos = tile.pos;
 
 			} else {
-				if (unit.destpos == tile.pos) {
-					sf::Vector2i dpos = destTile.pos;
+//				if (unit.destpos == tile.pos) {
+				sf::Vector2i dpos = destTile.pos;
 
-					unit.targetPos = dpos;
-					this->goTo(unit, dpos);
+				if (tile.state == "attack") // change to idle if attacking and out of range
+					this->changeState(entity, "idle");
+
+				this->goTo(unit, dpos);
 
 #ifdef COMBAT_DEBUG
-					std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+				std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 #endif
-				}
+//				}
 			}
-		} else {
-			unit.targetEnt = 0;
 		}
 	}
 
@@ -346,13 +341,13 @@ void CombatSystem::update(float dt) {
 
 		if (tile.state == "attack") {
 			// attacked obj does not exists anymore, stop attacking
-			if (!unit.targetEnt || !this->vault->registry.valid(unit.targetEnt)) {
+			if (!unit.targetEnt) {
 #ifdef COMBAT_DEBUG
 				if (unit.targetEnt) {
 					std::cout << "CombatSystem: " << entity << "enemy target does not exists anymore " << unit.targetEnt << std::endl;
 				}
 #endif
-				if(unit.targetEnt) {
+				if (unit.targetEnt) {
 					Player &player = this->vault->registry.get<Player>(obj.player);
 					player.kills.insert(unit.targetEnt);
 				}

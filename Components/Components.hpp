@@ -106,7 +106,6 @@ struct GameObject {
 	unsigned int view;
 
 	bool mapped;
-	bool destroy;
 
 	EntityID player;
 };
@@ -124,7 +123,6 @@ struct Unit {
 	Attack attack2;
 
 	EntityID targetEnt;
-	sf::Vector2i targetPos;
 
 	sf::Vector2i destpos;
 	sf::Vector2f velocity;

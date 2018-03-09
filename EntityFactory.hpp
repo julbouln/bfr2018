@@ -460,7 +460,6 @@ public:
 
 		obj.player = playerEnt;
 		obj.mapped = true;
-		obj.destroy = false;
 
 		Unit unit;
 		unitParser.parse(unit, this->getXmlComponent(name, "unit"));
@@ -498,7 +497,6 @@ public:
 		this->parseGameObjectFromXml(name, obj);
 		obj.player = 0;
 		obj.mapped = false;
-		obj.destroy = false;
 		obj.maxLife = obj.life;
 
 		registry.assign<GameObject>(entity, obj);

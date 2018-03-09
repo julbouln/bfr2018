@@ -128,7 +128,7 @@ public:
 	}
 
 //	// same than separate ?
-	sf::Vector2f avoid(T &currentObject, std::vector<sf::Vector2f> cases) {
+	sf::Vector2f avoid(T &currentObject, std::vector<sf::Vector2f> &cases) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		sf::Vector2f pos = currentObject.pos;
@@ -157,6 +157,24 @@ public:
 		} else {
 			return sf::Vector2f(0, 0);
 		}
+	}
+
+	sf::Vector2f containment(T &currentObject, std::vector<sf::Vector2f> cases) {
+		sf::Vector2f ahead = currentObject.pos + normalize(currentObject.velocity) * 32.0f;
+		sf::Vector2f steer(0, 0);
+		for (auto &c : cases) {
+			if (sf::FloatRect(c.x, c.y, 32.0f, 32.0f).contains(ahead)) {
+				steer += normalize(currentObject.pos - c);
+			}
+		}
+
+		steer = normalize(steer);
+		steer *= currentObject.maxSpeed;
+
+		steer -= currentObject.velocity;
+		steer = limit(steer, currentObject.maxForce);
+
+		return steer;
 	}
 
 	sf::Vector2f separate(T &currentObject, std::vector<T> &others) {
