@@ -16,14 +16,14 @@
 #include "ParticleEffect.hpp"
 
 static const sf::Vector2f directionVectors[8] = {
-	sf::Vector2f(0.0,-1.0),
-	sf::Vector2f(1.0,-1.0),
-	sf::Vector2f(1.0,0.0),
-	sf::Vector2f(1.0,1.0),
-	sf::Vector2f(0.0,1.0),
-	sf::Vector2f(-1.0,-1.0),
-	sf::Vector2f(-1.0,0.0),
-	sf::Vector2f(-1.0,1.0)
+	sf::Vector2f(0.0, -1.0),
+	sf::Vector2f(1.0, -1.0),
+	sf::Vector2f(1.0, 0.0),
+	sf::Vector2f(1.0, 1.0),
+	sf::Vector2f(0.0, 1.0),
+	sf::Vector2f(-1.0, -1.0),
+	sf::Vector2f(-1.0, 0.0),
+	sf::Vector2f(-1.0, 1.0)
 };
 
 struct Tile {
@@ -93,7 +93,7 @@ struct AnimatedSpritesheet {
 struct Attack {
 	unsigned int power;
 	unsigned int distance;
-	unsigned int maxDistance;	
+	unsigned int maxDistance;
 };
 
 // unit or building
@@ -152,9 +152,9 @@ struct Unit {
 
 	Unit() {
 		this->averageCount = 1;
-		this->velocity = sf::Vector2f(0,0);
-		this->averageVelocity = sf::Vector2f(0,0);
-		this->direction = sf::Vector2i(0,0);
+		this->velocity = sf::Vector2f(0, 0);
+		this->averageVelocity = sf::Vector2f(0, 0);
+		this->direction = sf::Vector2i(0, 0);
 		this->nopath = 0;
 		this->reallyNopath = 0;
 		this->canDestroyResources = false;
@@ -174,19 +174,19 @@ public:
 	float maxForce;
 
 	// keep the components pointers for update
-    PathfindingObject(EntityID ent, Tile &_tile, Unit &_unit) : entity(ent), tile(&_tile), unit(&_unit) {
-    	this->maxForce = MAX_FORCE;
-    	this->update();
-    }
+	PathfindingObject(EntityID ent, Tile &_tile, Unit &_unit) : entity(ent), tile(&_tile), unit(&_unit) {
+		this->maxForce = MAX_FORCE;
+		this->update();
+	}
 
-    void update() {
-    	this->x = tile->ppos.x;
-    	this->y = tile->ppos.y;
+	void update() {
+		this->x = tile->ppos.x;
+		this->y = tile->ppos.y;
 
-    	this->pos = tile->ppos;
-    	this->velocity = unit->velocity;
-    	this->maxSpeed = unit->speed;
-    }
+		this->pos = tile->ppos;
+		this->velocity = unit->velocity;
+		this->maxSpeed = unit->speed;
+	}
 private:
 	Unit *unit;
 	Tile *tile;
@@ -267,3 +267,46 @@ struct Player {
 	std::map<std::string, int> stats;
 };
 
+enum class Action {
+	None,
+	Selecting,
+	Building
+};
+
+enum class MoveView {
+	DontMove,
+	MoveWest,
+	MoveEast,
+	MoveNorth,
+	MoveSouth
+};
+
+struct GameController {
+	Action action;
+	MoveView moveView;
+
+	sf::Vector2f selectionStart;
+	sf::Vector2f selectionEnd;
+
+	std::vector<EntityID> selectedObjs;
+
+	EntityID currentBuild;
+	std::string currentBuildType;
+
+	EntityID currentPlayer;
+
+	int debugCorner;
+	EntityID selectedDebugObj;
+	bool showDebugWindow;
+
+	GameController() {
+		this->action = Action::None;
+		this->moveView = MoveView::DontMove;
+		this->currentPlayer = 0;
+		this->currentBuild = 0;
+
+		this->selectedDebugObj = 0;
+		this->debugCorner = 1;
+		this->showDebugWindow = false;
+	}
+};

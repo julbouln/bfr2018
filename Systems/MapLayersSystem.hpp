@@ -29,6 +29,8 @@ public:
 
 	void initTransitions();
 
+	void init();
+
 	void initCorpses();
 	EntityID getTile(std::string name, int n);
 

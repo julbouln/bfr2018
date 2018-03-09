@@ -13,8 +13,6 @@ public:
 	void draw(sf::RenderWindow &window, float dt);
 
 	bool checkVictoryConditions(EntityID playerEnt);
-	float resourcesVictory();
-	float butcheryVictory();
 
 private:
 	void updatePlayerBonus(EntityID entity);

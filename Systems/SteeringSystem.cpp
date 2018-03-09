@@ -102,8 +102,8 @@ void SteeringSystem::update(float dt) {
 					} else {
 						accel += steering.followFlowField(curSteerObj, unit.direction) * 1.5f;
 					}
-					accel += steering.separate(curSteerObj, surroundingObjects) * 3.0f;
 				}
+				accel += steering.separate(curSteerObj, surroundingObjects) * 3.0f;
 
 				// queue if other are already attacking
 				/*
@@ -124,9 +124,9 @@ void SteeringSystem::update(float dt) {
 				std::cout << "Pathfinding: " << entity << " steering accel:" << accel << " velocity:" << unit.velocity << " surrounding:" << surroundingObjects.size() << std::endl;
 #endif
 
-				if(unit.averageCount < 16) {
+				if (unit.averageCount < 16) {
 					unit.averageVelocity += unit.velocity;
-					unit.averageCount++;					
+					unit.averageCount++;
 				} else {
 					unit.averageVelocity = unit.velocity;
 					unit.averageCount = 1;

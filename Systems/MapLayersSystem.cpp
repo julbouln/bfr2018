@@ -1,5 +1,8 @@
 #include "MapLayersSystem.hpp"
 
+void MapLayersSystem::init() {
+}
+
 void MapLayersSystem::update(float dt) {
 	this->updateLayer(dt);
 //		this->updateTileMap(dt);

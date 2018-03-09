@@ -126,14 +126,6 @@ void VictorySystem::updateStats(float dt) {
 	}
 }
 
-float VictorySystem::resourcesVictory() {
-	return (float)(this->map->width * this->map->height) / 2.0;
-}
-
-float VictorySystem::butcheryVictory() {
-	return (float)(this->map->width * this->map->height) / 2.0;
-}
-
 bool VictorySystem::checkVictoryConditions(EntityID playerEnt) {
 	Player &player = this->vault->registry.get<Player>(playerEnt);
 	if ((float)player.resources / this->resourcesVictory() >= 1.0) {

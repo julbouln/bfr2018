@@ -5,6 +5,8 @@
 #include "Entity.hpp"
 #include "Options.hpp"
 
+#include "Stages/GameStage.hpp"
+
 struct AnimationFrameChanged {
 	EntityID entity;
 	std::string state;
@@ -33,6 +35,11 @@ struct EffectDestroy {
 	EntityID entity; // effect entity
 };
 
+struct StageChange {
+	NextStage nextStage;
+};
+
 struct EntityMustBeDestroyed {
 	EntityID entity;
 };
+

@@ -66,4 +66,13 @@ public:
 	void attack(Unit & unit, EntityID destEnt);
 	void attack(EntityID entity, EntityID destEnt);
 
+	inline float resourcesVictory() const {
+		return (float)(this->map->width * this->map->height) / 2.0;
+	}
+
+	inline float butcheryVictory() const {
+		return (float)(this->map->width * this->map->height) / 2.0;
+	}
+
+
 };
