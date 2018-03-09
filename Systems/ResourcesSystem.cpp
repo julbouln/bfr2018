@@ -23,7 +23,7 @@ void ResourcesSystem::update(float dt) {
 					for (sf::Vector2i &p : this->tileSurface(newTile)) {
 						EntityID posEnt = this->map->resources.get(p.x, p.y);
 						if (posEnt != 0 && posEnt != entity) {
-							markDelete.insert(posEnt);
+							this->vault->dispatcher.trigger<EntityDelete>(posEnt);
 							this->map->resources.set(p.x, p.y, 0);
 						}
 					}
@@ -34,7 +34,7 @@ void ResourcesSystem::update(float dt) {
 			} else {
 				// max
 				this->seedResources(resource.type, entity);
-				markDelete.insert(entity);
+				this->vault->dispatcher.trigger<EntityDelete>(entity);
 			}
 		}
 
@@ -52,7 +52,6 @@ void ResourcesSystem::update(float dt) {
 			natureResources += resource.level;
 		else
 			pollutionResources += resource.level;
-
 	}
 
 	auto playerView = this->vault->registry.view<Player>();

@@ -10,6 +10,14 @@
 
 class InterfaceSystem : public GameSystem {
 public:
+	sf::Sprite iface;
+	sf::Sprite box;
+	int box_w;
+	sf::Sprite minimap_bg;
+	int minimap_bg_h;
+	sf::Sprite indice_bg;
+	sf::Sprite indice;
+
 	void init();
 	void update(float dt);
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);

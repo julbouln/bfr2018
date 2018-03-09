@@ -322,8 +322,7 @@ void CombatSystem::update(float dt) {
 					}
 
 					this->vault->dispatcher.trigger<EffectCreate>("alt_die", entity, tile.ppos, altOptions);
-
-					obj.destroy = true;
+					this->vault->dispatcher.trigger<EntityDelete>(entity);
 				} else {
 					// unit died, destroy after playing anim
 					if (this->vault->registry.has<AnimatedSpritesheet>(entity))
@@ -331,10 +330,10 @@ void CombatSystem::update(float dt) {
 						AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
 						if (anim.states.count("die") > 0) {
 							if (anim.states["die"][tile.view].l >= 1) {
-								obj.destroy = true;
+								this->vault->dispatcher.trigger<EntityDelete>(entity);
 							}
 						} else {
-							obj.destroy = true;
+							this->vault->dispatcher.trigger<EntityDelete>(entity);
 						}
 					}
 				}
@@ -381,7 +380,7 @@ void CombatSystem::update(float dt) {
 			this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
 			map->sounds.push(SoundPlay{"explosion", 2, true, tile.pos});
 
-			obj.destroy = true;
+			this->vault->dispatcher.trigger<EntityDelete>(entity);
 
 		} else {
 			// change tile view to show damages

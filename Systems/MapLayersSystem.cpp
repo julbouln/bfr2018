@@ -218,12 +218,7 @@ void MapLayersSystem::updatePlayerFogLayer(EntityID playerEnt, sf::IntRect clip,
 #endif
 }
 
-EntityID MapLayersSystem::getTile(std::string name, int n) {
-	return tiles[name][n];
-}
-
 // Terrains/Transitions
-
 void MapLayersSystem::initTransitions() {
 	for (int i = 0; i < 32; i++) {
 		sandTransitions.push_back(i);
@@ -297,64 +292,6 @@ void MapLayersSystem::initTransitions() {
 //		for (int i = 0; i < 256; i++) {
 //			debugTransitions.push_back(this->vault->factory.createTerrain(this->vault->registry, "debug_transition", i));
 //		}
-
-}
-
-void MapLayersSystem::initCorpse(std::string name, EntityID playerEnt) {
-	Tile tile;
-	this->vault->factory.parseTileFromXml(name, tile);
-
-	tile.pos = sf::Vector2i(0, 0);
-	tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
-	tile.z = 0;
-
-	tile.sprite.setTexture(this->vault->factory.getTex(name));
-	tile.state = "die";
-	tile.shader = false;
-	this->vault->factory.setColorSwapShader(this->vault->registry, tile, playerEnt);
-
-	tile.sprite.setTextureRect(sf::IntRect(0, ((this->vault->factory.getTex(name).getSize().y / tile.psize.y) - 1)*tile.psize.y, tile.psize.x, tile.psize.y)); // texture need to be updated
-
-	tile.centerRect = this->vault->factory.getCenterRect(name);
-
-	std::vector<EntityID> tvec;
-	tvec.push_back(this->vault->registry.create());
-	this->vault->registry.assign<Tile>(tvec.front(), tile);
-	tiles[name + "_corpse_" + std::to_string(playerEnt)] = tvec; // UGLY and unoptimized
-}
-
-// init corpses and ruins tiles, must be called after player creation
-void MapLayersSystem::initCorpses() {
-
-	auto playerView = this->vault->registry.view<Player>();
-	for (EntityID playerEnt : playerView) {
-		Player &player = playerView.get(playerEnt);
-		for (TechNode *node : this->vault->factory.getTechNodes(player.team)) {
-			if (node->comp == TechComponent::Character) {
-				this->initCorpse(node->type, playerEnt);
-			}
-		}
-	}
-
-	std::vector<EntityID> tvec;
-
-	for (int i = 0; i < 2; i++) {
-		int ruinHeight = this->vault->factory.getTex("ruin").getSize().y / 2;
-		Tile ruinTile;
-		ruinTile.pos = sf::Vector2i(0, 0);
-		ruinTile.ppos = sf::Vector2f(ruinTile.pos) * (float)32.0;
-		ruinTile.shader = false;
-		ruinTile.psize = sf::Vector2f(this->vault->factory.getTex("ruin").getSize().x, ruinHeight);
-		ruinTile.sprite.setTexture(this->vault->factory.getTex("ruin"));
-		ruinTile.centerRect = this->vault->factory.getCenterRect("ruin");
-		ruinTile.sprite.setTextureRect(sf::IntRect(0, i * ruinHeight, ruinTile.psize.x, ruinTile.psize.y)); // texture need to be updated
-
-		ruinTile.state = "idle";
-
-		tvec.push_back(this->vault->registry.create());
-		this->vault->registry.assign<Tile>(tvec.back(), ruinTile);
-	}
-	tiles["ruin"] = tvec;
 
 }
 

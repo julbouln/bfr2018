@@ -2,12 +2,37 @@
 
 
 void InterfaceSystem::init() {
+	GameController &controller = this->vault->registry.get<GameController>();
+		Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
+	if (player.team != "neutral") {
+		iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
+		box.setTexture(this->vault->factory.getTex("box_" + player.team));
+		box_w = this->vault->factory.getTex("box_" + player.team).getSize().x;
+		minimap_bg.setTexture(this->vault->factory.getTex("minimap_" + player.team));
+		minimap_bg_h = this->vault->factory.getTex("minimap_" + player.team).getSize().y;
+		indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
+		indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
+	}
+
 };
 
 void InterfaceSystem::update(float dt) {
 };
 
 void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+
+	iface.setPosition(sf::Vector2f(0, 0));
+	iface.setScale(this->scaleX(), this->scaleY());
+	window.draw(iface);
+
+	minimap_bg.setPosition(sf::Vector2f(0, (600 - minimap_bg_h) * this->scaleY()));
+	minimap_bg.setScale(this->scaleX(), this->scaleY());
+	window.draw(minimap_bg);
+
+	box.setPosition(sf::Vector2f((800 - box_w) * this->scaleX(), (600 - 136) * this->scaleY()));
+	box.setScale(this->scaleX(), this->scaleY());
+	window.draw(box);
+
 	this->menuGui();
 	this->gameStateGui();
 	this->actionGui();
@@ -68,7 +93,7 @@ void InterfaceSystem::menuGui() {
 		if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("menu_button"),
 		                           this->vault->factory.texManager.getRef("menu_button"),
 		                           this->vault->factory.texManager.getRef("menu_button_down"))) {
-			this->vault->dispatcher.trigger<StageChange>(NextStageStr("play_menu"));
+			this->vault->dispatcher.trigger<GameStageChange>(NextStageStr("play_menu"));
 
 		}
 		ImGui::End();

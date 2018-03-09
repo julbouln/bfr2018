@@ -35,11 +35,11 @@ struct EffectDestroy {
 	EntityID entity; // effect entity
 };
 
-struct StageChange {
+struct GameStageChange {
 	NextStage nextStage;
 };
 
-struct EntityMustBeDestroyed {
+struct EntityDelete {
 	EntityID entity;
 };
 

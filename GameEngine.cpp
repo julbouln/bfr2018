@@ -14,7 +14,7 @@ GameEngine::~GameEngine() {
 	delete this->map;
 }
 
-void GameEngine::receive(const StageChange &event) {
+void GameEngine::receive(const GameStageChange &event) {
 	this->nextStage = event.nextStage;
 	fadeOut();
 }
@@ -37,7 +37,12 @@ void GameEngine::init() {
 	text.setColor(sf::Color::White);
 #endif
 
-	this->initView();
+	sf::Vector2f pos = sf::Vector2f(this->game->window.getSize());
+	guiView.setSize(pos);
+	gameView.setSize(pos);
+	pos *= 0.5f;
+	guiView.setCenter(pos);
+	gameView.setCenter(pos);
 
 #ifdef GAME_ENGINE_DEBUG
 	std::cout << "GameEngine: loading ..." << std::endl;
@@ -61,7 +66,7 @@ void GameEngine::init() {
 	this->fadeIn();
 	this->gameSpeed = 1;
 
-	this->vault->dispatcher.connect<StageChange>(this);
+	this->vault->dispatcher.connect<GameStageChange>(this);
 }
 
 void GameEngine::reset() {
@@ -104,30 +109,19 @@ void GameEngine::setVaults(GameVault *vault) {
 	victory.setShared(vault, this->map, this->width, this->height);
 	sound.setShared(vault, this->map, this->width, this->height);
 	fx.setShared(vault, this->map, this->width, this->height);
+	deletion.setShared(vault, this->map, this->width, this->height);
 	ai.setShared(vault, this->map, this->width, this->height);
 	interface.setShared(vault, this->map, this->width, this->height);
 }
 
-void GameEngine::initView() {
-	sf::Vector2f pos = sf::Vector2f(this->game->window.getSize());
-	guiView.setSize(pos);
-	gameView.setSize(pos);
-	pos *= 0.5f;
-	guiView.setCenter(pos);
-	gameView.setCenter(pos);
-}
-
 void GameEngine::centerMapView(sf::Vector2i position) {
-	sf::Vector2f centre(position.x * 32, position.y * 32);
-	this->gameView.setCenter(centre);
+	this->gameView.setCenter(sf::Vector2f(position) * 32.0f);
 }
-
 
 void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 	mapLayers.initTransitions();
 
 	EntityID playerEnt = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
-//	this->currentPlayer = playerEnt;
 
 	this->vault->registry.attach<GameController>(playerEnt);
 
@@ -139,24 +133,19 @@ void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::st
 	mapLayers.updateAllTransitions();
 	drawMap.updateAllTileMaps();
 
-	ai.generate();
+	ai.init();
+
+	interface.init();
 
 	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
+	
 	if (player.team != "neutral") {
 		this->centerMapView(player.initialPos);
-		iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
-		box.setTexture(this->vault->factory.getTex("box_" + player.team));
-		box_w = this->vault->factory.getTex("box_" + player.team).getSize().x;
-		minimap_bg.setTexture(this->vault->factory.getTex("minimap_" + player.team));
-		minimap_bg_h = this->vault->factory.getTex("minimap_" + player.team).getSize().y;
-		indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
-		indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
 	} else {
-		this->centerMapView(sf::Vector2i(this->map->width / 2, this->map->height / 2));
+		this->centerMapView(sf::Vector2i(this->map->width / 2, this->map->height / 2));		
 	}
 
-	mapLayers.initCorpses();
-
+	deletion.init();
 	minimap.init(sf::Vector2f(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14)), 96.0 * this->scaleX());
 	victory.init();
 	pathfinding.init();
@@ -274,43 +263,8 @@ sf::IntRect GameEngine::viewClip() {
 	return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw - mx, mh - my));
 }
 
-void GameEngine::draw(float dt) {
+void GameEngine::debugDraw(float dt) {
 	GameController &controller = this->vault->registry.get<GameController>();
-
-	this->game->window.setView(this->gameView);
-	sf::IntRect clip = this->viewClip();
-
-	drawMap.draw(this->game->window, clip, dt);
-//		if (this->gameSpeed < 2)
-	fx.draw(this->game->window, clip, dt);
-
-	drawMap.drawFogTileMap(this->game->window, dt);
-
-	// draw selected
-	for (EntityID selectedObj : controller.selectedObjs) {
-		Tile &tile = this->vault->registry.get<Tile>(selectedObj);
-
-		sf::Vector2f pos = this->tileDrawPosition(tile);
-
-		sf::Sprite selected(this->vault->factory.getTex("selected"));
-		selected.setTextureRect(sf::IntRect(0, 0, 7, 7));
-		selected.setPosition(pos);
-		this->game->window.draw(selected);
-
-		selected.setTextureRect(sf::IntRect(0, 7, 7, 7));
-		selected.setPosition(sf::Vector2f(pos.x + tile.psize.x - 7, pos.y));
-		this->game->window.draw(selected);
-
-		selected.setTextureRect(sf::IntRect(0, 14, 7, 7));
-		selected.setPosition(sf::Vector2f(pos.x + tile.psize.x - 7, pos.y + tile.psize.y - 7));
-		this->game->window.draw(selected);
-
-		selected.setTextureRect(sf::IntRect(0, 21, 7, 7));
-		selected.setPosition(sf::Vector2f(pos.x, pos.y + tile.psize.y - 7));
-		this->game->window.draw(selected);
-	}
-
-	victory.draw(this->game->window, dt);
 
 	if (controller.showDebugWindow && controller.selectedDebugObj) {
 		if (this->vault->registry.valid(controller.selectedDebugObj)) {
@@ -543,6 +497,44 @@ void GameEngine::draw(float dt) {
 
 	}
 
+}
+
+void GameEngine::draw(float dt) {
+	GameController &controller = this->vault->registry.get<GameController>();
+
+	this->game->window.setView(this->gameView);
+	sf::IntRect clip = this->viewClip();
+
+	drawMap.draw(this->game->window, clip, dt);
+//		if (this->gameSpeed < 2)
+	fx.draw(this->game->window, clip, dt);
+
+	drawMap.drawFogTileMap(this->game->window, dt);
+
+	// draw selected
+	for (EntityID selectedObj : controller.selectedObjs) {
+		Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+
+		sf::Vector2f pos = this->tileDrawPosition(tile);
+
+		sf::Sprite selected(this->vault->factory.getTex("selected"));
+		selected.setTextureRect(sf::IntRect(0, 0, 7, 7));
+		selected.setPosition(pos);
+		this->game->window.draw(selected);
+
+		selected.setTextureRect(sf::IntRect(0, 7, 7, 7));
+		selected.setPosition(sf::Vector2f(pos.x + tile.psize.x - 7, pos.y));
+		this->game->window.draw(selected);
+
+		selected.setTextureRect(sf::IntRect(0, 14, 7, 7));
+		selected.setPosition(sf::Vector2f(pos.x + tile.psize.x - 7, pos.y + tile.psize.y - 7));
+		this->game->window.draw(selected);
+
+		selected.setTextureRect(sf::IntRect(0, 21, 7, 7));
+		selected.setPosition(sf::Vector2f(pos.x, pos.y + tile.psize.y - 7));
+		this->game->window.draw(selected);
+	}
+
 	if (controller.action == Action::Selecting) {
 		sf::RectangleShape rectangle;
 		rectangle.setSize(controller.selectionEnd - controller.selectionStart);
@@ -565,19 +557,11 @@ void GameEngine::draw(float dt) {
 		}
 	}
 
+	this->debugDraw(dt);
+
+	victory.draw(this->game->window, dt);
+
 	this->game->window.setView(this->guiView);
-
-	iface.setPosition(sf::Vector2f(0, 0));
-	iface.setScale(this->scaleX(), this->scaleY());
-	this->game->window.draw(iface);
-
-	minimap_bg.setPosition(sf::Vector2f(0, (600 - minimap_bg_h) * this->scaleY()));
-	minimap_bg.setScale(this->scaleX(), this->scaleY());
-	this->game->window.draw(minimap_bg);
-
-	box.setPosition(sf::Vector2f((800 - box_w) * this->scaleX(), (600 - 136) * this->scaleY()));
-	box.setScale(this->scaleX(), this->scaleY());
-	this->game->window.draw(box);
 
 	if (controller.showDebugWindow)
 		this->debugGui(dt);
@@ -600,37 +584,6 @@ void GameEngine::setGameSpeed(float factor) {
 	} else {
 		this->game->window.setFramerateLimit(30 * factor);
 		this->timePerTick = 0.1 / factor;
-	}
-}
-
-void GameEngine::destroyObjs(float dt) {
-	auto objView = this->vault->registry.persistent<Tile, GameObject>();
-	for (EntityID entity : objView) {
-		Tile &tile = objView.get<Tile>(entity);
-		GameObject &obj = objView.get<GameObject>(entity);
-
-		if (obj.destroy) {
-			if (this->vault->registry.has<Unit>(entity)) {
-				Unit &unit = this->vault->registry.get<Unit>(entity);
-				EntityID corpseEnt = mapLayers.getTile(obj.name + "_corpse_" + std::to_string(obj.player), 0);
-//					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
-				this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
-			}
-			if (this->vault->registry.has<Building>(entity)) {
-				Building &building = this->vault->registry.get<Building>(entity);
-				if (obj.team == "rebel") {
-					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 0));
-				} else {
-					this->map->corpses.set(tile.pos.x, tile.pos.y, mapLayers.getTile("ruin", 1));
-				}
-
-				if (building.construction) {
-					// destroy currently building cons
-					this->vault->factory.destroyEntity(this->vault->registry, building.construction);
-				}
-			}
-			this->vault->factory.destroyEntity(this->vault->registry, entity);
-		}
 	}
 }
 
@@ -659,7 +612,6 @@ void GameEngine::updatePlayers(float dt) {
 		}
 	}
 }
-
 
 void GameEngine::updateHundred(float dt) {
 	GameController &controller = this->vault->registry.get<GameController>();
@@ -730,6 +682,7 @@ void GameEngine::update(float dt) {
 	if (this->currentTime < this->timePerTick) return;
 
 	this->ticks++;
+	
 	updateDt = this->currentTime;
 	this->currentTime = 0.0;
 
@@ -748,10 +701,12 @@ void GameEngine::update(float dt) {
 	this->construction.update(updateDt);
 
 	this->combat.update(updateDt);
-	this->destroyObjs(updateDt);
 
 	this->resources.update(updateDt);
+
+	this->deletion.update(updateDt);
 	this->mapLayers.update(updateDt);
+
 	this->drawMap.update(updateDt);
 	this->map->markUpdateClear();
 
@@ -761,6 +716,7 @@ void GameEngine::update(float dt) {
 	ai.update(updateDt);
 
 	interface.updateSelected(updateDt);
+
 
 }
 

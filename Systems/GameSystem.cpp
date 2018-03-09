@@ -204,8 +204,7 @@ void GameSystem::spendResources(EntityID playerEnt, std::string type, int val) {
 			fxPos.y += 16.0;
 
 			this->vault->dispatcher.trigger<EffectCreate>("spend", entity, fxPos, ParticleEffectOptions());
-
-			this->vault->factory.destroyEntity(this->vault->registry, entity);
+			this->vault->dispatcher.trigger<EntityDelete>(entity);
 
 			if (spended <= 0)
 				return;

@@ -675,7 +675,7 @@ public:
 		this->nazAI.setShared(this->vault, map, screenWidth, screenHeight);
 	}
 
-	void generate() {
+	void init() {
 		auto view = this->vault->registry.view<Player>();
 		for (EntityID entity : view) {
 			Player &player = view.get(entity);

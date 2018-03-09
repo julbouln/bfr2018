@@ -24,6 +24,7 @@
 #include "Systems/SoundSystem.hpp"
 #include "Systems/FxSystem.hpp"
 #include "Systems/InterfaceSystem.hpp"
+#include "Systems/DeletionSystem.hpp"
 
 #include "AI.hpp"
 
@@ -50,17 +51,10 @@ public:
 	VictorySystem victory;
 	SoundSystem sound;
 	FxSystem fx;
+	DeletionSystem deletion;
 	AI ai;
 
 	InterfaceSystem interface;
-
-	sf::Sprite iface;
-	sf::Sprite box;
-	int box_w;
-	sf::Sprite minimap_bg;
-	int minimap_bg_h;
-	sf::Sprite indice_bg;
-	sf::Sprite indice;
 
 	sf::View gameView;
 	sf::View guiView;
@@ -72,7 +66,7 @@ public:
 	~GameEngine();
 
 	void init();
-	void initView();
+
 	void centerMapView(sf::Vector2i position);
 
 	void reset();
@@ -94,18 +88,16 @@ public:
 	void debugGui(float dt);
 
 	void updatePlayers(float dt);
-// remove entity from selected is not valid anymore
 	void updateHundred(float dt);
 	void updateDecade(float dt);
 	void updateEveryFrame(float dt);
 
 	sf::IntRect viewClip();
 
+	void debugDraw(float dt);
 	void draw(float dt);
 
 	void setGameSpeed(float factor) ;
-
-	void destroyObjs(float dt);
 
 	void update(float dt);
 	void updateMoveView(float dt);
@@ -113,7 +105,7 @@ public:
 	void handleEvent(sf::Event & event);
 
 	// signals
-	void receive(const StageChange &event);
+	void receive(const GameStageChange &event);
 
 };
 

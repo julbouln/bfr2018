@@ -31,17 +31,12 @@ public:
 
 	void init();
 
-	void initCorpses();
-	EntityID getTile(std::string name, int n);
-
 private:
 	void updateLayer(float dt);
 	void updatePlayersFog(float dt);
 
 // Terrains/Transitions
 
-	void initCorpse(std::string name, EntityID playerEnt);
-	// init corpses and ruins tiles, must be called after player creation
 // https://gamedevelopment.tutsplus.com/tutorials/how-to-use-tile-bitmasking-to-auto-tile-your-level-layouts--cms-25673
 	int transitionBitmask(Layer<int> & layer, EntityID ent, int x, int y);
 	int voidTransitionBitmask(Layer<int> & layer, EntityID ent, int x, int y);
