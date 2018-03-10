@@ -3,7 +3,7 @@
 
 void InterfaceSystem::init() {
 	GameController &controller = this->vault->registry.get<GameController>();
-		Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
+	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
 	if (player.team != "neutral") {
 		iface.setTexture(this->vault->factory.getTex("interface_" + player.team));
 		box.setTexture(this->vault->factory.getTex("box_" + player.team));
@@ -36,7 +36,6 @@ void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt)
 	this->menuGui();
 	this->gameStateGui();
 	this->actionGui();
-	ImGui::SFML::Render(window);
 }
 
 
@@ -111,7 +110,7 @@ void InterfaceSystem::gameStateGui() {
 	ImVec2 window_pos = ImVec2(leftDist, topDist);
 	ImVec2 window_pos_pivot = ImVec2(0.0f, 0.0f);
 	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-//		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 	if (ImGui::Begin("State", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 	{
 		ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
@@ -126,7 +125,7 @@ void InterfaceSystem::gameStateGui() {
 
 		ImGui::End();
 	}
-//		ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 }
 
 void InterfaceSystem::constructionProgressGui(EntityID consEnt) {
@@ -327,5 +326,93 @@ void InterfaceSystem::actionGui() {
 		ImGui::PopStyleColor();
 //		this->guiPopStyles();
 	}
+}
+
+
+void InterfaceSystem::debugGui(sf::RenderWindow &window, sf::View &view, int *gameSpeed, float dt) {
+	GameController &controller = this->vault->registry.get<GameController>();
+	sf::Vector2f gamePos = (window.mapPixelToCoords(sf::Mouse::getPosition(window), view));
+	sf::Vector2f gameMapPos = gamePos;
+	gameMapPos.x /= 32.0;
+	gameMapPos.y /= 32.0;
+
+	const float DISTANCE = 10.0f;
+	ImVec2 window_pos = ImVec2((controller.debugCorner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (controller.debugCorner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
+	ImVec2 window_pos_pivot = ImVec2((controller.debugCorner & 1) ? 1.0f : 0.0f, (controller.debugCorner & 2) ? 1.0f : 0.0f);
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
+	ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
+	if (ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
+	{
+		ImGui::Text("FPS: %.2f", 1 / dt);
+		ImGui::Text("Total Entities: %d", (int)this->vault->registry.size());
+//		ImGui::Text("Drawn Entities: %d", (int)drawMap.entitiesDrawList.size());
+//		ImGui::Checkbox("Debug layer", &drawMap.showDebugLayer);
+
+		ImGui::Text("Speed"); ImGui::SameLine();
+		ImGui::RadioButton("0", gameSpeed, 0); ImGui::SameLine();
+		ImGui::RadioButton("x1", gameSpeed, 1); ImGui::SameLine();
+		ImGui::RadioButton("x4", gameSpeed, 4); ImGui::SameLine();
+		ImGui::RadioButton("x16", gameSpeed, 16);
+
+		if (controller.selectedDebugObj) {
+			EntityID selectedObj = controller.selectedDebugObj;
+			if (this->vault->registry.valid(selectedObj)) {
+				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
+				ImGui::Text("ID: %d", selectedObj);
+				ImGui::Text("Case position: %dx%d", tile.pos.x, tile.pos.y);
+				ImGui::Text("Case size: %dx%d", tile.size.x, tile.size.y);
+				ImGui::Text("Pixel position: %.2fx%.2f", tile.ppos.x, tile.ppos.y);
+				ImGui::Text("Pixel size: %.2fx%.2f", tile.psize.x, tile.psize.y);
+				ImGui::Text("Offset: %dx%d", tile.offset.x, tile.offset.y);
+				ImGui::Text("Z: %d", tile.z);
+				ImGui::Text("Center: %dx%d:%dx%d", tile.centerRect.left, tile.centerRect.top, tile.centerRect.width, tile.centerRect.height);
+				ImGui::Text("View: %d", tile.view);
+				ImGui::Text("State: %s", tile.state.c_str());
+
+				if (this->vault->registry.has<GameObject>(selectedObj)) {
+					GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
+					ImGui::Separator();
+					ImGui::Text("GameObject: ");
+					ImGui::Text("Name: %s", obj.name.c_str());
+					ImGui::Text("Team: %s", obj.team.c_str());
+					ImGui::Text("Life: %f", obj.life);
+				}
+				if (this->vault->registry.has<Unit>(selectedObj)) {
+					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
+					ImGui::Separator();
+					ImGui::Text("Unit: ");
+					ImGui::Text("Direction: %dx%d", unit.direction.x, unit.direction.y);
+					ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
+					ImGui::Text("Dest attack: %d", (int)unit.targetEnt);
+					ImGui::Text("Velocity: %.2fx%.2f", unit.velocity.x, unit.velocity.y);
+				}
+				if (this->vault->registry.has<Resource>(selectedObj)) {
+					Resource &resource = this->vault->registry.get<Resource>(selectedObj);
+					ImGui::Separator();
+					ImGui::Text("Resource: ");
+					ImGui::Text("Level: %d\n", resource.level);
+					ImGui::Text("Grow: %.2f\n", resource.grow);
+				}
+			}
+		}
+
+		ImGui::Separator();
+		ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+		ImGui::Text("Game Position: (%.1f,%.1f)", gamePos.x, gamePos.y);
+		ImGui::Text("Game map position: (%.1f,%.1f)", gameMapPos.x, gameMapPos.y);
+
+		if (ImGui::BeginPopupContextWindow())
+		{
+			if (ImGui::MenuItem("Top-left", NULL, controller.debugCorner == 0)) controller.debugCorner = 0;
+			if (ImGui::MenuItem("Top-right", NULL, controller.debugCorner == 1)) controller.debugCorner = 1;
+			if (ImGui::MenuItem("Bottom-left", NULL, controller.debugCorner == 2)) controller.debugCorner = 2;
+			if (ImGui::MenuItem("Bottom-right", NULL, controller.debugCorner == 3)) controller.debugCorner = 3;
+			ImGui::EndPopup();
+		}
+		ImGui::End();
+	}
+	ImGui::PopStyleColor();
+	ImGui::PopFont();
 }
 

@@ -1,15 +1,13 @@
 #include "DrawMapSystem.hpp"
 
 DrawMapSystem::DrawMapSystem() {
-	this->showDebugLayer = false;
 }
 
 void DrawMapSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 	this->drawTerrainTileMap(window, dt);
 	this->drawTileLayers(window, clip, dt);
 	this->drawObjLayer(window, clip, dt);
-	if (showDebugLayer)
-		this->drawDebug(window, clip, dt);
+	this->drawDebug(window, clip, dt);
 }
 
 void DrawMapSystem::drawSpriteWithShader(sf::RenderTarget & target, sf::Sprite & sprite, std::string shaderName, ShaderOptions & options) {
@@ -236,7 +234,10 @@ void DrawMapSystem::drawObjLayer(sf::RenderWindow & window, sf::IntRect clip, fl
 	}
 }
 
-void DrawMapSystem::initTileMaps(int w, int h) {
+void DrawMapSystem::initTileMaps() {
+	int w = this->map->width;
+	int h = this->map->height;
+	
 	terrainsTileMap.resize(6, w, h);
 
 	for (int i = 0; i < 15; i++) {
@@ -383,44 +384,278 @@ void DrawMapSystem::update(float dt) {
 
 // draw debug grid
 void DrawMapSystem::drawDebug(sf::RenderWindow & window, sf::IntRect clip, float dt) {
-	for (int y = clip.top; y < clip.top + clip.height; ++y)
-	{
-		for (int x = clip.left; x < clip.left + clip.width; ++x)
+	GameController &controller = this->vault->registry.get<GameController>();
+	if (controller.showDebugWindow) {
+		for (int y = clip.top; y < clip.top + clip.height; ++y)
 		{
-			EntityID objEnt = this->map->objs.get(x, y);
-			// objects
-			if (objEnt) {
-				sf::RectangleShape rectangle;
+			for (int x = clip.left; x < clip.left + clip.width; ++x)
+			{
+				EntityID objEnt = this->map->objs.get(x, y);
+				// objects
+				if (objEnt) {
+					sf::RectangleShape rectangle;
 
-				sf::Vector2f pos;
-				pos.x = x * 32;
-				pos.y = y * 32;
+					sf::Vector2f pos;
+					pos.x = x * 32;
+					pos.y = y * 32;
 
-				rectangle.setSize(sf::Vector2f(32, 32));
-				rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-				rectangle.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0x7f));
-				rectangle.setOutlineThickness(1);
-				rectangle.setPosition(pos);
+					rectangle.setSize(sf::Vector2f(32, 32));
+					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					rectangle.setOutlineColor(sf::Color(0xff, 0xff, 0xff, 0x7f));
+					rectangle.setOutlineThickness(1);
+					rectangle.setPosition(pos);
 
-				window.draw(rectangle);
+					window.draw(rectangle);
+				}
+
+				// resources
+				if (this->map->resources.get(x, y)) {
+					sf::RectangleShape rectangle;
+
+					sf::Vector2f pos;
+					pos.x = x * 32;
+					pos.y = y * 32;
+
+					rectangle.setSize(sf::Vector2f(32, 32));
+					rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					rectangle.setOutlineColor(sf::Color(0x00, 0xff, 0x00, 0x7f));
+					rectangle.setOutlineThickness(1);
+					rectangle.setPosition(pos);
+
+					window.draw(rectangle);
+				}
 			}
+		}
 
-			// resources
-			if (this->map->resources.get(x, y)) {
-				sf::RectangleShape rectangle;
+		if (controller.selectedDebugObj) {
+			if (this->vault->registry.valid(controller.selectedDebugObj)) {
+				Tile &tile = this->vault->registry.get<Tile>(controller.selectedDebugObj);
 
+				// draw surface case
+				for (sf::Vector2i const &p : this->tileSurface(tile)) {
+					sf::RectangleShape srect;
+
+					sf::Vector2f pos;
+					pos.x = p.x * 32;
+					pos.y = p.y * 32;
+
+					srect.setSize(sf::Vector2f(32, 32));
+					srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					srect.setOutlineColor(sf::Color(0x00, 0xFF, 0xFF, 0xFF));
+					srect.setOutlineThickness(2);
+					srect.setPosition(pos);
+
+					window.draw(srect);
+				}
+
+				// view range
+
+				if (this->vault->registry.has<GameObject>(controller.selectedDebugObj)) {
+					GameObject &obj = this->vault->registry.get<GameObject>(controller.selectedDebugObj);
+					for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
+						sf::RectangleShape srect;
+
+						sf::Vector2f pos;
+						pos.x = p.x * 32;
+						pos.y = p.y * 32;
+
+						srect.setSize(sf::Vector2f(32, 32));
+						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						srect.setOutlineColor(sf::Color(0xff, 0xff, 0x00, 0x7f));
+						srect.setOutlineThickness(2);
+						srect.setPosition(pos);
+
+						window.draw(srect);
+					}
+				}
+
+				// attack range
+				if (this->vault->registry.has<Unit>(controller.selectedDebugObj)) {
+					Unit &unit = this->vault->registry.get<Unit>(controller.selectedDebugObj);
+					int dist = 1;
+					int maxDist = 1;
+					if (unit.attack2.distance) {
+						dist = unit.attack2.distance;
+						maxDist = unit.attack2.maxDistance;
+					}
+
+					for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
+						sf::RectangleShape srect;
+
+						sf::Vector2f pos = sf::Vector2f(p * 32);
+
+						srect.setSize(sf::Vector2f(32, 32));
+						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						srect.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+						srect.setOutlineThickness(2);
+						srect.setPosition(pos);
+
+						window.draw(srect);
+					}
+
+					sf::Vector2f sppos = tile.ppos - dist * 32.0f;
+
+					sf::CircleShape scircle;
+					scircle.setRadius(dist * 32.0f);
+					scircle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					scircle.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+					scircle.setOutlineThickness(2);
+					scircle.setPosition(sppos);
+
+					window.draw(scircle);
+
+					sf::Vector2f eppos = tile.ppos - maxDist * 32.0f;
+
+					sf::CircleShape ecircle;
+					ecircle.setRadius(maxDist * 32.0f);
+					ecircle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+					ecircle.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+					ecircle.setOutlineThickness(2);
+					ecircle.setPosition(eppos);
+
+					window.draw(ecircle);
+
+				}
+
+				// around building
+				if (this->vault->registry.has<Building>(controller.selectedDebugObj)) {
+					Building &building = this->vault->registry.get<Building>(controller.selectedDebugObj);
+					int dist = 1;
+					int maxDist = 2;
+					for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
+						sf::RectangleShape srect;
+
+						sf::Vector2f pos;
+						pos.x = p.x * 32;
+						pos.y = p.y * 32;
+
+						srect.setSize(sf::Vector2f(32, 32));
+						srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+						srect.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
+						srect.setOutlineThickness(2);
+						srect.setPosition(pos);
+
+						window.draw(srect);
+					}
+				}
+
+				// draw tile case
+				sf::RectangleShape trect;
 				sf::Vector2f pos;
-				pos.x = x * 32;
-				pos.y = y * 32;
+				pos.x = tile.pos.x * 32;
+				pos.y = tile.pos.y * 32;
+				trect.setSize(sf::Vector2f(32, 32));
+				trect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				trect.setOutlineColor(sf::Color::Blue);
+				trect.setOutlineThickness(2);
+				trect.setPosition(pos);
+				window.draw(trect);
 
-				rectangle.setSize(sf::Vector2f(32, 32));
-				rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-				rectangle.setOutlineColor(sf::Color(0x00, 0xff, 0x00, 0x7f));
-				rectangle.setOutlineThickness(1);
-				rectangle.setPosition(pos);
+				// draw pixel rect
+				sf::RectangleShape drect;
+				sf::Vector2f dpos = this->tileDrawPosition(tile);
+				drect.setSize(tile.psize);
+				drect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				drect.setOutlineColor(sf::Color(0xff, 0xb6, 0xc1, 0xff));
+				drect.setOutlineThickness(2);
+				drect.setPosition(dpos);
+				window.draw(drect);
 
-				window.draw(rectangle);
+				// draw center rect
+				sf::RectangleShape crect;
+				sf::Vector2f cpos;
+				cpos.x = dpos.x + tile.centerRect.left;
+				cpos.y = dpos.y + tile.centerRect.top;
+				crect.setSize(sf::Vector2f(tile.centerRect.width, tile.centerRect.height));
+				crect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+				crect.setOutlineColor(sf::Color(255, 36, 196));
+				crect.setOutlineThickness(2);
+				crect.setPosition(cpos);
+				window.draw(crect);
+
+				// draw FlowFields
+				if (this->vault->registry.has<Unit>(controller.selectedDebugObj)) {
+					Tile &tile = this->vault->registry.get<Tile>(controller.selectedDebugObj);
+					Unit &unit = this->vault->registry.get<Unit>(controller.selectedDebugObj);
+					if (tile.pos != unit.destpos) {
+						sf::Vector2i fOffset = unit.flowFieldPath.offset(tile.pos);
+						FlowField *field = unit.flowFieldPath.getCurrentFlowField();
+						if (field) {
+							sf::Vector2i fsize = field->getSize();
+							for (int dx = 0; dx < fsize.x; dx++) {
+								for (int dy = 0; dy < fsize.y; dy++) {
+									int dir = field->get(dx, dy);
+									if (dir < 8) {
+										sf::Sprite dirSprite;
+										dirSprite.setColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
+										dirSprite.setTexture(this->vault->factory.getTex("arrow"));
+										dirSprite.setOrigin(sf::Vector2f(16, 16));
+										switch (dir) {
+										case 0:
+											dirSprite.setRotation(90);
+											break;
+										case 1:
+											dirSprite.setRotation(135);
+											break;
+										case 2:
+											dirSprite.setRotation(180);
+											break;
+										case 3:
+											dirSprite.setRotation(225);
+											break;
+										case 4:
+											dirSprite.setRotation(270);
+											break;
+										case 5:
+											dirSprite.setRotation(315);
+											break;
+										case 6:
+											dirSprite.setRotation(0);
+											break;
+										case 7:
+											dirSprite.setRotation(45);
+											break;
+										}
+
+										sf::Vector2f dppos((fOffset.x + dx) * 32 + 16, (fOffset.y + dy) * 32 + 16);
+										dirSprite.setPosition(dppos);
+										window.draw(dirSprite);
+									}
+								}
+							}
+
+
+							for (sf::Vector2i p : unit.flowFieldPath.inRangePathPoints(tile.pos)) {
+								sf::RectangleShape rectangle;
+
+								sf::Vector2f pos(p.x * 32, p.y * 32);
+
+								rectangle.setSize(sf::Vector2f(32, 32));
+								rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
+								rectangle.setOutlineColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
+								rectangle.setOutlineThickness(2);
+								rectangle.setPosition(pos);
+
+								window.draw(rectangle);
+							}
+
+							sf::RectangleShape rectangle;
+
+							sf::Vector2f pos(unit.flowFieldPath.ffDest.x * 32, unit.flowFieldPath.ffDest.y * 32);
+
+							rectangle.setSize(sf::Vector2f(32, 32));
+							rectangle.setFillColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
+							rectangle.setPosition(pos);
+
+							window.draw(rectangle);
+
+						}
+					}
+				}
+			} else {
+				controller.selectedDebugObj = 0;
 			}
 		}
 	}
+
 }

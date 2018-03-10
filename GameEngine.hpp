@@ -85,8 +85,6 @@ public:
 
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam);
 
-	void debugGui(float dt);
-
 	void updatePlayers(float dt);
 	void updateHundred(float dt);
 	void updateDecade(float dt);
@@ -94,7 +92,6 @@ public:
 
 	sf::IntRect viewClip();
 
-	void debugDraw(float dt);
 	void draw(float dt);
 
 	void setGameSpeed(float factor) ;

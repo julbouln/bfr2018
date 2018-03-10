@@ -20,8 +20,9 @@ class MapLayersSystem : public GameSystem {
 
 public:
 	void update(float dt);
+
 	void updateObjsLayer(float dt);
-	void updatePlayerFogLayer(EntityID playerEnt, sf::IntRect clip, float dt);
+	void updatePlayerFogLayer(EntityID playerEnt, float dt);
 	// spectator FOG concat all other players fog
 	void updateSpectatorFog(EntityID playerEnt, float dt);
 

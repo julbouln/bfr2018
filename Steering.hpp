@@ -28,17 +28,16 @@ template <typename T>
 class Steering {
 public:
 
-	sf::Vector2f seek(T &currentObject, sf::Vector2f dpos) {
-		sf::Vector2f steer = normalize(sf::Vector2f(dpos - currentObject.pos)) * currentObject.maxSpeed;
-#ifdef STEERING_DEBUG
-		if (steer != sf::Vector2f(0, 0))
-			std::cout << "Steering: seek " << currentObject.entity << " " << steer << std::endl;
-#endif
-		steer -= currentObject.velocity;
-		return limit(steer, currentObject.maxForce);
+//	sf::Vector2f capRotation(const T &currentObject, const sf::Vector2f &desired, float maxAngle) {
+//		float fullSteers = acos(dot(normalize(desired), normalize(currentObject.velocity))) / maxAngle;
+//		return dot(leftperp(desired), currentObject.velocity);
+//	}
+
+	sf::Vector2f seek(const T &currentObject, const sf::Vector2f &dpos) {
+		this->seek(currentObject, dpos, currentObject.maxSpeed);
 	}
 
-	sf::Vector2f seek(T &currentObject, sf::Vector2f dpos, float speed) {
+	sf::Vector2f seek(const T &currentObject, const sf::Vector2f &dpos, float speed) {
 		sf::Vector2f steer = normalize(sf::Vector2f(dpos - currentObject.pos)) * speed;
 #ifdef STEERING_DEBUG
 		if (steer != sf::Vector2f(0, 0))
@@ -48,9 +47,7 @@ public:
 		return limit(steer, currentObject.maxForce);
 	}
 
-
-
-	sf::Vector2f arrive(T &currentObject, sf::Vector2f target) {
+	sf::Vector2f arrive(const T &currentObject, const sf::Vector2f& target) {
 		float range = 24.0f;
 		sf::Vector2f steer = target - currentObject.pos;
 
@@ -70,7 +67,7 @@ public:
 
 
 
-	sf::Vector2f flee(T &currentObject, sf::Vector2f dpos) {
+	sf::Vector2f flee(const T &currentObject, const sf::Vector2f &dpos) {
 		sf::Vector2f steer = normalize(sf::Vector2f(currentObject.pos - dpos)) * currentObject.maxSpeed;
 #ifdef STEERING_DEBUG
 		if (steer != sf::Vector2f(0, 0))
@@ -79,7 +76,7 @@ public:
 		return steer;
 	}
 
-	sf::Vector2f followFlowField(T &currentObject, sf::Vector2i direction) {
+	sf::Vector2f followFlowField(const T &currentObject, const sf::Vector2i &direction) {
 		sf::Vector2f steer = normalize(sf::Vector2f(direction)) * currentObject.maxSpeed;
 		steer -= currentObject.velocity;
 
@@ -128,7 +125,7 @@ public:
 	}
 
 //	// same than separate ?
-	sf::Vector2f avoid(T &currentObject, std::vector<sf::Vector2f> &cases) {
+	sf::Vector2f avoid(const T &currentObject, std::vector<sf::Vector2f> &cases) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		sf::Vector2f pos = currentObject.pos;
@@ -159,25 +156,7 @@ public:
 		}
 	}
 
-	sf::Vector2f containment(T &currentObject, std::vector<sf::Vector2f> cases) {
-		sf::Vector2f ahead = currentObject.pos + normalize(currentObject.velocity) * 32.0f;
-		sf::Vector2f steer(0, 0);
-		for (auto &c : cases) {
-			if (sf::FloatRect(c.x, c.y, 32.0f, 32.0f).contains(ahead)) {
-				steer += normalize(currentObject.pos - c);
-			}
-		}
-
-		steer = normalize(steer);
-		steer *= currentObject.maxSpeed;
-
-		steer -= currentObject.velocity;
-		steer = limit(steer, currentObject.maxForce);
-
-		return steer;
-	}
-
-	sf::Vector2f separate(T &currentObject, std::vector<T> &others) {
+	sf::Vector2f separate(const T &currentObject, std::vector<T> &others) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		for (auto &other : others) {
@@ -208,7 +187,7 @@ public:
 		}
 	}
 
-	sf::Vector2f cohesion(T &currentObject, std::vector<T> &others) {
+	sf::Vector2f cohesion(const T &currentObject, std::vector<T> &others) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		for (T &other : others) {
@@ -231,7 +210,7 @@ public:
 		}
 	}
 
-	sf::Vector2f align (T &currentObject, std::vector<T> &others) {
+	sf::Vector2f align (const T &currentObject, std::vector<T> &others) {
 		sf::Vector2f steer(0, 0);
 		int count = 0;
 		for (auto &other : others) {
@@ -254,7 +233,7 @@ public:
 		}
 	}
 
-	sf::Vector2f flock(T &currentObject, std::vector<T> &others) {
+	sf::Vector2f flock(const T &currentObject, std::vector<T> &others) {
 		sf::Vector2f fv(0, 0);
 		fv += this->separate(currentObject, others);
 		fv += this->align(currentObject, others);
@@ -262,7 +241,7 @@ public:
 		return fv;
 	}
 
-	T* getNeighborAhead(T &currentObject, std::vector<T> &neighbors) {
+	T* getNeighborAhead(const T &currentObject, std::vector<T> &neighbors) {
 		T *ret = nullptr;
 		sf::Vector2f qa = normalize(currentObject.velocity) * MAX_QUEUE_AHEAD;
 
@@ -280,7 +259,7 @@ public:
 		return ret;
 	}
 
-	sf::Vector2f queue(T &currentObject, std::vector<T> &neighbors) {
+	sf::Vector2f queue(const T &currentObject, std::vector<T> &neighbors) {
 		T *neighbor = this->getNeighborAhead(currentObject, neighbors);
 
 		if (neighbor) {
@@ -296,7 +275,7 @@ public:
 
 	}
 
-	sf::Vector2f queue(T &currentObject, std::vector<T> &neighbors, sf::Vector2f currentSteer) {
+	sf::Vector2f queue(const T &currentObject, std::vector<T> &neighbors, sf::Vector2f currentSteer) {
 		sf::Vector2f v = currentObject.velocity;
 		sf::Vector2f brake;
 

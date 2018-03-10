@@ -128,13 +128,12 @@ void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::st
 	GameController &controller = this->vault->registry.get<GameController>();
 	controller.currentPlayer = playerEnt;
 
-	drawMap.initTileMaps(mapWidth, mapHeight);
+	drawMap.initTileMaps();
 
 	mapLayers.updateAllTransitions();
 	drawMap.updateAllTileMaps();
 
 	ai.init();
-
 	interface.init();
 
 	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
@@ -157,95 +156,6 @@ void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::st
 //		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);
 }
 
-void GameEngine::debugGui(float dt) {
-	GameController &controller = this->vault->registry.get<GameController>();
-	sf::Vector2f gamePos = (this->game->window.mapPixelToCoords(sf::Mouse::getPosition(this->game->window), this->gameView));
-	sf::Vector2f gameMapPos = gamePos;
-	gameMapPos.x /= 32.0;
-	gameMapPos.y /= 32.0;
-
-	const float DISTANCE = 10.0f;
-	ImVec2 window_pos = ImVec2((controller.debugCorner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (controller.debugCorner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
-	ImVec2 window_pos_pivot = ImVec2((controller.debugCorner & 1) ? 1.0f : 0.0f, (controller.debugCorner & 2) ? 1.0f : 0.0f);
-	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
-	ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
-	if (ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
-	{
-		ImGui::Text("FPS: %.2f", 1 / dt);
-		ImGui::Text("Total Entities: %d", (int)this->vault->registry.size());
-		ImGui::Text("Drawn Entities: %d", (int)drawMap.entitiesDrawList.size());
-		ImGui::Checkbox("Debug layer", &drawMap.showDebugLayer);
-
-		ImGui::Text("Speed"); ImGui::SameLine();
-		ImGui::RadioButton("0", &gameSpeed, 0); ImGui::SameLine();
-		ImGui::RadioButton("x1", &gameSpeed, 1); ImGui::SameLine();
-		ImGui::RadioButton("x4", &gameSpeed, 4); ImGui::SameLine();
-		ImGui::RadioButton("x16", &gameSpeed, 16);
-
-		this->setGameSpeed(gameSpeed);
-
-		if (controller.selectedDebugObj) {
-			EntityID selectedObj = controller.selectedDebugObj;
-			if (this->vault->registry.valid(selectedObj)) {
-				Tile &tile = this->vault->registry.get<Tile>(selectedObj);
-				ImGui::Text("ID: %d", selectedObj);
-				ImGui::Text("Case position: %dx%d", tile.pos.x, tile.pos.y);
-				ImGui::Text("Case size: %dx%d", tile.size.x, tile.size.y);
-				ImGui::Text("Pixel position: %.2fx%.2f", tile.ppos.x, tile.ppos.y);
-				ImGui::Text("Pixel size: %.2fx%.2f", tile.psize.x, tile.psize.y);
-				ImGui::Text("Offset: %dx%d", tile.offset.x, tile.offset.y);
-				ImGui::Text("Z: %d", tile.z);
-				ImGui::Text("Center: %dx%d:%dx%d", tile.centerRect.left, tile.centerRect.top, tile.centerRect.width, tile.centerRect.height);
-				ImGui::Text("View: %d", tile.view);
-				ImGui::Text("State: %s", tile.state.c_str());
-
-				if (this->vault->registry.has<GameObject>(selectedObj)) {
-					GameObject &obj = this->vault->registry.get<GameObject>(selectedObj);
-					ImGui::Separator();
-					ImGui::Text("GameObject: ");
-					ImGui::Text("Name: %s", obj.name.c_str());
-					ImGui::Text("Team: %s", obj.team.c_str());
-					ImGui::Text("Life: %f", obj.life);
-				}
-				if (this->vault->registry.has<Unit>(selectedObj)) {
-					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
-					ImGui::Separator();
-					ImGui::Text("Unit: ");
-					ImGui::Text("Direction: %dx%d", unit.direction.x, unit.direction.y);
-					ImGui::Text("Dest pos: %dx%d", unit.destpos.x, unit.destpos.y);
-					ImGui::Text("Dest attack: %d", (int)unit.targetEnt);
-					ImGui::Text("Velocity: %.2fx%.2f", unit.velocity.x, unit.velocity.y);
-				}
-				if (this->vault->registry.has<Resource>(selectedObj)) {
-					Resource &resource = this->vault->registry.get<Resource>(selectedObj);
-					ImGui::Separator();
-					ImGui::Text("Resource: ");
-					ImGui::Text("Level: %d\n", resource.level);
-					ImGui::Text("Grow: %.2f\n", resource.grow);
-				}
-			}
-		}
-
-		ImGui::Separator();
-		ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
-		ImGui::Text("Game Position: (%.1f,%.1f)", gamePos.x, gamePos.y);
-		ImGui::Text("Game map position: (%.1f,%.1f)", gameMapPos.x, gameMapPos.y);
-
-		if (ImGui::BeginPopupContextWindow())
-		{
-			if (ImGui::MenuItem("Top-left", NULL, controller.debugCorner == 0)) controller.debugCorner = 0;
-			if (ImGui::MenuItem("Top-right", NULL, controller.debugCorner == 1)) controller.debugCorner = 1;
-			if (ImGui::MenuItem("Bottom-left", NULL, controller.debugCorner == 2)) controller.debugCorner = 2;
-			if (ImGui::MenuItem("Bottom-right", NULL, controller.debugCorner == 3)) controller.debugCorner = 3;
-			ImGui::EndPopup();
-		}
-		ImGui::End();
-	}
-	ImGui::PopStyleColor();
-	ImGui::PopFont();
-}
-
 sf::IntRect GameEngine::viewClip() {
 	sf::View wview = this->game->window.getView();
 	sf::FloatRect screenRect(sf::Vector2f(wview.getCenter().x - (wview.getSize().x) / 2, wview.getCenter().y - (wview.getSize().y) / 2) , wview.getSize());
@@ -261,242 +171,6 @@ sf::IntRect GameEngine::viewClip() {
 	mh = mh > this->map->height ? this->map->height : mh;
 
 	return sf::IntRect(sf::Vector2i(mx, my), sf::Vector2i(mw - mx, mh - my));
-}
-
-void GameEngine::debugDraw(float dt) {
-	GameController &controller = this->vault->registry.get<GameController>();
-
-	if (controller.showDebugWindow && controller.selectedDebugObj) {
-		if (this->vault->registry.valid(controller.selectedDebugObj)) {
-			Tile &tile = this->vault->registry.get<Tile>(controller.selectedDebugObj);
-
-			// draw surface case
-			for (sf::Vector2i const &p : this->tileSurface(tile)) {
-				sf::RectangleShape srect;
-
-				sf::Vector2f pos;
-				pos.x = p.x * 32;
-				pos.y = p.y * 32;
-
-				srect.setSize(sf::Vector2f(32, 32));
-				srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-				srect.setOutlineColor(sf::Color(0x00, 0xFF, 0xFF, 0xFF));
-				srect.setOutlineThickness(2);
-				srect.setPosition(pos);
-
-				this->game->window.draw(srect);
-			}
-
-			// view range
-
-			if (this->vault->registry.has<GameObject>(controller.selectedDebugObj)) {
-				GameObject &obj = this->vault->registry.get<GameObject>(controller.selectedDebugObj);
-				for (sf::Vector2i const &p : this->tileSurfaceExtended(tile, obj.view)) {
-					sf::RectangleShape srect;
-
-					sf::Vector2f pos;
-					pos.x = p.x * 32;
-					pos.y = p.y * 32;
-
-					srect.setSize(sf::Vector2f(32, 32));
-					srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					srect.setOutlineColor(sf::Color(0xff, 0xff, 0x00, 0x7f));
-					srect.setOutlineThickness(2);
-					srect.setPosition(pos);
-
-					this->game->window.draw(srect);
-				}
-			}
-
-			// attack range
-			if (this->vault->registry.has<Unit>(controller.selectedDebugObj)) {
-				Unit &unit = this->vault->registry.get<Unit>(controller.selectedDebugObj);
-				int dist = 1;
-				int maxDist = 1;
-				if (unit.attack2.distance) {
-					dist = unit.attack2.distance;
-					maxDist = unit.attack2.maxDistance;
-				}
-
-				for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
-					sf::RectangleShape srect;
-
-					sf::Vector2f pos = sf::Vector2f(p * 32);
-
-					srect.setSize(sf::Vector2f(32, 32));
-					srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					srect.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
-					srect.setOutlineThickness(2);
-					srect.setPosition(pos);
-
-					this->game->window.draw(srect);
-				}
-
-				sf::Vector2f sppos = tile.ppos - dist * 32.0f;
-
-				sf::CircleShape scircle;
-				scircle.setRadius(dist * 32.0f);
-				scircle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-				scircle.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
-				scircle.setOutlineThickness(2);
-				scircle.setPosition(sppos);
-
-				this->game->window.draw(scircle);
-
-				sf::Vector2f eppos = tile.ppos - maxDist * 32.0f;
-
-				sf::CircleShape ecircle;
-				ecircle.setRadius(maxDist * 32.0f);
-				ecircle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-				ecircle.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
-				ecircle.setOutlineThickness(2);
-				ecircle.setPosition(eppos);
-
-				this->game->window.draw(ecircle);
-
-			}
-
-			// around building
-			if (this->vault->registry.has<Building>(controller.selectedDebugObj)) {
-				Building &building = this->vault->registry.get<Building>(controller.selectedDebugObj);
-				int dist = 1;
-				int maxDist = 2;
-				for (sf::Vector2i const &p : this->tileAround(tile, dist, maxDist)) {
-					sf::RectangleShape srect;
-
-					sf::Vector2f pos;
-					pos.x = p.x * 32;
-					pos.y = p.y * 32;
-
-					srect.setSize(sf::Vector2f(32, 32));
-					srect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-					srect.setOutlineColor(sf::Color(0xff, 0x99, 0x33, 0xff));
-					srect.setOutlineThickness(2);
-					srect.setPosition(pos);
-
-					this->game->window.draw(srect);
-				}
-			}
-
-			// draw tile case
-			sf::RectangleShape trect;
-			sf::Vector2f pos;
-			pos.x = tile.pos.x * 32;
-			pos.y = tile.pos.y * 32;
-			trect.setSize(sf::Vector2f(32, 32));
-			trect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-			trect.setOutlineColor(sf::Color::Blue);
-			trect.setOutlineThickness(2);
-			trect.setPosition(pos);
-			this->game->window.draw(trect);
-
-			// draw pixel rect
-			sf::RectangleShape drect;
-			sf::Vector2f dpos = this->tileDrawPosition(tile);
-			drect.setSize(tile.psize);
-			drect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-			drect.setOutlineColor(sf::Color(0xff, 0xb6, 0xc1, 0xff));
-			drect.setOutlineThickness(2);
-			drect.setPosition(dpos);
-			this->game->window.draw(drect);
-
-			// draw center rect
-			sf::RectangleShape crect;
-			sf::Vector2f cpos;
-			cpos.x = dpos.x + tile.centerRect.left;
-			cpos.y = dpos.y + tile.centerRect.top;
-			crect.setSize(sf::Vector2f(tile.centerRect.width, tile.centerRect.height));
-			crect.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-			crect.setOutlineColor(sf::Color(255, 36, 196));
-			crect.setOutlineThickness(2);
-			crect.setPosition(cpos);
-			this->game->window.draw(crect);
-
-			// draw FlowFields
-			if (this->vault->registry.has<Unit>(controller.selectedDebugObj)) {
-				Tile &tile = this->vault->registry.get<Tile>(controller.selectedDebugObj);
-				Unit &unit = this->vault->registry.get<Unit>(controller.selectedDebugObj);
-				if (tile.pos != unit.destpos) {
-					sf::Vector2i fOffset = unit.flowFieldPath.offset(tile.pos);
-					FlowField *field = unit.flowFieldPath.getCurrentFlowField();
-					if (field) {
-						sf::Vector2i fsize = field->getSize();
-						for (int dx = 0; dx < fsize.x; dx++) {
-							for (int dy = 0; dy < fsize.y; dy++) {
-								int dir = field->get(dx, dy);
-								if (dir < 8) {
-									sf::Sprite dirSprite;
-									dirSprite.setColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
-									dirSprite.setTexture(this->vault->factory.getTex("arrow"));
-									dirSprite.setOrigin(sf::Vector2f(16, 16));
-									switch (dir) {
-									case 0:
-										dirSprite.setRotation(90);
-										break;
-									case 1:
-										dirSprite.setRotation(135);
-										break;
-									case 2:
-										dirSprite.setRotation(180);
-										break;
-									case 3:
-										dirSprite.setRotation(225);
-										break;
-									case 4:
-										dirSprite.setRotation(270);
-										break;
-									case 5:
-										dirSprite.setRotation(315);
-										break;
-									case 6:
-										dirSprite.setRotation(0);
-										break;
-									case 7:
-										dirSprite.setRotation(45);
-										break;
-									}
-
-									sf::Vector2f dppos((fOffset.x + dx) * 32 + 16, (fOffset.y + dy) * 32 + 16);
-									dirSprite.setPosition(dppos);
-									this->game->window.draw(dirSprite);
-								}
-							}
-						}
-
-
-						for (sf::Vector2i p : unit.flowFieldPath.inRangePathPoints(tile.pos)) {
-							sf::RectangleShape rectangle;
-
-							sf::Vector2f pos(p.x * 32, p.y * 32);
-
-							rectangle.setSize(sf::Vector2f(32, 32));
-							rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
-							rectangle.setOutlineColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
-							rectangle.setOutlineThickness(2);
-							rectangle.setPosition(pos);
-
-							this->game->window.draw(rectangle);
-						}
-
-						sf::RectangleShape rectangle;
-
-						sf::Vector2f pos(unit.flowFieldPath.ffDest.x * 32, unit.flowFieldPath.ffDest.y * 32);
-
-						rectangle.setSize(sf::Vector2f(32, 32));
-						rectangle.setFillColor(sf::Color(0x00, 0x00, 0xff, 0x7f));
-						rectangle.setPosition(pos);
-
-						this->game->window.draw(rectangle);
-
-					}
-				}
-			}
-		} else {
-			controller.selectedDebugObj = 0;
-		}
-
-	}
-
 }
 
 void GameEngine::draw(float dt) {
@@ -557,16 +231,19 @@ void GameEngine::draw(float dt) {
 		}
 	}
 
-	this->debugDraw(dt);
-
 	victory.draw(this->game->window, dt);
 
 	this->game->window.setView(this->guiView);
 
-	if (controller.showDebugWindow)
-		this->debugGui(dt);
+	if (controller.showDebugWindow) {
+		interface.debugGui(this->game->window, this->gameView, &gameSpeed, dt);
+		this->setGameSpeed(gameSpeed);
+	}
 
+	this->guiPushStyles();
 	interface.draw(this->game->window, clip, dt);
+	this->guiPopStyles();
+	ImGui::SFML::Render(this->game->window);
 
 	minimap.draw(this->game->window, dt);
 	minimap.drawClip(this->game->window, this->gameView, clip, dt);
@@ -664,6 +341,10 @@ void GameEngine::updateEveryFrame(float dt)
 	this->steering.update(dt);
 
 	this->sound.update(dt);
+
+	this->updateMoveView(dt);
+
+	this->fx.update(dt);
 }
 
 void GameEngine::update(float dt) {
@@ -673,9 +354,6 @@ void GameEngine::update(float dt) {
 	if (this->timePerTick == FLT_MAX) return;
 
 	this->updateEveryFrame(dt);
-	this->updateMoveView(dt);
-
-	this->fx.update(dt);
 
 	this->currentTime += dt;
 
@@ -711,13 +389,11 @@ void GameEngine::update(float dt) {
 	this->map->markUpdateClear();
 
 	this->mapLayers.updateSpectatorFog(controller.currentPlayer, dt);
-	this->mapLayers.updatePlayerFogLayer(controller.currentPlayer, sf::IntRect(0, 0, this->map->width, this->map->height), dt);
+	this->mapLayers.updatePlayerFogLayer(controller.currentPlayer, dt);
 
 	ai.update(updateDt);
 
 	interface.updateSelected(updateDt);
-
-
 }
 
 void GameEngine::updateMoveView(float dt) {

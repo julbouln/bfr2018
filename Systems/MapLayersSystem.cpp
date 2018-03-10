@@ -169,18 +169,17 @@ void MapLayersSystem::updateSpectatorFog(EntityID playerEnt, float dt) {
 	*/
 }
 
-void MapLayersSystem::updatePlayerFogLayer(EntityID playerEnt, sf::IntRect clip, float dt) {
+void MapLayersSystem::updatePlayerFogLayer(EntityID playerEnt, float dt) {
 	Player &player = this->vault->registry.get<Player>(playerEnt);
 
-	for (int y = clip.top; y < clip.top + clip.height; ++y) {
-		for (int x = clip.left; x < clip.left + clip.width; ++x) {
+	for (int y = 0; y < this->map->height; ++y) {
+		for (int x = 0; x < this->map->width; ++x) {
 			sf::Vector2i p = sf::Vector2i(x, y);
 			FogState st = player.fog.get(x, y);
 			bool markUpdate = false;
 			int newEnt = 0;
 
 			if (st == FogState::Unvisited) {
-//					newEnt = fogTransitions[0];
 				newEnt = NotVisible;
 			} else {
 				newEnt = Visible;

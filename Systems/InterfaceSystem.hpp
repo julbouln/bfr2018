@@ -21,6 +21,7 @@ public:
 	void init();
 	void update(float dt);
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
+	void debugGui(sf::RenderWindow &window, sf::View &view, int *gameSpeed, float dt);
 
 	inline float scaleX() const {
 		return this->screenWidth / 800.0;
@@ -33,6 +34,7 @@ public:
 	void updateSelected(float dt);
 	void orderSelected(sf::Vector2f destpos);
 
+private:
 	void menuGui();
 	void gameStateGui();
 	void constructionProgressGui(EntityID consEnt);

@@ -129,6 +129,37 @@ sf::Vector2<T> limit(const sf::Vector2<T> &v, const T &min, const T &max) {
 	}
 }
 
+template <typename T>
+sf::Vector2<T> leftperp(const sf::Vector2<T> &v) {
+	sf::Vector2<T> perp;
+	perp.x = v.y;
+	perp.y = -v.x;
+	return perp;
+}
+
+template <typename T>
+float dot(const sf::Vector2<T> &v1, const sf::Vector2<T> &v2) {
+	return v1.x * v2.x + v1.y + v2.y;
+
+}
+template <typename T>
+float angle(const sf::Vector2<T> &v1, const sf::Vector2<T> &v2) {
+	float dot = dot(v1, v2);
+	float theta = (float) acos(dot / (length(v1) * length(v2)));
+	return theta;
+}
+
+template <typename T>
+sf::Vector2<T> normal(const sf::Vector2<T> &p, const sf::Vector2<T> &a, const sf::Vector2<T> &b) {
+	sf::Vector2<T> ap = p - a;
+	sf::Vector2<T> ab = b - a;
+
+	ab = normalize(ab);
+	ab *= dot(ap,ab);
+
+	return a+ab;
+}
+
 enum {
 	North,
 	NorthEast,

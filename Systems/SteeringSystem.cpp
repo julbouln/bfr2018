@@ -114,6 +114,8 @@ void SteeringSystem::update(float dt) {
 					}
 				}
 				*/
+
+//				accel = steering.capRotation(curSteerObj, accel, 90);
 				sf::Vector2f previousVelocity = unit.velocity;
 
 				unit.velocity = unit.velocity + accel;

@@ -8,14 +8,13 @@ public:
 	std::vector<EntityID> entitiesDrawList;
 	TileMap terrainsTileMap;
 	TileMap fogTileMap;
-	bool showDebugLayer;
 
 	DrawMapSystem();
 
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
 	void update(float dt);
 
-	void initTileMaps(int w, int h);
+	void initTileMaps();
 	void updateAllTileMaps();
 
 	void drawFogTileMap(sf::RenderWindow &window, float dt);
