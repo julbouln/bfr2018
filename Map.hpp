@@ -167,23 +167,6 @@ public:
 	}
 };
 
-struct SoundPlay {
-	std::string name;
-	int priority;
-	bool relative;
-	sf::Vector2i pos;
-};
-
-class SoundPlayCompare
-{
-public:
-	bool operator() (SoundPlay &l, SoundPlay &r)
-	{
-		return l.priority < r.priority;
-	}
-};
-
-
 class PathfindingObject;
 
 class Map {
@@ -222,9 +205,6 @@ public:
 	// maintain a list of position to update instead of updating every transitions
 	std::set<sf::Vector2i, CompareVector2i> markUpdateTerrainTransitions;
 	std::set<sf::Vector2i, CompareVector2i> markUpdateFogTransitions;
-
-	// not sure if sound must be there
-	std::priority_queue<SoundPlay, std::vector<SoundPlay>, SoundPlayCompare> sounds;
 
 	Map();
 

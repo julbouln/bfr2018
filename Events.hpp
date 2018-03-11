@@ -20,15 +20,15 @@ struct StateChanged {
 	std::string newState;
 };
 
+struct EffectEnded {
+	EntityID entity; // effect entity
+};
+
 struct EffectCreate {
 	std::string name;
 	EntityID emitterEnt; // emitter entity
 	sf::Vector2f ppos;
 	ParticleEffectOptions options;
-};
-
-struct EffectEnded {
-	EntityID entity; // effect entity
 };
 
 struct EffectDestroy {
@@ -42,4 +42,12 @@ struct GameStageChange {
 struct EntityDelete {
 	EntityID entity;
 };
+
+struct SoundPlay {
+	std::string name;
+	int priority;
+	bool relative;
+	sf::Vector2i pos;
+};
+
 

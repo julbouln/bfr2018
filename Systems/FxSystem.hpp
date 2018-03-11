@@ -8,7 +8,7 @@ class FxSystem : public GameSystem {
 	std::queue<EffectCreate> fxCreateQueue;
 	std::queue<EffectDestroy> fxDestroyQueue;
 public:
-	void init();
+	void init() override;
 	void update(float dt);
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
 

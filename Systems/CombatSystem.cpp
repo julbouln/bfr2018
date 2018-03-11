@@ -16,7 +16,7 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 #ifdef COMBAT_DEBUG
 			std::cout << "CombatSystem: play sound " << unit.attackSound << std::endl;
 #endif
-			map->sounds.push(SoundPlay {unit.attackSound, 1, false, tile.pos});
+			this->vault->dispatcher.trigger<SoundPlay>(unit.attackSound, 1, false, tile.pos);
 
 			if (unit.targetEnt) {
 				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
@@ -373,7 +373,7 @@ void CombatSystem::update(float dt) {
 			projOptions.direction = 0;
 
 			this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
-			map->sounds.push(SoundPlay{"explosion", 2, true, tile.pos});
+			this->vault->dispatcher.trigger<SoundPlay>("explosion", 2, true, tile.pos);
 
 			this->vault->dispatcher.trigger<EntityDelete>(entity);
 

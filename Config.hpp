@@ -23,8 +23,6 @@
 
 #define PARTICLES_ENABLE
 
-#define MAX_SOUNDS 32
-
 #ifdef WITHGPERFTOOLS
 #include <gperftools/profiler.h> 
 #endif

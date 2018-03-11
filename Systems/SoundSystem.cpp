@@ -1,15 +1,25 @@
 #include "SoundSystem.hpp"
 
+#define MAX_SOUNDS 32
+
+void SoundSystem::init() {
+	this->vault->dispatcher.connect<SoundPlay>(this);
+}
+
+void SoundSystem::receive(const SoundPlay &event) {
+	this->sounds.push(event);
+}
+
 void SoundSystem::update(float dt) {
 	float pitch = 0.033 / dt;
 
 #ifdef SOUND_SYSTEM_DEBUG
-	if (this->map->sounds.size() > 0)
-		std::cout << "SoundSystem: will play " << this->map->sounds.size() << std::endl;
+	if (this->sounds.size() > 0)
+		std::cout << "SoundSystem: will play " << this->sounds.size() << std::endl;
 #endif
 
-	while (this->map->sounds.size() > 0) {
-		SoundPlay sndp = this->map->sounds.top();
+	while (this->sounds.size() > 0) {
+		SoundPlay sndp = this->sounds.top();
 		if (sndp.name != "") {
 			if (playing.size() < MAX_SOUNDS) {
 				sf::Sound sound;
@@ -33,7 +43,7 @@ void SoundSystem::update(float dt) {
 
 		}
 
-		this->map->sounds.pop();
+		this->sounds.pop();
 	}
 
 	playing.remove_if([](sf::Sound & sound) { return (sound.getStatus() == sf::Sound::Status::Stopped); });

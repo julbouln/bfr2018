@@ -1,13 +1,14 @@
 #include "GameSystem.hpp"
 
+void GameSystem::init() {
+
+}
 
 void GameSystem::setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight) {
 	this->vault = vault;
 	this->map = map;
 	this->screenWidth = screenWidth;
 	this->screenHeight = screenHeight;
-
-//		this->vault->dispatcher.connect<AnimationFrameChanged>(this);
 }
 
 sf::Vector2f GameSystem::tileDrawPosition(Tile &tile) const {
@@ -212,36 +213,12 @@ void GameSystem::spendResources(EntityID playerEnt, std::string type, int val) {
 	}
 }
 
-float GameSystem::buildTime(std::string type) {
-	Building building;
-	this->vault->factory.parseBuildingFromXml(type, building);
-	return building.maxBuildTime;
-}
-
-float GameSystem::trainCost(std::string type) {
-	Unit unit;
-	this->vault->factory.parseUnitFromXml(type, unit);
-	return unit.cost;
-}
-
-// get object initial life from XML
-float GameSystem::objTypeLife(std::string type) {
-	GameObject obj;
-	this->vault->factory.parseGameObjectFromXml(type, obj);
-	return obj.maxLife;
-}
-
 void GameSystem::changeState(EntityID entity, std::string state) {
 	Tile &tile = this->vault->registry.get<Tile>(entity);
 	if (tile.state != state) {
 		this->vault->dispatcher.trigger<StateChanged>(entity, tile.state, tile.view, state);
 		tile.state = state;
 	}
-}
-
-void GameSystem::playSound(sf::Sound & snd, std::string name) {
-	snd.setBuffer(this->vault->factory.getSndBuf(name));
-	snd.play();
 }
 
 void GameSystem::playRandomUnitSound(EntityID ent, std::string state) {
@@ -255,7 +232,7 @@ void GameSystem::playRandomUnitSound(GameObject & obj, Unit & unit, std::string 
 	if (unit.soundActions[state] > 0) {
 		int rnd = rand() % unit.soundActions[state];
 		std::string sname = obj.name + "_" + state + "_" + std::to_string(rnd);
-		this->map->sounds.push(SoundPlay{sname, 3, true, sf::Vector2i{0, 0}});
+		this->vault->dispatcher.trigger<SoundPlay>(sname, 3, true, sf::Vector2i{0, 0});
 	}
 }
 
@@ -285,7 +262,7 @@ bool GameSystem::trainUnit(std::string type, EntityID playerEnt, EntityID entity
 	if (this->vault->registry.valid(entity) && this->vault->registry.has<Tile>(entity)) { // FIXME: weird
 		Player &player = this->vault->registry.get<Player>(playerEnt);
 		Tile &tile = this->vault->registry.get<Tile>(entity);
-		float cost = this->trainCost(type);
+		float cost = this->vault->factory.trainCost(type);
 
 		if (this->canSpendResources(playerEnt, player.resourceType, cost)) {
 			for (sf::Vector2i const &p : this->tileAround(tile, 1, 2)) {

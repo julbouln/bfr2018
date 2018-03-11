@@ -89,9 +89,7 @@ void FxSystem::update(float dt) {
 			this->vault->dispatcher.trigger<EffectEnded>(entity);
 
 			ParticleEffectOptions nOptions;
-
 			this->vault->dispatcher.trigger<EffectCreate>("next", entity, effect.destpos, nOptions);
-
 			this->vault->dispatcher.trigger<EffectDestroy>(entity);
 		} else {
 			effect.particleSystem->update(dt);

@@ -1,6 +1,7 @@
 #include "MapLayersSystem.hpp"
 
 void MapLayersSystem::init() {
+	this->updateAllTransitions();
 }
 
 void MapLayersSystem::update(float dt) {

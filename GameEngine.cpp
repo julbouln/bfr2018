@@ -10,8 +10,9 @@ GameEngine::GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight
 GameEngine::~GameEngine() {
 	this->setGameSpeed(1.0);
 	// FIXME: registry must actually resides in GameEngine instead of game
+	this->vault->dispatcher.update(); // to achieve a coherent state ?
 	this->vault->registry.reset();
-	delete this->map;
+//	delete this->map;
 }
 
 void GameEngine::receive(const GameStageChange &event) {
@@ -91,9 +92,14 @@ void GameEngine::fadeOutCallback() {
 
 void GameEngine::setVaults(GameVault *vault) {
 	emptyEntity = vault->registry.create(); // create Entity 0 as special empty Entity
+	gameEntity = vault->registry.create();
+
 	this->setVault(vault);
 
-	this->map = new Map();
+	this->vault->registry.attach<Map>(gameEntity);
+
+	this->map = &this->vault->registry.get<Map>();
+	//new Map();
 
 	// set shared systems
 	gameGenerator.setShared(vault, this->map, this->width, this->height);
@@ -123,34 +129,29 @@ void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::st
 
 	EntityID playerEnt = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
 
-	this->vault->registry.attach<GameController>(playerEnt);
-
+	this->vault->registry.attach<GameController>(gameEntity);
 	GameController &controller = this->vault->registry.get<GameController>();
 	controller.currentPlayer = playerEnt;
 
-	drawMap.initTileMaps();
-
-	mapLayers.updateAllTransitions();
-	drawMap.updateAllTileMaps();
-
+	mapLayers.init();
+	drawMap.init();
 	ai.init();
 	interface.init();
-
-	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
-	
-	if (player.team != "neutral") {
-		this->centerMapView(player.initialPos);
-	} else {
-		this->centerMapView(sf::Vector2i(this->map->width / 2, this->map->height / 2));		
-	}
-
 	deletion.init();
-	minimap.init(sf::Vector2f(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14)), 96.0 * this->scaleX());
+	minimap.init();
 	victory.init();
 	pathfinding.init();
 	combat.init();
 	tileAnim.init();
 	fx.init();
+	sound.init();
+
+	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
+	if (player.team != "neutral") {
+		this->centerMapView(player.initialPos);
+	} else {
+		this->centerMapView(sf::Vector2i(this->map->width / 2, this->map->height / 2));
+	}
 
 //		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0));
 //		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);
@@ -360,7 +361,7 @@ void GameEngine::update(float dt) {
 	if (this->currentTime < this->timePerTick) return;
 
 	this->ticks++;
-	
+
 	updateDt = this->currentTime;
 	this->currentTime = 0.0;
 
@@ -495,7 +496,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 		{
 			if (event.mouseButton.button == sf::Mouse::Left) {
 				if (minimap.rect.contains(sf::Vector2f(mousePos))) {
-					interface.clearSelection();
+					interface.clearSelected();
 				} else {
 					if (controller.action == Action::Selecting) {
 						controller.selectionEnd = gamePos;
@@ -512,21 +513,14 @@ void GameEngine::handleEvent(sf::Event & event) {
 						for (int x = selectRect.left / 32.0; x < (selectRect.left + selectRect.width) / 32.0; x++) {
 							for (int y = selectRect.top / 32.0; y < (selectRect.top + selectRect.height) / 32.0; y++) {
 								if (this->map->bound(x, y)) {
-									EntityID ent = this->map->objs.get(x, y);
-									if (ent) {
-										if (this->vault->registry.has<Unit>(ent)) {
-											Unit &unit = this->vault->registry.get<Unit>(ent);
-											GameObject &obj = this->vault->registry.get<GameObject>(ent);
-											if (obj.player == controller.currentPlayer) {
-												this->playRandomUnitSound(obj, unit, "select");
-												controller.selectedObjs.push_back(ent);
-											}
-										}
+									EntityID entity = this->map->objs.get(x, y);
+									if (entity && this->vault->registry.has<Unit>(entity) && !this->vault->registry.has<Building>(entity)) {
+										interface.addSelected(entity);
 									}
 								}
 							}
 						}
-						interface.clearSelection();
+						interface.clearSelected();
 					}
 				}
 			}
@@ -543,7 +537,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 					std::cout << "GameEngine: minimap clicked " << mPos.x << "x" << mPos.y << std::endl;
 #endif
 					this->centerMapView(sf::Vector2i(mPos));
-					interface.clearSelection();
+					interface.clearSelected();
 
 				} else {
 					if (controller.action == Action::Building)
@@ -567,9 +561,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 
 							// select building only
 							if (entity && this->vault->registry.has<Building>(entity) && !this->vault->registry.has<Unit>(entity)) {
-								GameObject &obj = this->vault->registry.get<GameObject>(entity);
-								if (obj.player == controller.currentPlayer)
-									controller.selectedObjs.push_back(entity);
+								interface.addSelected(entity);
 							}
 
 							controller.selectedDebugObj = entity;
@@ -631,7 +623,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 		break;
 		}
 	} else {
-		interface.clearSelection();
+		interface.clearSelected();
 	}
 
 }

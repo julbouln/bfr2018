@@ -30,7 +30,7 @@ public:
 
 	void initTransitions();
 
-	void init();
+	void init() override;
 
 private:
 	void updateLayer(float dt);

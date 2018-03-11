@@ -39,6 +39,22 @@ void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt)
 }
 
 
+void InterfaceSystem::addSelected(EntityID entity) {
+	GameController &controller = this->vault->registry.get<GameController>();
+	if (entity) {
+		GameObject &obj = this->vault->registry.get<GameObject>(entity);
+
+		if (obj.player == controller.currentPlayer) {
+			if (this->vault->registry.has<Unit>(entity)) {
+				Unit &unit = this->vault->registry.get<Unit>(entity);
+				this->playRandomUnitSound(entity, "select");
+			}
+			controller.selectedObjs.push_back(entity);
+		}
+	}
+}
+
+
 // remove entity from selected is not valid anymore
 void InterfaceSystem::updateSelected(float dt) {
 	GameController &controller = this->vault->registry.get<GameController>();
@@ -50,7 +66,7 @@ void InterfaceSystem::updateSelected(float dt) {
 	controller.selectedObjs = newSelectedObjs;
 }
 
-void InterfaceSystem::clearSelection() {
+void InterfaceSystem::clearSelected() {
 	GameController &controller = this->vault->registry.get<GameController>();
 
 	if (controller.action == Action::Selecting) {
@@ -166,7 +182,6 @@ void InterfaceSystem::actionGui() {
 		ImVec2 window_pos = ImVec2(uiX, ImGui::GetIO().DisplaySize.y - uiHeight);
 		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
 		ImGui::SetNextWindowSize(ImVec2(uiWidth, uiHeight), ImGuiCond_Always);
-//		this->guiPushStyles();
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
@@ -261,7 +276,7 @@ void InterfaceSystem::actionGui() {
 										ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
 										ImGui::BeginTooltip();
 										ImGui::Image(this->vault->factory.getTex("time")); ImGui::SameLine();
-										ImGui::Text("%d", (int)this->buildTime(node.type));
+										ImGui::Text("%d", (int)this->vault->factory.buildTime(node.type));
 										ImGui::EndTooltip();
 										ImGui::PopFont();
 									}
@@ -270,7 +285,7 @@ void InterfaceSystem::actionGui() {
 										ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
 										ImGui::BeginTooltip();
 										ImGui::Image(this->vault->factory.getTex(player.resourceType + "_cost")); ImGui::SameLine();
-										ImGui::Text("%d", (int)this->trainCost(node.type));
+										ImGui::Text("%d", (int)this->vault->factory.trainCost(node.type));
 										ImGui::EndTooltip();
 										ImGui::PopFont();
 									}
@@ -313,18 +328,16 @@ void InterfaceSystem::actionGui() {
 							ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
 							ImGui::BeginTooltip();
 							ImGui::Image(this->vault->factory.getTex("time")); ImGui::SameLine();
-							ImGui::Text("%d", (int)this->buildTime(node->type));
+							ImGui::Text("%d", (int)this->vault->factory.buildTime(node->type));
 							ImGui::EndTooltip();
 							ImGui::PopFont();
 						}
-
 					}
 				}
 			}
 			ImGui::End();
 		}
 		ImGui::PopStyleColor();
-//		this->guiPopStyles();
 	}
 }
 

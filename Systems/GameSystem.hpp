@@ -15,20 +15,17 @@ public:
 	int screenWidth;
 	int screenHeight;
 
+	virtual void init();
+
 	void setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight);
 
 	sf::Vector2f tileDrawPosition(Tile &tile) const;
 	sf::Vector2i tilePosition(Tile &tile, sf::Vector2i p) const;
 	std::vector<sf::Vector2i> tileSurface(Tile &tile) const;
-
 	std::vector<sf::Vector2i> vectorSurfaceExtended(sf::Vector2i pos, int dist) const;
-
 	std::vector<sf::Vector2i> tileSurfaceExtended(Tile &tile, int dist) const;
-
 	std::vector<sf::Vector2i> tileAround(Tile &tile, int minDist, int maxDist) const;
-
 	sf::Vector2i nearestTileAround(Tile &tile, Tile &destTile, int minDist, int maxDist) const;
-
 	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int minDist, int maxDist) const;
 
 	EntityID ennemyAtPosition(EntityID playerEnt, int x, int y);
@@ -39,18 +36,10 @@ public:
 	bool canSpendResources(EntityID playerEnt, std::string type, int val);
 
 	void spendResources(EntityID playerEnt, std::string type, int val);
-	float buildTime(std::string type);
-	float trainCost(std::string type);
-
-	// get object initial life from XML
-	float objTypeLife(std::string type);
 
 	void changeState(EntityID entity, std::string state);
 
-	void playSound(sf::Sound & snd, std::string name);
-
 	void playRandomUnitSound(EntityID ent, std::string state);
-
 	void playRandomUnitSound(GameObject & obj, Unit & unit, std::string state);
 
 // action
@@ -74,5 +63,11 @@ public:
 		return (float)(this->map->width * this->map->height) / 2.0;
 	}
 
-
+// scale for other resolutions than 800x600
+	inline float scaleX() const {
+		return this->screenWidth / 800.0;
+	}
+	inline float scaleY() const {
+		return this->screenHeight / 600.0;
+	}
 };

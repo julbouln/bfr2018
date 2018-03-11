@@ -19,11 +19,10 @@
 
 class Game {
 public:
-	std::stack<Stage*> stages;
-
-	std::map<std::string, Stage*>registeredStages;
-
 	unsigned int width, height;
+
+	std::stack<Stage*> stages;
+	std::map<std::string, Stage*>registeredStages;
 
 	GameVault vault;
 
@@ -116,7 +115,6 @@ public:
 		}
 	}
 
-
 	Game(unsigned int width, unsigned int height, bool fullscreen)
 	{
 		this->width = width;
@@ -148,11 +146,8 @@ public:
 		vault.factory.loadInitial();
 	}
 
-
 	~Game()
 	{
 		while (!this->stages.empty()) popStage();
 	}
-
-
 };

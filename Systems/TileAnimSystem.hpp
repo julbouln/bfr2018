@@ -5,7 +5,7 @@
 
 class TileAnimSystem : public GameSystem {
 public:
-	void init();
+	void init() override;
 	void update(float dt);
 
 	// signals

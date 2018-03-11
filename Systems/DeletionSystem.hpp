@@ -8,7 +8,7 @@ class DeletionSystem : public GameSystem {
 	std::queue<EntityID> entities;
 	std::map<std::string,EntityID> corpses_and_ruins;
 public:
-	void init();
+	void init() override;
 	void update(float dt);
 
 // signals

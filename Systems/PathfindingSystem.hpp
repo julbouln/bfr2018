@@ -18,7 +18,7 @@ public:
 	PathfindingSystem();
 	~PathfindingSystem();
 
-	void init();
+	void init() override;
 	void update(float dt);
 
 private:

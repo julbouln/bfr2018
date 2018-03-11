@@ -15,13 +15,12 @@ public:
 	MinimapSystem();
 	~MinimapSystem();
 
-	void init(sf::Vector2f pos, float s);
+	void init() override;
 	void update(EntityID playerEnt, float dt);
 	void draw(sf::RenderWindow &window, float dt);
 	void drawClip(sf::RenderWindow &window, sf::View &view, sf::IntRect clip, float dt);
 
 private:
-	sf::Texture &createTexture();
 	void drawFrame(sf::RenderWindow &window);
 	inline void setMinimapPixel(int idx, sf::Color color) {
 		pixels[4 * idx] = color.r;

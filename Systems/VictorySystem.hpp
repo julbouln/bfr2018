@@ -8,7 +8,7 @@ class VictorySystem : public GameSystem {
 	sf::Sound scoreSound;
 
 public:
-	void init();
+	void init() override;
 	void update(EntityID playerEnt, float dt);
 	void draw(sf::RenderWindow &window, float dt);
 

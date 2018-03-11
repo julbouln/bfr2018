@@ -8,7 +8,7 @@
 
 class CombatSystem : public GameSystem {
 public:
-	void init();
+	void init() override;
 	void updateFront(float dt);
 	void update(float dt);
 

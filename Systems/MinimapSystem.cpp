@@ -10,18 +10,14 @@ MinimapSystem::~MinimapSystem() {
 		delete pixels;
 }
 
-sf::Texture &MinimapSystem::createTexture() {
+void MinimapSystem::init() {
+	sf::Vector2f pos = sf::Vector2f(this->scaleX() * 10, this->scaleY() * (600 - 123 + 14));
+	this->size = 96.0 * this->scaleX();
 	texture.create(this->map->width, this->map->height);
-	pixels = new sf::Uint8[this->map->width * this->map->height * 4];
-	return texture;
-}
-
-void MinimapSystem::init(sf::Vector2f pos, float s) {
-	texture.create(this->map->width, this->map->height);
-	pixels = new sf::Uint8[this->map->width * this->map->height * 4];
-	rect = sf::FloatRect(pos.x, pos.y, s, s);
-	size = s;
-	sprite.setTexture(texture);
+	pixels = new sf::Uint8[this->map->width * this->map->height * 4]{0};
+	texture.update(pixels);
+	rect = sf::FloatRect(pos.x, pos.y, this->size, this->size);
+	sprite.setTexture(texture);	
 }
 
 void MinimapSystem::update(EntityID playerEnt, float dt) {

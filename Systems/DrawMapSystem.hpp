@@ -11,15 +11,17 @@ public:
 
 	DrawMapSystem();
 
+	void init() override;
+
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
 	void update(float dt);
-
-	void initTileMaps();
-	void updateAllTileMaps();
 
 	void drawFogTileMap(sf::RenderWindow &window, float dt);
 
 private:
+	void initTileMaps();
+	void updateAllTileMaps();
+
 	inline bool clipped(sf::IntRect & clip, sf::Vector2i const & p) const {
 		return (p.x >= clip.left && p.x <= clip.left + clip.width &&
 		        p.y >= clip.top && p.y <= clip.top + clip.height);

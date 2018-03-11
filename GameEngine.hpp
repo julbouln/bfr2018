@@ -32,6 +32,8 @@
 class GameEngine : public GameSystem, public GameStage {
 public:
 	EntityID emptyEntity;
+	EntityID gameEntity;
+
 	float timePerTick;
 	float currentTime;
 	unsigned long ticks;
@@ -65,7 +67,7 @@ public:
 
 	~GameEngine();
 
-	void init();
+	void init() override;
 
 	void centerMapView(sf::Vector2i position);
 
@@ -74,15 +76,7 @@ public:
 	void fadeOutCallback();
 
 	void setVaults(GameVault *vault);
-	// scale for other resolutions than 800x600
-// scale for other resolutions than 800x600
-	inline float scaleX() const {
-		return this->width / 800.0;
-	}
-	inline float scaleY() const {
-		return this->height / 600.0;
-	}
-
+	
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam);
 
 	void updatePlayers(float dt);

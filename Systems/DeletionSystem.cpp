@@ -22,7 +22,7 @@ void DeletionSystem::update(float dt) {
 				if (this->vault->registry.has<Unit>(entity)) {
 					Unit &unit = this->vault->registry.get<Unit>(entity);
 					EntityID corpseEnt = corpses_and_ruins[obj.name + "_corpse_" + std::to_string(obj.player)];
-//					std::cout << "GameEngine: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
+//					std::cout << "DeletionSystem: set corpse " << obj.name + "_corpse" << " " << corpseEnt << " at " << tile.pos.x << " " << tile.pos.y << std::endl;
 					this->map->corpses.set(tile.pos.x, tile.pos.y, corpseEnt);
 				}
 				if (this->vault->registry.has<Building>(entity)) {

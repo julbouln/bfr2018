@@ -3,6 +3,11 @@
 DrawMapSystem::DrawMapSystem() {
 }
 
+void DrawMapSystem::init() {
+	this->initTileMaps();
+	this->updateAllTileMaps();
+}
+
 void DrawMapSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
 	this->drawTerrainTileMap(window, dt);
 	this->drawTileLayers(window, clip, dt);
