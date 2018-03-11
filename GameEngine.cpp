@@ -125,7 +125,6 @@ void GameEngine::centerMapView(sf::Vector2i position) {
 }
 
 void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
-	mapLayers.initTransitions();
 
 	EntityID playerEnt = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
 
@@ -389,8 +388,7 @@ void GameEngine::update(float dt) {
 	this->drawMap.update(updateDt);
 	this->map->markUpdateClear();
 
-	this->mapLayers.updateSpectatorFog(controller.currentPlayer, dt);
-	this->mapLayers.updatePlayerFogLayer(controller.currentPlayer, dt);
+	this->mapLayers.updateFog(dt);
 
 	ai.update(updateDt);
 

@@ -1,6 +1,7 @@
 #include "MapLayersSystem.hpp"
 
 void MapLayersSystem::init() {
+	this->initTransitions();
 	this->updateAllTransitions();
 }
 
@@ -10,6 +11,13 @@ void MapLayersSystem::update(float dt) {
 	this->updateObjsLayer(dt);
 	this->updatePlayersFog(dt);
 	this->updateTransitions(dt);
+}
+
+void MapLayersSystem::updateFog(float dt) {
+	GameController &controller = this->vault->registry.get<GameController>();
+
+	this->updateSpectatorFog(controller.currentPlayer, dt);
+	this->updatePlayerFogLayer(controller.currentPlayer, dt);
 }
 
 void MapLayersSystem::updateLayer(float dt) {
@@ -220,13 +228,6 @@ void MapLayersSystem::updatePlayerFogLayer(EntityID playerEnt, float dt) {
 
 // Terrains/Transitions
 void MapLayersSystem::initTransitions() {
-	for (int i = 0; i < 32; i++) {
-		sandTransitions.push_back(i);
-		waterTransitions.push_back(i);
-		dirtTransitions.push_back(i);
-		concreteTransitions.push_back(i);
-	}
-
 	terrainTransitionsMapping[1] = 1;
 	terrainTransitionsMapping[2] = 2;
 	terrainTransitionsMapping[3] = 3;
@@ -266,13 +267,6 @@ void MapLayersSystem::initTransitions() {
 	// 13 1+8+4
 	// 14 2+4+8
 	// 15 2+4+1+8
-
-
-	for (int i = 0; i < 13; i++) {
-		fogTransitions.push_back(i);
-	}
-
-	altTerrains[fogTransitions[0]] = fogTransitions[0];
 
 	fogTransitionsMapping[1] = 3;
 	fogTransitionsMapping[2] = 2;
@@ -335,7 +329,7 @@ int MapLayersSystem::pairTransitionBitmask(Layer<int> & layer, EntityID srcEnt, 
 	return bitmask;
 }
 
-int MapLayersSystem::updateTransition(int bitmask, Layer<int> & outLayer, EntityID ent, std::vector<EntityID> &transitions, std::map<int, int> &mapping, int x, int y) {
+int MapLayersSystem::updateTransition(int bitmask, Layer<int> & outLayer, EntityID ent, std::map<int, int> &mapping, int x, int y) {
 	if (bitmask) {
 		if (bitmask & 0xf) {
 			if (mapping.count(bitmask & 0xf) > 0) {
@@ -358,7 +352,7 @@ int MapLayersSystem::updateTransition(int bitmask, Layer<int> & outLayer, Entity
 
 void MapLayersSystem::updateGrassConcreteTransition(int x, int y) {
 	int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Grass, Concrete, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->terrains[GrassConcrete], Concrete, concreteTransitions, terrainTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->terrains[GrassConcrete], Concrete, terrainTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->terrains[GrassConcrete].set(x, y, 0);
 	}
@@ -366,7 +360,7 @@ void MapLayersSystem::updateGrassConcreteTransition(int x, int y) {
 
 void MapLayersSystem::updateSandWaterTransition(int x, int y) {
 	int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Sand, Water, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->terrains[SandWater], Water, waterTransitions, terrainTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->terrains[SandWater], Water, terrainTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->terrains[SandWater].set(x, y, 0);
 	}
@@ -374,7 +368,7 @@ void MapLayersSystem::updateSandWaterTransition(int x, int y) {
 
 void MapLayersSystem::updateGrassSandTransition(int x, int y) {
 	int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Grass, Sand, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->terrains[GrassSand], Sand, sandTransitions, terrainTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->terrains[GrassSand], Sand, terrainTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->terrains[GrassSand].set(x, y, 0);
 	}
@@ -382,7 +376,7 @@ void MapLayersSystem::updateGrassSandTransition(int x, int y) {
 
 void MapLayersSystem::updateConcreteSandTransition(int x, int y) {
 	int bitmask = this->pairTransitionBitmask(this->map->terrainsForTransitions, Concrete, Sand, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->terrains[ConcreteSand], Sand, sandTransitions, terrainTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->terrains[ConcreteSand], Sand, terrainTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->terrains[ConcreteSand].set(x, y, 0);
 	}
@@ -390,7 +384,7 @@ void MapLayersSystem::updateConcreteSandTransition(int x, int y) {
 
 void MapLayersSystem::updateDirtTransition(int x, int y) {
 	int bitmask = this->voidTransitionBitmask(this->map->terrainsForTransitions, Dirt, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->terrains[AnyDirt], Dirt, dirtTransitions, terrainTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->terrains[AnyDirt], Dirt, terrainTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->terrains[AnyDirt].set(x, y, 0);
 	}
@@ -432,7 +426,7 @@ void MapLayersSystem::updateTransitions(float dt) {
 
 void MapLayersSystem::updateFogUnvisitedTransition(int x, int y) {
 	int bitmask = this->voidTransitionBitmask(this->map->fogUnvisited, NotVisible, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->fogUnvisitedTransitions, NotVisible, fogTransitions, fogTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->fogUnvisitedTransitions, NotVisible, fogTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->fogUnvisitedTransitions.set(x, y, Visible);
 	}
@@ -440,7 +434,7 @@ void MapLayersSystem::updateFogUnvisitedTransition(int x, int y) {
 
 void MapLayersSystem::updateFogHiddenTransition(int x, int y) {
 	int bitmask = this->voidTransitionBitmask(this->map->fogHidden, NotVisible, x, y);
-	bitmask = this->updateTransition(bitmask, this->map->fogHiddenTransitions, NotVisible, fogTransitions, fogTransitionsMapping, x, y);
+	bitmask = this->updateTransition(bitmask, this->map->fogHiddenTransitions, NotVisible, fogTransitionsMapping, x, y);
 	if (!bitmask) {
 		this->map->fogHiddenTransitions.set(x, y, Visible);
 	}

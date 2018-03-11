@@ -139,7 +139,7 @@ sf::Vector2<T> leftperp(const sf::Vector2<T> &v) {
 
 template <typename T>
 float dot(const sf::Vector2<T> &v1, const sf::Vector2<T> &v2) {
-	return v1.x * v2.x + v1.y + v2.y;
+	return v1.x * v2.x + v1.y * v2.y;
 
 }
 template <typename T>
