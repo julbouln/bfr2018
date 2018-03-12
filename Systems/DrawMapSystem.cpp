@@ -194,7 +194,6 @@ void DrawMapSystem::drawObjLayer(sf::RenderWindow & window, sf::IntRect clip, fl
 #endif
 			} else {
 				window.draw(tile.sprite);
-
 			}
 
 			// life bar
@@ -316,7 +315,6 @@ void DrawMapSystem::updateAllTerrainTileMap(float dt) {
 
 }
 void DrawMapSystem::updateAllFogTileMap(float dt) {
-
 	for (auto &layer : fogTileMap.layers) {
 		layer.clear();
 	}

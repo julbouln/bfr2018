@@ -9,7 +9,8 @@ class VictorySystem : public GameSystem {
 
 public:
 	void init() override;
-	void update(EntityID playerEnt, float dt);
+	void update(float dt) override;
+	
 	void draw(sf::RenderWindow &window, float dt);
 
 	bool checkVictoryConditions(EntityID playerEnt);

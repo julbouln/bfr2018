@@ -16,6 +16,7 @@ public:
 	int screenHeight;
 
 	virtual void init();
+	virtual void update(float dt);
 
 	void setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight);
 

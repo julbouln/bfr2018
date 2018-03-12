@@ -91,7 +91,6 @@ public:
 		grid[this->index(x, y)] = ent;
 	}
 };
-
 #else
 template <typename T, T Empty = 0>
 class Layer {

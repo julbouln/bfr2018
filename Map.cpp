@@ -5,8 +5,6 @@ Map::Map() {
 }
 
 void Map::setSize(unsigned int width, unsigned int height) {
-//		this->terrains.setSize(width, height);
-
 	for (int i = 0; i < 6; i++) {
 		Layer<int> layer;
 		layer.setSize(width, height);

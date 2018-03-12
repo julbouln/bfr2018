@@ -9,8 +9,9 @@
 class CombatSystem : public GameSystem {
 public:
 	void init() override;
+	void update(float dt) override;
+
 	void updateFront(float dt);
-	void update(float dt);
 
 // signals
 	void receive(const AnimationFrameChanged &event);

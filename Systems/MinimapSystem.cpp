@@ -20,8 +20,9 @@ void MinimapSystem::init() {
 	sprite.setTexture(texture);	
 }
 
-void MinimapSystem::update(EntityID playerEnt, float dt) {
-	Player &player = this->vault->registry.get<Player>(playerEnt);
+void MinimapSystem::update(float dt) {
+	GameController &controller = this->vault->registry.get<GameController>();
+	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
 
 	int idx = 0;
 	for (int y = 0; y < this->map->height; ++y) {

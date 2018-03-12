@@ -419,7 +419,6 @@ void MapLayersSystem::updateTransitions(float dt) {
 		this->updateFogHiddenTransition(p.x, p.y);
 		this->updateFogUnvisitedTransition(p.x, p.y);
 	}
-
 }
 
 // FOG transition

@@ -19,13 +19,12 @@ public:
 	sf::Sprite indice;
 
 	void init() override;
-	void update(float dt);
+	void update(float dt) override;
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
 	void debugGui(sf::RenderWindow &window, sf::View &view, int *gameSpeed, float dt);
 
 	void addSelected(EntityID entity);
 	void clearSelected() ;
-	void updateSelected(float dt);
 	void orderSelected(sf::Vector2f destpos);
 
 private:

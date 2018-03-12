@@ -13,10 +13,17 @@ void InterfaceSystem::init() {
 		indice.setTexture(this->vault->factory.getTex("indice_" + player.team));
 		indice_bg.setTexture(this->vault->factory.getTex("indice_bg_" + player.team));
 	}
-
 };
 
 void InterfaceSystem::update(float dt) {
+	// remove entity from selected is not valid anymore
+	GameController &controller = this->vault->registry.get<GameController>();
+	std::vector<EntityID> newSelectedObjs;
+	for (EntityID entity : controller.selectedObjs) {
+		if (this->vault->registry.valid(entity))
+			newSelectedObjs.push_back(entity);
+	}
+	controller.selectedObjs = newSelectedObjs;
 };
 
 void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
@@ -38,7 +45,6 @@ void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt)
 	this->actionGui();
 }
 
-
 void InterfaceSystem::addSelected(EntityID entity) {
 	GameController &controller = this->vault->registry.get<GameController>();
 	if (entity) {
@@ -52,18 +58,6 @@ void InterfaceSystem::addSelected(EntityID entity) {
 			controller.selectedObjs.push_back(entity);
 		}
 	}
-}
-
-
-// remove entity from selected is not valid anymore
-void InterfaceSystem::updateSelected(float dt) {
-	GameController &controller = this->vault->registry.get<GameController>();
-	std::vector<EntityID> newSelectedObjs;
-	for (EntityID entity : controller.selectedObjs) {
-		if (this->vault->registry.valid(entity))
-			newSelectedObjs.push_back(entity);
-	}
-	controller.selectedObjs = newSelectedObjs;
 }
 
 void InterfaceSystem::clearSelected() {

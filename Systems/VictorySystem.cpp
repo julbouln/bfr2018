@@ -11,9 +11,11 @@ void VictorySystem::init() {
 #endif
 }
 
-void VictorySystem::update(EntityID playerEnt, float dt) {
+void VictorySystem::update(float dt) {
+	GameController &controller = this->vault->registry.get<GameController>();
+
 	this->updateStats(dt);
-	this->updatePlayerBonus(playerEnt);
+	this->updatePlayerBonus(controller.currentPlayer);
 	this->clearStats();
 }
 

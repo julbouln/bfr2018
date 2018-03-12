@@ -16,7 +16,8 @@ public:
 	~MinimapSystem();
 
 	void init() override;
-	void update(EntityID playerEnt, float dt);
+	void update(float dt) override;
+	
 	void draw(sf::RenderWindow &window, float dt);
 	void drawClip(sf::RenderWindow &window, sf::View &view, sf::IntRect clip, float dt);
 

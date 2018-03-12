@@ -14,7 +14,7 @@ public:
 	void init() override;
 
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
-	void update(float dt);
+	void update(float dt) override;
 
 	void drawFogTileMap(sf::RenderWindow &window, float dt);
 

@@ -19,7 +19,7 @@ public:
 	~PathfindingSystem();
 
 	void init() override;
-	void update(float dt);
+	void update(float dt) override;
 
 private:
 	void updatePathfindingLayer(float dt);

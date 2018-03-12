@@ -17,7 +17,7 @@ class SoundSystem : public GameSystem {
 	std::list<sf::Sound> playing;
 public:
 	void init() override;
-	void update(float dt);
+	void update(float dt) override;
 
 	// signals
 	void receive(const SoundPlay &event);

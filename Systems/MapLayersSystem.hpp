@@ -9,7 +9,7 @@ class MapLayersSystem : public GameSystem {
 //	std::vector<EntityID> debugTransitions;
 
 public:
-	void update(float dt);
+	void update(float dt) override;
 	void updateObjsLayer(float dt);
 	void updateFog(float dt);
 

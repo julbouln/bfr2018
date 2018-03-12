@@ -9,7 +9,8 @@ class FxSystem : public GameSystem {
 	std::queue<EffectDestroy> fxDestroyQueue;
 public:
 	void init() override;
-	void update(float dt);
+	void update(float dt) override;
+	
 	void draw(sf::RenderWindow &window, sf::IntRect clip, float dt);
 
 // signals

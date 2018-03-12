@@ -88,8 +88,6 @@ void GameEngine::fadeOutCallback() {
 	}
 }
 
-//	EntityID gameEnt;
-
 void GameEngine::setVaults(GameVault *vault) {
 	emptyEntity = vault->registry.create(); // create Entity 0 as special empty Entity
 	gameEntity = vault->registry.create();
@@ -125,7 +123,6 @@ void GameEngine::centerMapView(sf::Vector2i position) {
 }
 
 void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
-
 	EntityID playerEnt = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
 
 	this->vault->registry.attach<GameController>(gameEntity);
@@ -180,7 +177,6 @@ void GameEngine::draw(float dt) {
 	sf::IntRect clip = this->viewClip();
 
 	drawMap.draw(this->game->window, clip, dt);
-//		if (this->gameSpeed < 2)
 	fx.draw(this->game->window, clip, dt);
 
 	drawMap.drawFogTileMap(this->game->window, dt);
@@ -237,8 +233,9 @@ void GameEngine::draw(float dt) {
 
 	if (controller.showDebugWindow) {
 		interface.debugGui(this->game->window, this->gameView, &gameSpeed, dt);
-		this->setGameSpeed(gameSpeed);
 	}
+
+	this->setGameSpeed(gameSpeed);
 
 	this->guiPushStyles();
 	interface.draw(this->game->window, clip, dt);
@@ -324,9 +321,8 @@ void GameEngine::updateHundred(float dt) {
 }
 
 void GameEngine::updateDecade(float dt) {
-	GameController &controller = this->vault->registry.get<GameController>();
-	victory.update(controller.currentPlayer, dt);
-	minimap.update(controller.currentPlayer, dt);
+	victory.update(dt);
+	minimap.update(dt);
 	combat.updateFront(dt);
 }
 
@@ -392,7 +388,7 @@ void GameEngine::update(float dt) {
 
 	ai.update(updateDt);
 
-	interface.updateSelected(updateDt);
+	interface.update(updateDt);
 }
 
 void GameEngine::updateMoveView(float dt) {

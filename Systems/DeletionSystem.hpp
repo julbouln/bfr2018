@@ -9,7 +9,7 @@ class DeletionSystem : public GameSystem {
 	std::map<std::string,EntityID> corpses_and_ruins;
 public:
 	void init() override;
-	void update(float dt);
+	void update(float dt) override;
 
 // signals
 void receive(const EntityDelete &event);

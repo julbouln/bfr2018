@@ -1,7 +1,9 @@
 #include "GameSystem.hpp"
 
 void GameSystem::init() {
+}
 
+void GameSystem::update(float dt) {
 }
 
 void GameSystem::setShared(GameVault *vault, Map *map, int screenWidth, int screenHeight) {
@@ -55,7 +57,7 @@ std::vector<sf::Vector2i> GameSystem::tileSurfaceExtended(Tile &tile, int dist) 
 	for (int w = -dist; w < tile.size.x + dist; ++w) {
 		for (int h = -dist; h < tile.size.y + dist; ++h) {
 			sf::Vector2i p = this->tilePosition(tile, sf::Vector2i(w, h));
-			if (this->map->bound(p.x, p.y) && distance(tile.pos, p) <= dist + length(sf::Vector2f(tile.size) / 2.0f) ) {
+			if (this->map->bound(p.x, p.y) && distance(tile.pos, p) <= dist + length(sf::Vector2f(tile.size) * 0.5f) ) {
 				surface.push_back(p);
 			}
 		}
