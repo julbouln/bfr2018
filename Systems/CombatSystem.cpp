@@ -85,9 +85,11 @@ void CombatSystem::receive(const TimerEnded &event) {
 				std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
 			}
 		}
-	} else if (event.name == "destroyed") {
-		std::cout << "DESTROY BUILDING " << entity << std::endl;
-		this->vault->dispatcher.trigger<EntityDelete>(entity);
+	} else if (event.name == "delayed_destroy") {
+		if (this->vault->registry.has<Timer>(entity)) {
+			Timer &timer = this->vault->registry.get<Timer>(entity);
+			this->vault->dispatcher.trigger<EntityDelete>(timer.emitterEntity);
+		}
 	}
 }
 
@@ -333,7 +335,7 @@ void CombatSystem::update(float dt) {
 		GameObject &obj = view.get<GameObject>(entity);
 
 		if (obj.life <= 0) {
-			if (tile.state == "die") {
+			if (tile.state != "die") {
 				if ((rand() % 16) == 0 && this->vault->registry.has<Effects>(entity) && this->vault->registry.get<Effects>(entity).effects.count("alt_die")) {
 					// alt die FX
 					ParticleEffectOptions altOptions;
@@ -347,27 +349,24 @@ void CombatSystem::update(float dt) {
 					}
 
 					this->vault->dispatcher.trigger<EffectCreate>("alt_die", entity, tile.ppos, altOptions);
-					this->vault->dispatcher.trigger<EntityDelete>(entity);
+
+					this->vault->factory.createTimer(this->vault->registry, entity, "delayed_destroy", 5.0, false);
+
 				} else {
 					// unit died, destroy after playing anim
 					if (this->vault->registry.has<AnimatedSpritesheet>(entity))
 					{
 						AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
 						if (anim.states.count("die") > 0) {
-							if (this->vault->registry.has<Timer>(entity)) {
-								Timer &timer = this->vault->registry.get<Timer>(entity);
-								if (timer.l >= 1)
-									this->vault->dispatcher.trigger<EntityDelete>(entity);
-							}
-//							if (anim.states["die"][tile.view].l >= 1) {
-//								this->vault->dispatcher.trigger<EntityDelete>(entity);
-//							}
+							AnimatedSpriteView &view = anim.states["die"][0];
+
+							this->vault->factory.createTimer(this->vault->registry, entity, "delayed_destroy", view.duration, false);
 						} else {
-							this->vault->dispatcher.trigger<EntityDelete>(entity);
+							this->vault->dispatcher.trigger<EntityDelete>(entity);						
 						}
 					}
 				}
-			} else {
+
 				this->changeState(entity, "die");
 				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
@@ -402,7 +401,7 @@ void CombatSystem::update(float dt) {
 		GameObject &obj = buildingView.get<GameObject>(entity);
 
 		if (obj.life <= 0) {
-			if (!this->vault->registry.has<Timer>(entity) || this->vault->registry.get<Timer>(entity).name != "destroyed") {
+			if (tile.state != "destroy") {
 
 				ParticleEffectOptions projOptions;
 				projOptions.destPos = tile.ppos;
@@ -411,8 +410,9 @@ void CombatSystem::update(float dt) {
 				this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
 				this->vault->dispatcher.trigger<SoundPlay>("explosion", 2, true, tile.pos);
 
-				Timer timer("destroyed", 1.0f, false);
-				this->vault->registry.accomodate<Timer>(entity, timer);
+				this->vault->factory.createTimer(this->vault->registry, entity, "delayed_destroy", 1.0f, false);
+
+				tile.state = "destroy";
 			}
 
 		} else {

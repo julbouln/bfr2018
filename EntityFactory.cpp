@@ -372,6 +372,13 @@ void EntityFactory::assignSpritesheets(entt::Registry<EntityID> &registry, Entit
 	AnimatedSpritesheet animSpritesheet;
 	if (this->getXmlComponent(name, "spritesheets") && spritesheetsParser.parseAnimatedSpritesheets(animSpritesheet, this->getXmlComponent(name, "spritesheets"))) {
 		registry.accomodate<AnimatedSpritesheet>(entity, animSpritesheet);
+
+		if (animSpritesheet.states.count("idle") > 0) {
+			AnimatedSpriteView &view = animSpritesheet.states["idle"][0];
+			Timer timer("idle", view.duration * view.frames.size(), true);
+			registry.assign<Timer>(entity, timer);
+		}
+
 	}
 }
 
@@ -633,6 +640,13 @@ EntityID EntityFactory::createPlayer(entt::Registry<EntityID> &registry, std::st
 		player.resourceType = "pollution";
 
 	registry.assign<Player>(entity, player);
+	return entity;
+}
+
+EntityID EntityFactory::createTimer(entt::Registry<EntityID> &registry, EntityID emitterEnt, std::string name, float duration, bool loop) {
+	EntityID entity = registry.create();
+	Timer timer(emitterEnt, name, duration, loop);
+	registry.assign<Timer>(entity, timer);
 	return entity;
 }
 

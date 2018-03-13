@@ -129,6 +129,7 @@ public:
 	EntityID createParticleEffect(entt::Registry<EntityID> &registry, std::string name, ParticleEffectOptions options);
 	EntityID createDecor(entt::Registry<EntityID> &registry, std::string name, int x, int y);
 
+	EntityID createTimer(entt::Registry<EntityID> &registry, EntityID emitterEnt, std::string name, float duration, bool loop);
 // Player
 	EntityID createPlayer(entt::Registry<EntityID> &registry, std::string team, bool ai);
 

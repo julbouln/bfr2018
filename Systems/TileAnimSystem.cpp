@@ -38,7 +38,6 @@ void TileAnimSystem::updateStaticSpritesheets(float dt) {
 }
 
 void TileAnimSystem::updateAnimatedSpritesheets(float dt) {
-
 	auto view = this->vault->registry.persistent<Tile, AnimatedSpritesheet, Timer>();
 	for (EntityID entity : view) {
 		Tile &tile = view.get<Tile>(entity);

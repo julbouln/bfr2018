@@ -6,6 +6,15 @@ void TimerSystem::init() {
 void TimerSystem::update(float dt) {
 	float gameDt = 0.033 / dt * 0.033;
 	auto view = this->vault->registry.view<Timer>();
+
+	// destroy timers with non-valid emitter
+	for (EntityID entity : view) {
+		Timer &timer = view.get(entity);
+		if(timer.emitterEntity && !this->vault->registry.valid(timer.emitterEntity)) {
+			this->vault->registry.destroy(entity);
+		}
+	}
+
 	for (EntityID entity : view) {
 		Timer &timer = view.get(entity);
 

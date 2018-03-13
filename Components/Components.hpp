@@ -57,13 +57,25 @@ struct Tile {
 };
 
 struct Timer {
+	EntityID emitterEntity;
 	std::string name;
 	bool loop; // is looping
 	float duration; // loop duration
 	float t; // current time since beginning
 	int l; // number of loop since beginning
 
+	Timer(EntityID entity, std::string n, float d, bool lo) {
+		this->emitterEntity = entity;
+		this->name = n;
+		this->t = 0.0;
+		this->l = 0;		
+		this->duration = d;
+		this->loop = lo;
+	}
+
+
 	Timer(std::string n, float d, bool lo) {
+		this->emitterEntity = 0;
 		this->name = n;
 		this->t = 0.0;
 		this->l = 0;		
@@ -72,6 +84,7 @@ struct Timer {
 	}
 
 	Timer() {
+		this->emitterEntity = 0;
 		this->loop = true;		
 		this->t = 0.0;
 		this->l = 0;		
