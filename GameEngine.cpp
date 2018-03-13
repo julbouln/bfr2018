@@ -102,6 +102,7 @@ void GameEngine::setVaults(GameVault *vault) {
 	// set shared systems
 	gameGenerator.setShared(vault, this->map, this->width, this->height);
 	tileAnim.setShared(vault, this->map, this->width, this->height);
+	time.setShared(vault, this->map, this->width, this->height);
 	resources.setShared(vault, this->map, this->width, this->height);
 	drawMap.setShared(vault, this->map, this->width, this->height);
 	minimap.setShared(vault, this->map, this->width, this->height);
@@ -333,6 +334,7 @@ void GameEngine::updateEveryFrame(float dt)
 		this->markUpdateLayer = false;
 	}
 
+	this->time.update(dt);
 	this->tileAnim.update(dt);
 	this->steering.update(dt);
 

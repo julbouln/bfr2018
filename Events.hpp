@@ -13,6 +13,23 @@ struct AnimationFrameChanged {
 	int frame;
 };
 
+struct TimerStarted {
+	std::string name;
+	EntityID entity; // timer entity
+};
+
+struct TimerEnded {
+	std::string name;
+	EntityID entity; // timer entity
+};
+
+struct TimerLooped {
+	std::string name;
+	EntityID entity; // timer entity
+	int l;
+};
+
+
 struct StateChanged {
 	EntityID entity;
 	std::string state;
@@ -22,6 +39,11 @@ struct StateChanged {
 
 struct EffectEnded {
 	EntityID entity; // effect entity
+};
+
+struct EffectCreated {
+	std::string name;
+	EntityID entity;
 };
 
 struct EffectCreate {

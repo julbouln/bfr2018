@@ -8,7 +8,7 @@ Systems/ConstructionSystem.o Systems/DrawMapSystem.o Systems/TileAnimSystem.o Sy
 Systems/FxSystem.o Systems/GameGeneratorSystem.o Systems/MinimapSystem.o \
 Systems/MapLayersSystem.o Systems/PathfindingSystem.o Systems/SteeringSystem.o \
 Systems/ResourcesSystem.o Systems/SoundSystem.o Systems/VictorySystem.o \
-Systems/InterfaceSystem.o Systems/DeletionSystem.o \
+Systems/TimerSystem.o Systems/InterfaceSystem.o Systems/DeletionSystem.o \
 GameEngine.o bfr.o
 
 %.o: %.cpp

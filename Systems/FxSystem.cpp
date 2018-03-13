@@ -35,6 +35,8 @@ void FxSystem::createEffect(const EffectCreate &event) {
 				effect.spawner->center = ppos;
 				if (!effect.continuous)
 					effect.particleSystem->emitParticles(effect.particles);
+
+				this->vault->dispatcher.trigger<EffectCreated>(event.name, entity);
 			}
 		}
 	} else {
@@ -44,6 +46,8 @@ void FxSystem::createEffect(const EffectCreate &event) {
 		effect.spawner->center = ppos;
 		if (!effect.continuous)
 			effect.particleSystem->emitParticles(effect.particles);
+
+		this->vault->dispatcher.trigger<EffectCreated>(event.name, entity);
 	}
 #endif
 }

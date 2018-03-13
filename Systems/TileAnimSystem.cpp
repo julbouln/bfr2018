@@ -8,10 +8,11 @@ void TileAnimSystem::receive(const StateChanged &event) {
 	EntityID entity = event.entity;
 	if (this->vault->registry.has<AnimatedSpritesheet>(entity)) {
 		AnimatedSpritesheet &spritesheet = this->vault->registry.get<AnimatedSpritesheet>(entity);
+		AnimatedSpriteView &view = spritesheet.states[event.newState][event.view];
+		Timer timer(event.newState,view.duration * view.frames.size(), view.loop);
 
-		AnimatedSpriteView &view = spritesheet.states[event.state][event.view];
-		view.l = 0;
-		view.t = 0.0;
+		this->vault->registry.accomodate<Timer>(entity, timer);
+		
 		view.currentFrame = 0;
 	}
 }
@@ -37,20 +38,23 @@ void TileAnimSystem::updateStaticSpritesheets(float dt) {
 }
 
 void TileAnimSystem::updateAnimatedSpritesheets(float dt) {
-	auto view = this->vault->registry.persistent<Tile, AnimatedSpritesheet>();
+
+	auto view = this->vault->registry.persistent<Tile, AnimatedSpritesheet, Timer>();
 	for (EntityID entity : view) {
 		Tile &tile = view.get<Tile>(entity);
 		AnimatedSpritesheet &spritesheet = view.get<AnimatedSpritesheet>(entity);
+		Timer &timer = view.get<Timer>(entity);
 		if (spritesheet.states.count(tile.state) > 0) {
 			AnimatedSpriteView &animView = spritesheet.states[tile.state][tile.view];
+			int frames = animView.frames.size();
 
-			if (int((animView.t + dt) / animView.duration) > int(animView.t / animView.duration))
+			if (int((timer.t + dt) / (timer.duration / frames)) > int(timer.t / (timer.duration / frames)))
 			{
 				/* Calculate the frame number */
-				int frame = int((animView.t + dt) / animView.duration);
+				int frame = int((timer.t + dt) / (timer.duration / frames));
 
 				/* Adjust for looping */
-				if (animView.loop)
+				if (timer.loop)
 					frame %= animView.frames.size();
 
 				if (frame != animView.currentFrame) {
@@ -67,18 +71,7 @@ void TileAnimSystem::updateAnimatedSpritesheets(float dt) {
 				tile.sprite.setTextureRect(boundingRect);
 			}
 
-			// increment the time elapsed
-			animView.t += dt;
 
-			if (animView.t > animView.duration * animView.frames.size()) {
-				// reset time and increment loop count if loop
-				if (animView.loop) {
-					animView.t = 0.0f;
-					animView.l++;
-				} else {
-					animView.l = 1;
-				}
-			}
 		}
 	}
 }

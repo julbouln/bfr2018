@@ -56,6 +56,28 @@ struct Tile {
 	}
 };
 
+struct Timer {
+	std::string name;
+	bool loop; // is looping
+	float duration; // loop duration
+	float t; // current time since beginning
+	int l; // number of loop since beginning
+
+	Timer(std::string n, float d, bool lo) {
+		this->name = n;
+		this->t = 0.0;
+		this->l = 0;		
+		this->duration = d;
+		this->loop = lo;
+	}
+
+	Timer() {
+		this->loop = true;		
+		this->t = 0.0;
+		this->l = 0;		
+	}
+};
+
 struct SpriteView {
 	sf::Vector2i currentPosition;
 };
@@ -70,14 +92,14 @@ struct AnimatedSpriteView {
 	// current frame
 	int currentFrame;
 	// current time since the animation loop started
-	float t;
+//	float t;
 	// number of loop since animation started
-	int l;
+//	int l;
 
 	AnimatedSpriteView() {
 		this->loop = true;
-		this->l = 0;
-		this->t = 0.0;
+//		this->l = 0;
+//		this->t = 0.0;
 		this->currentFrame = 0;
 	}
 };

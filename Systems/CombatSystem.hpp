@@ -14,9 +14,12 @@ public:
 	void updateFront(float dt);
 
 // signals
-	void receive(const AnimationFrameChanged &event);
+	void receive(const TimerLooped &event);
+	void receive(const TimerStarted &event);
+	void receive(const TimerEnded &event);
 
 private:
+	void attacking(EntityID entity);
 	bool posInRange(Tile & tile, sf::Vector2f & destPos, int dist, int maxDist);
 	bool ennemyInRange(Tile & tile, Tile & destTile, int dist, int maxDist);
 	

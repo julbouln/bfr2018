@@ -11,6 +11,7 @@
 
 #include "Systems/GameSystem.hpp"
 #include "Systems/GameGeneratorSystem.hpp"
+#include "Systems/TimerSystem.hpp"
 #include "Systems/TileAnimSystem.hpp"
 #include "Systems/MapLayersSystem.hpp"
 #include "Systems/DrawMapSystem.hpp"
@@ -42,6 +43,7 @@ public:
 
 	GameGeneratorSystem gameGenerator;
 	ResourcesSystem resources;
+	TimerSystem time;
 	TileAnimSystem tileAnim;
 	DrawMapSystem drawMap;
 	MinimapSystem minimap;

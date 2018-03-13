@@ -18,3 +18,25 @@ Interface:
 - add mouse cursors
 - add settings
 - add pause text + sound
+
+Balancing:
+- add special capabilities (zork can repair building, bazooka can destroy nature, etc)
+- some units should be unique (zork, abdel, brad lab)
+
+- brad_lab : unique + boost units?
+- patrouilleur : melee cheap but weak
+- mitrailleur : short range
+- super_guerrier : short range + very slow but strongest unit + 360° damages
+- bazooka : medium range + can destroy nature
+- lance_missile : bazooka evolution
+- gros naz : very long range
+
+- zork : unique + can repair buildings
+- punkette : melee + ?
+- lance pepino : medium range + projectile destination plant nature
+- guerrier bud : medium range + collateral damage?
+- guerrier bud powered : guerrier bud evolution
+- punk : melee + ?
+- abdel : unique + melee + very fast + ?
+
+

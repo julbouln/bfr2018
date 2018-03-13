@@ -1,16 +1,15 @@
 #include "CombatSystem.hpp"
 
 void CombatSystem::init() {
-	this->vault->dispatcher.connect<AnimationFrameChanged>(this);
+	this->vault->dispatcher.connect<TimerStarted>(this);
+	this->vault->dispatcher.connect<TimerLooped>(this);
+	this->vault->dispatcher.connect<TimerEnded>(this);
 }
 
-// frame changed
-void CombatSystem::receive(const AnimationFrameChanged &event) {
-	if (event.state == "attack") {
-		EntityID entity = event.entity;
-		int frame = event.frame;
-		if (frame == 1) {
-			Tile &tile = vault->registry.get<Tile>(entity);
+void CombatSystem::attacking(EntityID entity) {
+	if (this->vault->registry.has<Unit>(entity)) {
+		Tile &tile = vault->registry.get<Tile>(entity);
+		if (tile.state == "attack") {
 			Unit &unit = vault->registry.get<Unit>(entity);
 
 #ifdef COMBAT_DEBUG
@@ -38,6 +37,7 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 
 				this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
 
+
 				/*
 									if (projEnt && unit.canDestroyResources) {
 										ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
@@ -56,6 +56,33 @@ void CombatSystem::receive(const AnimationFrameChanged &event) {
 				this->changeState(entity, "idle");
 				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
+			}
+		}
+	}
+}
+
+// frame changed
+void CombatSystem::receive(const TimerLooped &event) {
+	if (event.name == "attack")
+		this->attacking(event.entity);
+}
+
+void CombatSystem::receive(const TimerStarted &event) {
+	if (event.name == "attack")
+		this->attacking(event.entity);
+}
+
+void CombatSystem::receive(const TimerEnded &event) {
+	if (event.name == "projectile") {
+		EntityID projEnt = event.entity;
+		if (this->vault->registry.has<ParticleEffect>(projEnt)) {
+			ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
+			sf::Vector2i projDestPos = sf::Vector2i(proj.destpos / 32.0f);
+			EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+			if (resEnt) {
+				this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+				this->vault->registry.destroy(resEnt);
+				std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
 			}
 		}
 	}
@@ -324,9 +351,14 @@ void CombatSystem::update(float dt) {
 					{
 						AnimatedSpritesheet &anim = this->vault->registry.get<AnimatedSpritesheet>(entity);
 						if (anim.states.count("die") > 0) {
-							if (anim.states["die"][tile.view].l >= 1) {
-								this->vault->dispatcher.trigger<EntityDelete>(entity);
+							if (this->vault->registry.has<Timer>(entity)) {
+								Timer &timer = this->vault->registry.get<Timer>(entity);
+								if (timer.l >= 1)
+									this->vault->dispatcher.trigger<EntityDelete>(entity);
 							}
+//							if (anim.states["die"][tile.view].l >= 1) {
+//								this->vault->dispatcher.trigger<EntityDelete>(entity);
+//							}
 						} else {
 							this->vault->dispatcher.trigger<EntityDelete>(entity);
 						}

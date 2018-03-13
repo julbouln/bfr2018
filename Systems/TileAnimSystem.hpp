@@ -14,4 +14,5 @@ public:
 private:
 	void updateStaticSpritesheets(float dt);
 	void updateAnimatedSpritesheets(float dt);
+	void updateTimers(float dt);
 };
