@@ -63,6 +63,7 @@
     <speed value="4"/>
     <attack1 power="2"/>
     <attack2 dist="2" max_dist="4" power="3"/>
+    <special value="collateral"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/rebels/guerrier_bud/sounds/gb_selec01.flac"/>

@@ -61,6 +61,7 @@
     <speed value="4"/>
     <attack1 power="3"/>
     <attack2 dist="0" power="0"/>
+    <special value="boost"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/neonazs/brad_lab/sounds/brad_selec01.flac"/>

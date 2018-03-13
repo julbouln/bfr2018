@@ -67,7 +67,8 @@
     <cost value="8"/>
     <speed value="2"/>
     <attack1 power="1"/>
-    <attack2 dist="3" max_dist="4" power="3"/>
+    <attack2 dist="3" max_dist="5" power="3"/>
+    <special value="destroy_nature"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/neonazs/bazooka/sounds/baz_selec01.flac"/>

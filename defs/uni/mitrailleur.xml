@@ -75,10 +75,10 @@
     <life value="4"/>
   </game_object>
   <unit>
-    <cost value="12"/>
+    <cost value="10"/>
     <speed value="3"/>
     <attack1 power="5"/>
-    <attack2 dist="2" max_dist="2" power="5"/>
+    <attack2 dist="1" max_dist="3" power="5"/>
     <sound_actions/>
     <sound_attack name="mitraille">
       <sound_buffer global="mitraille" path="medias/projectiles/mitraille.flac"/>

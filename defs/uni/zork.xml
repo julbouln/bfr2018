@@ -127,6 +127,7 @@
     <speed value="3"/>
     <attack1 power="3"/>
     <attack2 dist="0" power="0"/>
+    <special value="repair"/>
     <sound_actions>
       <sound_action name="select">
         <sound_buffer path="medias/units/rebels/zork/sounds/zo_selec01.flac"/>

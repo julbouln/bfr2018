@@ -61,6 +61,7 @@
     <speed value="4"/>
     <attack1 power="3"/>
     <attack2 dist="2" max_dist="4" power="6"/>
+    <special value="collateral"/>
     <sound_actions/>
     <sound_attack name="bud"/>
     <can_destroy_resources value="true"/>

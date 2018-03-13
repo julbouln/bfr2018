@@ -68,7 +68,8 @@
     <cost value="20"/>
     <speed value="3"/>
     <attack1 power="1"/>
-    <attack2 dist="3" max_dist="4" power="6"/>
+    <attack2 dist="3" max_dist="5" power="6"/>
+    <special value="destroy_nature"/>
     <sound_actions/>
     <sound_attack name="rockette"/>
     <can_destroy_resources value="true"/>

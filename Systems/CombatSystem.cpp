@@ -66,27 +66,21 @@ void CombatSystem::receive(const TimerStarted &event) {
 }
 
 void CombatSystem::receive(const TimerEnded &event) {
-	if (event.name == "projectile") {
-		if (this->vault->registry.has<ParticleEffect>(event.entity)) {
-			ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(event.entity);
-			sf::Vector2i projDestPos = sf::Vector2i(proj.destpos / 32.0f);
-			std::cout << "PROJECTILE AT " << proj.destpos << std::endl;
-			/*			EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-						if (resEnt) {
-							this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-							this->vault->registry.destroy(resEnt);
-							std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
-						}
-						*/
-		}
-	} else if (event.name == "projectile_arrival") {
+	if (event.name == "projectile_arrival") {
 		if (this->vault->registry.has<Timer>(event.entity)) {
 			Timer &timer = this->vault->registry.get<Timer>(event.entity);
 			if (this->vault->registry.has<Unit>(timer.emitterEntity)) {
 				Unit &unit = this->vault->registry.get<Unit>(timer.emitterEntity);
 				if (unit.targetEnt) {
 					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-					std::cout << "TIMER PROJECTILE AT " << destTile.ppos << std::endl;
+					sf::Vector2i projDestPos = destTile.pos;
+					EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+					if (resEnt) {
+						this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+						this->vault->registry.destroy(resEnt);
+//						std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+					}
+//					std::cout << "TIMER PROJECTILE AT " << destTile.ppos << std::endl;
 				}
 			}
 		}
@@ -301,7 +295,7 @@ void CombatSystem::update(float dt) {
 				// damage malus for moving target
 				if (this->vault->registry.has<Unit>(unit.targetEnt)) {
 					Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
-					damage /= length(destUnit.velocity) * 2.0f;
+					damage /= length(destUnit.velocity) + 1.0f;
 				}
 #ifdef COMBAT_DEBUG
 				std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
@@ -314,6 +308,7 @@ void CombatSystem::update(float dt) {
 
 				// start/continue attacking
 				this->changeState(entity, "attack");
+				unit.velocity = sf::Vector2f(0,0);
 				unit.destpos = tile.pos;
 
 			} else {
@@ -365,7 +360,7 @@ void CombatSystem::update(float dt) {
 						if (anim.states.count("die") > 0) {
 							AnimatedSpriteView &view = anim.states["die"][0];
 
-							this->vault->factory.createTimer(this->vault->registry, entity, "delayed_destroy", view.duration, false);
+							this->vault->factory.createTimer(this->vault->registry, entity, "delayed_destroy", view.duration * view.frames.size(), false);
 						} else {
 							this->vault->dispatcher.trigger<EntityDelete>(entity);
 						}
