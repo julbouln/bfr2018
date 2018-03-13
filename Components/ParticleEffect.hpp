@@ -6,7 +6,6 @@ struct ParticleEffect {
 	particles::ParticleSystem *particleSystem;
 	particles::ParticleSpawner *spawner;
 	float lifetime;
-	float currentTime;
 	int particles;
 	bool continuous;
 	bool alwaysVisible;

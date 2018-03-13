@@ -76,6 +76,10 @@ struct Timer {
 		this->t = 0.0;
 		this->l = 0;		
 	}
+
+	inline bool ended() const {
+		return !this->loop && this->l == 1;
+	}
 };
 
 struct SpriteView {

@@ -73,10 +73,10 @@ void CombatSystem::receive(const TimerStarted &event) {
 }
 
 void CombatSystem::receive(const TimerEnded &event) {
+	EntityID entity = event.entity;
 	if (event.name == "projectile") {
-		EntityID projEnt = event.entity;
-		if (this->vault->registry.has<ParticleEffect>(projEnt)) {
-			ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
+		if (this->vault->registry.has<ParticleEffect>(entity)) {
+			ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(entity);
 			sf::Vector2i projDestPos = sf::Vector2i(proj.destpos / 32.0f);
 			EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
 			if (resEnt) {
@@ -85,6 +85,9 @@ void CombatSystem::receive(const TimerEnded &event) {
 				std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
 			}
 		}
+	} else if (event.name == "destroyed") {
+		std::cout << "DESTROY BUILDING " << entity << std::endl;
+		this->vault->dispatcher.trigger<EntityDelete>(entity);
 	}
 }
 
@@ -399,15 +402,18 @@ void CombatSystem::update(float dt) {
 		GameObject &obj = buildingView.get<GameObject>(entity);
 
 		if (obj.life <= 0) {
+			if (!this->vault->registry.has<Timer>(entity) || this->vault->registry.get<Timer>(entity).name != "destroyed") {
 
-			ParticleEffectOptions projOptions;
-			projOptions.destPos = tile.ppos;
-			projOptions.direction = 0;
+				ParticleEffectOptions projOptions;
+				projOptions.destPos = tile.ppos;
+				projOptions.direction = 0;
 
-			this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
-			this->vault->dispatcher.trigger<SoundPlay>("explosion", 2, true, tile.pos);
+				this->vault->dispatcher.trigger<EffectCreate>("destroy", entity, tile.ppos, projOptions);
+				this->vault->dispatcher.trigger<SoundPlay>("explosion", 2, true, tile.pos);
 
-			this->vault->dispatcher.trigger<EntityDelete>(entity);
+				Timer timer("destroyed", 1.0f, false);
+				this->vault->registry.accomodate<Timer>(entity, timer);
+			}
 
 		} else {
 			// change tile view to show damages

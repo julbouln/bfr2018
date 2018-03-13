@@ -37,6 +37,9 @@ void FxSystem::createEffect(const EffectCreate &event) {
 					effect.particleSystem->emitParticles(effect.particles);
 
 				this->vault->dispatcher.trigger<EffectCreated>(event.name, entity);
+
+				Timer timer(name, effect.lifetime, false);
+				this->vault->registry.assign<Timer>(entity, timer);
 			}
 		}
 	} else {
@@ -48,6 +51,9 @@ void FxSystem::createEffect(const EffectCreate &event) {
 			effect.particleSystem->emitParticles(effect.particles);
 
 		this->vault->dispatcher.trigger<EffectCreated>(event.name, entity);
+
+		Timer timer(name, effect.lifetime, false);
+		this->vault->registry.assign<Timer>(entity, timer);
 	}
 #endif
 }
@@ -83,12 +89,13 @@ void FxSystem::update(float dt) {
 	this->createEffects(gameDt);
 	this->destroyEffects(gameDt);
 
-	auto view = this->vault->registry.view<ParticleEffect>();
+	auto view = this->vault->registry.persistent<ParticleEffect, Timer>();
 	for (EntityID entity : view) {
-		ParticleEffect &effect = view.get(entity);
-		effect.currentTime += gameDt;
+		ParticleEffect &effect = view.get<ParticleEffect>(entity);
+		Timer &timer = view.get<Timer>(entity);
+//		effect.currentTime += gameDt;
 
-		if (effect.currentTime >= effect.lifetime || (!effect.continuous && effect.particleSystem->countAlive() == 0)) {
+		if (timer.ended() || (!effect.continuous && effect.particleSystem->countAlive() == 0)) {
 //			effect.effectEndCallback();
 			this->vault->dispatcher.trigger<EffectEnded>(entity);
 

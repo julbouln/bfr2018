@@ -560,7 +560,6 @@ EntityID EntityFactory::createParticleEffect(entt::Registry<EntityID> &registry,
 	std::cout << "EntityFactory: create map effect " << entity << " " << name << std::endl;
 #endif
 	ParticleEffect effect;
-	effect.currentTime = 0.0;
 
 	options.texMgr = &texManager;
 
