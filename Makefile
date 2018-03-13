@@ -19,8 +19,8 @@ bfr: $(THIRD_PARTY_OBJS) $(OBJS)
 
 all: bfr
 
-particle_editor: $(THIRD_PARTY_OBJS) ShaderOptions.o
-	$(CXX) $(CFLAGS) -I. $(THIRD_PARTY_OBJS) tools/imgui-custom.cpp ShaderOptions.o tools/particles_editor.cpp -o tools/particles_editor -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
+particle_editor: $(THIRD_PARTY_OBJS) Options.o
+	$(CXX) $(CFLAGS) -I. $(THIRD_PARTY_OBJS) tools/imgui-custom.cpp Options.o tools/particles_editor.cpp -o tools/particles_editor -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL
 
 particle_demo: $(THIRD_PARTY_OBJS) ShaderOptions.o
 	$(CXX) $(CFLAGS) -I. $(THIRD_PARTY_OBJS) tests/imgui-custom.cpp ShaderOptions.o tests/demo.cpp -o tests/demo -lsfml-graphics -lsfml-audio -lsfml-window -lsfml-system -lglut -lGL

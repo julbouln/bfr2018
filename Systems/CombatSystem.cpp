@@ -30,28 +30,21 @@ void CombatSystem::attacking(EntityID entity) {
 
 				this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
 
+				if (this->vault->registry.has<Effects>(entity)) {
+					Effects &effects = this->vault->registry.get<Effects>(entity);
+					if (effects.effects.count("projectile") > 0) {
+						ParticleEffectOptions projOptions;
+						projOptions.destPos = destTile.ppos;
+						projOptions.direction = getDirection(tile.pos, destTile.pos);
 
-				ParticleEffectOptions projOptions;
-				projOptions.destPos = destTile.ppos;
-				projOptions.direction = getDirection(tile.pos, destTile.pos);
+						this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
 
-				this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
+						float expectedDuration = length(destTile.ppos - tile.ppos) / 80.0f;
+						this->vault->factory.createTimer(this->vault->registry, entity, "projectile_arrival", expectedDuration, false);
+					}
+				}
 
 
-				/*
-									if (projEnt && unit.canDestroyResources) {
-										ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(projEnt);
-										sf::Vector2i projDestPos = destTile.pos;
-										proj.effectEndCallback = [this, projDestPos]() {
-											EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-											if (resEnt) {
-												this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-												this->vault->registry.destroy(resEnt);
-												std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
-											}
-										};
-									}
-				*/
 			} else {
 				this->changeState(entity, "idle");
 				unit.targetEnt = 0;
@@ -73,21 +66,33 @@ void CombatSystem::receive(const TimerStarted &event) {
 }
 
 void CombatSystem::receive(const TimerEnded &event) {
-	EntityID entity = event.entity;
 	if (event.name == "projectile") {
-		if (this->vault->registry.has<ParticleEffect>(entity)) {
-			ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(entity);
+		if (this->vault->registry.has<ParticleEffect>(event.entity)) {
+			ParticleEffect &proj = this->vault->registry.get<ParticleEffect>(event.entity);
 			sf::Vector2i projDestPos = sf::Vector2i(proj.destpos / 32.0f);
-			EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-			if (resEnt) {
-				this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-				this->vault->registry.destroy(resEnt);
-				std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+			std::cout << "PROJECTILE AT " << proj.destpos << std::endl;
+			/*			EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+						if (resEnt) {
+							this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+							this->vault->registry.destroy(resEnt);
+							std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+						}
+						*/
+		}
+	} else if (event.name == "projectile_arrival") {
+		if (this->vault->registry.has<Timer>(event.entity)) {
+			Timer &timer = this->vault->registry.get<Timer>(event.entity);
+			if (this->vault->registry.has<Unit>(timer.emitterEntity)) {
+				Unit &unit = this->vault->registry.get<Unit>(timer.emitterEntity);
+				if (unit.targetEnt) {
+					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					std::cout << "TIMER PROJECTILE AT " << destTile.ppos << std::endl;
+				}
 			}
 		}
 	} else if (event.name == "delayed_destroy") {
-		if (this->vault->registry.has<Timer>(entity)) {
-			Timer &timer = this->vault->registry.get<Timer>(entity);
+		if (this->vault->registry.has<Timer>(event.entity)) {
+			Timer &timer = this->vault->registry.get<Timer>(event.entity);
 			this->vault->dispatcher.trigger<EntityDelete>(timer.emitterEntity);
 		}
 	}
@@ -362,7 +367,7 @@ void CombatSystem::update(float dt) {
 
 							this->vault->factory.createTimer(this->vault->registry, entity, "delayed_destroy", view.duration, false);
 						} else {
-							this->vault->dispatcher.trigger<EntityDelete>(entity);						
+							this->vault->dispatcher.trigger<EntityDelete>(entity);
 						}
 					}
 				}

@@ -376,7 +376,7 @@ void EntityFactory::assignSpritesheets(entt::Registry<EntityID> &registry, Entit
 		if (animSpritesheet.states.count("idle") > 0) {
 			AnimatedSpriteView &view = animSpritesheet.states["idle"][0];
 			Timer timer("idle", view.duration * view.frames.size(), true);
-			registry.assign<Timer>(entity, timer);
+			registry.accomodate<Timer>(entity, timer);
 		}
 
 	}
