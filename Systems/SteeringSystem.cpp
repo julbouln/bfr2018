@@ -126,7 +126,8 @@ void SteeringSystem::update(float dt) {
 				std::cout << "Pathfinding: " << entity << " steering accel:" << accel << " velocity:" << unit.velocity << " surrounding:" << surroundingObjects.size() << std::endl;
 #endif
 
-				if (unit.averageCount < 16) {
+
+				if (unit.averageCount < 8) {
 					unit.averageVelocity += unit.velocity;
 					unit.averageCount++;
 				} else {
@@ -135,15 +136,17 @@ void SteeringSystem::update(float dt) {
 				}
 
 				sf::Vector2f avVel = unit.averageVelocity / (float)unit.averageCount;
+
+//				sf::Vector2f avVel = unit.velocity;
 				float velLen = length(avVel);
 
-				if (velLen < unit.speed * 0.1f) {
+				if (velLen < unit.speed * 0.05f) {
 					unit.velocity = sf::Vector2f(0, 0);
 					this->changeState(entity, "idle");
 				} else {
 //						if (length(unit.velocity) * 1.5f >= unit.speed)
-					if (velLen >= unit.speed * 0.5f)
-						tile.view = getDirection(sf::Vector2i(normalize(avVel) * 16.0f));
+					if (velLen >= unit.speed * 0.1f)
+						tile.view = getDirection(sf::Vector2i(round(avVel * 10.0f)));
 
 					this->changeState(entity, "move");
 				}

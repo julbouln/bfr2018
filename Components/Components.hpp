@@ -200,7 +200,7 @@ struct Unit {
 	}
 };
 
-#define MAX_FORCE 0.2f
+#define MAX_FORCE 0.1f
 
 class PathfindingObject : public sf::Vector2f {
 public:

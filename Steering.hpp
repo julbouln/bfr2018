@@ -9,7 +9,7 @@
 #define MAX_QUEUE_AHEAD 16.0f
 #define MAX_QUEUE_RADIUS 16.0f
 
-#define AVOID_DIST 24.0f
+#define AVOID_DIST 16.0f
 #define SEPARATION_DIST 32.0f
 #define COHESION_DIST 32.0f
 #define ALIGN_DIST 32.0f
