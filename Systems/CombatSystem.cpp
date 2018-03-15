@@ -71,14 +71,50 @@ void CombatSystem::receive(const TimerEnded &event) {
 			Timer &timer = this->vault->registry.get<Timer>(event.entity);
 			if (this->vault->registry.has<Unit>(timer.emitterEntity)) {
 				Unit &unit = this->vault->registry.get<Unit>(timer.emitterEntity);
+				GameObject &obj = this->vault->registry.get<GameObject>(timer.emitterEntity);
 				if (unit.targetEnt) {
 					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
 					sf::Vector2i projDestPos = destTile.pos;
-					EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-					if (resEnt) {
-						this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-						this->vault->registry.destroy(resEnt);
-//						std::cout << "DESTROY RESOURCE AT " << projDestPos.x << "x" << projDestPos.y << std::endl;
+					switch (unit.special) {
+					case SpecialSkillStr("destroy_nature"): {
+						EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+						if (resEnt) {
+							Resource &resource = this->vault->registry.get<Resource>(resEnt);
+							if (resource.type == "nature") {
+								this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+								this->vault->registry.destroy(resEnt);
+								std::cout << "SpecialSkill: destroy nature at " << projDestPos << std::endl;
+							}
+						}
+					}
+					break;
+					case SpecialSkillStr("seed_nature"): {
+						if (!this->map->resources.get(projDestPos.x, projDestPos.y) && this->map->staticBuildable.get(projDestPos.x, projDestPos.y) == 0) {
+							if ((rand() % 4) == 0) {
+								EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, "nature", projDestPos.x, projDestPos.y);
+								this->map->resources.set(projDestPos.x, projDestPos.y, resEnt);
+								std::cout << "SpecialSkill: plant nature at " << projDestPos << std::endl;
+							}
+						}
+					}
+					break;
+					case SpecialSkillStr("collateral_projectile"): {
+						for (int w = projDestPos.x - 1; w < projDestPos.x + 1; w++) {
+							for (int h = projDestPos.y - 1; h < projDestPos.y + 1; h++) {
+								EntityID colEnt = this->map->objs.get(w, h);
+								if (colEnt) {
+									GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
+									if (colObj.team != obj.team) {
+										colObj.life -= (float)unit.attack2.power / 16.0f;
+										std::cout << "SpecialSkill: collateral projectile damage at " << w << "x" << h << " on " << colEnt << std::endl;
+									}
+								}
+							}
+						}
+					}
+					break;
+					default:
+						break;
 					}
 //					std::cout << "TIMER PROJECTILE AT " << destTile.ppos << std::endl;
 				}
@@ -302,13 +338,28 @@ void CombatSystem::update(float dt) {
 #endif
 				destObj.life -= damage;
 
+				if (unit.special == SpecialSkillStr("collateral")) {
+					for (int w = tile.pos.x - 1; w < tile.pos.x + 1; w++) {
+						for (int h = tile.pos.y - 1; h < tile.pos.y + 1; h++) {
+							EntityID colEnt = this->map->objs.get(w, h);
+							if (colEnt) {
+								GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
+								if (colObj.team != obj.team) {
+									colObj.life -= damage / 4.0f;
+									std::cout << "SpecialSkill: collateral damage at " << w << "x" << h << " on " << colEnt << std::endl;
+								}
+							}
+						}
+					}
+				}
+
 				if (destObj.player) {
 					this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
 				}
 
 				// start/continue attacking
 				this->changeState(entity, "attack");
-				unit.velocity = sf::Vector2f(0,0);
+				unit.velocity = sf::Vector2f(0, 0);
 				unit.destpos = tile.pos;
 
 			} else {

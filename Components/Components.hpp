@@ -155,6 +155,9 @@ enum class GroupFormation {
 	OneLine
 };
 
+typedef entt::HashedString::hash_type SpecialSkill;
+typedef entt::HashedString SpecialSkillStr;
+
 struct Unit {
 	unsigned int cost;
 	float speed;
@@ -162,6 +165,7 @@ struct Unit {
 	Attack attack2;
 
 	EntityID targetEnt;
+	sf::Vector2i targetPos;
 
 	sf::Vector2i destpos;
 	sf::Vector2f velocity;
@@ -187,6 +191,8 @@ struct Unit {
 
 	bool canDestroyResources;
 
+	SpecialSkill special;
+
 	Unit() {
 		this->averageCount = 1;
 		this->velocity = sf::Vector2f(0, 0);
@@ -197,6 +203,7 @@ struct Unit {
 		this->canDestroyResources = false;
 		this->commanded = false;
 		this->pathUpdate = false;
+		this->special = SpecialSkillStr("none");
 	}
 };
 

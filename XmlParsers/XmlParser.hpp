@@ -176,6 +176,9 @@ public:
 			if(element->FirstChildElement("can_destroy_resources"))
 				unit.canDestroyResources = element->FirstChildElement("can_destroy_resources")->BoolAttribute("value");
 
+			if(element->FirstChildElement("special"))
+				unit.special = SpecialSkillStr(element->FirstChildElement("special")->Attribute("value"));
+
 			tinyxml2::XMLElement * soundsEl = element->FirstChildElement("sound_actions");
 			if (soundsEl) {
 				for (tinyxml2::XMLElement *soundEl : soundsEl) {
