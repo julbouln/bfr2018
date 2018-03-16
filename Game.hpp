@@ -17,6 +17,19 @@
 #include "Stages/Stage.hpp"
 #include "GameVault.hpp"
 
+enum Cursor {
+	DefaultCursor,
+	RebelCursor,
+	RebelCursor2,
+	NeonazCursor,
+	ScrollSouthCursor,
+	ScrollNorthCursor,
+	ScrollWestCursor,
+	ScrollEastCursor,
+	AttackCursor
+};
+
+
 class Game {
 public:
 	unsigned int width, height;
@@ -46,7 +59,7 @@ public:
 	}
 
 	void pushRegisteredStage(std::string name) {
-		this->currentCursor = 0;
+		this->currentCursor = DefaultCursor;
 		this->registeredStages[name]->reset();
 		this->pushStage(this->registeredStages[name]);
 	}
@@ -165,7 +178,7 @@ public:
 		vault.factory.loadInitial();
 
 		this->mousePressed = false;
-		this->currentCursor = 0;
+		this->currentCursor = DefaultCursor;
 		cursor.setOrigin(15, 15);
 		cursor.setTexture(vault.factory.getTex("cursors"));
 		sf::IntRect cursorRect(this->currentCursor * 30, 0, 30, 30);

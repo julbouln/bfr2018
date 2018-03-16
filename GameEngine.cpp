@@ -129,9 +129,11 @@ void GameEngine::setPlayerCursor() {
 	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
 
 	if (player.team == "rebel") {
-		this->game->currentCursor = 1;
+		this->game->currentCursor = RebelCursor;
 	} else if (player.team == "neonaz") {
-		this->game->currentCursor = 3;
+		this->game->currentCursor = NeonazCursor;
+	} else {
+		this->game->currentCursor = DefaultCursor;		
 	}
 }
 
@@ -418,27 +420,27 @@ void GameEngine::updateMoveView(float dt) {
 		break;
 	case MoveView::MoveWest:
 		if (center.x > 128) {
-			this->game->currentCursor = 6;
+			this->game->currentCursor = ScrollWestCursor;
 			this->gameView.move(sf::Vector2f{ -mov, 0.0});
 		}
 		break;
 	case MoveView::MoveEast:
 		if (center.x < this->map->width * 32 - 128) {
-			this->game->currentCursor = 7;
+			this->game->currentCursor = ScrollEastCursor;
 
 			this->gameView.move(sf::Vector2f{mov, 0.0});
 		}
 		break;
 	case MoveView::MoveNorth:
 		if (center.y > 128) {
-			this->game->currentCursor = 5;
+			this->game->currentCursor = ScrollNorthCursor;
 
 			this->gameView.move(sf::Vector2f{ 0.0, -mov});
 		}
 		break;
 	case MoveView::MoveSouth:
 		if (center.y < this->map->height * 32 - 128) {
-			this->game->currentCursor = 4;
+			this->game->currentCursor = ScrollSouthCursor;
 
 			this->gameView.move(sf::Vector2f{0.0, mov});
 		}
