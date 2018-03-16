@@ -77,6 +77,8 @@ public:
 
 	void fadeOutCallback();
 
+	void setPlayerCursor();
+
 	void setVaults(GameVault *vault);
 	
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam);

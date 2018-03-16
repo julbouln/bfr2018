@@ -63,7 +63,7 @@ void InterfaceSystem::addSelected(EntityID entity) {
 void InterfaceSystem::clearSelected() {
 	GameController &controller = this->vault->registry.get<GameController>();
 
-	if (controller.action == Action::Selecting) {
+	if (controller.action == Action::Select) {
 		controller.selectionStart = sf::Vector2f(0, 0);
 		controller.selectionEnd = sf::Vector2f(0, 0);
 		controller.action = Action::None;
@@ -154,7 +154,7 @@ void InterfaceSystem::constructionProgressGui(EntityID consEnt) {
 			if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
 			                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built"),
 			                           this->vault->factory.texManager.getRef(objCons.name + "_icon_built_down"))) {
-				controller.action = Action::Building;
+				controller.action = Action::Build;
 				controller.currentBuild = this->vault->factory.finishBuilding(this->vault->registry, consEnt, controller.currentPlayer, 8, 8, false);
 			}
 			ImGui::SameLine();
@@ -210,6 +210,19 @@ void InterfaceSystem::actionGui() {
 					Unit &unit = this->vault->registry.get<Unit>(selectedObj);
 
 					ImGui::BeginGroup();
+					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("move"),
+					                           this->vault->factory.texManager.getRef("move"),
+					                           this->vault->factory.texManager.getRef("move_down"))) {
+						std::cout << "TODO: move clicked " << std::endl;
+					}
+
+					ImGui::SameLine();
+					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("attack"),
+					                           this->vault->factory.texManager.getRef("attack"),
+					                           this->vault->factory.texManager.getRef("attack_down"))) {
+						std::cout << "TODO: attack clicked " << std::endl;
+					}
+/*
 					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
 					                           this->vault->factory.texManager.getRef(player.team + "_move"),
 					                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
@@ -222,6 +235,7 @@ void InterfaceSystem::actionGui() {
 					                           this->vault->factory.texManager.getRef(player.team + "_attack_down"))) {
 						std::cout << "TODO: attack clicked " << std::endl;
 					}
+					*/
 					ImGui::EndGroup();
 				}
 

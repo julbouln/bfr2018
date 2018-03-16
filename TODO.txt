@@ -15,7 +15,6 @@ Game:
 - ruins should be tilable ?
 
 Interface:
-- add mouse cursors
 - add settings
 - add pause text + sound
 

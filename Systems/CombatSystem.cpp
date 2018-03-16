@@ -47,6 +47,7 @@ void CombatSystem::attacking(EntityID entity) {
 
 			} else {
 				this->changeState(entity, "idle");
+				unit.targetType = TargetType::None;
 				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
 			}
@@ -213,8 +214,6 @@ void CombatSystem::update(float dt) {
 							this->attack(destUnit, entity);
 							destUnit.destpos = destTile.pos;
 						} else if (destTile.state == "move") {
-//								this->stop(destUnit);
-//								unit.destpos = tile.pos;
 							this->attack(destUnit, entity);
 							destUnit.destpos = destTile.pos;
 						} else if (destTile.state == "attack" && destUnit.targetEnt) {
@@ -363,7 +362,6 @@ void CombatSystem::update(float dt) {
 				unit.destpos = tile.pos;
 
 			} else {
-//				if (unit.destpos == tile.pos) {
 				sf::Vector2i dpos = destTile.pos;
 
 				if (tile.state == "attack") // change to idle if attacking and out of range
@@ -374,7 +372,6 @@ void CombatSystem::update(float dt) {
 #ifdef COMBAT_DEBUG
 				std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 #endif
-//				}
 			}
 		}
 	}
@@ -419,6 +416,7 @@ void CombatSystem::update(float dt) {
 				}
 
 				this->changeState(entity, "die");
+				unit.targetType = TargetType::None;
 				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
 			}
@@ -438,6 +436,7 @@ void CombatSystem::update(float dt) {
 				}
 
 				this->changeState(entity, "idle");
+				unit.targetType = TargetType::None;
 				unit.targetEnt = 0;
 				unit.destpos = tile.pos;
 			}

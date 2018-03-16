@@ -13,6 +13,7 @@ sf::SoundBuffer &EntityFactory::getSndBuf(std::string name) {
 void EntityFactory::loadInitial() {
 	fntManager.load("samos", "medias/fonts/samos.ttf");
 	texLoader.loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
+	texLoader.loadTextureWithWhiteMask("cursors", "medias/extra/curseurs.png");
 }
 
 void EntityFactory::loadMisc() {
@@ -45,6 +46,9 @@ void EntityFactory::loadMisc() {
 	texLoader.loadButton("neonaz_move", "medias/interface/buttons/naz_move_button.png");
 	texLoader.loadButton("neonaz_attack", "medias/interface/buttons/naz_attack_button.png");
 	texLoader.loadButton("neonaz_cancel", "medias/interface/buttons/annuler_naz.png");
+
+	texLoader.loadButton("move", "medias/interface/buttons/deplacement.png");
+	texLoader.loadButton("attack", "medias/interface/buttons/attaque.png");
 
 	texLoader.loadBuildButton("nature_icon", "medias/resources/nature-icon.png");
 	texLoader.loadButton("pollution_icon", "medias/resources/pollution-icon.png");

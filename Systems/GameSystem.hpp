@@ -52,9 +52,11 @@ public:
 	void clearTarget(EntityID entity);
 	void goTo(Unit & unit, sf::Vector2i destpos);
 	void goTo(EntityID entity, sf::Vector2i destpos);
-	void stop(Unit &unit);
 	void attack(Unit & unit, EntityID destEnt);
 	void attack(EntityID entity, EntityID destEnt);
+
+	void bomb(Unit & unit, sf::Vector2i destPos);
+	void bomb(EntityID entity, sf::Vector2i destPos);
 
 	inline float resourcesVictory() const {
 		return (float)(this->map->width * this->map->height) / 2.0;

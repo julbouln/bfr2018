@@ -28,6 +28,10 @@ public:
 
 	sf::RenderWindow window;
 
+	bool mousePressed;
+	int currentCursor;
+	sf::Sprite cursor;
+
 	void registerStage(std::string name, Stage *stage) {
 		this->registeredStages[name] = stage;
 	}
@@ -42,6 +46,7 @@ public:
 	}
 
 	void pushRegisteredStage(std::string name) {
+		this->currentCursor = 0;
 		this->registeredStages[name]->reset();
 		this->pushStage(this->registeredStages[name]);
 	}
@@ -101,6 +106,12 @@ public:
 				if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 					window.close();
 
+				if (event.type == sf::Event::MouseButtonPressed)
+					mousePressed = true;
+
+				if (event.type == sf::Event::MouseButtonReleased)
+					mousePressed = false;
+
 				peekStage()->handleEvent(event);
 			}
 
@@ -110,6 +121,12 @@ public:
 			window.clear(sf::Color::Black);
 
 			peekStage()->draw(elapsed);
+
+			sf::IntRect cursorRect(this->currentCursor * 30, mousePressed ? 30 : 0, 30, 30);
+
+			cursor.setTextureRect(cursorRect);
+			cursor.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
+			window.draw(cursor);
 
 			window.display();
 		}
@@ -123,6 +140,8 @@ public:
 			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018", sf::Style::Fullscreen);
 		else
 			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+
+		this->window.setMouseCursorVisible(false); // Hide cursor
 
 		this->window.setFramerateLimit(30);
 //		this->window.setVerticalSyncEnabled(true);
@@ -144,6 +163,14 @@ public:
 		window.display();
 
 		vault.factory.loadInitial();
+
+		this->mousePressed = false;
+		this->currentCursor = 0;
+		cursor.setOrigin(15, 15);
+		cursor.setTexture(vault.factory.getTex("cursors"));
+		sf::IntRect cursorRect(this->currentCursor * 30, 0, 30, 30);
+		cursor.setTextureRect(cursorRect);
+
 	}
 
 	~Game()

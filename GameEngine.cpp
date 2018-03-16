@@ -73,6 +73,7 @@ void GameEngine::init() {
 void GameEngine::reset() {
 	this->fadeIn();
 	this->nextStage = 0;
+	this->setPlayerCursor();
 }
 
 void GameEngine::fadeOutCallback() {
@@ -123,6 +124,17 @@ void GameEngine::centerMapView(sf::Vector2i position) {
 	this->gameView.setCenter(sf::Vector2f(position) * 32.0f);
 }
 
+void GameEngine::setPlayerCursor() {
+	GameController &controller = this->vault->registry.get<GameController>();
+	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
+
+	if (player.team == "rebel") {
+		this->game->currentCursor = 1;
+	} else if (player.team == "neonaz") {
+		this->game->currentCursor = 3;
+	}
+}
+
 void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam) {
 	EntityID playerEnt = gameGenerator.generate(mapWidth, mapHeight, playerTeam);
 
@@ -149,6 +161,7 @@ void GameEngine::generate(unsigned int mapWidth, unsigned int mapHeight, std::st
 	} else {
 		this->centerMapView(sf::Vector2i(this->map->width / 2, this->map->height / 2));
 	}
+
 
 //		EntityID pEnt = this->emitEffect("pluit", sf::Vector2f(this->map->width / 2 * 32.0, 1.0));
 //		ParticleEffect &effect = this->vault->registry.get<ParticleEffect>(pEnt);
@@ -206,7 +219,7 @@ void GameEngine::draw(float dt) {
 		this->game->window.draw(selected);
 	}
 
-	if (controller.action == Action::Selecting) {
+	if (controller.action == Action::Select) {
 		sf::RectangleShape rectangle;
 		rectangle.setSize(controller.selectionEnd - controller.selectionStart);
 		rectangle.setFillColor(sf::Color(0x00, 0x00, 0x00, 0x00));
@@ -396,26 +409,39 @@ void GameEngine::update(float dt) {
 void GameEngine::updateMoveView(float dt) {
 	GameController &controller = this->vault->registry.get<GameController>();
 
+	this->setPlayerCursor();
+
 	sf::Vector2f center = this->gameView.getCenter();
 	float mov = 160.0 * dt;
 	switch (controller.moveView) {
 	case MoveView::DontMove:
 		break;
 	case MoveView::MoveWest:
-		if (center.x > 128)
+		if (center.x > 128) {
+			this->game->currentCursor = 6;
 			this->gameView.move(sf::Vector2f{ -mov, 0.0});
+		}
 		break;
 	case MoveView::MoveEast:
-		if (center.x < this->map->width * 32 - 128)
+		if (center.x < this->map->width * 32 - 128) {
+			this->game->currentCursor = 7;
+
 			this->gameView.move(sf::Vector2f{mov, 0.0});
+		}
 		break;
 	case MoveView::MoveNorth:
-		if (center.y > 128)
+		if (center.y > 128) {
+			this->game->currentCursor = 5;
+
 			this->gameView.move(sf::Vector2f{ 0.0, -mov});
+		}
 		break;
 	case MoveView::MoveSouth:
-		if (center.y < this->map->height * 32 - 128)
+		if (center.y < this->map->height * 32 - 128) {
+			this->game->currentCursor = 4;
+
 			this->gameView.move(sf::Vector2f{0.0, mov});
+		}
 		break;
 	}
 }
@@ -469,7 +495,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 		{
 			controller.selectionEnd = gamePos;
 
-			if (controller.action == Action::Building)
+			if (controller.action == Action::Build)
 			{
 				Tile &tile = this->vault->registry.get<Tile>(controller.currentBuild);
 				tile.pos = sf::Vector2i(gameMapPos);
@@ -494,7 +520,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 				if (minimap.rect.contains(sf::Vector2f(mousePos))) {
 					interface.clearSelected();
 				} else {
-					if (controller.action == Action::Selecting) {
+					if (controller.action == Action::Select) {
 						controller.selectionEnd = gamePos;
 						sf::FloatRect selectRect(controller.selectionStart, controller.selectionEnd - controller.selectionStart);
 						if (selectRect.width < 0) {
@@ -536,7 +562,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 					interface.clearSelected();
 
 				} else {
-					if (controller.action == Action::Building)
+					if (controller.action == Action::Build)
 					{
 						if (this->canBuild(controller.currentPlayer, controller.currentBuild).size() == 0) {
 							if (!this->vault->factory.placeBuilding(this->vault->registry, controller.currentBuild)) {
@@ -548,7 +574,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 							controller.currentBuild = 0;
 						}
 					} else {
-						controller.action = Action::Selecting;
+						controller.action = Action::Select;
 						controller.selectionStart = gamePos;
 
 						controller.selectedObjs.clear();
@@ -571,7 +597,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 			}
 
 			if (event.mouseButton.button == sf::Mouse::Right) {
-				if (controller.action == Action::Building)
+				if (controller.action == Action::Build)
 				{
 					this->vault->registry.remove<Tile>(controller.currentBuild);
 					controller.currentBuild = 0;

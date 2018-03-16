@@ -158,12 +158,20 @@ enum class GroupFormation {
 typedef entt::HashedString::hash_type SpecialSkill;
 typedef entt::HashedString SpecialSkillStr;
 
+enum class TargetType {
+	None,
+	Attack,
+	Bomb,
+	Special
+};
+
 struct Unit {
 	unsigned int cost;
 	float speed;
 	Attack attack1;
 	Attack attack2;
 
+	TargetType targetType;
 	EntityID targetEnt;
 	sf::Vector2i targetPos;
 
@@ -189,8 +197,6 @@ struct Unit {
 
 	FlowFieldPath flowFieldPath;
 
-	bool canDestroyResources;
-
 	SpecialSkill special;
 
 	Unit() {
@@ -200,10 +206,12 @@ struct Unit {
 		this->direction = sf::Vector2i(0, 0);
 		this->nopath = 0;
 		this->reallyNopath = 0;
-		this->canDestroyResources = false;
 		this->commanded = false;
 		this->pathUpdate = false;
 		this->special = SpecialSkillStr("none");
+
+		this->targetType = TargetType::None;
+		this->targetEnt = 0;
 	}
 };
 
@@ -313,8 +321,10 @@ struct Player {
 
 enum class Action {
 	None,
-	Selecting,
-	Building
+	Select,
+	Build,
+	Attack,
+	Special
 };
 
 enum class MoveView {

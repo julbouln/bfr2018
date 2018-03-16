@@ -364,15 +364,24 @@ void GameSystem::goTo(EntityID entity, sf::Vector2i destpos) {
 	this->goTo(unit, destpos);
 }
 
-void GameSystem::stop(Unit &unit) {
-}
-
 void GameSystem::attack(Unit & unit, EntityID destEnt) {
+	unit.targetType = TargetType::Attack;
 	unit.targetEnt = destEnt;
 }
 
 void GameSystem::attack(EntityID entity, EntityID destEnt) {
 	Unit &unit = this->vault->registry.get<Unit>(entity);
 	this->attack(unit, destEnt);
+}
+
+void GameSystem::bomb(Unit & unit, sf::Vector2i destPos) {
+	unit.targetType = TargetType::Bomb;
+	unit.targetEnt = 0;
+	unit.targetPos = destPos;
+}
+
+void GameSystem::bomb(EntityID entity, sf::Vector2i destPos) {
+	Unit &unit = this->vault->registry.get<Unit>(entity);
+	this->bomb(unit, destPos);
 }
 
