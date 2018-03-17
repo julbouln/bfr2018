@@ -58,9 +58,9 @@ inline bool ImageButtonBlend(const sf::Texture& texture, const ImVec4& bg_col = 
 }
 
 
-inline bool ImageButtonAnim(const sf::Texture& texture, const sf::Texture& texture_hover, const sf::Texture& texture_down, 
-	const ImVec4& bg_col = ImColor(255, 255, 255, 255),
-                             int frame_padding = 0)
+inline bool ImageButtonAnim(const sf::Texture& texture, const sf::Texture& texture_hover, const sf::Texture& texture_down,
+                            const ImVec4& bg_col = ImColor(255, 255, 255, 255),
+                            int frame_padding = 0)
 {
 	const ImVec4 drawCol_normal = ImColor(225, 225, 225, 255);
 	sf::Vector2f textureSize = static_cast<sf::Vector2f>(texture.getSize());
@@ -165,5 +165,26 @@ inline bool ImageButtonWithText(const sf::Texture& texture, const char* label, c
 	return ImageButtonWithText(texture, label, imageSize, uv0, uv1, frame_padding, bg_col, tint_col);
 }
 
+
+
+inline void ImageWithText(const sf::Texture& texture, const char* fmt, ...) {
+	ImVec2 current_pos = GetCursorScreenPos();
+	Image(texture, static_cast<sf::Vector2f>(texture.getSize()), sf::Color::White, sf::Color::Transparent);
+
+	sf::Vector2f textureSize = static_cast<sf::Vector2f>(texture.getSize());
+
+	va_list args;
+	va_start(args, fmt);
+	ImGuiContext& g = *GImGui;
+    const char* text_end = g.TempBuffer + ImFormatStringV(g.TempBuffer, IM_ARRAYSIZE(g.TempBuffer), fmt, args);
+    ImVec2 textSize = CalcTextSize(g.TempBuffer, text_end);
+
+	SetCursorScreenPos(ImVec2(current_pos.x + textureSize.x / 2 - textSize.x/2, current_pos.y + textureSize.y / 2 - textSize.y/2));
+
+    TextUnformatted(g.TempBuffer, text_end);
+	va_end(args);
+};
+
 }
+
 #endif

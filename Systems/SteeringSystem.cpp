@@ -152,9 +152,13 @@ void SteeringSystem::update(float dt) {
 				}
 			} else {
 				// face target
-				if (unit.targetEnt) {
-					Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
-					tile.view = getDirection(sf::Vector2i(ttile.ppos - tile.ppos));
+				if (unit.targetType == TargetType::Attack) {
+					if (unit.targetEnt) {
+						Tile &ttile = this->vault->registry.get<Tile>(unit.targetEnt);
+						tile.view = getDirection(sf::Vector2i(ttile.ppos - tile.ppos));
+					}
+				} else {
+					tile.view = getDirection(sf::Vector2i(unit.targetPos - tile.pos));
 				}
 			}
 		}

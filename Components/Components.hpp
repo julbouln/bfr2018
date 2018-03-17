@@ -324,6 +324,7 @@ enum class Action {
 	Select,
 	Build,
 	Attack,
+	Move,
 	Special
 };
 

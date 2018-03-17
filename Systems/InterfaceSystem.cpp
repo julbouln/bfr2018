@@ -70,29 +70,6 @@ void InterfaceSystem::clearSelected() {
 	}
 }
 
-
-void InterfaceSystem::orderSelected(sf::Vector2f destpos) {
-	GameController &controller = this->vault->registry.get<GameController>();
-
-	if (controller.selectedObjs.size() > 0) {
-		EntityID destEnt = this->ennemyAtPosition(controller.currentPlayer, destpos.x, destpos.y);
-
-		if (destEnt) {
-			int curObj = 0;
-			while (curObj < controller.selectedObjs.size()) {
-				EntityID selectedObj = controller.selectedObjs[curObj];
-				if (this->vault->registry.has<Unit>(selectedObj)) {
-					this->playRandomUnitSound(selectedObj, "attack");
-					this->attack(selectedObj, destEnt);
-				}
-				curObj++;
-			}
-		} else {
-			this->sendGroup(controller.selectedObjs, sf::Vector2i(destpos), GroupFormation::Square, North, true);
-		}
-	}
-}
-
 void InterfaceSystem::menuGui() {
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
@@ -179,6 +156,7 @@ void InterfaceSystem::actionGui() {
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f)); // Transparent background
 		if (ImGui::Begin("Actions", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings))
 		{
+			// only one object selected
 			if (controller.selectedObjs.size() == 1) {
 				EntityID selectedObj = controller.selectedObjs[0];
 
@@ -213,29 +191,15 @@ void InterfaceSystem::actionGui() {
 					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("move"),
 					                           this->vault->factory.texManager.getRef("move"),
 					                           this->vault->factory.texManager.getRef("move_down"))) {
-						std::cout << "TODO: move clicked " << std::endl;
+						controller.action = Action::Move;
 					}
 
 					ImGui::SameLine();
 					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("attack"),
 					                           this->vault->factory.texManager.getRef("attack"),
 					                           this->vault->factory.texManager.getRef("attack_down"))) {
-						std::cout << "TODO: attack clicked " << std::endl;
+						controller.action = Action::Attack;
 					}
-/*
-					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_move"),
-					                           this->vault->factory.texManager.getRef(player.team + "_move"),
-					                           this->vault->factory.texManager.getRef(player.team + "_move_down"))) {
-						std::cout << "TODO: move clicked " << std::endl;
-					}
-
-					ImGui::SameLine();
-					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef(player.team + "_attack"),
-					                           this->vault->factory.texManager.getRef(player.team + "_attack"),
-					                           this->vault->factory.texManager.getRef(player.team + "_attack_down"))) {
-						std::cout << "TODO: attack clicked " << std::endl;
-					}
-					*/
 					ImGui::EndGroup();
 				}
 
@@ -313,7 +277,32 @@ void InterfaceSystem::actionGui() {
 					}
 				}
 			} else {
-				if (controller.selectedObjs.size() == 0) {
+				// group selected
+				if (controller.selectedObjs.size() > 0) {
+
+					if (this->vault->factory.texManager.hasRef(player.team + "_face")) {
+						ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+						ImGui::BeginGroup();
+						ImGui::ImageWithText(this->vault->factory.texManager.getRef(player.team + "_face"), "%d", controller.selectedObjs.size());
+						ImGui::EndGroup();
+						ImGui::PopFont();
+					}
+
+					ImGui::BeginGroup();
+					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("move"),
+					                           this->vault->factory.texManager.getRef("move"),
+					                           this->vault->factory.texManager.getRef("move_down"))) {
+						controller.action = Action::Move;
+					}
+
+					ImGui::SameLine();
+					if (ImGui::ImageButtonAnim(this->vault->factory.texManager.getRef("attack"),
+					                           this->vault->factory.texManager.getRef("attack"),
+					                           this->vault->factory.texManager.getRef("attack_down"))) {
+						controller.action = Action::Attack;
+					}
+					ImGui::EndGroup();
+				} else { // nothing selected
 					this->constructionProgressGui(player.rootConstruction);
 
 					if (player.rootConstruction) {

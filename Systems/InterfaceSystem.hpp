@@ -25,7 +25,6 @@ public:
 
 	void addSelected(EntityID entity);
 	void clearSelected() ;
-	void orderSelected(sf::Vector2f destpos);
 
 private:
 	void menuGui();

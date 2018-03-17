@@ -112,6 +112,7 @@ EntityID GameGeneratorSystem::generate(int mapWidth, int mapHeight, std::string 
 			initialPositions.pop_back();
 
 			this->vault->factory.createUnit(this->vault->registry, entity, "zork", player.initialPos.x, player.initialPos.y);
+			this->vault->factory.createUnit(this->vault->registry, entity, "lance_pepino", player.initialPos.x+1, player.initialPos.y);
 
 /*
 			for (int x = 0; x < 3; x++) {

@@ -30,6 +30,7 @@ public:
 	sf::Vector2i firstAvailablePosition(sf::Vector2i src, int minDist, int maxDist) const;
 
 	EntityID ennemyAtPosition(EntityID playerEnt, int x, int y);
+	bool targetInRange(Tile &tile, sf::Vector2i targetPos, int range, int maxRange);
 	bool ennemyInRange(Tile &tile, Tile &destTile, int range, int maxRange);
 	void addPlayerFrontPoint(EntityID playerEnt, EntityID ent, sf::Vector2i pos);
 	std::vector<sf::Vector2i> canBuild(EntityID playerEnt, EntityID entity);
@@ -46,7 +47,10 @@ public:
 // action
 	void seedResources(std::string type, EntityID entity);
 	bool trainUnit(std::string type, EntityID playerEnt, EntityID entity );
-	void sendGroup(std::vector<EntityID> group, sf::Vector2i destpos, GroupFormation formation, int direction, bool playSound);
+
+	void groupAttackOrMove(EntityID playerEnt, std::vector<EntityID> &group, sf::Vector2i destpos);
+	void groupAttackOrBomb(EntityID playerEnt, std::vector<EntityID> &group, sf::Vector2i destpos);
+	void groupGoTo(std::vector<EntityID> &group, sf::Vector2i destpos, GroupFormation formation, int direction, bool playSound);
 
 	void clearTarget(Unit & unit);
 	void clearTarget(EntityID entity);

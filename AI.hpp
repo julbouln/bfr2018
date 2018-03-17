@@ -417,7 +417,7 @@ public:
 					}
 				}
 			}
-			this->sendGroup(group, player.enemyPos, GroupFormation::Square, North, false);
+			this->groupGoTo(group, player.enemyPos, GroupFormation::Square, North, false);
 			return Node::Status::Success;
 		} else {
 			return Node::Status::Failure;
@@ -464,7 +464,7 @@ public:
 					}
 				}
 			}
-			this->sendGroup(group, destPos, GroupFormation::Square, North, false);
+			this->groupGoTo(group, destPos, GroupFormation::Square, North, false);
 			return Node::Status::Success;
 		} else {
 			return Node::Status::Failure;

@@ -47,6 +47,9 @@ void EntityFactory::loadMisc() {
 	texLoader.loadButton("neonaz_attack", "medias/interface/buttons/naz_attack_button.png");
 	texLoader.loadButton("neonaz_cancel", "medias/interface/buttons/annuler_naz.png");
 
+	texLoader.loadTextureWithWhiteMask("rebel_face", "medias/extra/rebel-face.png");
+	texLoader.loadTextureWithWhiteMask("neonaz_face", "medias/extra/neonaz-face.png");
+
 	texLoader.loadButton("move", "medias/interface/buttons/deplacement.png");
 	texLoader.loadButton("attack", "medias/interface/buttons/attaque.png");
 
@@ -335,9 +338,7 @@ void EntityFactory::setDefaultSpritesheet(StaticSpritesheet& spritesheet, Tile &
 }
 
 sf::Vector2f EntityFactory::caseToPixel(sf::Vector2i pos) {
-	sf::Vector2f ppos = sf::Vector2f(pos) * 32.0f;
-	ppos.x += 16.0f;
-	ppos.y += 16.0f;
+	sf::Vector2f ppos = sf::Vector2f(pos) * 32.0f + 16.0f;
 	return ppos;
 }
 

@@ -153,6 +153,18 @@ bool GameSystem::ennemyInRange(Tile &tile, Tile &destTile, int range, int maxRan
 	return false;
 }
 
+
+bool GameSystem::targetInRange(Tile &tile, sf::Vector2i targetPos, int range, int maxRange)
+{
+	for (sf::Vector2i const &p : this->tileAround(tile, range, maxRange)) {
+		if (p == targetPos)
+			return true;
+
+	}
+
+	return false;
+}
+
 void GameSystem::addPlayerFrontPoint(EntityID playerEnt, EntityID ent, sf::Vector2i pos) {
 	Player &player = this->vault->registry.get<Player>(playerEnt);
 	if (this->vault->registry.has<Unit>(ent)) {
@@ -287,7 +299,41 @@ bool GameSystem::trainUnit(std::string type, EntityID playerEnt, EntityID entity
 	return false;
 }
 
-void GameSystem::sendGroup(std::vector<EntityID> group, sf::Vector2i destpos, GroupFormation formation, int direction, bool playSound) {
+void GameSystem::groupAttackOrBomb(EntityID playerEnt, std::vector<EntityID> &group, sf::Vector2i destpos) {
+	EntityID destEnt = this->ennemyAtPosition(playerEnt, destpos.x, destpos.y);
+	if (destEnt) {
+		for (EntityID entity : group) {
+			if (this->vault->registry.has<Unit>(entity)) {
+				this->playRandomUnitSound(entity, "attack");
+				this->attack(entity, destEnt);
+			}
+		}
+	} else {
+		for (EntityID entity : group) {
+			if (this->vault->registry.has<Unit>(entity)) {
+				this->playRandomUnitSound(entity, "attack");
+				this->bomb(entity, destpos);
+			}
+		}
+	}
+}
+
+
+void GameSystem::groupAttackOrMove(EntityID playerEnt, std::vector<EntityID> &group, sf::Vector2i destpos) {
+	EntityID destEnt = this->ennemyAtPosition(playerEnt, destpos.x, destpos.y);
+	if (destEnt) {
+		for (EntityID entity : group) {
+			if (this->vault->registry.has<Unit>(entity)) {
+				this->playRandomUnitSound(entity, "attack");
+				this->attack(entity, destEnt);
+			}
+		}
+	} else {
+		this->groupGoTo(group, sf::Vector2i(destpos), GroupFormation::Square, North, true);
+	}
+}
+
+void GameSystem::groupGoTo(std::vector<EntityID> &group, sf::Vector2i destpos, GroupFormation formation, int direction, bool playSound) {
 	if (group.size() > 0) {
 		switch (formation) {
 		case GroupFormation::Square:
@@ -340,7 +386,9 @@ void GameSystem::sendGroup(std::vector<EntityID> group, sf::Vector2i destpos, Gr
 }
 
 void GameSystem::clearTarget(Unit & unit) {
+	unit.targetType = TargetType::None;
 	unit.targetEnt = 0;
+	unit.targetPos = sf::Vector2i(0, 0);
 }
 
 void GameSystem::clearTarget(EntityID entity) {

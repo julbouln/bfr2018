@@ -42,6 +42,7 @@ public:
 	sf::RenderWindow window;
 
 	bool mousePressed;
+	bool mouseDoubleClick;
 	int currentCursor;
 	sf::Sprite cursor;
 
@@ -98,6 +99,7 @@ public:
 	void loop()
 	{
 		sf::Clock clock;
+		sf::Clock mouseClickClock;
 		ImGuiIO& io = ImGui::GetIO();
 
 		while (window.isOpen())
@@ -119,11 +121,20 @@ public:
 				if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 					window.close();
 
-				if (event.type == sf::Event::MouseButtonPressed)
+				if (event.type == sf::Event::MouseButtonPressed) {
 					mousePressed = true;
+					if(mouseClickClock.getElapsedTime().asSeconds() < 0.5f) {
+						this->mouseDoubleClick = true;
+						std::cout << "Mouse double click"<<std::endl;
+					} else {
+						this->mouseDoubleClick = false;
+						mouseClickClock.restart();
+					}
+				}
 
-				if (event.type == sf::Event::MouseButtonReleased)
+				if (event.type == sf::Event::MouseButtonReleased) {
 					mousePressed = false;
+				}
 
 				peekStage()->handleEvent(event);
 			}
@@ -178,8 +189,9 @@ public:
 		vault.factory.loadInitial();
 
 		this->mousePressed = false;
+		this->mouseDoubleClick = false;
 		this->currentCursor = DefaultCursor;
-		cursor.setOrigin(15, 15);
+//		cursor.setOrigin(15, 15);
 		cursor.setTexture(vault.factory.getTex("cursors"));
 		sf::IntRect cursorRect(this->currentCursor * 30, 0, 30, 30);
 		cursor.setTextureRect(cursorRect);

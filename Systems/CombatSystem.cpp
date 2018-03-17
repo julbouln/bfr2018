@@ -17,108 +17,133 @@ void CombatSystem::attacking(EntityID entity) {
 #endif
 			this->vault->dispatcher.trigger<SoundPlay>(unit.attackSound, 1, false, tile.pos);
 
-			if (unit.targetEnt) {
-				Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-				sf::Vector2f fxPos = destTile.ppos;
-				sf::Vector2f diffPos = normalize(sf::Vector2f(tile.pos - destTile.pos)) * 16.0f;
-				fxPos.x += diffPos.x;
-				fxPos.y += diffPos.y;
+			sf::Vector2f projTargetPos;
 
-				ParticleEffectOptions hitOptions;
-				hitOptions.destPos = destTile.ppos;
-				hitOptions.direction = getDirection(tile.pos, destTile.pos);
+			if (unit.targetType == TargetType::Attack) {
+				if (unit.targetEnt) {
+					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					sf::Vector2f fxPos = destTile.ppos;
+					sf::Vector2f diffPos = normalize(sf::Vector2f(tile.pos - destTile.pos)) * 16.0f;
+					fxPos.x += diffPos.x;
+					fxPos.y += diffPos.y;
 
-				this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
+					ParticleEffectOptions hitOptions;
+					hitOptions.destPos = destTile.ppos;
+					hitOptions.direction = getDirection(tile.pos, destTile.pos);
 
-				if (this->vault->registry.has<Effects>(entity)) {
-					Effects &effects = this->vault->registry.get<Effects>(entity);
-					if (effects.effects.count("projectile") > 0) {
-						ParticleEffectOptions projOptions;
-						projOptions.destPos = destTile.ppos;
-						projOptions.direction = getDirection(tile.pos, destTile.pos);
+					this->vault->dispatcher.trigger<EffectCreate>("hit", unit.targetEnt, fxPos, hitOptions);
 
-						this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
-
-						float expectedDuration = length(destTile.ppos - tile.ppos) / 80.0f;
-						this->vault->factory.createTimer(this->vault->registry, entity, "projectile_arrival", expectedDuration, false);
-					}
+					projTargetPos = destTile.ppos;
 				}
-
-
+			} else if (unit.targetType == TargetType::Bomb) {
+				projTargetPos = sf::Vector2f(unit.targetPos * 32);
 			} else {
 				this->changeState(entity, "idle");
 				unit.targetType = TargetType::None;
 				unit.targetEnt = 0;
-				unit.destpos = tile.pos;
+//				unit.destpos = tile.pos;
 			}
+
+			if (unit.targetType != TargetType::None) {
+				if (this->vault->registry.has<Effects>(entity)) {
+					Effects &effects = this->vault->registry.get<Effects>(entity);
+					if (effects.effects.count("projectile") > 0) {
+						// NOTE: should works without this EffectCreate
+						ParticleEffectOptions projOptions;
+						projOptions.destPos = projTargetPos;
+						projOptions.direction = getDirection(tile.pos, sf::Vector2i(projTargetPos / 32.0f));
+						this->vault->dispatcher.trigger<EffectCreate>("projectile", entity, tile.ppos, projOptions);
+
+						float expectedDuration = length(projTargetPos - tile.ppos) / 80.0f;
+						this->vault->factory.createTimer(this->vault->registry, entity, "projectile_arrival", expectedDuration, false);
+					}
+				}
+			}
+
+			/*
+						} else {
+							this->changeState(entity, "idle");
+							unit.targetType = TargetType::None;
+							unit.targetEnt = 0;
+							unit.destpos = tile.pos;
+						}
+						*/
 		}
 	}
 }
 
 // frame changed
-void CombatSystem::receive(const TimerLooped &event) {
+void CombatSystem::receive(const TimerLooped & event) {
 	if (event.name == "attack")
 		this->attacking(event.entity);
 }
 
-void CombatSystem::receive(const TimerStarted &event) {
+void CombatSystem::receive(const TimerStarted & event) {
 	if (event.name == "attack")
 		this->attacking(event.entity);
 }
 
-void CombatSystem::receive(const TimerEnded &event) {
+void CombatSystem::receive(const TimerEnded & event) {
 	if (event.name == "projectile_arrival") {
 		if (this->vault->registry.has<Timer>(event.entity)) {
 			Timer &timer = this->vault->registry.get<Timer>(event.entity);
 			if (this->vault->registry.has<Unit>(timer.emitterEntity)) {
 				Unit &unit = this->vault->registry.get<Unit>(timer.emitterEntity);
 				GameObject &obj = this->vault->registry.get<GameObject>(timer.emitterEntity);
-				if (unit.targetEnt) {
-					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-					sf::Vector2i projDestPos = destTile.pos;
-					switch (unit.special) {
-					case SpecialSkillStr("destroy_nature"): {
-						EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
-						if (resEnt) {
-							Resource &resource = this->vault->registry.get<Resource>(resEnt);
-							if (resource.type == "nature") {
-								this->map->resources.set(projDestPos.x, projDestPos.y, 0);
-								this->vault->registry.destroy(resEnt);
-								std::cout << "SpecialSkill: destroy nature at " << projDestPos << std::endl;
-							}
+
+				sf::Vector2i projDestPos;
+				if (unit.targetType == TargetType::Attack) {
+					if (unit.targetEnt) {
+						Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+						projDestPos = destTile.pos;
+					}
+				} else if (unit.targetType == TargetType::Bomb) {
+					projDestPos = unit.targetPos;
+				}
+
+				switch (unit.special) {
+				case SpecialSkillStr("destroy_nature"): {
+					EntityID resEnt = this->map->resources.get(projDestPos.x, projDestPos.y);
+					if (resEnt) {
+						Resource &resource = this->vault->registry.get<Resource>(resEnt);
+						if (resource.type == "nature") {
+							this->map->resources.set(projDestPos.x, projDestPos.y, 0);
+							this->vault->registry.destroy(resEnt);
+							std::cout << "SpecialSkill: destroy nature at " << projDestPos << std::endl;
 						}
 					}
-					break;
-					case SpecialSkillStr("seed_nature"): {
-						if (!this->map->resources.get(projDestPos.x, projDestPos.y) && this->map->staticBuildable.get(projDestPos.x, projDestPos.y) == 0) {
-							if ((rand() % 4) == 0) {
-								EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, "nature", projDestPos.x, projDestPos.y);
-								this->map->resources.set(projDestPos.x, projDestPos.y, resEnt);
-								std::cout << "SpecialSkill: plant nature at " << projDestPos << std::endl;
-							}
+				}
+				break;
+				case SpecialSkillStr("seed_nature"): {
+					if (!this->map->resources.get(projDestPos.x, projDestPos.y) && this->map->staticBuildable.get(projDestPos.x, projDestPos.y) == 0) {
+						if ((rand() % 4) == 0) {
+							EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, "nature", projDestPos.x, projDestPos.y);
+							this->map->resources.set(projDestPos.x, projDestPos.y, resEnt);
+							std::cout << "SpecialSkill: plant nature at " << projDestPos << std::endl;
 						}
 					}
-					break;
-					case SpecialSkillStr("collateral_projectile"): {
-						for (int w = projDestPos.x - 1; w < projDestPos.x + 1; w++) {
-							for (int h = projDestPos.y - 1; h < projDestPos.y + 1; h++) {
-								EntityID colEnt = this->map->objs.get(w, h);
-								if (colEnt) {
-									GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
-									if (colObj.team != obj.team) {
-										colObj.life -= (float)unit.attack2.power / 16.0f;
-										std::cout << "SpecialSkill: collateral projectile damage at " << w << "x" << h << " on " << colEnt << std::endl;
-									}
+				}
+				break;
+				case SpecialSkillStr("collateral_projectile"): {
+					for (int w = projDestPos.x - 1; w < projDestPos.x + 1; w++) {
+						for (int h = projDestPos.y - 1; h < projDestPos.y + 1; h++) {
+							EntityID colEnt = this->map->objs.get(w, h);
+							if (colEnt) {
+								GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
+								if (colObj.team != obj.team) {
+									colObj.life -= (float)unit.attack2.power / 16.0f;
+									std::cout << "SpecialSkill: collateral projectile damage at " << w << "x" << h << " on " << colEnt << std::endl;
 								}
 							}
 						}
 					}
-					break;
-					default:
-						break;
-					}
-//					std::cout << "TIMER PROJECTILE AT " << destTile.ppos << std::endl;
 				}
+				break;
+				default:
+					break;
+				}
+//					std::cout << "TIMER PROJECTILE AT " << destTile.ppos << std::endl;
+
 			}
 		}
 	} else if (event.name == "delayed_destroy") {
@@ -173,12 +198,12 @@ void CombatSystem::updateFront(float dt) {
 	}
 }
 
-bool CombatSystem::posInRange(Tile &tile, sf::Vector2f &destPos, int dist, int maxDist) {
+bool CombatSystem::posInRange(Tile & tile, sf::Vector2f & destPos, int dist, int maxDist) {
 	return (distance(tile.ppos, destPos) >= (dist - 1) * RANGE_RADIUS && distance(tile.ppos, destPos) <= (maxDist) * RANGE_RADIUS);
 	// || distance(tile.ppos, destPos) <= RANGE_RADIUS;
 }
 
-bool CombatSystem::ennemyInRange(Tile &tile, Tile &destTile, int dist, int maxDist) {
+bool CombatSystem::ennemyInRange(Tile & tile, Tile & destTile, int dist, int maxDist) {
 	for (int w = 0; w < destTile.size.x; ++w) {
 		for (int h = 0; h < destTile.size.y; ++h) {
 			sf::Vector2f p = destTile.ppos + sf::Vector2f((w - destTile.size.x / 2) * 32, (h - destTile.size.x / 2) * 32);
@@ -299,79 +324,114 @@ void CombatSystem::update(float dt) {
 		Tile &tile = view.get<Tile>(entity);
 		Unit &unit = view.get<Unit>(entity);
 		GameObject &obj = view.get<GameObject>(entity);
-		if (obj.life > 0 && unit.targetEnt) {
-			int dist = 1;
-			int maxDist = 1;
-			if (unit.attack2.distance)
-				dist = unit.attack2.distance;
-			if (unit.attack2.maxDistance)
-				maxDist = unit.attack2.maxDistance;
+		if (obj.life > 0) {
+			switch (unit.targetType) {
+			case TargetType::Attack:
+				if (unit.targetEnt) {
+					int dist = 1;
+					int maxDist = 1;
+					if (unit.attack2.distance)
+						dist = unit.attack2.distance;
+					if (unit.attack2.maxDistance)
+						maxDist = unit.attack2.maxDistance;
 
-			Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
-			GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
+					Tile &destTile = this->vault->registry.get<Tile>(unit.targetEnt);
+					GameObject &destObj = this->vault->registry.get<GameObject>(unit.targetEnt);
 
-//					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
-			bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
-			if (inRange) {
-				int attackPower = unit.attack1.power;
+					bool inRange = this->ennemyInRange(tile, destTile, dist, maxDist) || this->ennemyInRange(tile, destTile, 1, 1);
+					if (inRange) {
+						int attackPower = unit.attack1.power;
 
 #ifdef COMBAT_DEBUG
-				std::cout << "CombatSystem: " << entity << " arrived at target, fight " << distance(tile.ppos, destTile.ppos) << " " << unit.targetEnt << std::endl;
+						std::cout << "CombatSystem: " << entity << " arrived at target, fight " << distance(tile.ppos, destTile.ppos) << " " << unit.targetEnt << std::endl;
 #endif
-				sf::Vector2i distDiff = (destTile.pos - tile.pos);
-				// use attack2 if in correct range
-				if (unit.attack2.distance && this->ennemyInRange(tile, destTile, dist, maxDist)) {
-					attackPower = unit.attack2.power;
-				}
-				unit.destpos = tile.pos;
+						sf::Vector2i distDiff = (destTile.pos - tile.pos);
+						// use attack2 if in correct range
+						if (unit.attack2.distance && this->ennemyInRange(tile, destTile, dist, maxDist)) {
+							attackPower = unit.attack2.power;
+						}
+						unit.destpos = tile.pos;
 
-				float damage = (float)attackPower / 100.0f;
+						float damage = (float)attackPower / 100.0f;
 
-				// damage malus for moving target
-				if (this->vault->registry.has<Unit>(unit.targetEnt)) {
-					Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
-					damage /= length(destUnit.velocity) + 1.0f;
-				}
+						// damage malus for moving target
+						if (this->vault->registry.has<Unit>(unit.targetEnt)) {
+							Unit &destUnit = this->vault->registry.get<Unit>(unit.targetEnt);
+							damage /= length(destUnit.velocity) + 1.0f;
+						}
 #ifdef COMBAT_DEBUG
-				std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
+						std::cout << "CombatSystem: " << entity << " " << obj.name << " inflige " << damage << " to " << unit.targetEnt << std::endl;
 #endif
-				destObj.life -= damage;
+						destObj.life -= damage;
 
-				if (unit.special == SpecialSkillStr("collateral")) {
-					for (int w = tile.pos.x - 1; w < tile.pos.x + 1; w++) {
-						for (int h = tile.pos.y - 1; h < tile.pos.y + 1; h++) {
-							EntityID colEnt = this->map->objs.get(w, h);
-							if (colEnt) {
-								GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
-								if (colObj.team != obj.team) {
-									colObj.life -= damage / 4.0f;
-									std::cout << "SpecialSkill: collateral damage at " << w << "x" << h << " on " << colEnt << std::endl;
+						if (unit.special == SpecialSkillStr("collateral")) {
+							for (int w = tile.pos.x - 1; w < tile.pos.x + 1; w++) {
+								for (int h = tile.pos.y - 1; h < tile.pos.y + 1; h++) {
+									EntityID colEnt = this->map->objs.get(w, h);
+									if (colEnt) {
+										GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
+										if (colObj.team != obj.team) {
+											colObj.life -= damage / 4.0f;
+											std::cout << "SpecialSkill: collateral damage at " << w << "x" << h << " on " << colEnt << std::endl;
+										}
+									}
 								}
 							}
 						}
-					}
-				}
 
-				if (destObj.player) {
-					this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
-				}
+						if (destObj.player) {
+							this->addPlayerFrontPoint(destObj.player, unit.targetEnt, destTile.pos);
+						}
 
-				// start/continue attacking
-				this->changeState(entity, "attack");
-				unit.velocity = sf::Vector2f(0, 0);
-				unit.destpos = tile.pos;
+						// start/continue attacking
+						this->changeState(entity, "attack");
+						unit.velocity = sf::Vector2f(0, 0);
+						unit.destpos = tile.pos;
 
-			} else {
-				sf::Vector2i dpos = destTile.pos;
+					} else {
+						sf::Vector2i dpos = destTile.pos;
 
-				if (tile.state == "attack") // change to idle if attacking and out of range
-					this->changeState(entity, "idle");
+						if (tile.state == "attack") // change to idle if attacking and out of range
+							this->changeState(entity, "idle");
 
-				this->goTo(unit, dpos);
+						this->goTo(unit, dpos);
 
 #ifdef COMBAT_DEBUG
-				std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
+						std::cout << "CombatSystem: " << entity << " new dest pos " << unit.destpos.x << "x" << unit.destpos.y << std::endl;
 #endif
+					}
+				}
+				break;
+			case TargetType::Bomb:
+			{
+				if (unit.attack2.distance) {
+					int dist = unit.attack2.distance;
+					int maxDist = unit.attack2.maxDistance;
+
+					bool inRange = this->targetInRange(tile, unit.targetPos, dist, maxDist);
+					if (inRange) {
+						this->changeState(entity, "attack");
+						unit.velocity = sf::Vector2f(0, 0);
+						unit.destpos = tile.pos;
+					} else {
+						this->goTo(unit, unit.targetPos);
+					}
+				} else {
+					// no distance attack, just go to target
+					bool inRange = this->targetInRange(tile, unit.targetPos, 1, 1);
+					if (inRange) {
+						this->changeState(entity, "idle");
+						unit.targetType = TargetType::None;
+						unit.targetEnt = 0;
+						unit.destpos = tile.pos;
+					} else {
+						this->goTo(unit, unit.targetPos);
+					}
+				}
+			}
+			break;
+			default:
+				break;
 			}
 		}
 	}
@@ -422,7 +482,7 @@ void CombatSystem::update(float dt) {
 			}
 		}
 
-		if (tile.state == "attack") {
+		if (tile.state == "attack" && unit.targetType == TargetType::Attack) {
 			// attacked obj does not exists anymore, stop attacking
 			if (!unit.targetEnt) {
 #ifdef COMBAT_DEBUG
@@ -452,7 +512,6 @@ void CombatSystem::update(float dt) {
 
 		if (obj.life <= 0) {
 			if (tile.state != "destroy") {
-
 				ParticleEffectOptions projOptions;
 				projOptions.destPos = tile.ppos;
 				projOptions.direction = 0;
@@ -464,7 +523,6 @@ void CombatSystem::update(float dt) {
 
 				tile.state = "destroy";
 			}
-
 		} else {
 			// change tile view to show damages
 			if (obj.life < obj.maxLife * 0.75)

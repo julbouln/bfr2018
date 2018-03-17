@@ -128,12 +128,16 @@ void GameEngine::setPlayerCursor() {
 	GameController &controller = this->vault->registry.get<GameController>();
 	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
 
-	if (player.team == "rebel") {
-		this->game->currentCursor = RebelCursor;
-	} else if (player.team == "neonaz") {
-		this->game->currentCursor = NeonazCursor;
+	if (controller.action == Action::Attack) {
+		this->game->currentCursor = AttackCursor;
 	} else {
-		this->game->currentCursor = DefaultCursor;		
+		if (player.team == "rebel") {
+			this->game->currentCursor = RebelCursor;
+		} else if (player.team == "neonaz") {
+			this->game->currentCursor = NeonazCursor;
+		} else {
+			this->game->currentCursor = DefaultCursor;
+		}
 	}
 }
 
@@ -355,6 +359,8 @@ void GameEngine::updateEveryFrame(float dt)
 
 	this->sound.update(dt);
 
+	this->setPlayerCursor();
+
 	this->updateMoveView(dt);
 
 	this->fx.update(dt);
@@ -410,8 +416,6 @@ void GameEngine::update(float dt) {
 
 void GameEngine::updateMoveView(float dt) {
 	GameController &controller = this->vault->registry.get<GameController>();
-
-	this->setPlayerCursor();
 
 	sf::Vector2f center = this->gameView.getCenter();
 	float mov = 160.0 * dt;
@@ -501,7 +505,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 			{
 				Tile &tile = this->vault->registry.get<Tile>(controller.currentBuild);
 				tile.pos = sf::Vector2i(gameMapPos);
-				tile.ppos = sf::Vector2f(tile.pos) * (float)32.0;
+				tile.ppos = sf::Vector2f(tile.pos) * 32.0f + 16.0f;
 			}
 
 			controller.moveView = MoveView::DontMove;
@@ -575,6 +579,12 @@ void GameEngine::handleEvent(sf::Event & event) {
 							controller.action = Action::None;
 							controller.currentBuild = 0;
 						}
+					} else if (controller.action == Action::Attack) {
+						this->groupAttackOrBomb(controller.currentPlayer, controller.selectedObjs, sf::Vector2i(gameMapPos));
+						controller.action = Action::None;
+					} else if (controller.action == Action::Move) {
+						this->groupGoTo(controller.selectedObjs, sf::Vector2i(gameMapPos),GroupFormation::Square, North, true);
+						controller.action = Action::None;
 					} else {
 						controller.action = Action::Select;
 						controller.selectionStart = gamePos;
@@ -609,9 +619,9 @@ void GameEngine::handleEvent(sf::Event & event) {
 					// right click on minimap
 					if (this->minimap.rect.contains(sf::Vector2f(mousePos))) {
 						sf::Vector2f mPos((float)(mousePos.x - this->minimap.rect.left) / (this->minimap.size / this->map->width), (float)(mousePos.y - this->minimap.rect.top) / (this->minimap.size / this->map->width));
-						interface.orderSelected(mPos);
+						this->groupAttackOrMove(controller.currentPlayer, controller.selectedObjs, sf::Vector2i(mPos));
 					} else {
-						interface.orderSelected(gameMapPos);
+						this->groupAttackOrMove(controller.currentPlayer, controller.selectedObjs, sf::Vector2i(gameMapPos));
 					}
 				}
 

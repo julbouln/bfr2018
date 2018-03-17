@@ -1,5 +1,4 @@
 Bug:
-- unit looking for each other fight sometimes stuck together
 - if an ennemy is in sight, unit refuse to obey
 - memory leak ?
 
@@ -25,16 +24,16 @@ Balancing:
 - brad_lab : unique + boost units?
 - patrouilleur : melee cheap but weak
 - mitrailleur : short range
-- super_guerrier : short range + very slow but strongest unit + 360° damages
-- bazooka : medium range + can destroy nature
-- lance_missile : bazooka evolution
-- gros naz : very long range
+- super_guerrier : short range + very slow but strongest unit + 360° damages [OK]
+- bazooka : medium range + can destroy nature [OK]
+- lance_missile : bazooka evolution [OK]
+- gros naz : very long range [OK]
 
 - zork : unique + can repair buildings
 - punkette : melee + ?
-- lance pepino : medium range + projectile destination plant nature
-- guerrier bud : medium range + collateral damage?
-- guerrier bud powered : guerrier bud evolution
+- lance pepino : medium range + projectile destination plant nature [OK]
+- guerrier bud : medium range + collateral damage? [OK]
+- guerrier bud powered : guerrier bud evolution [OK]
 - punk : melee + ?
 - abdel : unique + melee + very fast + ?
 
