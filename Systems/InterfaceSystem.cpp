@@ -103,6 +103,14 @@ void InterfaceSystem::gameStateGui() {
 		ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 255, 0, 255));
 		ImGui::ProgressBar((float)player.resources / this->resourcesVictory(), ImVec2(200.0f * this->scaleX(), 0.0f), "");
 		ImGui::PopStyleColor();
+		if (ImGui::IsItemHovered()) {
+			ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[1]);
+			ImGui::BeginTooltip();
+			ImGui::Image(this->vault->factory.getTex(player.resourceType + "_cost")); ImGui::SameLine();
+			ImGui::Text("%d", player.resources);
+			ImGui::EndTooltip();
+			ImGui::PopFont();
+		}
 
 		ImGui::SameLine();
 

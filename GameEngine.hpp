@@ -65,6 +65,8 @@ public:
 
 	float zoomLevel;
 
+	sf::Music music;
+
 	GameEngine(Game *game, unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam);
 
 	~GameEngine();
@@ -80,7 +82,7 @@ public:
 	void setPlayerCursor();
 
 	void setVaults(GameVault *vault);
-	
+
 	void generate(unsigned int mapWidth, unsigned int mapHeight, std::string playerTeam);
 
 	void updatePlayers(float dt);

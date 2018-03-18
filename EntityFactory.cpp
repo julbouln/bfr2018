@@ -73,13 +73,15 @@ void EntityFactory::loadMisc() {
 	sndManager.load("megakill", "medias/misc/megakill.flac");
 	sndManager.load("barbarian", "medias/misc/barbarian.flac");
 	sndManager.load("butchery", "medias/misc/butchery.flac");
+	sndManager.load("pause_on", "medias/misc/pause_on.flac");
+	sndManager.load("pause_off", "medias/misc/pause_off.flac");
 
 	texLoader.loadTextureWithWhiteMask("pollution_cost", "medias/extra/baril_ico.png");
 	texLoader.loadTextureWithWhiteMask("nature_cost", "medias/extra/pepino_ico.png");
+	texManager.load("time", "medias/extra/temps.png");
 
 	texManager.load("arrow", "medias/new/fleche.png");
 
-	texManager.load("time", "medias/extra/temps.png");
 
 }
 

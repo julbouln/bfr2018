@@ -14,6 +14,7 @@
 #include "third_party/imgui/imgui-sfml.h"
 #include "third_party/imgui/imgui-sfml-extra.h"
 
+#include "GameSettings.hpp"
 #include "Stages/Stage.hpp"
 #include "GameVault.hpp"
 
@@ -45,6 +46,8 @@ public:
 	bool mouseDoubleClick;
 	int currentCursor;
 	sf::Sprite cursor;
+
+	GameSettings settings;
 
 	void registerStage(std::string name, Stage *stage) {
 		this->registeredStages[name] = stage;
@@ -123,9 +126,9 @@ public:
 
 				if (event.type == sf::Event::MouseButtonPressed) {
 					mousePressed = true;
-					if(mouseClickClock.getElapsedTime().asSeconds() < 0.5f) {
+					if (mouseClickClock.getElapsedTime().asSeconds() < 0.5f) {
 						this->mouseDoubleClick = true;
-						std::cout << "Mouse double click"<<std::endl;
+						std::cout << "Mouse double click" << std::endl;
 					} else {
 						this->mouseDoubleClick = false;
 						mouseClickClock.restart();
@@ -156,14 +159,41 @@ public:
 		}
 	}
 
-	Game(unsigned int width, unsigned int height, bool fullscreen)
+	Game(unsigned int width, unsigned int height, bool fullscreen, bool customSettings)
 	{
-		this->width = width;
-		this->height = height;
-		if (fullscreen)
-			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018", sf::Style::Fullscreen);
-		else
-			this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+		if (customSettings) {
+			this->width = width;
+			this->height = height;
+			if (fullscreen)
+				this->window.create(sf::VideoMode(this->width, this->height), "BFR2018", sf::Style::Fullscreen);
+			else
+				this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+		} else {
+			switch (this->settings.screenSize) {
+			case 0:
+				this->width = 800;
+				this->height = 600;
+				break;
+			case 1:
+				this->width = 1024;
+				this->height = 768;
+				break;
+			case 2:
+				this->width = 1280;
+				this->height = 1024;
+				break;
+			case 3:
+				this->width = 1600;
+				this->height = 900;
+				break;
+			}
+
+			if (this->settings.fullscreen)
+				this->window.create(sf::VideoMode(this->width, this->height), "BFR2018", sf::Style::Fullscreen);
+			else
+				this->window.create(sf::VideoMode(this->width, this->height), "BFR2018");
+
+		}
 
 		this->window.setMouseCursorVisible(false); // Hide cursor
 
@@ -195,7 +225,6 @@ public:
 		cursor.setTexture(vault.factory.getTex("cursors"));
 		sf::IntRect cursorRect(this->currentCursor * 30, 0, 30, 30);
 		cursor.setTextureRect(cursorRect);
-
 	}
 
 	~Game()

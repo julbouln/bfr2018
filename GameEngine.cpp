@@ -68,6 +68,11 @@ void GameEngine::init() {
 	this->gameSpeed = 1;
 
 	this->vault->dispatcher.connect<GameStageChange>(this);
+/*
+	music.openFromFile("medias/musics/ludwig_sample1.ogg");
+	music.setLoop(true);
+	music.play();
+*/
 }
 
 void GameEngine::reset() {
@@ -266,6 +271,15 @@ void GameEngine::draw(float dt) {
 	minimap.drawClip(this->game->window, this->gameView, clip, dt);
 
 	this->updateFading();
+
+	if (this->gameSpeed == 0) {
+		this->text.setString("PAUSE");
+		sf::FloatRect textRect = this->text.getLocalBounds();
+		text.setOrigin(textRect.left + textRect.width / 2.0f,
+		               textRect.top  + textRect.height / 2.0f);
+		text.setPosition(sf::Vector2f(this->width / 2, this->height / 2));
+		this->game->window.draw(this->text);
+	}
 
 	sf::Vector2f viewPos = this->gameView.getCenter();
 	sf::Listener::setPosition(viewPos.x / 32.0, 0.f, viewPos.y / 32.0);
@@ -475,8 +489,10 @@ void GameEngine::handleEvent(sf::Event & event) {
 			if (event.key.code == sf::Keyboard::Space) {
 				// pause/unpause
 				if (this->gameSpeed == 0) {
+					this->vault->dispatcher.trigger<SoundPlay>("pause_off", 5, true, sf::Vector2i{0, 0});
 					this->gameSpeed = 1;
 				} else {
+					this->vault->dispatcher.trigger<SoundPlay>("pause_on", 5, true, sf::Vector2i{0, 0});
 					this->gameSpeed = 0;
 				}
 			}
@@ -583,7 +599,7 @@ void GameEngine::handleEvent(sf::Event & event) {
 						this->groupAttackOrBomb(controller.currentPlayer, controller.selectedObjs, sf::Vector2i(gameMapPos));
 						controller.action = Action::None;
 					} else if (controller.action == Action::Move) {
-						this->groupGoTo(controller.selectedObjs, sf::Vector2i(gameMapPos),GroupFormation::Square, North, true);
+						this->groupGoTo(controller.selectedObjs, sf::Vector2i(gameMapPos), GroupFormation::Square, North, true);
 						controller.action = Action::None;
 					} else {
 						controller.action = Action::Select;

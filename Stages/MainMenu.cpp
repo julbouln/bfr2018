@@ -31,6 +31,8 @@ void MainMenu::draw(float dt) {
 		}
 
 		if (ImGui::Button("Settings", sz)) {
+			nextStage = NextStageStr("settings");
+			this->fadeOut();
 		}
 
 		if (ImGui::Button("Intro", sz)) {
@@ -70,6 +72,9 @@ void MainMenu::fadeOutCallback() {
 	switch (nextStage) {
 	case NextStageStr("play_menu"):
 		this->game->pushRegisteredStage("play_menu");
+		break;
+	case NextStageStr("settings"):
+		this->game->pushRegisteredStage("settings");
 		break;
 	}
 }

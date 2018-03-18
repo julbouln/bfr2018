@@ -10,12 +10,13 @@ Improvements:
 Game:
 - vautour FX
 - add intro & credits
-- add resource trap + explosion FX
+- add resource trap + explosion FX (?)
 - ruins should be tilable ?
 
 Interface:
-- add settings
-- add pause text + sound
+- add settings (screen size, volume)
+- add tooltip on resource bar
+- add imgui neonaz style
 
 Balancing:
 - add special capabilities (zork can repair building, bazooka can destroy nature, etc)

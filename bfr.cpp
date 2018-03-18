@@ -1,6 +1,7 @@
 #include "GameEngine.hpp"
 #include "Game.hpp"
 #include "Stages/MainMenu.hpp"
+#include "Stages/Settings.hpp"
 #include "Stages/PlayMenu.hpp"
 #include "Stages/GameOver.hpp"
 
@@ -11,6 +12,7 @@ int main(int argc, char *argv[])
 #ifdef WITHGPERFTOOLS
 	ProfilerStart("bfr_prof.log");
 #endif
+	bool customSettings = false;
 	bool fullscreen = false;
 	unsigned int width = 1024;
 	unsigned int height = 768;
@@ -62,23 +64,28 @@ int main(int argc, char *argv[])
 
 	if (args["fullscreen"]) {
 		fullscreen = true;
+		customSettings = true;
 	}
 
 	if (args["windowed"]) {
 		fullscreen = false;
+		customSettings = true;
 	}
 
 	if (args["width"]) {
 		width = args["width"];
+		customSettings = true;
 	}
 
 	if (args["height"]) {
 		height = args["height"];
+		customSettings = true;
 	}
 
-	Game game(width, height, fullscreen);
+	Game game(width, height, fullscreen, customSettings);
 
 	game.registerStage("main_menu", new MainMenu(&game));
+	game.registerStage("settings", new Settings(&game));
 	game.registerStage("play_menu", new PlayMenu(&game));
 	game.registerStage("game_over", new GameOver(&game));
 
