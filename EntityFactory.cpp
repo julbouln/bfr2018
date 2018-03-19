@@ -14,6 +14,7 @@ void EntityFactory::loadInitial() {
 	fntManager.load("samos", "medias/fonts/samos.ttf");
 	texLoader.loadTextureWithWhiteMask("intro_background", "medias/interface/bgs/toile.png");
 	texLoader.loadTextureWithWhiteMask("cursors", "medias/extra/curseurs.png");
+//	texLoader.loadTextureWithWhiteMask("testninepatch", "medias/interface/motifs/motif_bouton1.png");
 }
 
 void EntityFactory::loadMisc() {

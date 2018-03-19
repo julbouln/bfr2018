@@ -24,6 +24,9 @@ void MainMenu::draw(float dt) {
 	{
 		ImVec2 sz(192, 64);
 
+//		ImGui::ImageNinePatchWithText(this->game->vault.factory.getTex("testninepatch"),sf::Vector2f(128,48),"Blabla");
+//		ImGui::ImageNinePatch(this->game->vault.factory.getTex("testninepatch"),sf::Vector2f(128,48));
+
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 16));
 		if (ImGui::Button("Play", sz)) {
 			nextStage = NextStageStr("play_menu");
