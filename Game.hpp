@@ -149,7 +149,7 @@ public:
 
 			peekStage()->draw(elapsed);
 
-			sf::IntRect cursorRect(this->currentCursor * 30, mousePressed ? 30 : 0, 30, 30);
+			sf::IntRect cursorRect(this->currentCursor * 42, mousePressed ? 42 : 0, 42, 42);
 
 			cursor.setTextureRect(cursorRect);
 			cursor.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
@@ -221,9 +221,9 @@ public:
 		this->mousePressed = false;
 		this->mouseDoubleClick = false;
 		this->currentCursor = DefaultCursor;
-//		cursor.setOrigin(15, 15);
+		cursor.setOrigin(21, 21);
 		cursor.setTexture(vault.factory.getTex("cursors"));
-		sf::IntRect cursorRect(this->currentCursor * 30, 0, 30, 30);
+		sf::IntRect cursorRect(this->currentCursor * 42, 0, 42, 42);
 		cursor.setTextureRect(cursorRect);
 	}
 

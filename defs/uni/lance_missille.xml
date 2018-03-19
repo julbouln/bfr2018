@@ -2,7 +2,7 @@
 <entity class="unit" name="lance_missille" team="neonaz">
   <texture mode="with_directions" path="medias/units/neonazs/lance_missille/pics/lance_missille.png"/>
   <texture mode="button" name="icon" path="medias/units/neonazs/lance_missille/pics/lance_missille-icon.png"/>
-  <texture name="face" path="medias/units/neonazs/lance_missille/pics/lance_missille-face.png"/>
+  <texture name="face" mode="with_white_mask" path="medias/units/neonazs/lance_missille/pics/lance_missille-face.png"/>
   <tile directions="8">
     <psize x="43" y="46"/>
     <size x="1" y="1"/>

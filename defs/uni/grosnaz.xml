@@ -2,7 +2,7 @@
 <entity class="unit" name="grosnaz" team="neonaz">
   <texture mode="with_directions" path="medias/units/neonazs/grosnaz/pics/grosnaz.png"/>
   <texture mode="button" name="icon" path="medias/units/neonazs/grosnaz/pics/grosnaz-icon.png"/>
-  <texture name="face" path="medias/units/neonazs/grosnaz/pics/grosnaz-face.png"/>
+  <texture name="face" mode="with_white_mask" path="medias/units/neonazs/grosnaz/pics/grosnaz-face.png"/>
   <tile directions="8">
     <psize x="60" y="75"/>
     <size x="1" y="1"/>

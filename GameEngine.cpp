@@ -430,9 +430,9 @@ void GameEngine::update(float dt) {
 
 void GameEngine::updateMoveView(float dt) {
 	GameController &controller = this->vault->registry.get<GameController>();
-
 	sf::Vector2f center = this->gameView.getCenter();
 	float mov = 160.0 * dt;
+
 	switch (controller.moveView) {
 	case MoveView::DontMove:
 		break;
@@ -526,13 +526,13 @@ void GameEngine::handleEvent(sf::Event & event) {
 
 			controller.moveView = MoveView::DontMove;
 
-			if (mousePos.x < 32)
+			if (mousePos.x < 16)
 				controller.moveView = MoveView::MoveWest;
-			if (mousePos.x > this->width - 32)
+			if (mousePos.x > this->width - 16)
 				controller.moveView = MoveView::MoveEast;
-			if (mousePos.y < 32)
+			if (mousePos.y < 16)
 				controller.moveView = MoveView::MoveNorth;
-			if (mousePos.y > this->height - 32)
+			if (mousePos.y > this->height - 16)
 				controller.moveView = MoveView::MoveSouth;
 		}
 		break;

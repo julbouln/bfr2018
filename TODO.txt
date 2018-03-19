@@ -15,7 +15,6 @@ Game:
 
 Interface:
 - add settings (screen size, volume)
-- add tooltip on resource bar
 - add imgui neonaz style
 
 Balancing:

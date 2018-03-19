@@ -129,12 +129,6 @@ struct AnimatedSpritesheet {
 	std::map<std::string, std::vector<AnimatedSpriteView>> states;
 };
 
-struct Attack {
-	unsigned int power;
-	unsigned int distance;
-	unsigned int maxDistance;
-};
-
 // unit or building
 struct GameObject {
 	std::string name;
@@ -147,6 +141,17 @@ struct GameObject {
 	bool mapped;
 
 	EntityID player;
+};
+
+struct Attack {
+	unsigned int power;
+	unsigned int distance;
+	unsigned int maxDistance;
+};
+
+enum class Attitude {
+	Aggressive,
+	Pacifist
 };
 
 enum class GroupFormation {

@@ -2,7 +2,7 @@
 <entity class="unit" name="brad_lab" team="neonaz">
   <texture mode="with_directions" path="medias/units/neonazs/brad_lab/pics/brad_lab.png"/>
   <texture mode="button" name="icon" path="medias/units/neonazs/brad_lab/pics/brad_lab-icon.png"/>
-  <texture name="face" path="medias/units/neonazs/brad_lab/pics/brad_lab-face.png"/>
+  <texture name="face" mode="with_white_mask" path="medias/units/neonazs/brad_lab/pics/brad_lab-face.png"/>
   <tile directions="8">
     <psize x="35" y="42"/>
     <size x="1" y="1"/>
