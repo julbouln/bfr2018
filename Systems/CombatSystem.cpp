@@ -59,15 +59,6 @@ void CombatSystem::attacking(EntityID entity) {
 					}
 				}
 			}
-
-			/*
-						} else {
-							this->changeState(entity, "idle");
-							unit.targetType = TargetType::None;
-							unit.targetEnt = 0;
-							unit.destpos = tile.pos;
-						}
-						*/
 		}
 	}
 }
@@ -486,14 +477,8 @@ void CombatSystem::update(float dt) {
 			// attacked obj does not exists anymore, stop attacking
 			if (!unit.targetEnt) {
 #ifdef COMBAT_DEBUG
-				if (unit.targetEnt) {
-					std::cout << "CombatSystem: " << entity << "enemy target does not exists anymore " << unit.targetEnt << std::endl;
-				}
+				std::cout << "CombatSystem: " << entity << "enemy target does not exists anymore " << unit.targetEnt << std::endl;
 #endif
-				if (unit.targetEnt) {
-					Player &player = this->vault->registry.get<Player>(obj.player);
-					player.kills.insert(unit.targetEnt);
-				}
 
 				this->changeState(entity, "idle");
 				unit.targetType = TargetType::None;

@@ -41,10 +41,14 @@ void DeletionSystem::update(float dt) {
 	}
 
 // clean destroyed targets
-	auto view = this->vault->registry.view<Unit>();
+	auto view = this->vault->registry.view<GameObject, Unit>();
 	for (EntityID entity : view) {
-		Unit &unit = view.get(entity);
+		GameObject &obj = view.get<GameObject>(entity);
+		Unit &unit = view.get<Unit>(entity);
 		if (!this->vault->registry.valid(unit.targetEnt)) {
+			Player &player = this->vault->registry.get<Player>(obj.player);
+			player.kills.insert(unit.targetEnt);
+
 			unit.targetEnt = 0;
 		}
 	}
