@@ -100,7 +100,9 @@ void CombatSystem::receive(const TimerEnded & event) {
 						if (resource.type == "nature") {
 							this->map->resources.set(projDestPos.x, projDestPos.y, 0);
 							this->vault->registry.destroy(resEnt);
+#ifdef COMBAT_DEBUG
 							std::cout << "SpecialSkill: destroy nature at " << projDestPos << std::endl;
+#endif
 						}
 					}
 				}
@@ -110,7 +112,9 @@ void CombatSystem::receive(const TimerEnded & event) {
 						if ((rand() % 4) == 0) {
 							EntityID resEnt = this->vault->factory.plantResource(this->vault->registry, "nature", projDestPos.x, projDestPos.y);
 							this->map->resources.set(projDestPos.x, projDestPos.y, resEnt);
+#ifdef COMBAT_DEBUG
 							std::cout << "SpecialSkill: plant nature at " << projDestPos << std::endl;
+#endif
 						}
 					}
 				}
@@ -119,11 +123,13 @@ void CombatSystem::receive(const TimerEnded & event) {
 					for (int w = projDestPos.x - 1; w < projDestPos.x + 1; w++) {
 						for (int h = projDestPos.y - 1; h < projDestPos.y + 1; h++) {
 							EntityID colEnt = this->map->objs.get(w, h);
-							if (colEnt) {
+							if (colEnt && this->vault->registry.valid(colEnt)) {
 								GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
 								if (colObj.team != obj.team) {
 									colObj.life -= (float)unit.attack2.power / 16.0f;
+#ifdef COMBAT_DEBUG
 									std::cout << "SpecialSkill: collateral projectile damage at " << w << "x" << h << " on " << colEnt << std::endl;
+#endif
 								}
 							}
 						}
@@ -363,7 +369,9 @@ void CombatSystem::update(float dt) {
 										GameObject &colObj = this->vault->registry.get<GameObject>(colEnt);
 										if (colObj.team != obj.team) {
 											colObj.life -= damage / 4.0f;
+#ifdef COMBAT_DEBUG
 											std::cout << "SpecialSkill: collateral damage at " << w << "x" << h << " on " << colEnt << std::endl;
+#endif
 										}
 									}
 								}

@@ -27,6 +27,8 @@ void InterfaceSystem::update(float dt) {
 };
 
 void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt) {
+	GameController &controller = this->vault->registry.get<GameController>();
+	Player &player = this->vault->registry.get<Player>(controller.currentPlayer);
 
 	iface.setPosition(sf::Vector2f(0, 0));
 	iface.setScale(this->scaleX(), this->scaleY());
@@ -41,8 +43,10 @@ void InterfaceSystem::draw(sf::RenderWindow &window, sf::IntRect clip, float dt)
 	window.draw(box);
 
 	this->menuGui();
-	this->gameStateGui();
-	this->actionGui();
+	if (player.team != "neutral") {
+		this->gameStateGui();
+		this->actionGui();
+	}
 }
 
 void InterfaceSystem::addSelected(EntityID entity) {

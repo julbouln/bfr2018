@@ -83,7 +83,8 @@ void VictorySystem::updateStats(float dt) {
 	for (EntityID entity : playerView) {
 		Player &player = playerView.get(entity);
 #ifdef VICTORY_DEBUG
-		std::cout << "Player " << entity << " " << player.team << " kills " << player.kills.size() << std::endl;
+		if(player.kills.size() > 0)
+			std::cout << "Player " << entity << " " << player.team << " kills " << player.kills.size() << std::endl;
 #endif
 		player.butchery += pow(player.kills.size(), 2);
 

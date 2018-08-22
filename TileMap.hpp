@@ -47,6 +47,12 @@ public:
     inline int index(int x, int y) const { return x + width * y; }
 
     TileVertex createTileVertex(int tile, sf::Vector2i pos, sf::Color vcol) {
+
+        if(tile >= tileRects.size()) {
+            std::cout << "BUG: createTileVertex problem : "<< pos << " " << tile << std::endl;
+            tile = 0;
+        }
+
         sf::IntRect tileRect = tileRects[tile];
         TileVertex tv;
         // define its 4 corners

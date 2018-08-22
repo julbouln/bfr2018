@@ -45,7 +45,7 @@ void DeletionSystem::update(float dt) {
 	for (EntityID entity : view) {
 		GameObject &obj = view.get<GameObject>(entity);
 		Unit &unit = view.get<Unit>(entity);
-		if (!this->vault->registry.valid(unit.targetEnt)) {
+		if (unit.targetEnt && !this->vault->registry.valid(unit.targetEnt)) {
 			Player &player = this->vault->registry.get<Player>(obj.player);
 			player.kills.insert(unit.targetEnt);
 
